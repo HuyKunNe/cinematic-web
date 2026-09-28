@@ -4,117 +4,114 @@
 
 2026-09-28
 
-## Repository
+## Repositories
 
-Frontend:
-
-https://github.com/HuyKunNe/cinematic-web
-
-Backend:
-
-https://github.com/HuyKunNe/cinema-system
-
-Figma:
-
-https://www.figma.com/design/u8UwhKxDdk5qvK4WezjJnQ/Cinema-Web-UI-Cinematic-Dark?node-id=3-2
+- Frontend: `https://github.com/HuyKunNe/cinematic-web`
+- Backend, read-only: `https://github.com/HuyKunNe/cinema-system`
 
 ## Current phase
 
 ```text
-F0 — Project foundation and documentation
+F0 — Discovery and architecture review
 ```
 
-## Verified state
+## Verified frontend state
 
-- A new frontend repository has been selected.
-- The frontend is intended to be created using npm.
-- The frontend codebase has not yet been verified after scaffolding.
-- The backend already exists in a separate repository.
-- Figma is the source of truth for UI implementation.
-- The repository must be treated as read-only by AI assistants.
-- The user manually applies and commits proposed changes.
+- Frontend repository is a new Vue/Vite scaffold.
+- Current `src/App.vue` still contains the starter page.
+- Current router has no application routes.
+- Pinia is registered; current counter store is scaffold sample code.
+- Existing package manifest includes Vue Query, Axios, Orval, oidc-client-ts,
+  Pinia, Vue Router, Tailwind CSS, VueUse, Reka UI, VeeValidate and Zod.
+- Existing dependency versions and Vue release channel require review before
+  implementation; do not update dependencies without approval.
+- Repository instructions say do not commit or push before user approval.
+- Repository is read-only for this workflow; proposed document changes are
+  supplied for manual review/application.
 
-## Decisions
+## Discovery findings
 
-- Vue 3 with TypeScript and Vite
-- Architecture: `app → modules → shared`
-- Tailwind CSS with semantic CSS variables
-- Reka UI for accessible headless primitives
-- Vue Router for routing
-- Pinia for client/application state
-- TanStack Vue Query for server state
-- Axios for HTTP
-- Orval for OpenAPI client generation
-- VeeValidate and Zod for forms
-- oidc-client-ts for Authorization Code with PKCE
-- MSW for API mocks when needed
-- No hardcoded Figma values in templates or arbitrary classes
+- Backend API routes and DTOs were inventoried from controllers, request and
+  response records, enums, security configuration, gateway routing and common
+  response/error classes.
+- API Gateway local base URL is `http://localhost:8080`.
+- User Service owns OAuth2/OIDC; frontend authentication uses Authorization
+  Code with PKCE. OIDC issuer/client/redirect settings must be confirmed for
+  the target environment.
+- Gateway CORS allows local `http://localhost:*` by default and defines allowed
+  request/response headers in backend configuration.
+- Backend has dynamic springdoc/Swagger configuration, but no committed static
+  OpenAPI JSON/YAML snapshots were found.
+- Booking create returns `202 Accepted` and is asynchronous.
+- Backend does not currently expose confirmed contracts for promotions,
+  membership/points, movie ratings or featured hero ordering.
+- Permission mismatch exists for `inventory:write`, `payment:refund`,
+  `payment:audit` and `payment:reconcile`; confirm backend grants before
+  implementing those operations.
+- R28 Notification Service is deferred and outside current scope.
 
-## Pending verification
+## Architecture proposal
 
-- Current frontend branch and commit
-- Whether Vue/Vite has been initialized
-- Node and npm versions
-- Final dependency versions
-- Figma pages and node inventory
-- Backend OpenAPI availability
-- Gateway OpenAPI aggregation
-- Confirmed OIDC client ID
-- Confirmed redirect URIs
-- Confirmed CORS configuration
+Proposed feature-based organization:
 
-## Current blockers
+```text
+src/
+├── app/
+├── assets/
+├── components/
+├── composables/
+├── config/
+├── features/
+├── layouts/
+├── router/
+├── services/
+├── stores/
+├── styles/
+├── types/
+└── utils/
+```
 
-No technical blocker is confirmed.
+- Generated API clients: `src/services/api/generated/`
+- DTO-to-UI mappers and feature models: `src/features/<feature>/mappers/` and
+  `src/features/<feature>/models/`
+- Vue Query keys/composables: `src/features/<feature>/api/`
+- Pinia: cross-route client state only; server state remains in Vue Query.
+- Route definitions: owned by feature and composed by `src/router/`.
+- Error normalization: `src/services/http/error-normalizer.ts`.
+- Environment parsing: `src/config/env.ts`.
 
-Implementation must not begin until the repository and Figma audit are completed.
+See the proposed `docs/ARCHITECTURE.md` for the complete boundaries and
+responsibilities.
+
+## Current scope
+
+- Use supplied desktop/mobile images as visual references.
+- Do not use Figma unless explicitly requested.
+- Do not implement Notification/R28.
+- Do not write UI code until the architecture and next milestone are approved.
+- Do not commit or push.
+
+## Pending review
+
+- Approve or revise feature folder structure and boundaries.
+- Confirm where reviewed OpenAPI snapshots will be sourced from and captured.
+- Confirm OIDC issuer, public client ID, redirect URI and frontend origin for
+  the target environment.
+- Resolve backend permission mismatches before enabling affected admin actions.
+- Confirm treatment for homepage hero, promotion and membership sections without
+  current backend data contracts.
 
 ## Next step
 
 ```text
-F0.1 — Audit the new repository and approve the Vue project scaffold.
+F1 — Application foundation, after architecture review
 ```
 
-Expected output:
-
-- Repository status
-- Proposed npm scaffold command
-- Proposed dependency list
-- Proposed folder structure
-- Proposed configuration files
-- No file changes before approval
+F1 can define tokens/base styles, environment parsing, router/provider setup and
+the shared HTTP/error infrastructure. Do not implement feature UI or R28 until
+the relevant scope is approved.
 
 ## Verification status
 
-Not run:
-
-- Unit tests
-- Lint
-- Type check
-- Build
-
-## Handoff prompt
-
-```text
-Continue the cinematic-web frontend project.
-
-Read, in order:
-
-1. AGENTS.md
-2. docs/CURRENT_STATUS.md
-3. docs/ROADMAP.md
-4. docs/ARCHITECTURE.md
-5. docs/DESIGN_SYSTEM.md
-6. docs/API_INTEGRATION.md
-7. README.md
-
-Then inspect the current frontend Git state and the Figma file.
-
-Treat the repository as read-only.
-
-Do not edit files, install dependencies, commit, push, run tests, run lint,
-run type-check or run build.
-
-Report the current state and propose exactly one next roadmap item.
-Wait for approval.
-```
+No tests, lint, type-check or build have been run for this architecture
+proposal.

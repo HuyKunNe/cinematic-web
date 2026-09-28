@@ -43,30 +43,25 @@ Before proposing a change:
 
 ## 4. Source of truth
 
-Use information in this order:
+For API contracts, use this order:
 
-1. Current frontend code.
-2. Current frontend Git commit.
-3. The exact Figma frame or component.
-4. Backend source code and OpenAPI contracts.
-5. `docs/CURRENT_STATUS.md`.
-6. `docs/ARCHITECTURE.md`.
-7. `docs/DESIGN_SYSTEM.md`.
-8. `docs/API_INTEGRATION.md`.
-9. `docs/ROADMAP.md`.
-10. `README.md`.
-11. Previous conversation history.
+1. Current backend controller, DTO, validation, enum and security configuration.
+2. Runtime OpenAPI specification served by the backend, after checking the source service and environment.
+3. Reviewed OpenAPI snapshots in the frontend repository.
+4. Frontend API inventory documentation.
+5. Other backend and frontend documentation.
 
-If documentation conflicts with code:
+For visual implementation, use this order:
 
-- Prefer the current code.
-- Report the conflict.
-- Do not silently update documentation.
+1. Current user-provided desktop and mobile reference images.
+2. `docs/design/reference/cinematic-home-desktop.png` and `docs/design/reference/cinematic-home-mobile.png`, when present.
+3. Approved frontend design analysis and design tokens.
+4. Current frontend implementation.
 
-For visual implementation:
+Do not use Figma unless the user explicitly requests it. Do not let unavailable
+Figma access block work when the user has supplied reference images.
 
-- Figma is the source of truth.
-- Existing UI is not the source of truth when it differs from Figma.
+If source code conflicts with documentation, report the discrepancy and prefer the source code for API contracts. Do not invent endpoints, response fields,permission grants or product data.
 
 ## 5. Required technology
 
@@ -101,43 +96,40 @@ Do not add a dependency without:
 
 ## 6. Architecture
 
-Required dependency direction:
+The frontend follows this dependency direction:
 
 ```text
-app → modules → shared
+app → features → shared infrastructure
 ```
+
+Shared infrastructure is organized under `components/`, `composables/`, `config/`, `services/`, `types/`, `utils/`, `assets/`, and `styles/`.
 
 Rules:
 
-- `app` contains application bootstrap, router, layouts and providers.
-- `modules` contains business features.
-- `shared` contains reusable infrastructure and UI primitives.
-- `shared` must not import from `modules`.
-- A module must not import another module's internal implementation.
-- Cross-module communication must use public exports, routes or shared abstractions.
-- Pages should compose feature components instead of containing all business logic.
+- `app` owns bootstrap, application providers and plugin registration.
+- `features` owns business capabilities, feature pages, API composables, query keys, mappers and domain/UI models.
+- Shared infrastructure must not import from `features`.
+- A feature must not import another feature's internal files.
+- Cross-feature use goes through the owning feature's public `index.ts` exports or a shared abstraction.
+- Shared components must not contain feature-specific business logic.
+- Pages compose feature components and composables; they should not call Axios.
+- TanStack Vue Query owns server state. Pinia owns only cross-route client state.
 
-## 7. Figma-first implementation
+## 7. Image-reference-first implementation
 
-Before implementing a page or component:
+Before implementing a screen or component:
 
-1. Read the exact Figma node.
-2. Request or retrieve a screenshot of that node.
-3. Inspect visible child nodes when the first response is incomplete.
-4. Identify dimensions, spacing, typography, assets and states.
-5. Compare the design with the current code.
-6. Report mismatches.
-7. Wait for approval.
+1. Read the approved design analysis, design tokens and responsive behavior.
+2. Inspect the provided desktop/mobile reference images or repository copies.
+3. Identify visible structure, hierarchy, spacing, colors, responsive changes and interaction states.
+4. Check API contracts before binding product data.
+5. Implement the UI using Vue components and CSS; never use a full screenshot as the page background or as a fake UI.
+6. Report assumptions for states or details not visible in the references.
 
-If Figma cannot be accessed:
+Do not call Figma unless the user explicitly requests it.
 
-- Stop.
-- Ask for the exact node link or screenshot.
-- Do not infer the final layout.
-
-Never use a screenshot as an implementation asset.
-
-Every visible Figma asset must be accounted for.
+Use backend data for product content. If an API does not provide an image, use a project-owned placeholder asset. Do not invent product data to fill a visual
+section.
 
 ## 8. Design tokens
 
@@ -209,7 +201,7 @@ Use Orval to generate API clients from OpenAPI.
 
 Rules:
 
-- Generated files must live under `src/shared/api/generated`.
+- Generated files must live under `src/services/api/generated`.
 - Never edit generated files manually.
 - Use a centralized Axios instance.
 - API base URLs come from Vite environment variables.
@@ -218,8 +210,11 @@ Rules:
 - Use mappers when transport DTOs differ from frontend domain models.
 - TanStack Vue Query owns server state.
 - Pinia owns application and client state.
-
-Read the backend repository before defining an API contract.
+- Feature-specific query keys, Vue Query composables, DTO-to-UI mappers and domain/UI models live under the owning `src/features/<feature>/` directory.
+- Generated DTOs remain in the generated API output and are never edited by hand.
+- Store reviewed OpenAPI snapshots under the repository-level `openapi/` directory with source service and backend commit metadata.
+- Do not generate or scaffold R28 Notification clients while R28 is deferred.
+  Read the backend repository before defining an API contract.
 
 ## 11. Authentication
 
