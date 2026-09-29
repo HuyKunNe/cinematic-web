@@ -115,3 +115,18 @@ the relevant scope is approved.
 
 No tests, lint, type-check or build have been run for this architecture
 proposal.
+
+## F1.3 — Customer navigation shell
+
+Status: READY FOR REVIEW
+
+- Added desktop/tablet `CustomerHeader` and responsive `CustomerMobileHeader`.
+- Added accessible mobile menu with `aria-expanded`, Escape-to-close, and focus return.
+- Added `MobileBottomNav` to `CustomerLayout` only; `AuthLayout` and `AdminLayout` are unchanged.
+- Added CINEMATIC wordmark, primary navigation, search/location triggers, account control, and booking CTA.
+- Active navigation state follows the current Vue Router route.
+- Header reads authentication state from the Pinia auth store and makes no API calls.
+- Added fixed-header and mobile-bottom-navigation content offsets, including safe-area spacing.
+- Manual viewport checks at 390px, 768px, 1024px, and 1440px: NOT RUN.
+- Automated tests: skipped for UI milestone, per project instruction.
+- Repository files were not modified directly; proposed changes are supplied for review.

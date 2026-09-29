@@ -1,11 +1,25 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute, RouterView } from 'vue-router'
+import AdminLayout from './layouts/AdminLayout.vue'
+import AuthLayout from './layouts/AuthLayout.vue'
+import CustomerLayout from './layouts/CustomerLayout.vue'
+
+const route = useRoute()
+
+const layouts = {
+  customer: CustomerLayout,
+  auth: AuthLayout,
+  admin: AdminLayout,
+}
+
+const activeLayout = computed(() => layouts[route.meta.layout ?? 'customer'])
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <component :is="activeLayout">
+    <RouterView v-slot="{ Component }">
+      <component :is="Component" />
+    </RouterView>
+  </component>
 </template>
-
-<style scoped></style>
