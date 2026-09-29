@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Cinematic desktop homepage reconstructed from the design reference." />
+    <title>Cinematic — Trang chủ Desktop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./cinematic-home-desktop.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#" aria-label="Cinematic - Trang chủ">CINEMATIC</a>
+        <nav class="desktop-nav" aria-label="Điều hướng chính">
+          <a href="#showing">Lịch chiếu</a>
+          <a href="#showing">Phim</a>
+          <a href="#cinemas">Rạp</a>
+          <a href="#promotions">Ưu đãi</a>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-button" type="button" aria-label="Tìm kiếm">⌕</button>
+          <button class="location-button" type="button"><span>●</span> TP. Hồ Chí Minh <span>⌄</span></button>
+          <button class="account-button" type="button"><span>●</span> Tài khoản <span>⌄</span></button>
+          <a class="button button-primary button-small" href="#quick-booking">Đặt vé</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-backdrop" aria-hidden="true"></div>
+        <div class="hero-shade" aria-hidden="true"></div>
+        <button class="hero-arrow hero-arrow-left" aria-label="Phim trước">‹</button>
+        <button class="hero-arrow hero-arrow-right" aria-label="Phim tiếp theo">›</button>
+        <div class="container hero-content">
+          <span class="badge badge-outline">ĐANG CHIẾU</span>
+          <h1 id="hero-title">VÙNG TỐI<br />THỨC TỈNH</h1>
+          <p class="hero-tagline">KHI BÓNG TỐI CHỈ LÀ SỰ KHỞI ĐẦU</p>
+          <div class="hero-meta">
+            <span>⌖ Khoa học viễn tưởng</span>
+            <span class="age-mark">13+</span>
+            <span>132 phút</span>
+          </div>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#quick-booking"><span>▣</span> Đặt vé ngay</a>
+            <button class="button button-ghost" type="button"><span>▶</span> Xem trailer</button>
+          </div>
+        </div>
+        <div class="hero-copy" aria-hidden="true">
+          <strong>THỨC TỈNH</strong>
+          <span>ĐỂ THAY ĐỔI THẾ GIỚI</span>
+        </div>
+        <div class="hero-dots" aria-label="Chọn banner">
+          <button class="active" aria-label="Banner 1"></button>
+          <button aria-label="Banner 2"></button>
+          <button aria-label="Banner 3"></button>
+          <button aria-label="Banner 4"></button>
+        </div>
+      </section>
+
+      <section class="container quick-booking" id="quick-booking" aria-labelledby="quick-booking-title">
+        <h2 id="quick-booking-title" class="sr-only">Đặt vé nhanh</h2>
+        <div class="booking-step">
+          <div class="step-label"><strong>01</strong><span>Chọn rạp</span></div>
+          <label class="select-control"><span class="select-icon">●</span><select><option>TP. Hồ Chí Minh</option></select></label>
+        </div>
+        <span class="step-chevron">›</span>
+        <div class="booking-step">
+          <div class="step-label"><strong>02</strong><span>Chọn phim</span></div>
+          <label class="select-control"><span class="select-icon">●</span><select><option>Chọn phim</option></select></label>
+        </div>
+        <span class="step-chevron">›</span>
+        <div class="booking-step">
+          <div class="step-label"><strong>03</strong><span>Chọn ngày</span></div>
+          <label class="select-control"><span class="select-icon">▣</span><select><option>Chọn ngày</option></select></label>
+        </div>
+        <span class="step-chevron">›</span>
+        <div class="booking-step">
+          <div class="step-label"><strong>04</strong><span>Chọn suất</span></div>
+          <label class="select-control"><span class="select-icon">◷</span><select><option>Chọn suất</option></select></label>
+        </div>
+        <button class="button button-primary continue-button" type="button">Tiếp tục <span>→</span></button>
+      </section>
+
+      <section class="section container" id="showing" aria-labelledby="showing-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="showing-title">Phim đang chiếu</h2>
+            <p>Những bộ phim hấp dẫn đang ra rạp tại CINEMATIC</p>
+          </div>
+          <a class="text-link" href="#">Xem tất cả →</a>
+        </div>
+        <div class="movie-grid">
+          <article class="movie-card">
+            <div class="poster poster-space"><button class="play-button" aria-label="Xem trailer Vùng Tối Thức Tỉnh">▶</button><span class="badge badge-outline poster-badge">ĐANG CHIẾU</span></div>
+            <h3>Vùng Tối Thức Tỉnh</h3><p>Khoa học viễn tưởng</p>
+            <div class="movie-meta"><span class="age-mark">13+</span><span>132 phút</span><span>25.10.2024</span></div>
+          </article>
+          <article class="movie-card">
+            <div class="poster poster-mystery"><button class="play-button" aria-label="Xem trailer Ảo Ảnh Đôi Mắt">▶</button><span class="badge badge-outline poster-badge">ĐANG CHIẾU</span></div>
+            <h3>Ảo Ảnh Đôi Mắt</h3><p>Tâm lý · Giật gân</p>
+            <div class="movie-meta"><span class="age-mark">16+</span><span>118 phút</span><span>18.10.2024</span></div>
+          </article>
+          <article class="movie-card">
+            <div class="poster poster-city"><button class="play-button" aria-label="Xem trailer Thành Phố Ngủ Say">▶</button><span class="badge badge-outline poster-badge">ĐANG CHIẾU</span></div>
+            <h3>Thành Phố Ngủ Say</h3><p>Hành động · Hình sự</p>
+            <div class="movie-meta"><span class="age-mark">16+</span><span>124 phút</span><span>20.10.2024</span></div>
+          </article>
+          <article class="movie-card">
+            <div class="poster poster-cloud"><button class="play-button" aria-label="Xem trailer Hành Trình Của Mây">▶</button><span class="badge badge-outline poster-badge">ĐANG CHIẾU</span></div>
+            <h3>Hành Trình Của Mây</h3><p>Hoạt hình · Phiêu lưu</p>
+            <div class="movie-meta"><span class="age-mark">P</span><span>96 phút</span><span>11.10.2024</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-bordered" aria-labelledby="upcoming-title">
+        <div class="container">
+          <div class="section-heading">
+            <div><h2 id="upcoming-title">Sắp chiếu</h2><p>Những bộ phim đặc sắc sẽ ra mắt trong thời gian tới</p></div>
+            <a class="text-link" href="#">Xem tất cả →</a>
+          </div>
+          <div class="upcoming-grid">
+            <article class="upcoming-card"><div class="upcoming-thumb island"></div><div><h3>Đảo Mộng Mơ</h3><strong>01.11.2024</strong><p>Phiêu lưu · Gia đình</p></div></article>
+            <article class="upcoming-card"><div class="upcoming-thumb dawn"></div><div><h3>Mật Mã Bình Minh</h3><strong>08.11.2024</strong><p>Hành động · Giật gân</p></div></article>
+            <article class="upcoming-card"><div class="upcoming-thumb red-room"></div><div><h3>Những Kẻ Lạc Lối</h3><strong>15.11.2024</strong><p>Kinh dị · Tâm lý</p></div></article>
+            <article class="upcoming-card"><div class="upcoming-thumb portal"></div><div><h3>Giữa Hai Thế Giới</h3><strong>22.11.2024</strong><p>Khoa học viễn tưởng</p></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="container promotion-grid" id="promotions" aria-label="Ưu đãi">
+        <article class="promotion promotion-price">
+          <div><span>THỨ 3 VUI VẺ</span><h2>ĐỒNG GIÁ <strong>45K</strong></h2><p>Áp dụng cho tất cả các suất chiếu vào thứ 3 hằng tuần</p></div>
+          <div class="snack-art" aria-hidden="true">🍿</div><button aria-label="Xem ưu đãi đồng giá">›</button>
+        </article>
+        <article class="promotion promotion-combo">
+          <div><span class="combo-label">ƯU ĐÃI COMBO</span><h2>XEM PHIM TRỌN VẸN<br />VỚI COMBO TIẾT KIỆM</h2><p>Bắp nước ngon hơn cùng những bộ phim hay nhất</p></div>
+          <div class="snack-art" aria-hidden="true">🥤🍿</div><button aria-label="Xem ưu đãi combo">›</button>
+        </article>
+      </section>
+
+      <section class="membership" aria-labelledby="membership-title">
+        <div class="container membership-inner">
+          <div class="member-card" aria-hidden="true"><span>CINEMATIC</span><small>MEMBER</small><em>NGUYỄN MINH ANH<br />CM12345678</em></div>
+          <div class="membership-content">
+            <h2 id="membership-title">Thành viên CINEMATIC</h2>
+            <p>Xem phim nhiều hơn, nhận ưu đãi lớn hơn</p>
+            <div class="benefit-grid">
+              <div><b>♔</b><span>Tích điểm<br />mỗi giao dịch</span></div>
+              <div><b>▣</b><span>Ưu đãi độc quyền<br />thành viên</span></div>
+              <div><b>✦</b><span>Sinh nhật<br />nhận quà đặc biệt</span></div>
+              <div><b>☆</b><span>Đổi điểm<br />lấy vé xem phim</span></div>
+            </div>
+          </div>
+          <a class="button button-primary membership-button" href="#">Tìm hiểu thêm →</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div><a class="brand" href="#">CINEMATIC</a><p>Điện ảnh kết nối cảm xúc</p><div class="socials"><a href="#">f</a><a href="#">◎</a><a href="#">▶</a><a href="#">♪</a></div></div>
+        <div><h2>Khám phá</h2><a href="#">Lịch chiếu</a><a href="#">Phim</a><a href="#">Rạp</a><a href="#">Ưu đãi</a></div>
+        <div><h2>Hỗ trợ</h2><a href="#">Câu hỏi thường gặp</a><a href="#">Hướng dẫn đặt vé</a><a href="#">Chính sách bảo mật</a><a href="#">Điều khoản sử dụng</a></div>
+        <div><h2>Về CINEMATIC</h2><a href="#">Giới thiệu</a><a href="#">Tuyển dụng</a><a href="#">Liên hệ</a><a href="#">Tin tức</a></div>
+        <div><h2>Ứng dụng di động</h2><p>Đặt vé nhanh hơn trên ứng dụng CINEMATIC</p><div class="store-buttons"><span> App Store</span><span>▶ Google Play</span></div></div>
+      </div>
+      <div class="container footer-bottom"><span>© 2026 CINEMATIC. Tất cả quyền được bảo lưu.</span><div><a href="#">Chính sách bảo mật</a><a href="#">Điều khoản sử dụng</a><a href="#">Liên hệ</a></div></div>
+    </footer>
+  </body>
+</html>
