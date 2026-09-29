@@ -130,3 +130,47 @@ Status: PROPOSED FOR REVIEW — NOT APPLIED
 - Automated tests were not run, per project instruction.
 - Requested viewport checks for 375×667, 390×844, 768×1024, 1024×768, 1440×900, and 1912×1080: NOT RUN against this proposed implementation.
 - Repository remains read-only; proposed changes were supplied as code blocks.
+
+## F1.4 — Admin application shell
+
+Status: PROPOSED FOR REVIEW — NOT APPLIED
+
+- Admin shell dựa trên design tokens hiện có; không được xem là pixel match với customer references.
+- Menu chỉ liệt kê Movies, Cinemas, Rooms, Showtimes và Users theo các API admin đã xác nhận trong backend inventory.
+- Booking admin bị loại khỏi menu vì backend chỉ có API booking theo người dùng hiện tại.
+- Menu lọc theo role và permission từ auth store, dùng route/authorization constants.
+- Sidebar hỗ trợ desktop, thu gọn tablet và drawer mobile; header có user menu và logout trigger.
+- Logout hiện xóa authorization context phía client và chuyển tới auth placeholder. Cần nối OIDC end-session khi auth feature được triển khai.
+- Responsive CSS đã được rà soát ở mức mã nguồn; browser verification tại 375×667, 390×844, 768×1024, 1024×768, 1440×900 và 1912×1080: NOT RUN.
+- Automated tests không chạy theo yêu cầu.
+- Repository vẫn read-only; thay đổi được cung cấp qua code blocks.
+
+### `docs/CURRENT_STATUS.md` — thêm mục F2.1
+
+```md
+## F2.1 — API integration foundation
+
+Status: PROPOSED FOR REVIEW — NOT APPLIED
+
+- API business base URL dùng API Gateway local `http://localhost:8080` làm default
+  và có thể override bằng `VITE_API_BASE_URL`.
+- Axios client tập trung có auth callbacks, request ID, correlation ID passthrough,
+  error normalization và AbortSignal support.
+- Refresh phụ thuộc vào OIDC client/session callback; backend cho phép refresh
+  token grant nhưng client registration/refresh-token issuance frontend chưa
+  được xác nhận.
+- OpenAPI được cấu hình động; chưa có snapshots trong repository và runtime
+  `/v3/api-docs` chưa được kiểm chứng.
+- Orval config và command `npm run api:generate` được đề xuất; chưa thể generate
+  tới khi snapshots được kiểm tra và đưa vào `openapi/`.
+- Kiểu pagination/error dùng chung và pagination mapper dựa trên backend
+  inventory đã xác nhận.
+- Feature DTOs/query composables chưa được tạo; sẽ lấy từ generated output khi
+  OpenAPI snapshots sẵn sàng.
+- `npm run type-check`: NOT RUN — không có local checkout/dependencies trong
+  workspace hiện tại.
+- `npm run build`: NOT RUN — không có local checkout/dependencies trong
+  workspace hiện tại.
+- Không có automated tests chạy.
+- Repository vẫn read-only; các thay đổi được cung cấp qua code blocks.
+```

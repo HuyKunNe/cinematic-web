@@ -402,7 +402,7 @@ Cập nhật CURRENT_STATUS.md và dừng để tôi review.
 ~~~text
 Tiếp tục F1.4 — Admin application shell.
 
-Hai ảnh reference không có admin screen. Hãy tái sử dụng cùng design system,
+Reference không có admin screen. Hãy tái sử dụng cùng design system,
 không tuyên bố admin layout khớp pixel với ảnh customer.
 
 Triển khai:

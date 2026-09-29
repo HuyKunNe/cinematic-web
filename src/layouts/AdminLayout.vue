@@ -1,119 +1,80 @@
 <script setup lang="ts">
-import AppLink from '../components/ui/AppLink.vue'
+import { ref } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
+import { useRouter } from 'vue-router'
+import AdminHeader from '../components/navigation/AdminHeader.vue'
+import AdminSidebar from '../components/navigation/AdminSidebar.vue'
+import Breadcrumbs from '../components/navigation/Breadcrumbs.vue'
+import { useAuthStore } from '../stores/auth.store'
 import { ROUTE_NAMES } from '../router/route-constants'
 
-const navigation = [
-  { label: 'Tổng quan', name: ROUTE_NAMES.ADMIN },
-  { label: 'Phim', name: ROUTE_NAMES.ADMIN_MOVIES },
-  { label: 'Rạp', name: ROUTE_NAMES.ADMIN_CINEMAS },
-  { label: 'Phòng', name: ROUTE_NAMES.ADMIN_ROOMS },
-  { label: 'Lịch chiếu', name: ROUTE_NAMES.ADMIN_SHOWTIMES },
-  { label: 'Booking', name: ROUTE_NAMES.ADMIN_BOOKINGS },
-  { label: 'Người dùng', name: ROUTE_NAMES.ADMIN_USERS },
-]
+const router = useRouter()
+const auth = useAuthStore()
+
+const isMobile = useMediaQuery('(max-width: 47.999rem)')
+const isTablet = useMediaQuery('(min-width: 48rem) and (max-width: 63.999rem)')
+
+const sidebarCollapsed = ref(true)
+const mobileDrawerOpen = ref(false)
+
+function toggleNavigation() {
+  if (isMobile.value) {
+    mobileDrawerOpen.value = !mobileDrawerOpen.value
+    return
+  }
+
+  if (isTablet.value) {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+  }
+}
+
+function closeMobileDrawer() {
+  mobileDrawerOpen.value = false
+}
+
+function handleLogout() {
+  // OIDC end-session chưa được triển khai trong auth feature.
+  // Xóa authorization context phía client và đưa người dùng về auth placeholder.
+  auth.clearAuthorizationContext()
+  mobileDrawerOpen.value = false
+  void router.replace({ name: ROUTE_NAMES.AUTH_REQUIRED })
+}
 </script>
 
 <template>
-  <div class="admin-layout">
-    <aside class="admin-layout__sidebar">
-      <AppLink class="admin-layout__brand" :to="{ name: ROUTE_NAMES.ADMIN }">
-        CINEMATIC ADMIN
-      </AppLink>
-
-      <nav aria-label="Điều hướng quản trị" class="admin-layout__nav">
-        <AppLink
-          v-for="item in navigation"
-          :key="item.name"
-          :to="{ name: item.name }"
-          variant="muted"
-        >
-          {{ item.label }}
-        </AppLink>
-      </nav>
-    </aside>
+  <div
+    class="admin-layout"
+    :class="{
+      'is-tablet': isTablet,
+      'is-mobile': isMobile,
+      'is-sidebar-collapsed': isTablet && sidebarCollapsed,
+    }"
+  >
+    <AdminSidebar
+      :collapsed="isTablet && sidebarCollapsed"
+      :mobile="isMobile"
+      :mobile-open="mobileDrawerOpen"
+      @close-mobile="closeMobileDrawer"
+    />
 
     <div class="admin-layout__content">
-      <header class="admin-layout__header">
-        <span>Khu vực quản trị</span>
-      </header>
+      <AdminHeader
+        :mobile="isMobile"
+        :tablet="isTablet"
+        :mobile-drawer-open="mobileDrawerOpen"
+        :sidebar-collapsed="sidebarCollapsed"
+        @toggle-navigation="toggleNavigation"
+        @logout-requested="handleLogout"
+      />
 
       <main class="admin-layout__main">
-        <slot />
+        <div class="admin-layout__container">
+          <Breadcrumbs />
+          <slot />
+        </div>
       </main>
     </div>
   </div>
 </template>
 
-<style scoped>
-.admin-layout {
-  display: grid;
-  min-height: 100vh;
-  grid-template-columns: var(--admin-sidebar-width) minmax(0, 1fr);
-  background: var(--color-background);
-}
-
-.admin-layout__sidebar {
-  position: sticky;
-  top: 0;
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-  gap: var(--space-8);
-  border-right: 1px solid var(--color-border);
-  padding: var(--space-6);
-  background: var(--color-surface);
-}
-
-.admin-layout__brand {
-  color: var(--color-primary);
-  font-weight: var(--font-weight-bold);
-  text-decoration: none;
-}
-
-.admin-layout__nav {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.admin-layout__content {
-  min-width: 0;
-}
-
-.admin-layout__header {
-  display: flex;
-  min-height: var(--admin-header-height);
-  align-items: center;
-  border-bottom: 1px solid var(--color-border);
-  padding-inline: var(--space-6);
-  color: var(--color-text-secondary);
-  background: var(--color-surface);
-}
-
-.admin-layout__main {
-  padding: var(--space-6);
-}
-
-@media (max-width: 63.999rem) {
-  .admin-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .admin-layout__sidebar {
-    position: static;
-    height: auto;
-    gap: var(--space-4);
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .admin-layout__nav {
-    display: flex;
-    overflow-x: auto;
-    gap: var(--space-4);
-  }
-
-  .admin-layout__nav :deep(.app-link) {
-    white-space: nowrap;
-  }
-}
-</style>
+<style src="../styles/admin-navigation.css"></style>

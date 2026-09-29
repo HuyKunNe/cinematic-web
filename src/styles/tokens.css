@@ -97,6 +97,10 @@
   --mobile-nav-height: 4.875rem;
   --admin-sidebar-width: 17rem;
   --admin-header-height: 4.25rem;
+  --admin-sidebar-width-collapsed: 5rem;
+  --admin-drawer-width: min(19rem, calc(100vw - var(--space-8)));
+  --admin-content-width: 88rem;
+  --admin-user-menu-width: 13rem;
 
   /* Controls */
   --control-height-sm: 2.25rem;
