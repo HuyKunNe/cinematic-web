@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth.store'
+import { useRoute } from 'vue-router'
 import { ROUTE_NAMES } from '@/router/route-constants'
+import { useAuthStore } from '@/stores/auth.store'
+import { CUSTOMER_PRIMARY_NAVIGATION } from './customer-navigation'
 
 const emit = defineEmits<{
   searchRequest: []
@@ -9,29 +10,11 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
-const router = useRouter()
 const auth = useAuthStore()
+const navigation = CUSTOMER_PRIMARY_NAVIGATION
 
-const navigation = [
-  { label: 'Lịch chiếu', name: ROUTE_NAMES.SHOWTIMES },
-  { label: 'Phim', name: ROUTE_NAMES.MOVIES },
-  { label: 'Rạp', name: ROUTE_NAMES.CINEMAS },
-  { label: 'Ưu đãi', name: ROUTE_NAMES.PROMOTIONS },
-]
-
-function isActive(name: string) {
-  return route.matched.some((record) => record.name === name)
-}
-
-function openBooking() {
-  // Chưa có showtimeId; CTA dẫn đến lịch chiếu để khách chọn suất.
-  void router.push({ name: ROUTE_NAMES.SHOWTIMES })
-}
-
-function openAccount() {
-  void router.push({
-    name: auth.isAuthenticated ? ROUTE_NAMES.ACCOUNT : ROUTE_NAMES.AUTH_REQUIRED,
-  })
+function isActive(routeName: string) {
+  return route.matched.some((record) => record.name === routeName)
 }
 </script>
 
@@ -49,11 +32,11 @@ function openAccount() {
       <nav class="customer-header__nav" aria-label="Điều hướng chính">
         <RouterLink
           v-for="item in navigation"
-          :key="item.name"
-          :to="{ name: item.name }"
+          :key="item.routeName"
+          :to="{ name: item.routeName }"
           class="customer-header__link"
-          :class="{ 'is-active': isActive(item.name) }"
-          :aria-current="isActive(item.name) ? 'page' : undefined"
+          :class="{ 'is-active': isActive(item.routeName) }"
+          :aria-current="isActive(item.routeName) ? 'page' : undefined"
         >
           {{ item.label }}
         </RouterLink>
@@ -61,33 +44,46 @@ function openAccount() {
 
       <div class="customer-header__actions">
         <button
-          class="customer-header__utility"
+          class="customer-header__icon-button"
           type="button"
-          aria-label="Tìm phim"
+          aria-label="Tìm kiếm"
           @click="emit('searchRequest')"
         >
-          Tìm kiếm
+          <Search aria-hidden="true" class="customer-navigation__icon" />
         </button>
 
         <button
-          class="customer-header__utility customer-header__location"
+          class="customer-header__location"
           type="button"
           aria-label="Chọn rạp hoặc khu vực"
           @click="emit('locationRequest')"
         >
-          Chọn rạp
+          <MapPin aria-hidden="true" class="customer-navigation__icon" />
+          <span>Chọn rạp</span>
+          <ChevronDown aria-hidden="true" class="customer-navigation__icon" />
         </button>
 
-        <button
-          class="customer-header__utility customer-header__account"
-          type="button"
-          @click="openAccount"
+        <RouterLink
+          class="customer-header__account"
+          :to="{
+            name: auth.isAuthenticated ? ROUTE_NAMES.ACCOUNT : ROUTE_NAMES.AUTH_REQUIRED,
+          }"
         >
-          {{ auth.isAuthenticated ? 'Tài khoản' : 'Đăng nhập' }}
-        </button>
+          <UserRound aria-hidden="true" class="customer-navigation__icon" />
+          <span>{{ auth.isAuthenticated ? 'Tài khoản' : 'Đăng nhập' }}</span>
+          <ChevronDown aria-hidden="true" class="customer-navigation__icon" />
+        </RouterLink>
 
-        <button class="customer-header__booking" type="button" @click="openBooking">Đặt vé</button>
+        <RouterLink class="customer-header__booking" :to="{ name: ROUTE_NAMES.SHOWTIMES }">
+          Đặt vé
+        </RouterLink>
       </div>
     </div>
   </header>
 </template>
+
+<script lang="ts">
+import { ChevronDown, MapPin, Search, UserRound } from 'lucide-vue-next'
+
+export { ChevronDown, MapPin, Search, UserRound }
+</script>

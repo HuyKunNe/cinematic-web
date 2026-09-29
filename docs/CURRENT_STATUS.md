@@ -118,15 +118,15 @@ proposal.
 
 ## F1.3 — Customer navigation shell
 
-Status: READY FOR REVIEW
+Status: PROPOSED FOR REVIEW — NOT APPLIED
 
-- Added desktop/tablet `CustomerHeader` and responsive `CustomerMobileHeader`.
-- Added accessible mobile menu with `aria-expanded`, Escape-to-close, and focus return.
-- Added `MobileBottomNav` to `CustomerLayout` only; `AuthLayout` and `AdminLayout` are unchanged.
-- Added CINEMATIC wordmark, primary navigation, search/location triggers, account control, and booking CTA.
-- Active navigation state follows the current Vue Router route.
-- Header reads authentication state from the Pinia auth store and makes no API calls.
-- Added fixed-header and mobile-bottom-navigation content offsets, including safe-area spacing.
-- Manual viewport checks at 390px, 768px, 1024px, and 1440px: NOT RUN.
-- Automated tests: skipped for UI milestone, per project instruction.
-- Repository files were not modified directly; proposed changes are supplied for review.
+- Visual source of truth: `docs/design/reference/html-convert/`.
+- Desktop navigation follows the reference header hierarchy and 1180px compact behavior.
+- Mobile header uses a sticky bar and accessible menu drawer with overlay, Escape handling, focus management, and body scroll restoration.
+- Mobile bottom navigation follows the reference items: Home, Lịch chiếu, Vé của tôi, Tài khoản.
+- Navigation uses centralized route names and auth state from the existing Pinia store.
+- Tokens are reused; existing semantic palette and header/navigation dimensions are aligned to the reference.
+- `AuthLayout`, `AdminLayout`, API integration, HomePage sections, and R28 are outside this milestone.
+- Automated tests were not run, per project instruction.
+- Requested viewport checks for 375×667, 390×844, 768×1024, 1024×768, 1440×900, and 1912×1080: NOT RUN against this proposed implementation.
+- Repository remains read-only; proposed changes were supplied as code blocks.

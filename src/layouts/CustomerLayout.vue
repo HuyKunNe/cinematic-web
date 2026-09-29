@@ -29,18 +29,3 @@ const emit = defineEmits<{
     <MobileBottomNav />
   </div>
 </template>
-
-<style scoped>
-.customer-layout__main {
-  min-height: 100vh;
-  padding-top: var(--header-height-mobile);
-  padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
-}
-
-@media (min-width: 48rem) {
-  .customer-layout__main {
-    padding-top: var(--header-height);
-    padding-bottom: var(--space-8);
-  }
-}
-</style>

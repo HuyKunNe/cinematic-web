@@ -1,32 +1,46 @@
 <script setup lang="ts">
+import type { Component } from 'vue'
 import { useRoute } from 'vue-router'
-import { ROUTE_NAMES } from '@/router/route-constants'
-
+import { CalendarDays, House, Ticket, UserRound } from 'lucide-vue-next'
+import { CUSTOMER_BOTTOM_NAVIGATION } from './customer-navigation'
+import type { CustomerNavigationItem } from './customer-navigation'
 const route = useRoute()
+const items = CUSTOMER_BOTTOM_NAVIGATION
 
-const items = [
-  { label: 'Lịch chiếu', name: ROUTE_NAMES.SHOWTIMES },
-  { label: 'Phim', name: ROUTE_NAMES.MOVIES },
-  { label: 'Rạp', name: ROUTE_NAMES.CINEMAS },
-  { label: 'Tài khoản', name: ROUTE_NAMES.ACCOUNT },
-]
+const icons: Record<string, Component> = {
+  home: House,
+  showtimes: CalendarDays,
+  tickets: Ticket,
+  account: UserRound,
+}
 
-function isActive(name: string) {
-  return route.matched.some((record) => record.name === name)
+function isActive(routeNames: readonly string[]) {
+  return route.matched.some(
+    (record) => record.name != null && routeNames.includes(String(record.name)),
+  )
+}
+
+function activeNames(item: CustomerNavigationItem): readonly string[] {
+  return item.activeRouteNames ?? [item.routeName]
 }
 </script>
 
 <template>
-  <nav class="mobile-bottom-nav" aria-label="Điều hướng nhanh">
+  <nav class="mobile-bottom-nav" aria-label="Điều hướng di động">
     <RouterLink
       v-for="item in items"
-      :key="item.name"
-      :to="{ name: item.name }"
+      :key="item.routeName"
+      :to="{ name: item.routeName }"
       class="mobile-bottom-nav__item"
-      :class="{ 'is-active': isActive(item.name) }"
-      :aria-current="isActive(item.name) ? 'page' : undefined"
+      :class="{ 'is-active': isActive(activeNames(item)) }"
+      :aria-current="isActive(activeNames(item)) ? 'page' : undefined"
     >
-      {{ item.label }}
+      <component
+        :is="icons[item.icon]"
+        aria-hidden="true"
+        class="customer-navigation__icon mobile-bottom-nav__icon"
+      />
+      <span>{{ item.label }}</span>
     </RouterLink>
   </nav>
 </template>

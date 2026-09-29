@@ -1,28 +1,27 @@
 :root {
   /* Primitive colors */
-  --primitive-color-ink-950: #061017;
-  --primitive-color-ink-900: #0d1b26;
-  --primitive-color-ink-800: #122330;
-  --primitive-color-ink-700: #20313d;
-  --primitive-color-ink-600: #2a3c49;
-  --primitive-color-amber-300: #ffd98a;
-  --primitive-color-amber-400: #ffc96d;
-  --primitive-color-amber-500: #e8a943;
-  --primitive-color-warm-white: #f5f1e8;
-  --primitive-color-gray-300: #aab7c1;
   --primitive-color-gray-500: #7f909d;
   --primitive-color-success-400: #67c995;
   --primitive-color-warning-400: #f0b84d;
   --primitive-color-error-400: #f17878;
   --primitive-color-black: #101418;
   --primitive-color-white: #ffffff;
+  --primitive-color-ink-950: #06111a;
+  --primitive-color-ink-900: #0b1823;
+  --primitive-color-ink-800: #10202d;
+  --primitive-color-ink-600: #2d4250;
+  --primitive-color-amber-300: #ffe0a0;
+  --primitive-color-amber-400: #f5be63;
+  --primitive-color-amber-500: #ffc75f;
+  --primitive-color-warm-white: #f7f5f0;
+  --primitive-color-gray-300: #a8b4bd;
 
   /* Semantic colors */
-  --color-primary: var(--primitive-color-amber-400);
-  --color-primary-hover: var(--primitive-color-amber-300);
-  --color-primary-active: var(--primitive-color-amber-500);
   --color-on-primary: var(--primitive-color-black);
-
+  --color-primary: var(--primitive-color-amber-400);
+  --color-primary-hover: var(--primitive-color-amber-500);
+  --color-primary-active: var(--primitive-color-amber-500);
+  --color-focus: var(--primitive-color-amber-300);
   --color-secondary: var(--primitive-color-ink-700);
   --color-secondary-hover: var(--primitive-color-ink-600);
   --color-on-secondary: var(--primitive-color-warm-white);
@@ -39,13 +38,12 @@
   --color-success: var(--primitive-color-success-400);
   --color-warning: var(--primitive-color-warning-400);
   --color-error: var(--primitive-color-error-400);
-  --color-focus: var(--primitive-color-amber-300);
   --color-overlay: rgb(0 0 0 / 64%);
 
   /* Typography */
   --font-family-base:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-family-display: var(--font-family-base);
+  --font-family-display: Montserrat, var(--font-family-base);
 
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -94,12 +92,11 @@
   --page-gutter: 2.75rem;
   --section-space: 2rem;
   --grid-gap: 1rem;
-
-  --header-height: 4.25rem;
-  --header-height-mobile: 3.75rem;
+  --header-height: 4.5rem;
+  --header-height-mobile: 4.5rem;
+  --mobile-nav-height: 4.875rem;
   --admin-sidebar-width: 17rem;
   --admin-header-height: 4.25rem;
-  --mobile-nav-height: 4rem;
 
   /* Controls */
   --control-height-sm: 2.25rem;
@@ -116,8 +113,8 @@
   --upcoming-art-aspect-ratio: 1 / 1;
 
   /* Radius */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
   --radius-lg: 1rem;
   --radius-pill: 999px;
 
@@ -147,6 +144,10 @@
   --skeleton-line-height: 1rem;
   --skeleton-title-height: 1.5rem;
   --skeleton-avatar-size: 3rem;
+
+  /* Border */
+  --border-width-thin: 0.0625rem;
+  --border-width-strong: 0.125rem;
 }
 
 /* Breakpoint conditions are kept as CSS media-query constants.
