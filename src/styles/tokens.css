@@ -112,8 +112,8 @@
 
   /* Media */
   --poster-aspect-ratio: 2 / 3;
-  --movie-card-art-aspect-ratio: 1.2 / 1;
-  --movie-card-art-aspect-ratio-mobile: 2 / 1;
+  --movie-card-art-aspect-ratio: 1.37 / 1;
+  --movie-card-art-aspect-ratio-mobile: 1.55 / 1;
   --upcoming-art-aspect-ratio: 1 / 1;
 
   /* Radius */
@@ -152,6 +152,75 @@
   /* Border */
   --border-width-thin: 0.0625rem;
   --border-width-strong: 0.125rem;
+
+  /* F3.1 Home: values translated from the desktop/mobile HTML references. */
+  --home-background-deep: #030a10;
+  --home-surface-soft: rgb(13 27 38 / 98%);
+  --home-surface-dark: rgb(8 18 26 / 97%);
+  --home-surface-translucent: rgb(13 26 36 / 64%);
+  --home-border-soft: rgb(178 201 215 / 18%);
+  --home-hero-shade: rgb(2 9 14 / 97%);
+  --home-hero-mid: rgb(2 9 14 / 78%);
+  --home-hero-edge: rgb(3 11 17 / 48%);
+  --home-image-shade: rgb(2 9 14 / 62%);
+  --home-control-icon: #07131d;
+  --home-arrow-surface: rgb(4 13 20 / 64%);
+  --home-contrast-border: #cbd2d5;
+  --home-meta-border: #657681;
+  --home-dot: #46535d;
+  --home-promo-border: #5c3422;
+  --home-promo-start: #321507;
+  --home-promo-end: #120b09;
+  --home-combo-start: #180b08;
+  --home-combo-end: #321d0c;
+  --home-promo-glow: rgb(255 180 72 / 20%);
+  --home-promo-text: #e0d8d1;
+  --home-member-start: #0a0b0d;
+  --home-member-mid: #37250e;
+  --home-member-end: #07080a;
+  --home-member-glow: rgb(251 191 87 / 45%);
+  --home-footer-background: #040c12;
+  --home-footer-muted: #7f8d96;
+  --home-hero-height: 27.375rem;
+  --home-hero-height-mobile: 28.4375rem;
+  --home-hero-title-width: 38rem;
+  --home-hero-title-height: 8.5rem;
+  --home-hero-title-height-mobile: 6.5rem;
+  --home-button-height: 3rem;
+  --home-button-height-mobile: 3.375rem;
+  --home-booking-height: 7.625rem;
+  --home-booking-control-height: 2.75rem;
+  --home-booking-control-height-mobile: 3.625rem;
+  --home-booking-icon-width: 2.625rem;
+  --home-booking-icon-width-mobile: 3rem;
+  --home-booking-label-width-mobile: 5.375rem;
+  --home-arrow-size: 2.875rem;
+  --home-play-size: 2.625rem;
+  --home-dot-width: 0.8125rem;
+  --home-dot-active-width: 1.125rem;
+  --home-dot-height: 0.5rem;
+  --home-upcoming-thumb-width: 7.75rem;
+  --home-upcoming-thumb-width-mobile: 7rem;
+  --home-upcoming-height: 8.25rem;
+  --home-upcoming-height-mobile: 6.5625rem;
+  --home-promotion-height: 11.4375rem;
+  --home-promotion-height-mobile: 8.4375rem;
+  --home-member-card-width: 14.375rem;
+  --home-member-card-ratio: 1.58;
+  --home-mobile-card-width: 78%;
+  --home-promo-art-size: 4.75rem;
+  --home-promo-art-size-mobile: 3.75rem;
+  --home-section-heading-size: 1.875rem;
+  --home-section-heading-size-mobile: 1.375rem;
+  --home-title-size: clamp(2.75rem, 4vw, 3.5rem);
+  --home-title-size-mobile: clamp(2.5625rem, 12vw, 3.3125rem);
+  --home-tagline-tracking: 0.42em;
+  --home-tagline-tracking-mobile: 0.24em;
+  --home-hero-line-height: 1.2;
+  --home-promo-highlight-size: 2.8125rem;
+  --home-promo-highlight-size-mobile: 2.4375rem;
+  --home-mobile-wordmark-size: clamp(1.125rem, 5vw, 1.375rem);
+  --home-mobile-benefit-size: 0.625rem;
 }
 
 /* Breakpoint conditions are kept as CSS media-query constants.

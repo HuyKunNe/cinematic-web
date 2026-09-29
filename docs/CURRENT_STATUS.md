@@ -192,3 +192,45 @@ Status: IMPLEMENTATION PROVIDED — NOT APPLIED
   chạy end-to-end.
 - Typecheck/build chưa chạy: không có local checkout frontend trong workspace.
 - Không ghi file trực tiếp, không sửa backend security logic, không commit/push.
+
+# Current Status
+
+## Last updated
+
+2026-09-29
+
+## Repository state
+
+- Frontend: `HuyKunNe/cinematic-web`, `main` at `d499d13` before this local work.
+- Backend: `HuyKunNe/cinema-system`, read only.
+- The checkout was clean before F3.1. F3.1 edits are local and uncommitted; nothing was pushed.
+- Auth, customer/admin navigation and API client foundation already existed. The Home route was still a placeholder in this checkout, so F3.1 was implemented here from the reference HTML/CSS.
+
+## F3.1 — Customer Home Page
+
+Status: IMPLEMENTED LOCALLY — AWAITING REVIEW
+
+Visual source: `docs/design/reference/html-convert/cinematic-home-{desktop,mobile}.{html,css}`. Figma and PNG mockups were not used.
+
+- Home route renders Vue components for hero, quick booking, now showing, upcoming, promotions and membership. The footer is composed within Home, so other customer routes are unchanged.
+- Hero reserves two lines of heading space and atomically swaps title, image and active indicator after artwork is loaded. Failed or timed-out posters use a project-owned fallback asset; if that also fails, the gradient remains. Artwork fallback mapping is separate from the API service.
+- Movie listing is loaded from public `GET /api/v1/movies`, mapped from `MovieResponse` and split by `NOW_SHOWING`/`UPCOMING` status. The home page does not claim backend age ratings, taglines or featured ordering.
+- Quick booking loads public `GET /api/v1/cinemas` and `GET /api/v1/showtimes/by-movie/{movieId}`. It shows future `OPEN_FOR_BOOKING` showtimes for the chosen cinema, then uses the existing booking route. The booking route itself remains a placeholder.
+- Promotion and membership cards are static, clearly labeled illustration. The backend has no confirmed promotion, membership/points or featured artwork contract. Calls to action for unconfirmed offers were intentionally omitted. The sample member name from the HTML was not carried into production UI.
+- On mobile, booking fields stack and movie/upcoming lists scroll horizontally with snap points. Header and bottom navigation remain owned by the customer shell.
+- R28 remains deferred.
+
+## Verification
+
+- `npm run type-check`: passed.
+- `npm run build-only`: passed. The full `build` script also regenerates API clients, so it was not used.
+- Automated tests: skipped as requested. No lint script exists.
+- Interactive viewport inspection at 375×667, 390×844, 768×1024, 1024×768, 1440×900 and 1912×1080: pending. The available cloud browser blocked `http://localhost:5173` with `ERR_BLOCKED_BY_CLIENT`; no screenshots or two-slide browser verification are claimed.
+
+## Remaining differences and follow-up
+
+- Backend posters are used as hero landscape art because there is no separate artwork field. The image may crop differently from the static reference. Local fallback photographs match the reference image sources but are generic, assigned by stable ID hash, not tied to actual films.
+- Movie names, dates, genres and runtimes reflect backend data rather than the reference's fictional samples. Age badges and film-specific taglines are absent from the backend contract.
+- Promotion prices/benefits are visible only as labeled design previews; no live promotion or membership action is exposed.
+- Footer displays the reference's social, store and policy labels without dummy destinations. Existing movie/booking routes beyond Home are still placeholders.
+- Manual browser review should confirm image crop, heading height for one/two-line titles, slide swapping, overflow and fixed mobile navigation at all requested viewports before approval.

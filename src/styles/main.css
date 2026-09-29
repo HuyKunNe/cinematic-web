@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import './tokens.css';
 @import './base.css';
+@import './home.css';
 
 @theme {
   --breakpoint-header-compact: 73.75rem;

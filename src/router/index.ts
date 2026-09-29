@@ -7,16 +7,13 @@ import type { RouteRecordRaw } from 'vue-router'
 const loadPlaceholder = () => import('../components/feedback/PlaceholderPage.vue')
 const loadLoginPage = () => import('../features/auth/pages/LoginPage.vue')
 const loadAuthCallbackPage = () => import('../features/auth/pages/AuthCallbackPage.vue')
+const loadHomePage = () => import('../features/home/pages/HomePage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.HOME,
     name: ROUTE_NAMES.HOME,
-    component: loadPlaceholder,
-    props: {
-      title: 'Cinematic',
-      description: 'Trang chủ sẽ được triển khai ở milestone Home.',
-    },
+    component: loadHomePage,
     meta: { layout: 'customer', title: 'Trang chủ' },
   },
   {
