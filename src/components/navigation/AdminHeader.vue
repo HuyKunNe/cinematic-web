@@ -25,6 +25,7 @@ function requestLogout() {
 <template>
   <header class="admin-header">
     <button
+      v-if="mobile || tablet"
       class="admin-header__menu-button"
       type="button"
       :aria-label="

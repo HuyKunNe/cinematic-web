@@ -174,3 +174,21 @@ Status: PROPOSED FOR REVIEW — NOT APPLIED
 - Không có automated tests chạy.
 - Repository vẫn read-only; các thay đổi được cung cấp qua code blocks.
 ```
+
+## F2.2 — Authentication và frontend login
+
+Status: IMPLEMENTATION PROVIDED — NOT APPLIED
+
+- User Service login HTML được restyle theo dark navy/amber design tokens của FE.
+- Giữ nguyên server form `POST /login`, field `username`/`password`, error query
+  và Thymeleaf CSRF handling.
+- FE login page khởi động Authorization Code + PKCE redirect; credentials vẫn
+  được nhập trên User Service, không gửi qua Vue.
+- Callback, internal return path, Pinia auth state, route guard và session
+  restoration được cung cấp bằng code blocks.
+- OIDC user state dùng sessionStorage; không mặc định ghi access token vào
+  localStorage.
+- Cần client ID/public-client registration, redirect URIs và CORS hợp lệ để
+  chạy end-to-end.
+- Typecheck/build chưa chạy: không có local checkout frontend trong workspace.
+- Không ghi file trực tiếp, không sửa backend security logic, không commit/push.

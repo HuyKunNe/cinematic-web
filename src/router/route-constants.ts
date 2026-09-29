@@ -9,6 +9,7 @@ export const ROUTE_NAMES = {
   ACCOUNT: 'account',
   ACCOUNT_BOOKINGS: 'account-bookings',
 
+  LOGIN: 'login',
   AUTH_CALLBACK: 'auth-callback',
   AUTH_REQUIRED: 'auth-required',
   AUTH_FORBIDDEN: 'auth-forbidden',
@@ -35,6 +36,7 @@ export const ROUTE_PATHS = {
   ACCOUNT: '/account',
   ACCOUNT_BOOKINGS: '/account/bookings',
 
+  LOGIN: '/login',
   AUTH_CALLBACK: '/auth/callback',
   AUTH_REQUIRED: '/auth/required',
   AUTH_FORBIDDEN: '/auth/forbidden',

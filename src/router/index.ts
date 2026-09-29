@@ -5,6 +5,8 @@ import { ROUTE_NAMES, ROUTE_PATHS } from './route-constants'
 import type { RouteRecordRaw } from 'vue-router'
 
 const loadPlaceholder = () => import('../components/feedback/PlaceholderPage.vue')
+const loadLoginPage = () => import('../features/auth/pages/LoginPage.vue')
+const loadAuthCallbackPage = () => import('../features/auth/pages/AuthCallbackPage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -111,15 +113,15 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
+    path: ROUTE_PATHS.LOGIN,
+    name: ROUTE_NAMES.LOGIN,
+    component: loadLoginPage,
+    meta: { layout: 'auth', title: 'Đăng nhập' },
+  },
+  {
     path: ROUTE_PATHS.AUTH_CALLBACK,
     name: ROUTE_NAMES.AUTH_CALLBACK,
-    component: loadPlaceholder,
-    props: {
-      title: 'Đang xác thực',
-      description:
-        'OIDC callback route đã được tạo. Cần cấu hình client và redirect URI được backend xác nhận trước khi hoàn thiện xử lý callback.',
-      showHomeLink: false,
-    },
+    component: loadAuthCallbackPage,
     meta: { layout: 'auth', title: 'Đang xác thực' },
   },
   {

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import AdminHeader from '../components/navigation/AdminHeader.vue'
@@ -7,12 +6,22 @@ import AdminSidebar from '../components/navigation/AdminSidebar.vue'
 import Breadcrumbs from '../components/navigation/Breadcrumbs.vue'
 import { useAuthStore } from '../stores/auth.store'
 import { ROUTE_NAMES } from '../router/route-constants'
+import { computed, ref, watch } from 'vue'
 
+const isMobileWidth = useMediaQuery('(max-width: 47.999rem)')
+const isCompactLandscape = useMediaQuery(
+  '(orientation: landscape) and (max-height: 32rem) and (max-width: 63.999rem)',
+)
+const isTabletWidth = useMediaQuery('(min-width: 48rem) and (max-width: 63.999rem)')
+
+const isMobile = computed(() => isMobileWidth.value || isCompactLandscape.value)
+const isTablet = computed(() => isTabletWidth.value && !isCompactLandscape.value)
+
+watch(isMobile, (mobile) => {
+  if (!mobile) mobileDrawerOpen.value = false
+})
 const router = useRouter()
 const auth = useAuthStore()
-
-const isMobile = useMediaQuery('(max-width: 47.999rem)')
-const isTablet = useMediaQuery('(min-width: 48rem) and (max-width: 63.999rem)')
 
 const sidebarCollapsed = ref(true)
 const mobileDrawerOpen = ref(false)

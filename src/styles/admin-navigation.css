@@ -354,7 +354,8 @@
   }
 }
 
-@media (max-width: 47.999rem) {
+@media (max-width: 47.999rem),
+  (orientation: landscape) and (max-height: 32rem) and (max-width: 63.999rem) {
   .admin-layout {
     display: block;
   }
