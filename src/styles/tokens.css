@@ -236,6 +236,27 @@
   --home-promo-highlight-size-mobile: 2.4375rem;
   --home-mobile-wordmark-size: clamp(1.125rem, 5vw, 1.375rem);
   --home-mobile-benefit-size: 0.625rem;
+  --home-now-visible-cards: 4;
+  --home-now-gap: var(--space-5);
+  --home-now-card-width: calc(
+    (100% - var(--home-now-gap) * (var(--home-now-visible-cards) - 1)) /
+      var(--home-now-visible-cards)
+  );
+
+  --home-now-title-size: var(--font-size-lg);
+  --home-now-title-lines: 2;
+  --home-now-title-height: calc(
+    var(--home-now-title-size) * var(--line-height-heading) * var(--home-now-title-lines) +
+      var(--space-1) * 2
+  );
+
+  --home-now-genre-lines: 1;
+  --home-now-genre-height: calc(var(--font-size-sm) * var(--line-height-base));
+
+  --home-now-meta-height: calc(var(--font-size-xs) * var(--line-height-base) * 2);
+
+  --home-now-control-size: var(--control-height-md);
+  --home-now-control-disabled-opacity: 0.45;
 }
 
 /* Breakpoint conditions are kept as CSS media-query constants.
@@ -245,6 +266,9 @@
     --page-gutter: 1.25rem;
     --section-space: 1.5rem;
     --grid-gap: 0.75rem;
+    --home-now-card-width: var(--home-mobile-card-width);
+    --home-now-gap: var(--space-2);
+    --home-now-title-size: var(--font-size-md);
   }
 }
 
@@ -253,6 +277,7 @@
     --page-gutter: 2rem;
     --section-space: 1.75rem;
     --grid-gap: 0.875rem;
+    --home-now-visible-cards: 2;
   }
 }
 
