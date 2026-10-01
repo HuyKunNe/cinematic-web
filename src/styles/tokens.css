@@ -209,6 +209,13 @@
   --home-booking-label-width-mobile: 5.375rem;
   --home-booking-disabled-opacity: 0.55;
   --home-booking-feedback-height: calc(var(--font-size-xs) * var(--line-height-base) * 2);
+  /* Home movie age placeholder and trailer states */
+  --home-age-min-width: 1.9375rem;
+  --home-age-height: 1.5625rem;
+  --home-age-radius: var(--space-1);
+  --home-age-border: var(--home-contrast-border);
+  --home-age-text: var(--color-text-primary);
+  --home-trailer-disabled-opacity: 0.45;
   --home-arrow-size: 2.875rem;
   --home-play-size: 2.625rem;
   --home-dot-width: 0.8125rem;
@@ -225,6 +232,32 @@
   --home-mobile-card-width: 78%;
   --home-promo-art-size: 4.75rem;
   --home-promo-art-size-mobile: 3.75rem;
+  --home-promotion-carousel-columns: 2;
+  --home-promotion-carousel-gap: var(--space-6);
+  --home-promotion-carousel-card-width: calc(
+    (100% - var(--home-promotion-carousel-gap) * (var(--home-promotion-carousel-columns) - 1)) /
+      var(--home-promotion-carousel-columns)
+  );
+
+  --home-promotion-carousel-copy-width: 70%;
+  --home-promotion-carousel-title-size: var(--font-size-xl);
+  --home-promotion-carousel-highlight-size: var(--home-promo-highlight-size);
+  --home-promotion-carousel-title-lines: 2;
+  --home-promotion-carousel-title-height: calc(
+    (var(--home-promotion-carousel-title-size) + var(--home-promotion-carousel-highlight-size)) *
+      var(--line-height-heading) + var(--space-1) * 2
+  );
+
+  --home-promotion-carousel-description-size: var(--font-size-sm);
+  --home-promotion-carousel-description-lines: 2;
+  --home-promotion-carousel-description-height: calc(
+    var(--home-promotion-carousel-description-size) * var(--line-height-base) *
+      var(--home-promotion-carousel-description-lines)
+  );
+
+  --home-promotion-carousel-control-size: var(--control-height-md);
+  --home-promotion-carousel-disabled-opacity: 0.45;
+  --home-promotion-carousel-bottom-space: var(--space-8);
   --home-section-heading-size: 1.875rem;
   --home-section-heading-size-mobile: 1.375rem;
   --home-title-size: clamp(2.75rem, 4vw, 3.5rem);
@@ -252,9 +285,9 @@
 
   --home-now-genre-lines: 1;
   --home-now-genre-height: calc(var(--font-size-sm) * var(--line-height-base));
-
-  --home-now-meta-height: calc(var(--font-size-xs) * var(--line-height-base) * 2);
-
+  --home-now-meta-height: calc(
+    var(--home-age-height) + var(--font-size-xs) * var(--line-height-base) + var(--space-3)
+  );
   --home-now-control-size: var(--control-height-md);
   --home-now-control-disabled-opacity: 0.45;
 }
@@ -269,6 +302,14 @@
     --home-now-card-width: var(--home-mobile-card-width);
     --home-now-gap: var(--space-2);
     --home-now-title-size: var(--font-size-md);
+    --home-promotion-carousel-columns: 1;
+    --home-promotion-carousel-gap: var(--space-2);
+    --home-promotion-carousel-title-size: var(--font-size-lg);
+    --home-promotion-carousel-highlight-size: var(--home-promo-highlight-size-mobile);
+    --home-promotion-carousel-description-size: var(--font-size-xs);
+    --home-promotion-carousel-bottom-space: var(--space-3);
+    --home-age-min-width: 2.125rem;
+    --home-age-height: 1.8125rem;
   }
 }
 

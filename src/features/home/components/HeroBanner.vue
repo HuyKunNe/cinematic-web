@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ChevronLeft, ChevronRight, Clapperboard, Play } from 'lucide-vue-next'
 import type { HomeMovie } from '../models/home-movie'
 import { fallbackArtwork, movieArtwork } from '../presentation/artwork'
+import { unavailableAgeRating } from '../presentation/movie-metadata'
 
 const props = defineProps<{ movies: HomeMovie[]; loading: boolean }>()
 const shown = ref<HomeMovie | null>(null)
@@ -245,6 +246,16 @@ onBeforeUnmount(() => {
               <span v-if="shown.genres.length">
                 {{ shown.genres.join(' · ') }}
               </span>
+
+              <span
+                class="home-age-mark"
+                role="img"
+                :aria-label="unavailableAgeRating.description"
+                :title="unavailableAgeRating.description"
+              >
+                {{ unavailableAgeRating.label }}
+              </span>
+
               <span v-if="shown.durationMinutes"> {{ shown.durationMinutes }} phút </span>
             </div>
 
@@ -265,6 +276,18 @@ onBeforeUnmount(() => {
                 <Play aria-hidden="true" />
                 Xem trailer
               </a>
+
+              <button
+                v-else
+                class="home-button home-button--ghost"
+                type="button"
+                disabled
+                title="Trailer chưa được cập nhật"
+                :aria-label="`Trailer ${shown.title} chưa được cập nhật`"
+              >
+                <Play aria-hidden="true" />
+                Xem trailer
+              </button>
             </div>
           </template>
 

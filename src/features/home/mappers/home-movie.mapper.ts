@@ -1,6 +1,20 @@
 import type { MovieResponse } from '@/services/api/generated/movie-service/model/movieResponse'
 import type { HomeMovie } from '../models/home-movie'
 
+function normalizeTrailerUrl(value: string | null | undefined): string | null {
+  const candidate = value?.trim()
+
+  if (!candidate) return null
+
+  try {
+    const url = new URL(candidate)
+
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null
+  } catch {
+    return null
+  }
+}
+
 export function toHomeMovie(movie: MovieResponse): HomeMovie | null {
   if (
     !movie.id ||
@@ -17,8 +31,7 @@ export function toHomeMovie(movie: MovieResponse): HomeMovie | null {
     durationMinutes: movie.durationMinutes ?? null,
     releaseDate: movie.releaseDate ?? null,
     posterUrl: movie.posterUrl ?? null,
-    trailerUrl:
-      movie.trailerUrl && /^https?:\/\//i.test(movie.trailerUrl) ? movie.trailerUrl : null,
+    trailerUrl: normalizeTrailerUrl(movie.trailerUrl),
     genres:
       movie.genres?.map((genre) => genre.name).filter((name): name is string => Boolean(name)) ??
       [],
