@@ -1031,3 +1031,66 @@
     width: 70%;
   }
 }
+.home-booking__control--selected {
+  border-color: var(--color-primary);
+}
+
+.home-booking__control--selected select {
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.home-booking__control:focus-within {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+
+.home-booking__control select:focus {
+  outline: none;
+}
+
+.home-booking__control select:disabled {
+  opacity: var(--home-booking-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.home-booking__feedback-row {
+  grid-column: 1 / -1;
+  display: flex;
+  min-height: var(--home-booking-feedback-height);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.home-booking__feedback-row .home-booking__feedback {
+  flex: 1;
+  min-width: 0;
+  line-height: var(--line-height-base);
+  overflow-wrap: anywhere;
+}
+
+.home-booking__feedback--error {
+  color: var(--color-error);
+}
+
+.home-booking__retry {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.home-booking__retry:disabled {
+  opacity: var(--home-booking-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.home-booking__retry:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}

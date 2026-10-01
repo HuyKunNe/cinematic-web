@@ -207,6 +207,8 @@
   --home-booking-icon-width: 2.625rem;
   --home-booking-icon-width-mobile: 3rem;
   --home-booking-label-width-mobile: 5.375rem;
+  --home-booking-disabled-opacity: 0.55;
+  --home-booking-feedback-height: calc(var(--font-size-xs) * var(--line-height-base) * 2);
   --home-arrow-size: 2.875rem;
   --home-play-size: 2.625rem;
   --home-dot-width: 0.8125rem;

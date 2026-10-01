@@ -26,7 +26,12 @@ const upcoming = computed(() =>
     <p v-if="moviesQuery.isError.value" class="home-container home-page__error" role="alert">
       Không thể tải dữ liệu phim. Vui lòng thử lại sau.
     </p>
-    <QuickBooking :movies="nowShowing" />
+    <QuickBooking
+      :movies="nowShowing"
+      :movies-loading="moviesQuery.isPending.value"
+      :movies-error="moviesQuery.isError.value"
+      @retry-movies="moviesQuery.refetch()"
+    />
     <NowShowingSection
       :movies="nowShowing"
       :loading="moviesQuery.isPending.value"
