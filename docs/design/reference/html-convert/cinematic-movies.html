@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CINEMATIC — Phim đang chiếu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./cinematic-movies.css" />
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#" aria-label="Cinematic - Trang chủ">CINEMATIC</a>
+
+        <nav class="desktop-nav" aria-label="Điều hướng chính">
+          <a href="#">Lịch chiếu</a>
+          <a class="active" href="#">Phim</a>
+          <a href="#">Rạp</a>
+          <a href="#">Ưu đãi</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="icon-button" type="button" aria-label="Tìm kiếm">⌕</button>
+          <button class="location-button" type="button">
+            <span>●</span> TP. Hồ Chí Minh <span>⌄</span>
+          </button>
+          <button class="account-button" type="button">● &nbsp; Tài khoản &nbsp;⌄</button>
+          <a class="button button-primary button-small" href="#">Đặt vé</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-intro">
+        <div class="container">
+          <p class="eyebrow">Khám phá điện ảnh</p>
+          <h1>PHIM</h1>
+          <p class="intro-copy">Chọn bộ phim yêu thích và trải nghiệm tại CINEMATIC</p>
+        </div>
+      </section>
+
+      <section class="container movie-browser" aria-label="Danh sách phim">
+        <div class="movie-toolbar">
+          <div class="tabs" role="group" aria-label="Trạng thái phim">
+            <button class="tab active" type="button" aria-pressed="true">Đang chiếu</button>
+            <button class="tab" type="button" aria-pressed="false">Sắp chiếu</button>
+          </div>
+
+          <div class="filters">
+            <label class="filter-control">
+              <span class="sr-only">Lọc theo thể loại</span>
+              <select>
+                <option>Tất cả thể loại</option>
+                <option>Hành động</option>
+                <option>Tâm lý</option>
+                <option>Khoa học viễn tưởng</option>
+                <option>Hoạt hình</option>
+              </select>
+            </label>
+
+            <label class="filter-control">
+              <span class="sr-only">Sắp xếp phim</span>
+              <select>
+                <option>Phổ biến nhất</option>
+                <option>Mới nhất</option>
+                <option>Đánh giá cao</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="results-row">
+          <p><strong>12 phim</strong> đang chiếu tại CINEMATIC</p>
+          <button class="location-filter" type="button">
+            <span aria-hidden="true">●</span> TP. Hồ Chí Minh <span aria-hidden="true">⌄</span>
+          </button>
+        </div>
+
+        <div class="movie-grid">
+          <article class="movie-card">
+            <div class="poster poster-space">
+              <span class="badge badge-outline poster-status">ĐANG CHIẾU</span>
+              <span class="age-mark poster-age">13+</span>
+              <button class="play-button" type="button" aria-label="Xem trailer Vùng Tối Thức Tỉnh">
+                ▶
+              </button>
+            </div>
+            <h2>Vùng Tối Thức Tỉnh</h2>
+            <p>Khoa học viễn tưởng</p>
+            <div class="movie-meta"><span>132 phút</span><span>25.10.2024</span></div>
+            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+          </article>
+
+          <article class="movie-card">
+            <div class="poster poster-mystery">
+              <span class="badge badge-outline poster-status">ĐANG CHIẾU</span>
+              <span class="age-mark poster-age">16+</span>
+              <button class="play-button" type="button" aria-label="Xem trailer Ảo Ảnh Đôi Mắt">
+                ▶
+              </button>
+            </div>
+            <h2>Ảo Ảnh Đôi Mắt</h2>
+            <p>Tâm lý · Giật gân</p>
+            <div class="movie-meta"><span>118 phút</span><span>18.10.2024</span></div>
+            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+          </article>
+
+          <article class="movie-card">
+            <div class="poster poster-city">
+              <span class="badge badge-outline poster-status">ĐANG CHIẾU</span>
+              <span class="age-mark poster-age">16+</span>
+              <button class="play-button" type="button" aria-label="Xem trailer Thành Phố Ngủ Say">
+                ▶
+              </button>
+            </div>
+            <h2>Thành Phố Ngủ Say</h2>
+            <p>Hành động · Hình sự</p>
+            <div class="movie-meta"><span>124 phút</span><span>20.10.2024</span></div>
+            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+          </article>
+
+          <article class="movie-card">
+            <div class="poster poster-cloud">
+              <span class="badge badge-outline poster-status">ĐANG CHIẾU</span>
+              <span class="age-mark poster-age">P</span>
+              <button class="play-button" type="button" aria-label="Xem trailer Hành Trình Của Mây">
+                ▶
+              </button>
+            </div>
+            <h2>Hành Trình Của Mây</h2>
+            <p>Hoạt hình · Phiêu lưu</p>
+            <div class="movie-meta"><span>96 phút</span><span>11.10.2024</span></div>
+            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+          </article>
+
+          <article class="movie-card">
+            <div class="poster poster-dawn">
+              <span class="badge badge-outline poster-status">ĐANG CHIẾU</span>
+              <span class="age-mark poster-age">13+</span>
+              <button class="play-button" type="button" aria-label="Xem trailer Mật Mã Bình Minh">
+                ▶
+              </button>
+            </div>
+            <h2>Mật Mã Bình Minh</h2>
+            <p>Hành động · Giật gân</p>
+            <div class="movie-meta"><span>121 phút</span><span>08.11.2024</span></div>
+            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+          </article>
+
+          <article class="movie-card">
+            <div class="poster poster-island">
+              <span class="badge badge-outline poster-status">ĐANG CHIẾU</span>
+              <span class="age-mark poster-age">K</span>
+              <button class="play-button" type="button" aria-label="Xem trailer Đảo Mộng Mơ">
+                ▶
+              </button>
+            </div>
+            <h2>Đảo Mộng Mơ</h2>
+            <p>Phiêu lưu · Gia đình</p>
+            <div class="movie-meta"><span>101 phút</span><span>01.11.2024</span></div>
+            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+          </article>
+
+          <article class="movie-card">
+            <div class="poster poster-red">
+              <span class="badge badge-outline poster-status">ĐANG CHIẾU</span>
+              <span class="age-mark poster-age">18+</span>
+              <button class="play-button" type="button" aria-label="Xem trailer Những Kẻ Lạc Lối">
+                ▶
+              </button>
+            </div>
+            <h2>Những Kẻ Lạc Lối</h2>
+            <p>Kinh dị · Tâm lý</p>
+            <div class="movie-meta"><span>109 phút</span><span>15.11.2024</span></div>
+            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+          </article>
+
+          <article class="movie-card">
+            <div class="poster poster-portal">
+              <span class="badge badge-outline poster-status">ĐANG CHIẾU</span>
+              <span class="age-mark poster-age">13+</span>
+              <button class="play-button" type="button" aria-label="Xem trailer Giữa Hai Thế Giới">
+                ▶
+              </button>
+            </div>
+            <h2>Giữa Hai Thế Giới</h2>
+            <p>Khoa học viễn tưởng</p>
+            <div class="movie-meta"><span>127 phút</span><span>22.11.2024</span></div>
+            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+          </article>
+        </div>
+
+        <button class="load-more" type="button">
+          Xem thêm phim <span aria-hidden="true">↓</span>
+        </button>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Điều hướng di động">
+      <a href="#"><span>⌂</span><b>Trang chủ</b></a>
+      <a class="active" href="#"><span>▣</span><b>Phim</b></a>
+      <a href="#"><span>▤</span><b>Vé của tôi</b></a>
+      <a href="#"><span>♙</span><b>Tài khoản</b></a>
+    </nav>
+  </body>
+</html>
