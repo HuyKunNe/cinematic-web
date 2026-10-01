@@ -17,7 +17,7 @@ Không gửi toàn bộ prompt trong tài liệu cùng lúc.
 
 ## P00 — Project Operating Instructions
 
-~~~text
+```text
 Bắt đầu xây dựng lại Cinematic Web Frontend từ đầu.
 
 Repositories:
@@ -102,13 +102,13 @@ Cách làm việc:
    - dừng trước khi commit.
 
 Chỉ xác nhận đã hiểu các quy tắc trên. Chưa sửa code.
-~~~
+```
 
 ---
 
 ## F0.1 — Repository Discovery và Backend API Inventory
 
-~~~text
+```text
 Tiếp tục F0.1 — Repository Discovery và Backend API Inventory.
 
 Backend chỉ được phép đọc.
@@ -145,13 +145,13 @@ Tạo hoặc cập nhật:
 Không triển khai UI hoặc API client trong bước này.
 Đảm bảo Markdown fences đóng đúng và không bị lồng sai.
 Báo cáo kết quả và dừng để tôi review.
-~~~
+```
 
 ---
 
 ## F0.2 — Image Design Analysis
 
-~~~text
+```text
 Tiếp tục F0.2 — Phân tích thiết kế từ ảnh reference.
 
 Không sử dụng Figma.
@@ -189,13 +189,13 @@ DESIGN_TOKENS.md phải có:
 
 Không viết UI code.
 Báo cáo các quyết định và dừng để tôi review.
-~~~
+```
 
 ---
 
 ## F0.3 — Frontend Architecture
 
-~~~text
+```text
 Tiếp tục F0.3 — Frontend architecture và folder structure.
 
 Dựa trên API inventory và image design analysis, đề xuất kiến trúc feature-based.
@@ -246,13 +246,13 @@ Cập nhật:
 
 Không triển khai feature UI.
 Báo cáo và dừng để tôi review.
-~~~
+```
 
 ---
 
 ## F1.1 — Design Foundations
 
-~~~text
+```text
 Tiếp tục F1.1 — Design foundations.
 
 Triển khai design tokens dựa trên hai ảnh reference và DESIGN_TOKENS.md.
@@ -310,13 +310,13 @@ Không triển khai business feature.
 Không dùng arbitrary hardcoded values trong Vue templates.
 Chạy typecheck và build nếu scripts đã tồn tại.
 Cập nhật CURRENT_STATUS.md và dừng trước khi commit.
-~~~
+```
 
 ---
 
 ## F1.2 — Router và Application Layouts
 
-~~~text
+```text
 Tiếp tục F1.2 — Router và application layouts.
 
 Triển khai:
@@ -361,13 +361,13 @@ Không tạo route thuộc R28.
 Không dùng magic role strings rải rác.
 Không triển khai nội dung feature hoàn chỉnh.
 Báo cáo route table và dừng để tôi review.
-~~~
+```
 
 ---
 
 ## F1.3 — Customer Header và Mobile Navigation
 
-~~~text
+```text
 Tiếp tục F1.3 — Customer navigation shell.
 
 Triển khai theo hai ảnh reference:
@@ -393,13 +393,13 @@ Yêu cầu:
 
 Kiểm tra thủ công tại 390px, 768px, 1024px và 1440px.
 Cập nhật CURRENT_STATUS.md và dừng để tôi review.
-~~~
+```
 
 ---
 
 ## F1.4 — Admin Shell
 
-~~~text
+```text
 Tiếp tục F1.4 — Admin application shell.
 
 Reference không có admin screen. Hãy tái sử dụng cùng design system,
@@ -426,13 +426,13 @@ Yêu cầu:
 - Không triển khai admin feature cụ thể.
 
 Kiểm tra responsive, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F2.1 — Generated/Typed API Client
 
-~~~text
+```text
 Tiếp tục F2.1 — API integration foundation.
 
 Dựa trên backend và OpenAPI thực tế:
@@ -466,13 +466,13 @@ Tạo/cập nhật:
 
 Chưa triển khai feature page.
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F2.2 — Authentication và Login Form
 
-~~~text
+```text
 Tiếp tục F2.2 — Authentication và frontend login form.
 
 Trước khi code, đọc lại authentication flow của backend.
@@ -503,13 +503,13 @@ Không tạo fake authentication.
 Không sửa backend.
 
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F3.1 — Customer Home Page
 
-~~~text
+```text
 Tiếp tục F3.1 — Customer Home Page từ image reference.
 
 Triển khai:
@@ -544,13 +544,13 @@ Responsive:
 
 Không hardcode colors, sizes, aspect ratios, radius, shadow hoặc z-index.
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F3.2 — Movies List và Movie Detail
 
-~~~text
+```text
 Tiếp tục F3.2 — Movies list và movie detail.
 
 Đọc API backend và triển khai:
@@ -576,13 +576,13 @@ Có loading, empty, error, retry và image fallback.
 Responsive theo design system của Home Page.
 Không triển khai R28.
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F3.3 — Cinemas và Showtimes
 
-~~~text
+```text
 Tiếp tục F3.3 — Cinemas và showtime discovery.
 
 Đọc backend và triển khai:
@@ -600,13 +600,13 @@ URL query parameters phải phản ánh filters quan trọng để có thể rel
 Có loading, empty, error và retry state.
 Responsive desktop/tablet/mobile.
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F4.1 — Booking Flow Foundation
 
-~~~text
+```text
 Tiếp tục F4.1 — Booking flow foundation.
 
 Trước khi code, đọc booking-service API, DTO, enum và validation.
@@ -624,13 +624,13 @@ Không reserve seat trong bước này.
 Không giả định response.
 Không triển khai R28.
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F4.2 — Seat Selection và Reserve Seat
 
-~~~text
+```text
 Tiếp tục F4.2 — Seat selection và reserve seat integration.
 
 Đọc API seat/showtime/booking thực tế.
@@ -653,13 +653,13 @@ Không sửa backend.
 
 Có loading, submission, conflict, expired, error và retry states.
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F4.3 — Payment và Booking Result
 
-~~~text
+```text
 Tiếp tục F4.3 — Payment integration và booking result.
 
 Đọc payment-service và booking status API thực tế.
@@ -680,13 +680,13 @@ Không log token hoặc dữ liệu thanh toán nhạy cảm.
 
 Có loading, timeout, pending, success, failure và retry state.
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F5.1 — Customer Account
 
-~~~text
+```text
 Tiếp tục F5.1 — Customer account.
 
 Đọc user và booking APIs rồi triển khai những phần backend hỗ trợ:
@@ -702,13 +702,13 @@ Protected routes phải redirect đúng khi chưa đăng nhập.
 Không lưu dữ liệu người dùng nhạy cảm lâu hơn cần thiết.
 Có loading, empty, error và retry states.
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
 ## F6.1 — Admin Dashboard
 
-~~~text
+```text
 Tiếp tục F6.1 — Admin dashboard.
 
 Chỉ sử dụng analytics/statistics API backend thực sự có.
@@ -725,7 +725,7 @@ Nếu thiếu analytics API, hiển thị dashboard navigation/operations phù h
 và ghi rõ giới hạn thay vì giả lập số liệu.
 
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 ---
 
@@ -733,7 +733,7 @@ Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
 
 Sử dụng prompt này riêng cho từng module: movies, cinemas, rooms, showtimes, promotions hoặc users.
 
-~~~text
+```text
 Tiếp tục <MILESTONE> — Admin <MODULE_NAME>.
 
 Đọc controller, DTO, enum, validation và permissions của module này.
@@ -760,7 +760,7 @@ Yêu cầu:
 - Không triển khai R28.
 
 Chạy typecheck/build, cập nhật CURRENT_STATUS.md và dừng để review.
-~~~
+```
 
 Thứ tự đề xuất:
 
@@ -775,7 +775,7 @@ Thứ tự đề xuất:
 
 ## F7.1 — Responsive và Accessibility Review
 
-~~~text
+```text
 Tiếp tục F7.1 — Responsive và accessibility review.
 
 Review toàn bộ customer, auth và admin UI tại:
@@ -802,13 +802,13 @@ Kiểm tra và sửa:
 Không thêm automated tests trong bước này.
 Chạy typecheck, lint và build.
 Cập nhật docs và CURRENT_STATUS.md, sau đó dừng để review.
-~~~
+```
 
 ---
 
 ## F7.2 — Integration Audit và Documentation
 
-~~~text
+```text
 Tiếp tục F7.2 — Final integration audit và documentation.
 
 Audit:
@@ -836,13 +836,13 @@ Chạy typecheck, lint và production build.
 Không chạy hoặc thêm automated tests nếu tôi chưa yêu cầu.
 Không commit.
 Báo cáo kết quả và dừng để tôi review.
-~~~
+```
 
 ---
 
 ## C01 — Review trước khi commit
 
-~~~text
+```text
 Review toàn bộ thay đổi của milestone hiện tại trước khi commit.
 
 Thực hiện:
@@ -857,13 +857,13 @@ Thực hiện:
 
 Chưa commit.
 Hãy đề xuất commit message theo Conventional Commits và dừng để tôi approve.
-~~~
+```
 
 ---
 
 ## C02 — Commit sau khi approve
 
-~~~text
+```text
 Tôi approve thay đổi hiện tại.
 
 Hãy commit chỉ các file thuộc milestone đã review.
@@ -877,13 +877,13 @@ Sau khi commit:
 - danh sách file đã commit;
 - git status còn lại;
 - milestone tiếp theo được đề xuất.
-~~~
+```
 
 ---
 
 ## R01 — Resume trong chat mới hoặc máy mới
 
-~~~text
+```text
 Tiếp tục dự án Cinematic Web Frontend.
 
 Repositories:
@@ -920,13 +920,13 @@ Hãy báo:
 - các blocker hoặc assumption.
 
 Sau đó dừng để tôi xác nhận tiếp tục.
-~~~
+```
 
 ---
 
 ## S01 — Mẫu prompt tiếp tục milestone bất kỳ
 
-~~~text
+```text
 Tiếp tục <MILESTONE_ID> — <MILESTONE_NAME>.
 
 Trước khi code:
@@ -958,32 +958,31 @@ Sau khi hoàn tất:
 - Chạy typecheck/lint/build nếu có.
 - Cập nhật CURRENT_STATUS.md.
 - Dừng để tôi review.
-~~~
+```
 
 ---
 
 ## Roadmap tóm tắt
 
-| Thứ tự | Milestone | Kết quả |
-|---:|---|---|
-| 1 | P00 | Thiết lập quy tắc |
-| 2 | F0.1 | API inventory |
-| 3 | F0.2 | Phân tích hai ảnh |
-| 4 | F0.3 | Kiến trúc frontend |
-| 5 | F1.1 | Design foundations |
-| 6 | F1.2 | Router và layouts |
-| 7 | F1.3 | Customer navigation |
-| 8 | F1.4 | Admin shell |
-| 9 | F2.1 | Typed API client |
-| 10 | F2.2 | Authentication |
-| 11 | F3.1 | Home page |
-| 12 | F3.2 | Movies |
-| 13 | F3.3 | Cinemas/showtimes |
-| 14 | F4.1 | Booking foundation |
-| 15 | F4.2 | Seat reservation |
-| 16 | F4.3 | Payment/result |
-| 17 | F5.1 | Customer account |
-| 18 | F6.x | Admin features |
-| 19 | F7.1 | Responsive/a11y review |
-| 20 | F7.2 | Integration/docs audit |
-
+| Thứ tự | Milestone | Kết quả                |
+| -----: | --------- | ---------------------- |
+|      1 | P00       | Thiết lập quy tắc      |
+|      2 | F0.1      | API inventory          |
+|      3 | F0.2      | Phân tích hai ảnh      |
+|      4 | F0.3      | Kiến trúc frontend     |
+|      5 | F1.1      | Design foundations     |
+|      6 | F1.2      | Router và layouts      |
+|      7 | F1.3      | Customer navigation    |
+|      8 | F1.4      | Admin shell            |
+|      9 | F2.1      | Typed API client       |
+|     10 | F2.2      | Authentication         |
+|     11 | F3.1      | Home page              |
+|     12 | F3.2      | Movies                 |
+|     13 | F3.3      | Cinemas/showtimes      |
+|     14 | F4.1      | Booking foundation     |
+|     15 | F4.2      | Seat reservation       |
+|     16 | F4.3      | Payment/result         |
+|     17 | F5.1      | Customer account       |
+|     18 | F6.x      | Admin features         |
+|     19 | F7.1      | Responsive/a11y review |
+|     20 | F7.2      | Integration/docs audit |

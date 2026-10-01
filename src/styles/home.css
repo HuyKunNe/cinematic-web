@@ -85,6 +85,76 @@
   isolation: isolate;
   background: var(--home-background-deep);
 }
+
+.home-hero__slide {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  background: var(--home-background-deep);
+}
+
+.home-hero__arrow,
+.home-hero__dots {
+  z-index: var(--home-hero-controls-layer);
+}
+
+/* Incoming and outgoing slides move at the same time. */
+.home-hero-next-enter-active,
+.home-hero-next-leave-active,
+.home-hero-previous-enter-active,
+.home-hero-previous-leave-active {
+  transition: transform var(--home-hero-slide-duration) var(--home-hero-slide-easing);
+  will-change: transform;
+}
+
+.home-hero-next-leave-active,
+.home-hero-previous-leave-active {
+  pointer-events: none;
+}
+
+/* Next: new slide enters from the right. */
+.home-hero-next-enter-from {
+  transform: translateX(var(--home-hero-slide-distance));
+}
+
+.home-hero-next-leave-to {
+  transform: translateX(calc(var(--home-hero-slide-distance) * -1));
+}
+
+/* Previous: new slide enters from the left. */
+.home-hero-previous-enter-from {
+  transform: translateX(calc(var(--home-hero-slide-distance) * -1));
+}
+
+.home-hero-previous-leave-to {
+  transform: translateX(var(--home-hero-slide-distance));
+}
+
+/* Resting position. */
+.home-hero-next-enter-to,
+.home-hero-next-leave-from,
+.home-hero-previous-enter-to,
+.home-hero-previous-leave-from {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-next-enter-active,
+  .home-hero-next-leave-active,
+  .home-hero-previous-enter-active,
+  .home-hero-previous-leave-active {
+    transition: none;
+    will-change: auto;
+  }
+
+  .home-hero-next-enter-from,
+  .home-hero-next-leave-to,
+  .home-hero-previous-enter-from,
+  .home-hero-previous-leave-to {
+    transform: none;
+  }
+}
+
 .home-hero__art,
 .home-hero__shade {
   position: absolute;
@@ -118,16 +188,17 @@
   width: min(100%, var(--home-hero-title-width));
   height: var(--home-hero-title-height);
   margin: var(--space-5) 0 var(--space-2);
-  padding: var(--space-1) 0 ;
+  padding: var(--space-1) 0;
   overflow: hidden;
+  overflow-wrap: anywhere;
   font-family: var(--font-family-display);
   font-size: var(--home-title-size);
   font-weight: var(--font-weight-display);
   line-height: var(--home-hero-line-height);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--home-hero-title-tracking);
   text-transform: uppercase;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: var(--home-hero-title-lines);
 }
 .home-hero__tagline {
   margin: 0 0 var(--space-4);

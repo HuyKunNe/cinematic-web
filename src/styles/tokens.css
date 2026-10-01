@@ -184,8 +184,21 @@
   --home-hero-height: 27.375rem;
   --home-hero-height-mobile: 28.4375rem;
   --home-hero-title-width: 38rem;
-  --home-hero-title-height: 8.5rem;
-  --home-hero-title-height-mobile: 6.5rem;
+  --home-hero-title-lines: 2;
+  --home-hero-title-tracking: 0.02em;
+  --home-hero-title-height: calc(
+    var(--home-title-size) * var(--home-hero-line-height) * var(--home-hero-title-lines) +
+      var(--space-1) * 2
+  );
+
+  --home-hero-title-height-mobile: calc(
+    var(--home-title-size-mobile) * var(--home-hero-line-height) * var(--home-hero-title-lines) +
+      var(--space-1) * 2
+  );
+  --home-hero-slide-duration: 700ms;
+  --home-hero-slide-distance: 100%;
+  --home-hero-slide-easing: var(--easing-standard);
+  --home-hero-controls-layer: 2;
   --home-button-height: 3rem;
   --home-button-height-mobile: 3.375rem;
   --home-booking-height: 7.625rem;
@@ -246,5 +259,6 @@
     --duration-fast: 0ms;
     --duration-normal: 0ms;
     --duration-slow: 0ms;
+    --home-hero-slide-duration: 0ms;
   }
 }
