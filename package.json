@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "api:generate": "orval --config orval.config.ts",
+    "api": "orval --config orval.config.ts",
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {

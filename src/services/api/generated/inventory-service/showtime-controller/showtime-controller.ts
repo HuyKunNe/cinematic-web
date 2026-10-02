@@ -7,6 +7,7 @@
  */
 import type {
   CreateShowtimeRequest,
+  GetBookableShowtimesParams,
   GetByTimeRangeParams,
   ShowtimeResponse,
   UpdateShowtimeRequest
@@ -102,6 +103,26 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
+  /**
+ * Returns future OPEN_FOR_BOOKING showtimes in active rooms
+ * and an active cinema.
+ *
+ * The time interval is [from, to).
+ * from and to must include an ISO-8601 offset.
+ * movieId is optional.
+ *
+ * OPEN_FOR_BOOKING does not guarantee available seats.
+ * @summary Get bookable showtimes for a cinema
+ */
+export const getBookableShowtimes = (
+    params: GetBookableShowtimesParams,
+ ) => {
+      return apiRequest<ShowtimeResponse[]>(
+      {url: `/api/v1/showtimes/bookable`, method: 'GET',
+        params
+    },
+      );
+    }
   export type GetByIdResult = NonNullable<Awaited<ReturnType<typeof getById>>>
 export type UpdateResult = NonNullable<Awaited<ReturnType<typeof update>>>
 export type GetByTimeRangeResult = NonNullable<Awaited<ReturnType<typeof getByTimeRange>>>
@@ -112,3 +133,4 @@ export type CloseResult = NonNullable<Awaited<ReturnType<typeof close>>>
 export type CancelResult = NonNullable<Awaited<ReturnType<typeof cancel>>>
 export type GetByRoomIdResult = NonNullable<Awaited<ReturnType<typeof getByRoomId>>>
 export type GetByMovieIdResult = NonNullable<Awaited<ReturnType<typeof getByMovieId>>>
+export type GetBookableShowtimesResult = NonNullable<Awaited<ReturnType<typeof getBookableShowtimes>>>

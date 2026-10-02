@@ -6,12 +6,19 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export * from './apiResponse';
 export * from './createGenreRequest';
 export * from './createMovieRequest';
 export * from './createMovieRequestStatus';
+export * from './errorBody';
 export * from './genreResponse';
+export * from './getMovieCatalogParams';
+export * from './getMovieCatalogStatus';
 export * from './movieResponse';
 export * from './movieResponseStatus';
+export * from './pageInfo';
+export * from './pageResponseMovieResponse';
 export * from './updateGenreRequest';
 export * from './updateMovieRequest';
 export * from './updateMovieRequestStatus';
+export * from './validationError';

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export * from './apiResponse';
 export * from './cinemaResponse';
 export * from './create1Params';
 export * from './create2Params';
@@ -18,11 +19,13 @@ export * from './createSeatRangeRequestSeatType';
 export * from './createSeatRequest';
 export * from './createSeatRequestSeatType';
 export * from './createShowtimeRequest';
+export * from './errorBody';
 export * from './generateParams';
 export * from './generateShowSeatsRequest';
 export * from './getActiveCinemasParams';
 export * from './getActiveRoomsParams';
 export * from './getActiveSeatsParams';
+export * from './getBookableShowtimesParams';
 export * from './getByShowtimeIdParams';
 export * from './getByTimeRangeParams';
 export * from './holdShowSeatRequest';
@@ -43,3 +46,4 @@ export * from './updateSeatRequest';
 export * from './updateSeatRequestSeatType';
 export * from './updateShowtimeRequest';
 export * from './updateShowtimeRequestStatus';
+export * from './validationError';

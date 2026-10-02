@@ -7,7 +7,9 @@
  */
 import type {
   CreateMovieRequest,
+  GetMovieCatalogParams,
   MovieResponse,
+  PageResponseMovieResponse,
   UpdateMovieRequest
 } from '../model';
 
@@ -60,8 +62,21 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
+  /**
+ * @summary Get a paginated movie catalog
+ */
+export const getMovieCatalog = (
+    params?: GetMovieCatalogParams,
+ ) => {
+      return apiRequest<PageResponseMovieResponse>(
+      {url: `/api/v1/movies/catalog`, method: 'GET',
+        params
+    },
+      );
+    }
   export type FindByIdResult = NonNullable<Awaited<ReturnType<typeof findById>>>
 export type UpdateResult = NonNullable<Awaited<ReturnType<typeof update>>>
 export type _DeleteResult = NonNullable<Awaited<ReturnType<typeof _delete>>>
 export type FindAllResult = NonNullable<Awaited<ReturnType<typeof findAll>>>
 export type CreateResult = NonNullable<Awaited<ReturnType<typeof create>>>
+export type GetMovieCatalogResult = NonNullable<Awaited<ReturnType<typeof getMovieCatalog>>>
