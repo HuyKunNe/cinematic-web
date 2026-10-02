@@ -6,14 +6,14 @@ import AppEmptyState from '@/components/ui/AppEmptyState.vue'
 import AppErrorState from '@/components/ui/AppErrorState.vue'
 import AppSkeleton from '@/components/ui/AppSkeleton.vue'
 import CatalogMovieCard from '../components/CatalogMovieCard.vue'
-import { useMoviesQuery } from '../api/movie-queries'
+import { useMoviesProgramme } from '../composables/use-movies-programme'
 import type { CatalogMovieStatus, MovieGenre } from '../models/movie.model'
 
 type MovieSort = 'release-desc' | 'release-asc' | 'title-asc'
 
 const PAGE_SIZE = 8
-
-const { data, isPending, isError, isFetching, refetch } = useMoviesQuery()
+const { data, isPending, isError, isFetching, refetch, scopeKey, catalogueLocationLabel } =
+  useMoviesProgramme()
 
 const selectedStatus = ref<CatalogMovieStatus>('NOW_SHOWING')
 const selectedGenre = ref('')
@@ -98,8 +98,12 @@ const statusDescription = computed(() =>
   selectedStatus.value === 'NOW_SHOWING' ? 'đang chiếu' : 'sắp chiếu',
 )
 
-watch([selectedStatus, selectedGenre, selectedSort], () => {
+watch([selectedStatus, selectedGenre, selectedSort, scopeKey], () => {
   shownLimit.value = PAGE_SIZE
+})
+
+watch(scopeKey, () => {
+  selectedGenre.value = ''
 })
 
 // Xóa bộ lọc nếu thể loại không còn trong catalog mới.
@@ -184,7 +188,7 @@ function retry() {
           aria-atomic="true"
         >
           <strong>{{ filteredMovies.length }} phim</strong>
-          {{ statusDescription }} tại CINEMATIC
+          {{ statusDescription }} tại {{ catalogueLocationLabel }}
 
           <span v-if="filteredMovies.length" class="movies-results__shown">
             Đang hiển thị {{ visibleMovies.length }} / {{ filteredMovies.length }} phim.

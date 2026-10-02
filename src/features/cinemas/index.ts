@@ -1,4 +1,5 @@
 export { useCinemaLocationsQuery } from './api/cinema-location.queries'
+export { cinemaProgrammeQueryKeys, useCinemaProgrammeQuery } from './api/cinema-programme.queries'
 export { useCinemaLocation } from './composables/use-cinema-location'
 export { useLocationStore } from '@/stores/location.store'
 
