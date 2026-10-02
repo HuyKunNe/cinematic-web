@@ -333,6 +333,17 @@
   --customer-mobile-wordmark-size: clamp(1.125rem, 5vw, 1.375rem);
   --customer-mobile-location-max-width: 8rem;
   --customer-mobile-header-gap: var(--space-1);
+  /* City and cinema selector */
+  --location-dialog-max-width: 32rem;
+  --location-dialog-edge: var(--space-4);
+  --customer-desktop-location-max-width: 14rem;
+  /* Shared select control */
+  --app-select-height: var(--control-height-md);
+  --app-select-font-size: var(--font-size-md);
+  --app-select-padding-start: var(--space-3);
+  --app-select-padding-end: var(--space-8);
+  --app-select-chevron-size: var(--space-2);
+  --app-select-disabled-opacity: 0.56;
 }
 
 /* Breakpoint conditions are kept as CSS media-query constants.

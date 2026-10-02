@@ -4,10 +4,29 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
 import { CUSTOMER_PRIMARY_NAVIGATION } from './customer-navigation'
 
+withDefaults(
+  defineProps<{
+    locationLabel?: string
+    locationDescription?: string
+    locationOpen?: boolean
+  }>(),
+  {
+    locationLabel: 'Chọn thành phố',
+    locationDescription: 'Chọn thành phố và rạp',
+    locationOpen: false,
+  },
+)
+
 const emit = defineEmits<{
   searchRequest: []
-  locationRequest: []
+  locationRequest: [trigger: HTMLButtonElement]
 }>()
+
+function requestLocation(event: MouseEvent) {
+  if (event.currentTarget instanceof HTMLButtonElement) {
+    emit('locationRequest', event.currentTarget)
+  }
+}
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -55,11 +74,16 @@ function isActive(routeName: string) {
         <button
           class="customer-header__location"
           type="button"
-          aria-label="Chọn rạp hoặc khu vực"
-          @click="emit('locationRequest')"
+          data-location-trigger
+          aria-haspopup="dialog"
+          aria-controls="cinema-location-dialog"
+          :aria-expanded="locationOpen"
+          :aria-label="locationDescription"
+          :title="locationDescription"
+          @click="requestLocation"
         >
           <MapPin aria-hidden="true" class="customer-navigation__icon" />
-          <span>Chọn rạp</span>
+          <span>{{ locationLabel }}</span>
           <ChevronDown aria-hidden="true" class="customer-navigation__icon" />
         </button>
 

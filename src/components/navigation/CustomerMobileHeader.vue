@@ -7,11 +7,25 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
 import { CUSTOMER_PRIMARY_NAVIGATION } from './customer-navigation'
 
+withDefaults(
+  defineProps<{
+    locationLabel?: string
+    locationDescription?: string
+    locationOpen?: boolean
+  }>(),
+  {
+    locationLabel: 'Chọn thành phố',
+    locationDescription: 'Chọn thành phố và rạp',
+    locationOpen: false,
+  },
+)
+
 const emit = defineEmits<{
   searchRequest: []
-  locationRequest: []
+  locationRequest: [trigger: HTMLButtonElement]
 }>()
 
+const locationButton = ref<HTMLButtonElement | null>(null)
 const route = useRoute()
 const auth = useAuthStore()
 const navigation = CUSTOMER_PRIMARY_NAVIGATION
@@ -39,9 +53,23 @@ function requestSearch() {
   closeMenu()
 }
 
-function requestLocation() {
-  emit('locationRequest')
-  closeMenu()
+async function requestLocation(event: MouseEvent) {
+  const trigger = event.currentTarget
+
+  if (menuOpen.value) {
+    closeMenu(false)
+    await nextTick()
+
+    if (locationButton.value) {
+      emit('locationRequest', locationButton.value)
+    }
+
+    return
+  }
+
+  if (trigger instanceof HTMLButtonElement) {
+    emit('locationRequest', trigger)
+  }
 }
 
 function onDrawerKeydown(event: KeyboardEvent) {
@@ -117,13 +145,19 @@ onBeforeUnmount(() => {
       </RouterLink>
 
       <button
+        ref="locationButton"
         class="customer-mobile-header__location"
         type="button"
-        aria-label="Chọn rạp hoặc khu vực"
+        data-location-trigger
+        aria-haspopup="dialog"
+        aria-controls="cinema-location-dialog"
+        :aria-expanded="locationOpen"
+        :aria-label="locationDescription"
+        :title="locationDescription"
         @click="requestLocation"
       >
         <MapPin aria-hidden="true" class="customer-navigation__icon" />
-        <span>Chọn rạp</span>
+        <span>{{ locationLabel }}</span>
         <ChevronDown aria-hidden="true" class="customer-navigation__icon" />
       </button>
 
@@ -198,9 +232,15 @@ onBeforeUnmount(() => {
         </nav>
 
         <div class="customer-mobile-drawer__actions">
-          <button class="customer-mobile-drawer__link" type="button" @click="requestLocation">
+          <button
+            class="customer-mobile-drawer__link"
+            type="button"
+            aria-haspopup="dialog"
+            :aria-label="locationDescription"
+            @click="requestLocation"
+          >
             <MapPin aria-hidden="true" class="customer-navigation__icon" />
-            Chọn rạp
+            <span>Địa điểm: {{ locationLabel }}</span>
           </button>
 
           <button class="customer-mobile-drawer__link" type="button" @click="requestSearch">

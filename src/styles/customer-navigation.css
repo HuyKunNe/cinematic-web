@@ -171,6 +171,16 @@
   filter: brightness(1.06);
 }
 
+.customer-header__location {
+  max-width: var(--customer-desktop-location-max-width);
+}
+
+.customer-mobile-drawer__actions > button > span {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .customer-mobile-header {
   position: sticky;
   top: 0;
