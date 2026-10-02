@@ -8,6 +8,7 @@ const loadPlaceholder = () => import('../components/feedback/PlaceholderPage.vue
 const loadLoginPage = () => import('../features/auth/pages/LoginPage.vue')
 const loadAuthCallbackPage = () => import('../features/auth/pages/AuthCallbackPage.vue')
 const loadHomePage = () => import('../features/home/pages/HomePage.vue')
+const loadMoviesPage = () => import('../features/movies/pages/MoviesPage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -19,11 +20,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.MOVIES,
     name: ROUTE_NAMES.MOVIES,
-    component: loadPlaceholder,
-    props: {
-      title: 'Phim',
-      description: 'Danh sách phim sẽ lấy từ Movie Service.',
-    },
+    component: loadMoviesPage,
     meta: { layout: 'customer', title: 'Phim' },
   },
   {

@@ -290,6 +290,40 @@
   );
   --home-now-control-size: var(--control-height-md);
   --home-now-control-disabled-opacity: 0.45;
+
+  /* F3.2 Movies — cinematic-movies.html/css */
+  --movies-page-gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --movies-intro-top: 3.375rem;
+  --movies-intro-bottom: 2.125rem;
+  --movies-heading-size: clamp(2.375rem, 5vw, 3.625rem);
+  --movies-heading-tracking: 0.05em;
+  --movies-eyebrow-tracking: 0.2em;
+  --movies-panel-padding: var(--space-6);
+  --movies-columns: 4;
+  --movies-column-gap: 1.375rem;
+  --movies-row-gap: var(--space-7);
+  --movies-card-title-size: 1.0625rem;
+  --movies-card-copy-size: 0.8125rem;
+  --movies-card-meta-size: var(--font-size-xs);
+  --movies-card-title-lines: 2;
+  --movies-card-copy-lines: 2;
+  --movies-card-title-height: calc(
+    var(--movies-card-title-size) * var(--line-height-heading) * var(--movies-card-title-lines) +
+      var(--space-1) * 2
+  );
+  --movies-card-copy-height: calc(
+    var(--movies-card-copy-size) * var(--line-height-base) * var(--movies-card-copy-lines)
+  );
+  --movies-card-meta-height: calc(
+    var(--movies-card-meta-size) * var(--line-height-base) * 2 + var(--space-2)
+  );
+  --movies-play-size: var(--home-play-size);
+  --movies-status-top: var(--space-3);
+  --movies-status-bottom: auto;
+  --movies-status-size: 0.6875rem;
+  --movies-cta-height: 2.625rem;
+  --movies-disabled-opacity: 0.45;
+  --movies-overlay-layer: 1;
 }
 
 /* Breakpoint conditions are kept as CSS media-query constants.
@@ -328,5 +362,32 @@
     --duration-normal: 0ms;
     --duration-slow: 0ms;
     --home-hero-slide-duration: 0ms;
+  }
+}
+/* Breakpoints from cinematic-movies.css: 900px / 640px */
+@media (max-width: 56.25rem) {
+  :root {
+    --movies-columns: 3;
+  }
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --movies-page-gutter: var(--space-5);
+    --movies-intro-top: 2.125rem;
+    --movies-intro-bottom: 1.375rem;
+    --movies-heading-size: 2.375rem;
+    --movies-panel-padding: 0.875rem;
+    --movies-columns: 2;
+    --movies-column-gap: var(--space-3);
+    --movies-row-gap: 1.375rem;
+    --movies-card-title-size: var(--font-size-sm);
+    --movies-card-copy-size: 0.6875rem;
+    --movies-card-meta-size: 0.625rem;
+    --movies-play-size: 2.125rem;
+    --movies-status-top: auto;
+    --movies-status-bottom: var(--space-2);
+    --movies-status-size: 0.5625rem;
+    --movies-cta-height: 2.375rem;
   }
 }
