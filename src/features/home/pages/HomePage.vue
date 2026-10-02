@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { AppButton } from '@/components/ui'
 import CustomerFooter from '@/components/navigation/CustomerFooter.vue'
 import HeroBanner from '../components/HeroBanner.vue'
 import QuickBooking from '../components/QuickBooking.vue'
@@ -7,41 +7,44 @@ import NowShowingSection from '../components/NowShowingSection.vue'
 import UpcomingMoviesSection from '../components/UpcomingMoviesSection.vue'
 import PromotionSection from '../components/PromotionSection.vue'
 import MembershipSection from '../components/MembershipSection.vue'
-import { useHomeMovies } from '../api/home-queries'
+import { useHomeProgramme } from '../composables/use-home-programme'
 
-const moviesQuery = useHomeMovies()
-const nowShowing = computed(() =>
-  (moviesQuery.data.value ?? []).filter((movie) => movie.status === 'NOW_SHOWING'),
-)
-const upcoming = computed(() =>
-  (moviesQuery.data.value ?? [])
-    .filter((movie) => movie.status === 'UPCOMING')
-    .sort((a, b) => (a.releaseDate ?? '').localeCompare(b.releaseDate ?? '')),
-)
+const { scopeKey, nowShowing, upcoming, loading, error, errorMessage, retrying, retry } =
+  useHomeProgramme()
 </script>
 
 <template>
   <div class="home-page">
-    <HeroBanner :movies="nowShowing" :loading="moviesQuery.isPending.value" />
-    <p v-if="moviesQuery.isError.value" class="home-container home-page__error" role="alert">
-      Không thể tải dữ liệu phim. Vui lòng thử lại sau.
-    </p>
+    <HeroBanner :key="`hero-${scopeKey}`" :movies="nowShowing" :loading="loading" />
+
+    <div v-if="error" class="home-container">
+      <p class="home-page__error" role="alert">{{ errorMessage }} Vui lòng thử lại.</p>
+
+      <AppButton variant="ghost" size="sm" :loading="retrying" @click="retry"> Thử lại </AppButton>
+    </div>
+
     <QuickBooking
+      :key="`booking-${scopeKey}`"
       :movies="nowShowing"
-      :movies-loading="moviesQuery.isPending.value"
-      :movies-error="moviesQuery.isError.value"
-      @retry-movies="moviesQuery.refetch()"
+      :movies-loading="loading"
+      :movies-error="error"
+      @retry-movies="retry"
     />
+
     <NowShowingSection
+      :key="`showing-${scopeKey}`"
       :movies="nowShowing"
-      :loading="moviesQuery.isPending.value"
-      :error="moviesQuery.isError.value"
+      :loading="loading"
+      :error="error"
     />
+
     <UpcomingMoviesSection
+      :key="`upcoming-${scopeKey}`"
       :movies="upcoming"
-      :loading="moviesQuery.isPending.value"
-      :error="moviesQuery.isError.value"
+      :loading="loading"
+      :error="error"
     />
+
     <PromotionSection />
     <MembershipSection />
     <CustomerFooter />

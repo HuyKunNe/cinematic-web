@@ -45,11 +45,60 @@
         </div>
       </section>
 
+      <section class="container quick-booking" aria-labelledby="quick-booking-title">
+        <h2 id="quick-booking-title">Đặt vé nhanh</h2>
+
+        <label class="booking-step">
+          <span><strong>1.</strong> Chọn rạp</span>
+          <select aria-label="Chọn rạp">
+            <option>Chọn rạp</option>
+          </select>
+        </label>
+
+        <label class="booking-step">
+          <span><strong>2.</strong> Chọn phim</span>
+          <select aria-label="Chọn phim">
+            <option>Chọn phim</option>
+          </select>
+        </label>
+
+        <label class="booking-step">
+          <span><strong>3.</strong> Chọn ngày</span>
+          <select aria-label="Chọn ngày">
+            <option>Chọn ngày</option>
+          </select>
+        </label>
+
+        <label class="booking-step">
+          <span><strong>4.</strong> Chọn suất</span>
+          <select aria-label="Chọn suất chiếu">
+            <option>Chọn suất</option>
+          </select>
+        </label>
+
+        <button class="button button-primary" type="button">Đặt ngay</button>
+      </section>
+
       <section class="container movie-browser" aria-label="Danh sách phim">
         <div class="movie-toolbar">
-          <div class="tabs" role="group" aria-label="Trạng thái phim">
-            <button class="tab active" type="button" aria-pressed="true">Đang chiếu</button>
-            <button class="tab" type="button" aria-pressed="false">Sắp chiếu</button>
+          <div class="movie-toolbar">
+            <div class="movie-tabs" role="group" aria-label="Trạng thái phim">
+              <button class="movie-tab active" type="button" aria-pressed="true">
+                Phim đang chiếu
+              </button>
+              <button class="movie-tab" type="button" aria-pressed="false">Phim sắp chiếu</button>
+            </div>
+
+            <label class="filter-control">
+              <span class="sr-only">Lọc theo thể loại</span>
+              <select>
+                <option>Tất cả thể loại</option>
+                <option>Hành động</option>
+                <option>Tình cảm</option>
+                <option>Hoạt hình</option>
+                <option>Kinh dị</option>
+              </select>
+            </label>
           </div>
 
           <div class="filters">
@@ -86,15 +135,20 @@
           <article class="movie-card">
             <div class="poster poster-space">
               <span class="badge badge-outline poster-status">ĐANG CHIẾU</span>
-              <span class="age-mark poster-age">13+</span>
-              <button class="play-button" type="button" aria-label="Xem trailer Vùng Tối Thức Tỉnh">
-                ▶
-              </button>
+              <span class="age-mark poster-age">T13</span>
+              <button class="play-button" type="button" aria-label="Xem trailer">▶</button>
             </div>
             <h2>Vùng Tối Thức Tỉnh</h2>
             <p>Khoa học viễn tưởng</p>
-            <div class="movie-meta"><span>132 phút</span><span>25.10.2024</span></div>
-            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+
+            <div class="movie-details">
+              <span>132 phút</span>
+              <span>Hoa Kỳ</span>
+              <span>Phụ đề</span>
+              <span>2D</span>
+            </div>
+
+            <a class="button button-primary movie-cta" href="#">Đặt vé</a>
           </article>
 
           <article class="movie-card">
@@ -107,7 +161,12 @@
             </div>
             <h2>Ảo Ảnh Đôi Mắt</h2>
             <p>Tâm lý · Giật gân</p>
-            <div class="movie-meta"><span>118 phút</span><span>18.10.2024</span></div>
+            <div class="movie-details">
+              <span>132 phút</span>
+              <span>Hoa Kỳ</span>
+              <span>Phụ đề</span>
+              <span>2D</span>
+            </div>
             <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
           </article>
 
@@ -121,7 +180,12 @@
             </div>
             <h2>Thành Phố Ngủ Say</h2>
             <p>Hành động · Hình sự</p>
-            <div class="movie-meta"><span>124 phút</span><span>20.10.2024</span></div>
+            <div class="movie-details">
+              <span>132 phút</span>
+              <span>Hoa Kỳ</span>
+              <span>Phụ đề</span>
+              <span>2D</span>
+            </div>
             <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
           </article>
 
@@ -135,7 +199,11 @@
             </div>
             <h2>Hành Trình Của Mây</h2>
             <p>Hoạt hình · Phiêu lưu</p>
-            <div class="movie-meta"><span>96 phút</span><span>11.10.2024</span></div>
+            <div class="movie-details">
+              <span>132 phút</span>
+              <span>Hoa Kỳ</span>
+              <span>Phụ đề</span>
+              <span>2D</span>
             <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
           </article>
 
@@ -149,7 +217,12 @@
             </div>
             <h2>Mật Mã Bình Minh</h2>
             <p>Hành động · Giật gân</p>
-            <div class="movie-meta"><span>121 phút</span><span>08.11.2024</span></div>
+            <div class="movie-details">
+              <span>121 phút</span>
+              <span>Hoa Kỳ</span>
+              <span>Phụ đề</span>
+              <span>2D</span>
+            </div>
             <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
           </article>
 
@@ -163,7 +236,12 @@
             </div>
             <h2>Đảo Mộng Mơ</h2>
             <p>Phiêu lưu · Gia đình</p>
-            <div class="movie-meta"><span>101 phút</span><span>01.11.2024</span></div>
+            <div class="movie-details">
+              <span>101 phút</span>
+              <span>Hoa Kỳ</span>
+              <span>Phụ đề</span>
+              <span>2D</span>
+            </div>
             <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
           </article>
 
@@ -177,7 +255,12 @@
             </div>
             <h2>Những Kẻ Lạc Lối</h2>
             <p>Kinh dị · Tâm lý</p>
-            <div class="movie-meta"><span>109 phút</span><span>15.11.2024</span></div>
+            <div class="movie-details">
+              <span>109 phút</span>
+              <span>Hoa Kỳ</span>
+              <span>Phụ đề</span>
+              <span>2D</span>
+            </div>
             <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
           </article>
 
@@ -191,7 +274,12 @@
             </div>
             <h2>Giữa Hai Thế Giới</h2>
             <p>Khoa học viễn tưởng</p>
-            <div class="movie-meta"><span>127 phút</span><span>22.11.2024</span></div>
+            <div class="movie-details">
+              <span>127 phút</span>
+              <span>Hoa Kỳ</span>
+              <span>Phụ đề</span>
+              <span>2D</span>
+            </div>
             <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
           </article>
         </div>

@@ -159,7 +159,7 @@ const fields = computed(() => [
       !cinemas.value.length,
     options: cinemas.value.map((cinema) => ({
       value: cinema.id,
-      label: location.selectedCityKey ? cinema.name : `${cinema.name} · ${cinema.city}`,
+      label: cinema.name,
     })),
   },
   {
