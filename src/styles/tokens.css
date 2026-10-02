@@ -324,6 +324,15 @@
   --movies-cta-height: 2.625rem;
   --movies-disabled-opacity: 0.45;
   --movies-overlay-layer: 1;
+  /* Compact overlays for narrow catalog cards */
+  --movies-compact-play-size: 2.125rem;
+  --movies-compact-age-width: 1.75rem;
+  --movies-compact-age-height: 1.5rem;
+  --movies-compact-status-size: 0.625rem;
+  /* Shared customer navigation */
+  --customer-mobile-wordmark-size: clamp(1.125rem, 5vw, 1.375rem);
+  --customer-mobile-location-max-width: 8rem;
+  --customer-mobile-header-gap: var(--space-1);
 }
 
 /* Breakpoint conditions are kept as CSS media-query constants.

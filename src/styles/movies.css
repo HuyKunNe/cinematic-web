@@ -109,10 +109,19 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
+  container-type: inline-size;
+  container-name: catalog-card;
 }
 
 .movies-card__poster {
+  /* These variables belong to each poster, not the viewport. */
+  --movies-card-play-size: var(--movies-play-size);
+  --movies-card-age-width: var(--home-age-min-width);
+  --movies-card-age-height: var(--home-age-height);
+
   position: relative;
+  width: 100%;
+  min-width: 0;
   flex-shrink: 0;
   aspect-ratio: var(--movie-card-art-aspect-ratio);
   overflow: hidden;
@@ -131,14 +140,18 @@
 }
 
 .movies-card__poster img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .movies-card__placeholder {
+  position: absolute;
+  inset: 0;
   display: grid;
-  height: 100%;
+  min-width: 0;
   place-content: center;
   justify-items: center;
   gap: var(--space-2);
@@ -170,20 +183,23 @@
   min-height: var(--space-6);
   align-items: center;
   padding-inline: var(--space-2);
+  overflow: hidden;
   border: var(--border-width-thin) solid var(--color-primary-hover);
   border-radius: var(--radius-sm);
   color: var(--color-primary-hover);
   background: var(--home-arrow-surface);
   font-size: var(--movies-status-size);
   font-weight: var(--font-weight-display);
+  line-height: var(--line-height-tight);
+  white-space: nowrap;
 }
 
 .movies-card__age {
   top: var(--space-2);
-  right: calc(var(--movies-play-size) + var(--space-2) * 2);
+  right: calc(var(--movies-card-play-size) + var(--space-2) * 2);
   display: grid;
-  min-width: var(--home-age-min-width);
-  height: var(--home-age-height);
+  min-width: var(--movies-card-age-width);
+  height: var(--movies-card-age-height);
   place-items: center;
   padding-inline: var(--space-1);
   border: var(--border-width-thin) solid var(--home-contrast-border);
@@ -196,8 +212,8 @@
   top: var(--space-2);
   right: var(--space-2);
   display: grid;
-  width: var(--movies-play-size);
-  height: var(--movies-play-size);
+  width: var(--movies-card-play-size);
+  height: var(--movies-card-play-size);
   place-items: center;
   padding: 0;
   border: var(--border-width-thin) solid var(--color-text-primary);
@@ -315,4 +331,16 @@
   color: var(--color-text-primary);
   background: var(--color-surface);
   cursor: pointer;
+}
+/* Adapt overlays to actual card width.
+   14rem is the component's compact-layout threshold. */
+@container catalog-card (max-width: 14rem) {
+  .movies-card__poster {
+    --movies-card-play-size: var(--movies-compact-play-size);
+    --movies-card-age-width: var(--movies-compact-age-width);
+    --movies-card-age-height: var(--movies-compact-age-height);
+    --movies-status-top: auto;
+    --movies-status-bottom: var(--space-2);
+    --movies-status-size: var(--movies-compact-status-size);
+  }
 }

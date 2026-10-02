@@ -861,24 +861,7 @@
   .customer-layout:has(.home-page) .customer-layout__main {
     padding-bottom: 0;
   }
-  .customer-layout:has(.home-page) .customer-mobile-header__bar {
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-    gap: var(--space-1);
-  }
-  .customer-layout:has(.home-page) .customer-mobile-header .cinematic-wordmark {
-    font-size: var(--home-mobile-wordmark-size);
-  }
-  .customer-layout:has(.home-page) .customer-mobile-header__location {
-    gap: var(--space-1);
-    padding-inline: var(--space-1);
-  }
-  .customer-layout:has(.home-page) .customer-mobile-header__location svg {
-    width: var(--icon-size-sm);
-  }
-  .customer-layout:has(.home-page) .customer-mobile-header__icon-button {
-    width: var(--space-9);
-    min-width: var(--space-9);
-  }
+
   .home-hero {
     height: var(--home-hero-height-mobile);
   }

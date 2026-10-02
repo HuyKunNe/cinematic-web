@@ -2,13 +2,19 @@
 
 .customer-layout {
   min-width: 0;
-  overflow-x: clip;
+  max-width: 100%;
 }
 
 .customer-layout__main {
   min-width: 0;
+  max-width: 100%;
   min-height: calc(100vh - var(--header-height-mobile));
   padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+}
+
+.customer-layout__main > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .cinematic-wordmark {
@@ -40,11 +46,20 @@
 
 .customer-header__inner {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-10);
-  width: min(calc(100% - var(--page-gutter) - var(--page-gutter)), var(--container-width));
+  gap: var(--space-2) var(--space-10);
+  width: min(
+    calc(
+      100% - max(var(--page-gutter), env(safe-area-inset-left)) -
+        max(var(--page-gutter), env(safe-area-inset-right))
+    ),
+    var(--container-width)
+  );
+  min-width: 0;
   min-height: var(--header-height);
   margin-inline: auto;
+  padding-block: var(--space-2);
 }
 
 .customer-header__nav,
@@ -167,24 +182,40 @@
 
 .customer-mobile-header__bar {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   align-items: center;
-  gap: var(--space-2);
-  width: min(calc(100% - var(--page-gutter) - var(--page-gutter)), var(--container-width));
+  gap: var(--customer-mobile-header-gap);
+  width: min(
+    calc(
+      100% - max(var(--page-gutter), env(safe-area-inset-left)) -
+        max(var(--page-gutter), env(safe-area-inset-right))
+    ),
+    var(--container-width)
+  );
+  min-width: 0;
   min-height: var(--header-height-mobile);
   margin-inline: auto;
 }
-
-.customer-mobile-header__location {
-  width: 100%;
+.customer-mobile-header .cinematic-wordmark {
   min-width: 0;
-  justify-self: stretch;
+  max-width: 100%;
   overflow: hidden;
-  padding-inline: var(--space-2);
+  font-size: var(--customer-mobile-wordmark-size);
   text-overflow: ellipsis;
 }
 
+.customer-mobile-header__location {
+  width: auto;
+  min-width: var(--control-height-md);
+  max-width: var(--customer-mobile-location-max-width);
+  justify-self: end;
+  gap: var(--space-1);
+  overflow: hidden;
+  padding-inline: var(--space-1);
+}
+
 .customer-mobile-header__location span {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -335,6 +366,38 @@
   outline: var(--focus-ring-width) solid var(--color-focus);
   outline-offset: var(--space-1);
   box-shadow: var(--shadow-focus);
+}
+
+.customer-header__nav,
+.customer-header__actions {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.customer-header__location span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.customer-mobile-drawer__heading,
+.customer-mobile-drawer__nav,
+.customer-mobile-drawer__actions {
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.customer-mobile-drawer__panel {
+  overscroll-behavior-y: contain;
+}
+
+/* Keep the location action accessible on narrow screens.
+   Its existing aria-label still describes the icon button. */
+@variant max-customer-narrow {
+  .customer-mobile-header__location span,
+  .customer-mobile-header__location svg:last-child {
+    display: none;
+  }
 }
 
 @variant md {
