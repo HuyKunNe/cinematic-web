@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CINEMATIC — Chi tiết phim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./cinematic-movie-detail.css" />
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#" aria-label="Cinematic - Trang chủ">CINEMATIC</a>
+
+        <nav class="desktop-nav" aria-label="Điều hướng chính">
+          <a href="#">Lịch chiếu</a>
+          <a class="active" href="#">Phim</a>
+          <a href="#">Rạp</a>
+          <a href="#">Ưu đãi</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="icon-button" type="button" aria-label="Tìm kiếm">⌕</button>
+          <button class="location-button" type="button">● &nbsp; TP. Hồ Chí Minh &nbsp;⌄</button>
+          <button class="account-button" type="button">Tài khoản &nbsp;⌄</button>
+          <a class="button button-primary button-small" href="#showtimes">Đặt vé ngay</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <nav class="breadcrumb container" aria-label="Breadcrumb">
+        <a href="#">Trang chủ</a>
+        <span aria-hidden="true">/</span>
+        <a href="#">Phim đang chiếu</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Chi tiết phim</span>
+      </nav>
+
+      <section class="container movie-overview" aria-labelledby="movie-title">
+        <div class="movie-poster">
+          <div class="movie-poster__art" role="img" aria-label="Poster phim minh họa"></div>
+          <span class="format-badge">2D</span>
+          <span class="age-badge">K</span>
+        </div>
+
+        <div class="movie-info">
+          <p class="eyebrow">Đang chiếu</p>
+
+          <div class="movie-title-row">
+            <h1 id="movie-title">HÒN ĐẢO QUÊN LÃNG LT</h1>
+            <span class="age-badge age-badge--inline">K</span>
+          </div>
+
+          <p class="movie-subtitle">Hoạt hình · Phiêu lưu</p>
+
+          <div class="movie-facts" aria-label="Thông tin phim">
+            <span>109 phút</span>
+            <span>Hoa Kỳ</span>
+            <span>Lồng tiếng</span>
+            <span>2D</span>
+          </div>
+
+          <p class="rating-note">
+            <strong>K — KID</strong>
+            <span>Phim dành cho mọi lứa tuổi theo phân loại hiển thị.</span>
+          </p>
+
+          <dl class="credit-list">
+            <div>
+              <dt>Đạo diễn</dt>
+              <dd>Joel Crawford, Januel Mercado</dd>
+            </div>
+            <div>
+              <dt>Diễn viên</dt>
+              <dd>Danh sách diễn viên minh họa cho bố cục</dd>
+            </div>
+            <div>
+              <dt>Khởi chiếu</dt>
+              <dd>24/09/2026</dd>
+            </div>
+          </dl>
+
+          <div class="movie-actions">
+            <a class="button button-primary" href="#showtimes">Chọn suất chiếu</a>
+            <button class="button button-outline" type="button">▶ &nbsp; Xem trailer</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="container synopsis-section" aria-labelledby="synopsis-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Nội dung phim</p>
+            <h2 id="synopsis-title">Một chuyến phiêu lưu bắt đầu</h2>
+          </div>
+        </div>
+
+        <p class="synopsis">
+          Hai người bạn bước vào một hòn đảo kỳ bí, nơi những sinh vật lạ và thử thách bất ngờ đang
+          chờ đợi. Họ phải cùng nhau tìm đường trở về và bảo vệ tình bạn của mình.
+        </p>
+      </section>
+
+      <section class="container showtimes-section" id="showtimes" aria-labelledby="showtimes-title">
+        <div class="section-heading showtimes-heading">
+          <div>
+            <p class="eyebrow">Lịch chiếu</p>
+            <h2 id="showtimes-title">Chọn rạp và suất chiếu</h2>
+          </div>
+
+          <label class="location-select">
+            <span class="sr-only">Chọn thành phố</span>
+            <select>
+              <option>TP. Hồ Chí Minh</option>
+              <option>Hà Nội</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="date-selector" role="group" aria-label="Chọn ngày chiếu">
+          <button class="date-option active" type="button" aria-pressed="true">
+            <span>THỨ BẢY</span><strong>03/10</strong>
+          </button>
+          <button class="date-option" type="button" aria-pressed="false">
+            <span>CHỦ NHẬT</span><strong>04/10</strong>
+          </button>
+          <button class="date-option" type="button" aria-pressed="false">
+            <span>THỨ HAI</span><strong>05/10</strong>
+          </button>
+          <button class="date-option" type="button" aria-pressed="false">
+            <span>THỨ BA</span><strong>06/10</strong>
+          </button>
+        </div>
+
+        <article class="cinema-showtimes">
+          <div class="cinema-info">
+            <div>
+              <p class="cinema-label">CINEMATIC QUẬN 1</p>
+              <h3>Rạp trung tâm</h3>
+              <p>Địa chỉ rạp hiển thị tại đây</p>
+            </div>
+            <a href="#">Thông tin rạp →</a>
+          </div>
+
+          <div class="showtime-group">
+            <p>2D · Lồng tiếng</p>
+            <div class="showtime-list">
+              <a href="#">10:30</a>
+              <a href="#">13:00</a>
+              <a href="#">16:15</a>
+              <a href="#">19:45</a>
+            </div>
+          </div>
+
+          <div class="showtime-group">
+            <p>2D · Phụ đề</p>
+            <div class="showtime-list">
+              <a href="#">11:45</a>
+              <a href="#">15:00</a>
+              <a href="#">20:30</a>
+            </div>
+          </div>
+        </article>
+
+        <p class="schedule-note">
+          Lịch chiếu và rạp trong trang này là dữ liệu minh họa cho thiết kế.
+        </p>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Điều hướng di động">
+      <a href="#"><span>⌂</span><b>Trang chủ</b></a>
+      <a class="active" href="#"><span>▣</span><b>Lịch chiếu</b></a>
+      <a href="#"><span>▤</span><b>Vé của tôi</b></a>
+      <a href="#"><span>♙</span><b>Tài khoản</b></a>
+    </nav>
+  </body>
+</html>

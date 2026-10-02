@@ -329,6 +329,17 @@
   --movies-compact-age-width: 1.75rem;
   --movies-compact-age-height: 1.5rem;
   --movies-compact-status-size: 0.625rem;
+  /* Movies browser — updated cinematic-movies reference */
+  --movies-toolbar-gap: var(--space-4);
+  --movies-toolbar-direction: row;
+  --movies-toolbar-align: center;
+  --movies-status-display: flex;
+
+  --movies-filter-min-width: 11.25rem;
+  --movies-filter-width: calc(var(--movies-filter-min-width) * 2 + var(--space-2));
+
+  --movies-load-more-margin-top: 1.875rem;
+  --movies-load-more-padding-inline: 1.375rem;
   /* Shared customer navigation */
   --customer-mobile-wordmark-size: clamp(1.125rem, 5vw, 1.375rem);
   --customer-mobile-location-max-width: 8rem;

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Thông tin và lịch chiếu tại rạp Cinematic." />
+    <title>CINEMATIC Quận 1 — Rạp chiếu phim</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./cinematic-cinema-pages.css" />
+  </head>
+
+  <body class="cinema-detail-page">
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="./cinematic-home-desktop.html" aria-label="Cinematic - Trang chủ">
+          CINEMATIC
+        </a>
+
+        <nav class="desktop-nav" aria-label="Điều hướng chính">
+          <a href="./cinematic-movies.html">Phim</a>
+          <a href="./cinematic-cinemas.html">Rạp</a>
+          <a href="#showtimes">Lịch chiếu</a>
+          <a href="#promotions">Ưu đãi</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="header-location" type="button">
+            <span aria-hidden="true">●</span>
+            TP. Hồ Chí Minh
+          </button>
+          <a class="account-link" href="#account">Tài khoản</a>
+          <a class="button button-primary" href="#showtimes">Đặt vé</a>
+          <button class="mobile-menu-button" type="button" aria-label="Mở menu">☰</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="detail-hero" aria-labelledby="cinema-title">
+        <div class="container detail-hero-content">
+          <nav class="breadcrumbs" aria-label="Breadcrumb">
+            <a href="./cinematic-home-desktop.html">Trang chủ</a>
+            <span aria-hidden="true">/</span>
+            <a href="./cinematic-cinemas.html">Hệ thống rạp</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">CINEMATIC Quận 1</span>
+          </nav>
+
+          <p class="eyebrow">CỤM RẠP CINEMATIC</p>
+          <h1 id="cinema-title">CINEMATIC Quận 1</h1>
+
+          <div class="detail-meta">
+            <span>⌖ 120 Nguyễn Huệ, Phường Bến Nghé, Quận 1</span>
+            <span>◷ Mở cửa theo lịch chiếu</span>
+            <span>☎ 1900 0000</span>
+          </div>
+
+          <div class="detail-actions">
+            <a class="button button-primary" href="#showtimes">Chọn suất chiếu</a>
+            <a class="button button-outline" href="#location">Xem vị trí rạp</a>
+          </div>
+        </div>
+      </section>
+
+      <div class="container detail-layout">
+        <div>
+          <section class="content-card" id="showtimes" aria-labelledby="showtimes-title">
+            <h2 id="showtimes-title">Lịch chiếu</h2>
+
+            <div class="schedule-dates" role="group" aria-label="Chọn ngày chiếu">
+              <button class="date-option" type="button" aria-current="date">
+                <strong>Hôm nay</strong>
+                <span>02/10</span>
+              </button>
+              <button class="date-option" type="button">
+                <strong>Thứ bảy</strong>
+                <span>03/10</span>
+              </button>
+              <button class="date-option" type="button">
+                <strong>Chủ nhật</strong>
+                <span>04/10</span>
+              </button>
+              <button class="date-option" type="button">
+                <strong>Thứ hai</strong>
+                <span>05/10</span>
+              </button>
+            </div>
+
+            <article class="movie-schedule">
+              <div>
+                <h3>Vùng Tối Thức Tỉnh</h3>
+                <p>Khoa học viễn tưởng · 132 phút · 13+</p>
+              </div>
+              <div class="showtime-list" aria-label="Các suất chiếu">
+                <a class="showtime" href="#booking">10:20</a>
+                <a class="showtime" href="#booking">13:10</a>
+                <a class="showtime" href="#booking">16:00</a>
+                <a class="showtime" href="#booking">19:30</a>
+              </div>
+            </article>
+
+            <article class="movie-schedule">
+              <div>
+                <h3>Ảo Ảnh Đôi Mắt</h3>
+                <p>Tâm lý · Giật gân · 118 phút · 16+</p>
+              </div>
+              <div class="showtime-list" aria-label="Các suất chiếu">
+                <a class="showtime" href="#booking">11:45</a>
+                <a class="showtime" href="#booking">14:25</a>
+                <a class="showtime" href="#booking">18:15</a>
+                <a class="showtime" href="#booking">21:00</a>
+              </div>
+            </article>
+
+            <article class="movie-schedule">
+              <div>
+                <h3>Hành Trình Của Mây</h3>
+                <p>Hoạt hình · Phiêu lưu · 96 phút · P</p>
+              </div>
+              <div class="showtime-list" aria-label="Các suất chiếu">
+                <a class="showtime" href="#booking">09:30</a>
+                <a class="showtime" href="#booking">12:00</a>
+                <a class="showtime" href="#booking">15:20</a>
+              </div>
+            </article>
+          </section>
+
+          <section class="content-card" aria-labelledby="cinema-info-title">
+            <h2 id="cinema-info-title">Thông tin rạp</h2>
+            <dl>
+              <div class="info-row">
+                <dt>Địa chỉ</dt>
+                <dd>120 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh</dd>
+              </div>
+              <div class="info-row">
+                <dt>Hotline</dt>
+                <dd>1900 0000</dd>
+              </div>
+              <div class="info-row">
+                <dt>Tiện ích</dt>
+                <dd>Phòng chiếu 2D, quầy bắp nước, bãi giữ xe</dd>
+              </div>
+              <div class="info-row">
+                <dt>Giờ hoạt động</dt>
+                <dd>Mở cửa theo lịch chiếu trong ngày</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+
+        <aside>
+          <section class="content-card" id="location" aria-labelledby="location-title">
+            <h2 id="location-title">Vị trí rạp</h2>
+            <div class="map-panel" role="img" aria-label="Bản đồ minh họa vị trí CINEMATIC Quận 1">
+              <span class="map-pin" aria-hidden="true">⌖</span>
+            </div>
+            <p class="sidebar-note">120 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh</p>
+            <a class="button button-outline" href="#location">Chỉ đường đến rạp</a>
+          </section>
+
+          <section class="content-card" id="booking" aria-labelledby="booking-title">
+            <h2 id="booking-title">Trước khi đặt vé</h2>
+            <p class="sidebar-note">Chọn ngày và suất chiếu để tiếp tục đến bước chọn ghế.</p>
+            <a class="button button-primary" href="#showtimes">Xem suất chiếu</a>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="site-footer" id="promotions">
+      <div class="container footer-inner">
+        <div>
+          <a class="brand" href="./cinematic-home-desktop.html">CINEMATIC</a>
+          <p>Điện ảnh kết nối cảm xúc.</p>
+        </div>
+        <div class="footer-links">
+          <h2>Khám phá</h2>
+          <a href="./cinematic-movies.html">Phim</a>
+          <a href="./cinematic-cinemas.html">Hệ thống rạp</a>
+          <a href="#showtimes">Lịch chiếu</a>
+        </div>
+        <div>
+          <h2>Hỗ trợ</h2>
+          <p>Thông tin lịch chiếu mẫu dùng để minh họa bố cục giao diện.</p>
+        </div>
+      </div>
+      <div class="container footer-bottom">© 2026 CINEMATIC. Tất cả quyền được bảo lưu.</div>
+    </footer>
+  </body>
+</html>

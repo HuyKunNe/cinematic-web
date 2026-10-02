@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Danh sách rạp chiếu phim Cinematic." />
+    <title>Hệ thống rạp — CINEMATIC</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./cinematic-cinema-pages.css" />
+  </head>
+
+  <body class="cinemas-page">
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="./cinematic-home-desktop.html" aria-label="Cinematic - Trang chủ">
+          CINEMATIC
+        </a>
+
+        <nav class="desktop-nav" aria-label="Điều hướng chính">
+          <a href="./cinematic-movies.html">Phim</a>
+          <a href="#cinema-list">Rạp</a>
+          <a href="#cinema-list">Lịch chiếu</a>
+          <a href="#promotions">Ưu đãi</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="header-location" type="button">
+            <span aria-hidden="true">●</span>
+            TP. Hồ Chí Minh
+          </button>
+          <a class="account-link" href="#account">Tài khoản</a>
+          <a class="button button-primary" href="#cinema-list">Đặt vé</a>
+          <button class="mobile-menu-button" type="button" aria-label="Mở menu">☰</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="page-heading" aria-labelledby="page-title">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./cinematic-home-desktop.html">Trang chủ</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Hệ thống rạp</span>
+        </nav>
+
+        <p class="eyebrow">TRẢI NGHIỆM ĐIỆN ẢNH</p>
+        <h1 id="page-title">Hệ thống rạp CINEMATIC</h1>
+        <p>Tìm rạp gần bạn, xem thông tin tiện ích và chọn rạp để khám phá lịch chiếu.</p>
+      </section>
+
+      <section aria-label="Tìm rạp">
+        <form class="filter-panel">
+          <div>
+            <label class="field-label" for="cinema-search">Tìm theo tên rạp hoặc địa chỉ</label>
+            <input
+              class="field-control"
+              id="cinema-search"
+              name="search"
+              type="search"
+              placeholder="Ví dụ: CINEMATIC Quận 1"
+            />
+          </div>
+
+          <div>
+            <label class="field-label" for="city-select">Tỉnh / thành phố</label>
+            <select class="field-control" id="city-select" name="city">
+              <option>TP. Hồ Chí Minh</option>
+              <option>Hà Nội</option>
+              <option>Đà Lạt</option>
+              <option>Tất cả khu vực</option>
+            </select>
+          </div>
+
+          <button class="button button-primary" type="submit">Tìm rạp</button>
+        </form>
+      </section>
+
+      <nav class="city-tabs" aria-label="Chọn khu vực">
+        <a class="city-tab" href="#cinema-list" aria-current="true">TP. Hồ Chí Minh</a>
+        <a class="city-tab" href="#cinema-list">Hà Nội</a>
+        <a class="city-tab" href="#cinema-list">Đà Lạt</a>
+        <a class="city-tab" href="#cinema-list">Tất cả rạp</a>
+      </nav>
+
+      <section id="cinema-list" aria-labelledby="results-title">
+        <div class="results-heading">
+          <div>
+            <h2 id="results-title">Rạp tại TP. Hồ Chí Minh</h2>
+            <p>Thông tin và tiện ích tại từng cụm rạp</p>
+          </div>
+          <p>Đang hiển thị 3 rạp</p>
+        </div>
+
+        <div class="cinema-grid">
+          <article class="cinema-card">
+            <img
+              class="cinema-image"
+              src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=85"
+              alt="Không gian phòng chiếu phim"
+            />
+            <div class="cinema-card-content">
+              <span class="cinema-city">TP. HỒ CHÍ MINH</span>
+              <h3>CINEMATIC Quận 1</h3>
+              <p class="cinema-address">120 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh</p>
+              <ul class="service-list" aria-label="Tiện ích">
+                <li>Phòng chiếu 2D</li>
+                <li>Quầy bắp nước</li>
+                <li>Bãi giữ xe</li>
+              </ul>
+              <div class="card-actions">
+                <a class="button button-outline" href="./cinematic-cinema-detail.html"
+                  >Chi tiết rạp</a
+                >
+                <a class="button button-primary" href="./cinematic-cinema-detail.html#showtimes"
+                  >Lịch chiếu</a
+                >
+              </div>
+            </div>
+          </article>
+
+          <article class="cinema-card">
+            <img
+              class="cinema-image"
+              src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=900&q=85"
+              alt="Ghế ngồi trong phòng chiếu"
+            />
+            <div class="cinema-card-content">
+              <span class="cinema-city">TP. HỒ CHÍ MINH</span>
+              <h3>CINEMATIC Thủ Đức</h3>
+              <p class="cinema-address">
+                88 Võ Văn Ngân, Phường Bình Thọ, TP. Thủ Đức, TP. Hồ Chí Minh
+              </p>
+              <ul class="service-list" aria-label="Tiện ích">
+                <li>Phòng chiếu 2D</li>
+                <li>Phòng chờ</li>
+                <li>Quầy bắp nước</li>
+              </ul>
+              <div class="card-actions">
+                <a class="button button-outline" href="./cinematic-cinema-detail.html"
+                  >Chi tiết rạp</a
+                >
+                <a class="button button-primary" href="./cinematic-cinema-detail.html#showtimes"
+                  >Lịch chiếu</a
+                >
+              </div>
+            </div>
+          </article>
+
+          <article class="cinema-card">
+            <img
+              class="cinema-image"
+              src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=85"
+              alt="Màn hình lớn trong rạp chiếu phim"
+            />
+            <div class="cinema-card-content">
+              <span class="cinema-city">TP. HỒ CHÍ MINH</span>
+              <h3>CINEMATIC Quận 7</h3>
+              <p class="cinema-address">
+                15 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7, TP. Hồ Chí Minh
+              </p>
+              <ul class="service-list" aria-label="Tiện ích">
+                <li>Phòng chiếu 2D</li>
+                <li>Phòng gia đình</li>
+                <li>Quầy bắp nước</li>
+              </ul>
+              <div class="card-actions">
+                <a class="button button-outline" href="./cinematic-cinema-detail.html"
+                  >Chi tiết rạp</a
+                >
+                <a class="button button-primary" href="./cinematic-cinema-detail.html#showtimes"
+                  >Lịch chiếu</a
+                >
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <nav class="pagination" aria-label="Phân trang">
+          <button class="button button-outline" type="button">Xem thêm rạp</button>
+        </nav>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="promotions">
+      <div class="container footer-inner">
+        <div>
+          <a class="brand" href="./cinematic-home-desktop.html">CINEMATIC</a>
+          <p>Điện ảnh kết nối cảm xúc.</p>
+        </div>
+        <div class="footer-links">
+          <h2>Khám phá</h2>
+          <a href="./cinematic-movies.html">Phim</a>
+          <a href="#cinema-list">Hệ thống rạp</a>
+          <a href="#promotions">Ưu đãi</a>
+        </div>
+        <div>
+          <h2>Hỗ trợ</h2>
+          <p>Thông tin địa chỉ, lịch chiếu và tiện ích được hiển thị theo từng rạp.</p>
+        </div>
+      </div>
+      <div class="container footer-bottom">© 2026 CINEMATIC. Tất cả quyền được bảo lưu.</div>
+    </footer>
+  </body>
+</html>

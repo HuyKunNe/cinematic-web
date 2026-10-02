@@ -54,28 +54,6 @@
   box-shadow: var(--shadow-card);
 }
 
-.movies-toolbar {
-  padding-bottom: var(--space-5);
-  border-bottom: var(--border-width-thin) solid var(--home-border-soft);
-}
-
-.movies-status-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.movies-status-button {
-  flex: 1 1 auto;
-  min-height: var(--control-height-md);
-  padding-inline: var(--space-4);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-sm);
-  color: var(--color-text-secondary);
-  background: var(--color-surface);
-  cursor: pointer;
-}
-
 .movies-status-button.is-active,
 .movies-card__cta {
   color: var(--color-on-primary);
@@ -86,7 +64,130 @@
 .movies-status-button.is-active {
   border-color: var(--color-primary);
 }
+.movies-toolbar {
+  display: flex;
+  flex-direction: var(--movies-toolbar-direction);
+  flex-wrap: wrap;
+  align-items: var(--movies-toolbar-align);
+  justify-content: space-between;
+  gap: var(--movies-toolbar-gap);
+  min-width: 0;
+  padding-bottom: var(--space-5);
+  border-bottom: var(--border-width-thin) solid var(--home-border-soft);
+}
 
+.movies-status-group {
+  display: var(--movies-status-display);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.movies-status-button {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.movies-filter-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  width: min(100%, var(--movies-filter-width));
+  min-width: 0;
+  max-width: 100%;
+  margin-inline-start: auto;
+}
+
+.movies-filter-control {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.movies-filter-control select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--control-height-md);
+  padding-inline: var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-base);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.movies-results__shown {
+  display: block;
+  margin-top: var(--space-1);
+}
+
+.movies-load-more {
+  display: flex;
+  min-height: var(--control-height-sm);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--movies-load-more-margin-top) auto var(--space-2);
+  padding-inline: var(--movies-load-more-padding-inline);
+  border: var(--border-width-thin) solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  background: transparent;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.movies-load-more svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+.movies-filter-control select:hover:not(:disabled),
+.movies-status-button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.movies-load-more:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+}
+
+.movies-filter-control select:focus-visible,
+.movies-status-button:focus-visible,
+.movies-load-more:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+
+.movies-filter-control select:disabled,
+.movies-status-button:disabled,
+.movies-load-more:disabled {
+  opacity: var(--movies-disabled-opacity);
+  cursor: not-allowed;
+}
 .movies-results {
   margin: 0;
   padding-block: var(--space-4);

@@ -20,14 +20,14 @@ export function useCinemaLocation() {
     ),
   )
 
-  const locationLabel = computed(() => selectedCity.value?.name ?? 'Chọn thành phố')
+  const locationLabel = computed(() => selectedCinema.value?.name ?? 'Chọn thành phố')
 
   const locationDescription = computed(() => {
     const city = selectedCity.value
     const cinema = selectedCinema.value
 
     if (city && cinema) {
-      return `${city.name} · ${cinema.name}. Thay đổi thành phố và rạp.`
+      return `${cinema.name}  ·  ${city.name}. Thay đổi thành phố và rạp.`
     }
 
     if (city) {
