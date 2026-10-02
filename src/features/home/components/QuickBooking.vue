@@ -4,7 +4,8 @@ import { useRouter } from 'vue-router'
 import { CalendarDays, Clapperboard, Clock3, MapPin } from 'lucide-vue-next'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { HomeMovie } from '../models/home-movie'
-import { useHomeCinemas, useHomeShowtimes } from '../api/home-queries'
+import { useHomeShowtimes } from '../api/home-queries'
+import { useCinemaLocation } from '@/features/cinemas'
 
 const props = defineProps<{
   movies: HomeMovie[]
@@ -17,8 +18,41 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+
+const {
+  query: cinemasQuery,
+  location,
+  cinemas: locationCinemas,
+  selectedCinema,
+  selectCinemaById,
+} = useCinemaLocation()
+
+const cinemas = computed(() => {
+  const cityKey = location.selectedCityKey
+
+  return cityKey
+    ? locationCinemas.value.filter((cinema) => cinema.cityKey === cityKey)
+    : locationCinemas.value
+})
+
+const cinemaSelection = computed({
+  get: () => selectedCinema.value?.id ?? '',
+  set: (cinemaId: string) => {
+    if (!cinemaId) {
+      location.clearCinema()
+      return
+    }
+
+    const cinema = cinemas.value.find((item) => item.id === cinemaId)
+
+    if (cinema) {
+      selectCinemaById(cinema.id, cinema.cityKey)
+    }
+  },
+})
+
 const selection = reactive({
-  cinema: '',
+  cinema: cinemaSelection,
   movie: '',
   date: '',
   showtime: '',
@@ -30,22 +64,7 @@ const now = ref(Date.now())
 let clockTimer: number | undefined
 let disposed = false
 
-const cinemasQuery = useHomeCinemas()
 const showtimesQuery = useHomeShowtimes(() => selection.movie)
-
-const cinemas = computed(() =>
-  (cinemasQuery.data.value ?? []).flatMap((cinema) =>
-    cinema.id && cinema.name && cinema.active
-      ? [
-          {
-            id: cinema.id,
-            name: cinema.name,
-            city: cinema.city,
-          },
-        ]
-      : [],
-  ),
-)
 
 const hasCinema = computed(() => cinemas.value.some((cinema) => cinema.id === selection.cinema))
 
@@ -103,6 +122,7 @@ const times = computed(() =>
 const canChooseMovie = computed(
   () =>
     hasCinema.value &&
+    !cinemasQuery.isFetching.value &&
     !cinemasQuery.isError.value &&
     !props.moviesLoading &&
     !props.moviesError &&
@@ -130,15 +150,16 @@ const fields = computed(() => [
     label: 'Chọn rạp',
     mobileLabel: 'Rạp',
     icon: MapPin,
-    placeholder: cinemasQuery.isPending.value ? 'Đang tải rạp…' : 'Chọn rạp',
+    placeholder: cinemasQuery.isFetching.value ? 'Đang tải rạp…' : 'Chọn rạp',
     disabled:
       checking.value ||
       cinemasQuery.isPending.value ||
+      cinemasQuery.isFetching.value ||
       cinemasQuery.isError.value ||
       !cinemas.value.length,
     options: cinemas.value.map((cinema) => ({
       value: cinema.id,
-      label: cinema.city ? `${cinema.name} · ${cinema.city}` : cinema.name,
+      label: location.selectedCityKey ? cinema.name : `${cinema.name} · ${cinema.city}`,
     })),
   },
   {
@@ -280,13 +301,6 @@ watch(
     navigationError.value = ''
   },
 )
-
-watch(cinemas, (items) => {
-  if (selection.cinema && !items.some((item) => item.id === selection.cinema)) {
-    selection.cinema = ''
-    selection.movie = ''
-  }
-})
 
 watch(
   () => props.movies,
