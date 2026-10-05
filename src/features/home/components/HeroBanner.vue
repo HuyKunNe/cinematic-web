@@ -4,13 +4,43 @@ import { ChevronLeft, ChevronRight, Clapperboard, Play } from 'lucide-vue-next'
 import type { HomeMovie } from '../models/home-movie'
 import { heroArtworkCandidates } from '../presentation/artwork'
 import { formatAgeRating } from '@/utils/movie-age-rating'
-const props = defineProps<{ movies: HomeMovie[]; loading: boolean }>()
+const props = defineProps<{
+  movies: HomeMovie[]
+  loading: boolean
+  error: boolean
+  errorMessage: string
+  retrying: boolean
+  emptyMessage: string
+}>()
+
+const emit = defineEmits<{
+  retry: []
+}>()
+
 const shown = ref<HomeMovie | null>(null)
 const ageRating = computed(() => formatAgeRating(shown.value?.ageRating))
 const artwork = ref('')
 const pending = ref(false)
 const isTransitioning = ref(false)
 let requestVersion = 0
+
+const placeholderTitle = computed(() => {
+  if (props.loading || pending.value) return 'Đang tải phim'
+  if (props.error) return 'Chưa thể tải nội dung'
+  return 'Khám phá điện ảnh'
+})
+
+const placeholderMessage = computed(() => {
+  if (props.loading || pending.value) {
+    return 'Đang chuẩn bị nội dung…'
+  }
+
+  if (props.error) {
+    return props.errorMessage || 'Không thể tải nội dung. Vui lòng thử lại.'
+  }
+
+  return props.emptyMessage
+})
 
 const activeIndex = computed(() => props.movies.findIndex((movie) => movie.id === shown.value?.id))
 
@@ -133,6 +163,7 @@ const canAutoAdvance = computed(
     !isHovered.value &&
     !hasFocusWithin.value &&
     !props.loading &&
+    !props.error &&
     !isTransitioning.value &&
     !pending.value &&
     props.movies.length > 1 &&
@@ -219,7 +250,7 @@ onBeforeUnmount(() => {
   <section
     class="home-hero"
     :aria-labelledby="heroTitleId"
-    :aria-busy="loading || pending || isTransitioning"
+    :aria-busy="loading || retrying || pending || isTransitioning"
     @pointerenter="handlePointerEnter"
     @pointerleave="handlePointerLeave"
     @focusin="handleFocusIn"
@@ -251,7 +282,7 @@ onBeforeUnmount(() => {
                 {{ shown.genres.join(' · ') }}
               </span>
 
-              <<span
+              <span
                 class="home-age-mark"
                 role="img"
                 :aria-label="ageRating.description"
@@ -298,11 +329,26 @@ onBeforeUnmount(() => {
           <template v-else>
             <span class="home-badge">CINEMATIC</span>
 
-            <h1 :id="heroTitleId">Khám phá điện ảnh</h1>
+            <h1 :id="heroTitleId">{{ placeholderTitle }}</h1>
 
-            <p class="home-hero__tagline">
-              {{ loading ? 'ĐANG TẢI DANH SÁCH PHIM' : 'PHIM ĐANG CHIẾU SẼ ĐƯỢC CẬP NHẬT' }}
+            <p
+              class="home-hero__tagline"
+              :role="error && !loading && !pending ? 'alert' : 'status'"
+              aria-atomic="true"
+            >
+              {{ placeholderMessage }}
             </p>
+            <div v-if="error && !loading && !pending" class="home-hero__actions">
+              <button
+                class="home-button home-button--primary"
+                type="button"
+                :disabled="retrying"
+                :aria-busy="retrying"
+                @click="emit('retry')"
+              >
+                {{ retrying ? 'Đang thử lại…' : 'Thử lại' }}
+              </button>
+            </div>
           </template>
         </div>
 

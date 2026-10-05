@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { AppButton } from '@/components/ui'
 import CustomerFooter from '@/components/navigation/CustomerFooter.vue'
 import { useCinemaLocation } from '@/features/cinemas'
 import HeroBanner from '../components/HeroBanner.vue'
@@ -31,7 +30,20 @@ function dismissLocationNotice() {
 
 <template>
   <div class="home-page">
-    <HeroBanner :key="`hero-${scopeKey}`" :movies="nowShowing" :loading="loading" />
+    <HeroBanner
+      :key="`hero-${scopeKey}`"
+      :movies="nowShowing"
+      :loading="loading"
+      :error="error"
+      :error-message="errorMessage"
+      :retrying="retrying"
+      :empty-message="
+        location.selectedCinemaId
+          ? 'Rạp đã chọn hiện chưa có phim đang mở bán.'
+          : 'Hiện chưa có phim đang chiếu.'
+      "
+      @retry="retry"
+    />
 
     <div v-if="error" class="home-container">
       <p class="home-page__error" role="alert">{{ errorMessage }} Vui lòng thử lại.</p>

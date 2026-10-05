@@ -24,12 +24,10 @@ export function movieArtwork(movie: HomeMovie): string {
 }
 
 export function heroArtworkCandidates(movie: HomeMovie): string[] {
-  const candidates = [movie.backdropUrl, movie.posterUrl, fallbackArtwork(movie.id)].flatMap(
-    (value) => {
-      const candidate = value?.trim()
-      return candidate ? [candidate] : []
-    },
-  )
+  const candidates = [movie.backdropUrl, movie.posterUrl].flatMap((value) => {
+    const candidate = value?.trim()
+    return candidate ? [candidate] : []
+  })
 
   return [...new Set(candidates)]
 }
