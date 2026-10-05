@@ -6,6 +6,7 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import type { HomeMovie } from '../models/home-movie'
 import { useHomeShowtimes } from '../api/home-queries'
 import { useCinemaLocation } from '@/features/cinemas'
+import { getCinemaDateKey, formatCinemaDateKey, formatCinemaTime } from '@/utils/cinema-time'
 
 const props = defineProps<{
   movies: HomeMovie[]
@@ -249,27 +250,15 @@ const canRetry = computed(
 )
 
 function localDate(iso: string) {
-  const date = new Date(iso)
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, '0'),
-    String(date.getDate()).padStart(2, '0'),
-  ].join('-')
+  return getCinemaDateKey(iso)
 }
 
 function labelDate(date: string) {
-  return new Date(`${date}T12:00:00`).toLocaleDateString('vi-VN', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit',
-  })
+  return formatCinemaDateKey(date)
 }
 
 function labelTime(iso: string) {
-  return new Date(iso).toLocaleTimeString('vi-VN', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return formatCinemaTime(iso)
 }
 
 function updateClock() {
