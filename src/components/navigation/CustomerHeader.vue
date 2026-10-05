@@ -89,9 +89,7 @@ function isActive(routeName: string) {
 
         <RouterLink
           class="customer-header__account"
-          :to="{
-            name: auth.isAuthenticated ? ROUTE_NAMES.ACCOUNT : ROUTE_NAMES.AUTH_REQUIRED,
-          }"
+          :to="{ name: ROUTE_NAMES.ACCOUNT }"
         >
           <UserRound aria-hidden="true" class="customer-navigation__icon" />
           <span>{{ auth.isAuthenticated ? 'Tài khoản' : 'Đăng nhập' }}</span>

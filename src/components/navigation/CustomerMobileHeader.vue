@@ -250,9 +250,7 @@ onBeforeUnmount(() => {
 
           <RouterLink
             class="customer-mobile-header__account"
-            :to="{
-              name: auth.isAuthenticated ? ROUTE_NAMES.ACCOUNT : ROUTE_NAMES.AUTH_REQUIRED,
-            }"
+            :to="{ name: ROUTE_NAMES.ACCOUNT }"
             :aria-label="auth.isAuthenticated ? 'Tài khoản' : 'Đăng nhập'"
           >
             <UserRound aria-hidden="true" class="customer-navigation__icon" />

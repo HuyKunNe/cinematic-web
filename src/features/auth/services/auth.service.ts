@@ -1,5 +1,6 @@
 import type { User } from 'oidc-client-ts'
 import { APP_PERMISSIONS, APP_ROLES } from '../../../config/authorization'
+import { ROUTE_PATHS } from '../../../router/route-constants'
 import type { AppPermission, AppRole } from '../../../config/authorization'
 import { useAuthStore } from '../../../stores/auth.store'
 import { getUserManager } from './oidc-client'
@@ -52,6 +53,15 @@ export function safeReturnTo(value: unknown): string {
   try {
     const target = new URL(value, window.location.origin)
     if (target.origin !== window.location.origin) return '/'
+    const pathname = target.pathname.replace(/\/+$/, '').toLowerCase()
+    const authEntryPaths = new Set<string>([
+      ROUTE_PATHS.LOGIN,
+      ROUTE_PATHS.AUTH_REQUIRED,
+      ROUTE_PATHS.AUTH_CALLBACK,
+    ])
+
+    // Không quay lại trang bắt đầu đăng nhập hoặc callback.
+    if (authEntryPaths.has(pathname)) return ROUTE_PATHS.HOME
     return `${target.pathname}${target.search}${target.hash}`
   } catch {
     return '/'
@@ -86,10 +96,20 @@ async function renewWithRefreshToken(user: User): Promise<User | null> {
   return refreshInFlight
 }
 
+let signInInFlight: Promise<void> | null = null
+
 export async function beginSignIn(returnTo: unknown): Promise<void> {
-  await getUserManager().signinRedirect({
-    state: { returnTo: safeReturnTo(returnTo) },
-  })
+  if (!signInInFlight) {
+    signInInFlight = getUserManager()
+      .signinRedirect({
+        state: { returnTo: safeReturnTo(returnTo) },
+      })
+      .finally(() => {
+        signInInFlight = null
+      })
+  }
+
+  await signInInFlight
 }
 
 export async function completeSignIn(): Promise<string> {

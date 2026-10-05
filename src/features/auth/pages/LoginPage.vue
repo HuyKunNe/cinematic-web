@@ -5,9 +5,11 @@ import { beginSignIn } from '../services/auth.service'
 
 const route = useRoute()
 const loading = ref(false)
-const errorMessage = ref('')
+const errorMessage = ref('Không thể mở trang đăng nhập. Vui lòng thử lại.')
 
 async function handleSignIn() {
+  if (loading.value) return
+
   loading.value = true
   errorMessage.value = ''
 
@@ -15,7 +17,7 @@ async function handleSignIn() {
     await beginSignIn(route.query.returnTo)
   } catch {
     loading.value = false
-    errorMessage.value = 'Không thể bắt đầu đăng nhập. Kiểm tra cấu hình OIDC của ứng dụng.'
+    errorMessage.value = 'Không thể mở trang đăng nhập. Vui lòng thử lại.'
   }
 }
 </script>
@@ -24,10 +26,9 @@ async function handleSignIn() {
   <section class="login-page">
     <div class="login-page__card">
       <p class="login-page__eyebrow">Tài khoản Cinematic</p>
-      <h1>Đăng nhập</h1>
-      <p class="login-page__description">
-        Bạn sẽ được chuyển tới hệ thống định danh Cinematic để đăng nhập an toàn.
-      </p>
+      <h1>Chưa thể đăng nhập</h1>
+
+      <p class="login-page__description">Vui lòng thử lại để tiếp tục đến trang bạn đang mở.</p>
 
       <p v-if="errorMessage" class="login-page__error" role="alert">
         {{ errorMessage }}
@@ -40,7 +41,7 @@ async function handleSignIn() {
         :aria-busy="loading"
         @click="handleSignIn"
       >
-        {{ loading ? 'Đang chuyển tới đăng nhập…' : 'Tiếp tục đăng nhập' }}
+        {{ loading ? 'Đang chuyển tới đăng nhập…' : 'Thử lại đăng nhập' }}
       </button>
     </div>
   </section>
