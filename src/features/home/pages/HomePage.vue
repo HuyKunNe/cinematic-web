@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { AppButton } from '@/components/ui'
 import CustomerFooter from '@/components/navigation/CustomerFooter.vue'
+import { useCinemaLocation } from '@/features/cinemas'
 import HeroBanner from '../components/HeroBanner.vue'
 import QuickBooking from '../components/QuickBooking.vue'
 import NowShowingSection from '../components/NowShowingSection.vue'
@@ -11,6 +13,20 @@ import { useHomeProgramme } from '../composables/use-home-programme'
 
 const { scopeKey, nowShowing, upcoming, loading, error, errorMessage, retrying, retry } =
   useHomeProgramme()
+
+const { location } = useCinemaLocation()
+const locationChanged = ref(false)
+
+watch(
+  () => location.selectedCinemaId,
+  (cinemaId, previousCinemaId) => {
+    locationChanged.value = Boolean(cinemaId && previousCinemaId && cinemaId !== previousCinemaId)
+  },
+)
+
+function dismissLocationNotice() {
+  locationChanged.value = false
+}
 </script>
 
 <template>
@@ -28,7 +44,9 @@ const { scopeKey, nowShowing, upcoming, loading, error, errorMessage, retrying, 
       :movies="nowShowing"
       :movies-loading="loading"
       :movies-error="error"
+      :location-changed="locationChanged"
       @retry-movies="retry"
+      @dismiss-location-notice="dismissLocationNotice"
     />
 
     <NowShowingSection

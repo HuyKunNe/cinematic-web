@@ -14,10 +14,12 @@ const props = defineProps<{
   movies: HomeMovie[]
   moviesLoading: boolean
   moviesError: boolean
+  locationChanged: boolean
 }>()
 
 const emit = defineEmits<{
   'retry-movies': []
+  'dismiss-location-notice': []
 }>()
 
 const router = useRouter()
@@ -283,32 +285,95 @@ const errorMessage = computed(() => {
 
 const helperMessage = computed(() => {
   if (checking.value) return 'Đang kiểm tra lại suất chiếu…'
-  if (cinemasQuery.isPending.value) return 'Đang tải danh sách rạp…'
-  if (!cinemas.value.length) return 'Chưa có rạp đang hoạt động.'
+
+  if (cinemasQuery.isPending.value) {
+    return 'Đang tải danh sách rạp…'
+  }
+
+  if (cinemasQuery.isFetching.value) {
+    return 'Đang cập nhật danh sách rạp…'
+  }
+
+  if (!cinemas.value.length) {
+    return 'Chưa có rạp đang hoạt động.'
+  }
+
   if (!hasCinema.value) {
     return 'Chọn thành phố và rạp để bắt đầu đặt vé nhanh.'
   }
-  if (props.moviesLoading) return 'Đang tải danh sách phim…'
-  if (!props.movies.length) return 'Chưa có phim đang chiếu.'
-  if (!hasMovie.value) return 'Chọn phim để xem lịch mở bán tại rạp đã chọn.'
-  if (showtimesQuery.isFetching.value) return 'Đang cập nhật lịch chiếu…'
 
-  if (!available.value.length) {
-    return 'Phim này chưa có suất mở bán trong thời gian tới tại rạp đã chọn.'
+  if (props.moviesLoading) {
+    return 'Đang tải danh sách phim…'
   }
 
-  if (!selection.date) return 'Chọn ngày có suất mở bán.'
+  if (!props.movies.length) {
+    return 'Rạp này hiện chưa có phim đang mở bán. Bạn có thể chọn rạp khác.'
+  }
+
+  if (!hasMovie.value) {
+    return props.locationChanged
+      ? 'Vui lòng chọn lại phim để tiếp tục.'
+      : 'Chọn phim để xem lịch mở bán tại rạp đã chọn.'
+  }
+
+  if (showtimesQuery.isFetching.value || !showtimesQuery.isSuccess.value) {
+    return 'Đang cập nhật lịch chiếu…'
+  }
+
+  if (!available.value.length) {
+    return 'Phim này chưa có suất mở bán tại rạp đã chọn. Bạn có thể chọn phim hoặc rạp khác.'
+  }
+
+  if (!selection.date) {
+    return 'Chọn ngày có suất mở bán.'
+  }
 
   if (bookableQuery.isFetching.value || !bookableQuery.isSuccess.value) {
     return 'Đang tải suất mở bán của ngày đã chọn…'
   }
 
   if (!times.value.length) {
-    return 'Ngày đã chọn hiện không có suất đủ điều kiện mở bán. Vui lòng chọn ngày khác.'
+    return 'Ngày đã chọn hiện không có suất mở bán. Vui lòng chọn ngày hoặc rạp khác.'
   }
 
-  if (!selection.showtime) return 'Chọn giờ chiếu và phòng chiếu phù hợp.'
+  if (!selection.showtime) {
+    return 'Chọn giờ chiếu và phòng chiếu phù hợp.'
+  }
+
   return 'Đã chọn suất chiếu. Nhấn Tiếp tục để sang bước tiếp theo.'
+})
+
+const feedbackMessage = computed(() => {
+  const locationNotice =
+    props.locationChanged && hasCinema.value && !hasMovie.value ? 'Đã đổi rạp. ' : ''
+
+  return `${locationNotice}${errorMessage.value || helperMessage.value}`
+})
+
+const canChangeCinema = computed(() => {
+  if (
+    checking.value ||
+    !hasCinema.value ||
+    cinemasQuery.isFetching.value ||
+    cinemasQuery.isError.value ||
+    props.moviesLoading ||
+    props.moviesError
+  ) {
+    return false
+  }
+
+  // Danh mục theo rạp đã tải xong nhưng không có phim mở bán.
+  if (!props.movies.length) return true
+
+  if (!hasMovie.value || showtimesQuery.isFetching.value || !showtimesQuery.isSuccess.value) {
+    return false
+  }
+
+  // Phim đã chọn không còn suất mở bán trong tương lai.
+  if (!available.value.length) return true
+
+  // Ngày đã chọn tải thành công nhưng không còn suất phù hợp.
+  return Boolean(selection.date && bookableReady.value && !times.value.length)
 })
 
 const canRetry = computed(
@@ -398,6 +463,15 @@ watch(
   (movies) => {
     if (selection.movie && !movies.some((movie) => movie.id === selection.movie)) {
       selection.movie = ''
+    }
+  },
+)
+
+watch(
+  () => selection.movie,
+  (movieId) => {
+    if (movieId && props.locationChanged) {
+      emit('dismiss-location-notice')
     }
   },
 )
@@ -601,26 +675,44 @@ onBeforeUnmount(() => {
         class="home-booking__feedback"
         :class="{ 'home-booking__feedback--error': Boolean(errorMessage) }"
         :role="errorMessage ? 'alert' : 'status'"
+        aria-atomic="true"
       >
-        {{ errorMessage || helperMessage }}
+        {{ feedbackMessage }}
       </p>
 
-      <button
-        v-if="canRetry"
-        class="home-booking__retry"
-        type="button"
-        :disabled="
-          checking ||
-          cinemasQuery.isFetching.value ||
-          roomsQuery.isFetching.value ||
-          moviesLoading ||
-          showtimesQuery.isFetching.value ||
-          bookableQuery.isFetching.value
-        "
-        @click="retryLoading"
-      >
-        Thử lại
-      </button>
+      <div v-if="canRetry || canChangeCinema" class="home-booking__feedback-actions">
+        <button
+          v-if="canRetry"
+          class="home-booking__retry"
+          type="button"
+          :disabled="
+            checking ||
+            cinemasQuery.isFetching.value ||
+            roomsQuery.isFetching.value ||
+            moviesLoading ||
+            showtimesQuery.isFetching.value ||
+            bookableQuery.isFetching.value
+          "
+          @click="retryLoading"
+        >
+          Thử lại
+        </button>
+
+        <button
+          v-if="canChangeCinema"
+          id="home-change-cinema"
+          class="home-booking__retry"
+          type="button"
+          data-location-trigger
+          aria-haspopup="dialog"
+          aria-controls="cinema-location-dialog"
+          :aria-expanded="locationDialogOpen"
+          :disabled="checking"
+          @click="openBookingLocation"
+        >
+          Đổi rạp
+        </button>
+      </div>
     </div>
   </section>
 </template>
