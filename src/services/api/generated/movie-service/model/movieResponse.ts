@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { GenreResponse } from './genreResponse';
+import type { MovieResponseAgeRating } from './movieResponseAgeRating';
 import type { MovieResponseStatus } from './movieResponseStatus';
 
 export interface MovieResponse {
@@ -21,4 +22,8 @@ export interface MovieResponse {
   version?: number;
   createdAt?: string;
   updatedAt?: string;
+  /** Landscape artwork URL. Null when unavailable. */
+  backdropUrl?: string;
+  /** Confirmed age classification. Null when unknown. */
+  ageRating?: MovieResponseAgeRating;
 }

@@ -1,5 +1,4 @@
-// Backend hiện chưa cung cấp phân loại độ tuổi.
-// Đây là trạng thái thiếu dữ liệu, không phải phân loại của phim.
+// Fallback khi phim chưa có dữ liệu phân loại độ tuổi.
 export const unavailableAgeRating = {
   label: '—',
   description: 'Chưa có thông tin phân loại độ tuổi',

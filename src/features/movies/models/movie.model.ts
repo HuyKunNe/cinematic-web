@@ -1,3 +1,4 @@
+import type { MovieResponse } from '@/services/api/generated/movie-service/model/movieResponse'
 export type CatalogMovieStatus = 'NOW_SHOWING' | 'UPCOMING'
 
 export interface MovieGenre {
@@ -12,6 +13,7 @@ export interface CatalogMovie {
   durationMinutes: number | null
   releaseDate: string | null
   posterUrl: string | null
+  ageRating: NonNullable<MovieResponse['ageRating']> | null
   trailerUrl: string | null
   genres: MovieGenre[]
   status: CatalogMovieStatus

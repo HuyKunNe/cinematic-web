@@ -31,6 +31,8 @@ export function toHomeMovie(movie: MovieResponse): HomeMovie | null {
     durationMinutes: movie.durationMinutes ?? null,
     releaseDate: movie.releaseDate ?? null,
     posterUrl: movie.posterUrl ?? null,
+    backdropUrl: movie.backdropUrl?.trim() || null,
+    ageRating: movie.ageRating ?? null,
     trailerUrl: normalizeTrailerUrl(movie.trailerUrl),
     genres:
       movie.genres?.map((genre) => genre.name).filter((name): name is string => Boolean(name)) ??

@@ -2,11 +2,11 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ChevronLeft, ChevronRight, Clapperboard, Play } from 'lucide-vue-next'
 import type { HomeMovie } from '../models/home-movie'
-import { fallbackArtwork, movieArtwork } from '../presentation/artwork'
-import { unavailableAgeRating } from '../presentation/movie-metadata'
-
+import { heroArtworkCandidates } from '../presentation/artwork'
+import { formatAgeRating } from '@/utils/movie-age-rating'
 const props = defineProps<{ movies: HomeMovie[]; loading: boolean }>()
 const shown = ref<HomeMovie | null>(null)
+const ageRating = computed(() => formatAgeRating(shown.value?.ageRating))
 const artwork = ref('')
 const pending = ref(false)
 const isTransitioning = ref(false)
@@ -64,20 +64,24 @@ async function selectSlide(index: number, force = false, direction?: SlideDirect
   const version = ++requestVersion
   pending.value = true
 
-  const candidate = movieArtwork(movie)
-  const loaded = await preload(candidate)
+  let nextArtwork = ''
+
+  for (const candidate of heroArtworkCandidates(movie)) {
+    const loaded = await preload(candidate)
+
+    if (version !== requestVersion) return
+
+    if (loaded) {
+      nextArtwork = candidate
+      break
+    }
+  }
 
   if (version !== requestVersion) return
 
-  const image = loaded ? candidate : fallbackArtwork(movie.id)
-  const fallbackLoaded = loaded || (await preload(image))
-
-  if (version !== requestVersion) return
-
-  // Determine direction before committing the new slide.
   slideDirection.value = direction ?? (index < Math.max(activeIndex.value, 0) ? 'previous' : 'next')
 
-  artwork.value = fallbackLoaded ? image : ''
+  artwork.value = nextArtwork
   shown.value = movie
   pending.value = false
 }
@@ -247,13 +251,13 @@ onBeforeUnmount(() => {
                 {{ shown.genres.join(' · ') }}
               </span>
 
-              <span
+              <<span
                 class="home-age-mark"
                 role="img"
-                :aria-label="unavailableAgeRating.description"
-                :title="unavailableAgeRating.description"
+                :aria-label="ageRating.description"
+                :title="ageRating.description"
               >
-                {{ unavailableAgeRating.label }}
+                {{ ageRating.label }}
               </span>
 
               <span v-if="shown.durationMinutes"> {{ shown.durationMinutes }} phút </span>

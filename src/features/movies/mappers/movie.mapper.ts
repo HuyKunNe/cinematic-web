@@ -43,6 +43,7 @@ export function toCatalogMovie(movie: MovieResponse): CatalogMovie | null {
     durationMinutes: movie.durationMinutes ?? null,
     releaseDate: movie.releaseDate ?? null,
     posterUrl: movie.posterUrl?.trim() || null,
+    ageRating: movie.ageRating ?? null,
     trailerUrl: normalizeTrailerUrl(movie.trailerUrl),
     genres,
     status: movie.status,

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Play } from 'lucide-vue-next'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { HomeMovie } from '../models/home-movie'
 import { fallbackArtwork, formatReleaseDate, movieArtwork } from '../presentation/artwork'
-import { unavailableAgeRating } from '../presentation/movie-metadata'
+import { formatAgeRating } from '@/utils/movie-age-rating'
 
 const props = defineProps<{ movie: HomeMovie }>()
-
+const ageRating = computed(() => formatAgeRating(props.movie.ageRating))
 const image = ref(movieArtwork(props.movie))
 
 watch(
@@ -71,10 +71,10 @@ watch(
       <span
         class="home-age-mark"
         role="img"
-        :aria-label="unavailableAgeRating.description"
-        :title="unavailableAgeRating.description"
+        :aria-label="ageRating.description"
+        :title="ageRating.description"
       >
-        {{ unavailableAgeRating.label }}
+        {{ ageRating.label }}
       </span>
 
       <span v-if="movie.durationMinutes"> {{ movie.durationMinutes }} phút </span>

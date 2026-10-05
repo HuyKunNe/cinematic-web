@@ -10,6 +10,7 @@ import type {
   GetMovieCatalogParams,
   MovieResponse,
   PageResponseMovieResponse,
+  UpdateMovieMetadataRequest,
   UpdateMovieRequest
 } from '../model';
 
@@ -41,6 +42,21 @@ import { apiRequest } from '../../../../http/axios-instance';
  ) => {
       return apiRequest<void>(
       {url: `/api/v1/movies/${id}`, method: 'DELETE'
+    },
+      );
+    }
+  /**
+ * Requires movie:manage. Both properties must be present. Null clears a value. Artwork fallback is handled by the frontend.
+ * @summary Replace movie metadata
+ */
+export const updateMovieMetadata = (
+    id: string,
+    updateMovieMetadataRequest: UpdateMovieMetadataRequest,
+ ) => {
+      return apiRequest<MovieResponse>(
+      {url: `/api/v1/movies/${id}/metadata`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateMovieMetadataRequest
     },
       );
     }
@@ -77,6 +93,7 @@ export const getMovieCatalog = (
   export type FindByIdResult = NonNullable<Awaited<ReturnType<typeof findById>>>
 export type UpdateResult = NonNullable<Awaited<ReturnType<typeof update>>>
 export type _DeleteResult = NonNullable<Awaited<ReturnType<typeof _delete>>>
+export type UpdateMovieMetadataResult = NonNullable<Awaited<ReturnType<typeof updateMovieMetadata>>>
 export type FindAllResult = NonNullable<Awaited<ReturnType<typeof findAll>>>
 export type CreateResult = NonNullable<Awaited<ReturnType<typeof create>>>
 export type GetMovieCatalogResult = NonNullable<Awaited<ReturnType<typeof getMovieCatalog>>>

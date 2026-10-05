@@ -3,9 +3,10 @@ import { computed, ref, watch } from 'vue'
 import { Clapperboard, Play } from 'lucide-vue-next'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { CatalogMovie } from '../models/movie.model'
+import { formatAgeRating } from '@/utils/movie-age-rating'
 
 const props = defineProps<{ movie: CatalogMovie }>()
-
+const ageRating = computed(() => formatAgeRating(props.movie.ageRating))
 const imageFailed = ref(false)
 
 watch(
@@ -62,10 +63,10 @@ const detailLocation = computed(() => ({
       <span
         class="movies-card__age"
         role="img"
-        aria-label="Chưa có thông tin phân loại độ tuổi"
-        title="Chưa có thông tin phân loại độ tuổi"
+        :aria-label="ageRating.description"
+        :title="ageRating.description"
       >
-        —
+        {{ ageRating.label }}
       </span>
 
       <a
