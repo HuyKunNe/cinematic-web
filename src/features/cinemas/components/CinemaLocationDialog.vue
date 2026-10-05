@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import {
   DialogClose,
@@ -85,17 +85,30 @@ function restoreFocus(event: Event) {
 
   const originalTrigger = props.returnFocusTo
 
-  if (originalTrigger?.isConnected && originalTrigger.getClientRects().length > 0) {
-    originalTrigger.focus()
-    return
-  }
+  void nextTick(() => {
+    if (props.open) return
 
-  // Khi xoay màn hình, nút mở ban đầu có thể đã bị ẩn.
-  const visibleTrigger = [
-    ...document.querySelectorAll<HTMLButtonElement>('[data-location-trigger]'),
-  ].find((button) => !button.disabled && button.getClientRects().length > 0)
+    // Đổi rạp có thể remount Quick Booking.
+    const replacementTrigger = originalTrigger?.id
+      ? document.getElementById(originalTrigger.id)
+      : null
 
-  visibleTrigger?.focus()
+    const candidates = [
+      originalTrigger,
+      replacementTrigger,
+      ...document.querySelectorAll<HTMLButtonElement>('[data-location-trigger]'),
+    ]
+
+    const visibleTrigger = candidates.find(
+      (element): element is HTMLButtonElement =>
+        element instanceof HTMLButtonElement &&
+        element.isConnected &&
+        !element.disabled &&
+        element.getClientRects().length > 0,
+    )
+
+    visibleTrigger?.focus()
+  })
 }
 
 watch(
@@ -152,7 +165,8 @@ watch(query.data, (catalog) => {
         </div>
 
         <DialogDescription class="location-dialog__description">
-          Chọn thành phố trước, sau đó chọn rạp bạn muốn xem phim.
+          Chọn thành phố trước, sau đó chọn rạp. Phim và lịch chiếu sẽ được cập nhật theo rạp bạn
+          chọn.
         </DialogDescription>
 
         <p v-if="query.isPending.value" class="location-dialog__message" role="status">
@@ -218,8 +232,7 @@ watch(query.data, (catalog) => {
 
           <div class="location-dialog__actions">
             <AppButton variant="ghost" @click="emit('update:open', false)"> Hủy </AppButton>
-
-            <AppButton type="submit" :disabled="!canApply"> Áp dụng </AppButton>
+            <AppButton type="submit" :disabled="!canApply"> Áp dụng địa điểm </AppButton>
           </div>
         </form>
       </DialogContent>

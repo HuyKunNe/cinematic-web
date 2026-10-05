@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { CalendarDays, Clapperboard, Clock3, MapPin } from 'lucide-vue-next'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { HomeMovie } from '../models/home-movie'
-import { useCinemaLocation, useCinemaRoomsQuery } from '@/features/cinemas'
 import { getCinemaDateKey, formatCinemaTime, getCinemaDayRange } from '@/utils/cinema-time'
 import { useHomeShowtimes, useHomeBookableShowtimes } from '../api/home-queries'
 import type { ShowtimeResponse } from '@/services/api/generated/inventory-service/model/showtimeResponse'
 import type { RoomResponseRoomType } from '@/services/api/generated/inventory-service/model/roomResponseRoomType'
+import { CalendarDays, ChevronDown, Clapperboard, Clock3, MapPin } from 'lucide-vue-next'
+import { useCinemaLocation, useCinemaLocationDialog, useCinemaRoomsQuery } from '@/features/cinemas'
 
 const props = defineProps<{
   movies: HomeMovie[]
@@ -22,12 +22,15 @@ const emit = defineEmits<{
 
 const router = useRouter()
 
+const { isOpen: locationDialogOpen, open: openLocation } = useCinemaLocationDialog()
+
 const {
   query: cinemasQuery,
   location,
   cinemas: locationCinemas,
+  selectedCity,
   selectedCinema,
-  selectCinemaById,
+  locationDescription,
 } = useCinemaLocation()
 
 const cinemas = computed(() => {
@@ -38,21 +41,8 @@ const cinemas = computed(() => {
     : locationCinemas.value
 })
 
-const cinemaSelection = computed({
-  get: () => selectedCinema.value?.id ?? '',
-  set: (cinemaId: string) => {
-    if (!cinemaId) {
-      location.clearCinema()
-      return
-    }
-
-    const cinema = cinemas.value.find((item) => item.id === cinemaId)
-
-    if (cinema) {
-      selectCinemaById(cinema.id, cinema.cityKey)
-    }
-  },
-})
+// Location chỉ được cập nhật qua bộ chọn thành phố và rạp.
+const cinemaSelection = computed(() => selectedCinema.value?.id ?? '')
 
 const selection = reactive({
   cinema: cinemaSelection,
@@ -62,6 +52,15 @@ const selection = reactive({
 })
 
 const checking = ref(false)
+function openBookingLocation(event: Event) {
+  if (checking.value) return
+
+  const trigger = event.currentTarget
+
+  if (trigger instanceof HTMLButtonElement) {
+    openLocation(trigger)
+  }
+}
 const navigationError = ref('')
 const now = ref(Date.now())
 let clockTimer: number | undefined
@@ -209,21 +208,12 @@ const canContinue = computed(
 const fields = computed(() => [
   {
     key: 'cinema' as const,
-    label: 'Chọn rạp',
-    mobileLabel: 'Rạp',
+    label: 'Địa điểm',
+    mobileLabel: 'Địa điểm',
     icon: MapPin,
-    placeholder: cinemasQuery.isFetching.value ? 'Đang tải rạp…' : 'Chọn rạp',
-    disabled:
-      checking.value ||
-      cinemasQuery.isPending.value ||
-      cinemasQuery.isFetching.value ||
-      cinemasQuery.isError.value ||
-      (hasCinema.value && roomsQuery.isError.value) ||
-      !cinemas.value.length,
-    options: cinemas.value.map((cinema) => ({
-      value: cinema.id,
-      label: cinema.name,
-    })),
+    placeholder: 'Chọn thành phố và rạp',
+    disabled: checking.value,
+    options: [],
   },
   {
     key: 'movie' as const,
@@ -295,7 +285,9 @@ const helperMessage = computed(() => {
   if (checking.value) return 'Đang kiểm tra lại suất chiếu…'
   if (cinemasQuery.isPending.value) return 'Đang tải danh sách rạp…'
   if (!cinemas.value.length) return 'Chưa có rạp đang hoạt động.'
-  if (!hasCinema.value) return 'Chọn rạp để bắt đầu đặt vé nhanh.'
+  if (!hasCinema.value) {
+    return 'Chọn thành phố và rạp để bắt đầu đặt vé nhanh.'
+  }
   if (props.moviesLoading) return 'Đang tải danh sách phim…'
   if (!props.movies.length) return 'Chưa có phim đang chiếu.'
   if (!hasMovie.value) return 'Chọn phim để xem lịch mở bán tại rạp đã chọn.'
@@ -530,8 +522,36 @@ onBeforeUnmount(() => {
           <span class="home-booking__mobile-label">
             {{ field.mobileLabel }}
           </span>
+          <button
+            v-if="field.key === 'cinema'"
+            :id="`home-${field.key}`"
+            class="home-booking__location"
+            type="button"
+            data-location-trigger
+            aria-haspopup="dialog"
+            aria-controls="cinema-location-dialog"
+            :aria-expanded="locationDialogOpen"
+            :aria-label="locationDescription"
+            aria-describedby="quick-booking-feedback"
+            :title="locationDescription"
+            :disabled="field.disabled"
+            @click="openBookingLocation"
+          >
+            <span class="home-booking__location-copy">
+              <span class="home-booking__location-name">
+                {{ selectedCinema?.name ?? 'Chọn thành phố và rạp' }}
+              </span>
+
+              <span v-if="selectedCity" class="home-booking__location-city">
+                {{ selectedCity.name }}
+              </span>
+            </span>
+
+            <ChevronDown aria-hidden="true" />
+          </button>
+
           <input
-            v-if="field.key === 'date'"
+            v-else-if="field.key === 'date'"
             :id="`home-${field.key}`"
             class="home-booking__date"
             type="date"
@@ -543,6 +563,7 @@ onBeforeUnmount(() => {
             aria-describedby="quick-booking-feedback"
             @change="handleDateChange"
           />
+
           <select
             v-else
             :id="`home-${field.key}`"
@@ -551,6 +572,7 @@ onBeforeUnmount(() => {
             aria-describedby="quick-booking-feedback"
           >
             <option value="">{{ field.placeholder }}</option>
+
             <option v-for="option in field.options" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>

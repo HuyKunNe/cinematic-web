@@ -1424,3 +1424,80 @@
     border-radius: 0;
   }
 }
+.home-booking__location {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-booking__location-copy {
+  display: grid;
+  min-width: 0;
+  line-height: var(--line-height-heading);
+}
+
+.home-booking__location-name,
+.home-booking__location-city {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-booking__location-city {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+/* Ghi đè style icon chung trong home-booking__control. */
+.home-booking__location > svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+  background: transparent;
+}
+
+.home-booking__control--selected .home-booking__location {
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.home-booking__location:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.home-booking__location:focus {
+  /* Focus ring đã được đặt trên control qua :focus-within. */
+  outline: none;
+}
+
+.home-booking__location:disabled {
+  opacity: var(--home-booking-disabled-opacity);
+  cursor: not-allowed;
+}
+
+@media (max-width: 47.999rem) {
+  .home-booking__location {
+    padding-inline: var(--space-1);
+    border: 0;
+    border-radius: 0;
+  }
+}

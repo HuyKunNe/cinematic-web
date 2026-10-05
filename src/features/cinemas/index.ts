@@ -12,3 +12,7 @@ export type {
 } from './models/cinema-location.model'
 
 export { cinemaRoomQueryKeys, useCinemaRoomsQuery } from './api/cinema-room.queries'
+export {
+  provideCinemaLocationDialog,
+  useCinemaLocationDialog,
+} from './composables/cinema-location-dialog.context'

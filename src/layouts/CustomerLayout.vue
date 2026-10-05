@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref, shallowRef, watch } from 'vue'
+import { readonly, ref, shallowRef, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CustomerHeader from '@/components/navigation/CustomerHeader.vue'
 import CustomerMobileHeader from '@/components/navigation/CustomerMobileHeader.vue'
 import MobileBottomNav from '@/components/navigation/MobileBottomNav.vue'
-import { CinemaLocationDialog, useCinemaLocation } from '@/features/cinemas'
+import {
+  CinemaLocationDialog,
+  provideCinemaLocationDialog,
+  useCinemaLocation,
+} from '@/features/cinemas'
 import '@/styles/customer-navigation.css'
 
 const emit = defineEmits<{
@@ -22,6 +26,11 @@ function openLocation(trigger: HTMLButtonElement) {
   locationOpen.value = true
 }
 
+provideCinemaLocationDialog({
+  isOpen: readonly(locationOpen),
+  open: openLocation,
+})
+
 watch(
   () => route.fullPath,
   () => {
@@ -29,7 +38,6 @@ watch(
   },
 )
 </script>
-
 <template>
   <div class="customer-layout">
     <CustomerHeader
