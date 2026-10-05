@@ -1,50 +1,49 @@
 # OpenAPI Contracts
 
-This directory stores stable OpenAPI snapshots used to generate frontend API clients.
+## Mục đích
 
-## Rules
+Thư mục này lưu OpenAPI snapshots đã review và metadata nguồn
+theo quy định repository.
 
-- Backend code is the source of truth.
-- Do not manually invent or modify schemas to hide backend contract problems.
-- Record the source service and backend commit for every snapshot.
-- Review contract changes before regenerating clients.
-- Do not manually edit generated frontend files.
-- Do not include secrets or private environment information.
+Tại baseline FE 4856878d420efa562a357d673e93eab04d463b32,
+thư mục mới có README, chưa có snapshot JSON.
 
-## Planned files
+## Nguồn sự thật
 
-```text
-gateway.json
-user-service.json
-movie-service.json
-showtime-service.json
-booking-service.json
-payment-service.json
-```
+- Backend controller, DTO, validation và security.
+- Runtime OpenAPI của đúng service và môi trường.
+- Snapshot đã review với commit nguồn rõ ràng.
 
-Only add specifications that are actually exposed by the backend.
+Không sửa schema để che giấu vấn đề contract Backend.
 
-## Generation flow
+## Cấu hình generation hiện tại
 
-```text
-Backend OpenAPI
-    ↓
-OpenAPI snapshot
-    ↓
-Orval
-    ↓
-src/shared/api/generated
-    ↓
-Feature adapters and composables
-```
+orval.config.ts đọc trực tiếp runtime spec local của:
+movie-service, user-service, inventory-service,
+booking-service và payment-service.
 
-## Snapshot metadata
+Script: npm run api.
+Output: src/services/api/generated/<service>/.
 
-When adding a specification, document:
+Cấu hình hiện tại chưa dùng snapshot làm input.
+Generated files không được sửa bằng tay.
 
-- Service name
-- Source URL
-- Backend commit
-- Export date
-- OpenAPI version
-- Known contract issues
+Chi tiết nằm tại docs/api/OPENAPI_GENERATION.md.
+
+## Quy tắc snapshot
+
+Chỉ thêm spec thực sự được Backend phục vụ.
+Mỗi snapshot cần ghi:
+
+- Service sở hữu API.
+- URL nguồn.
+- Commit Backend.
+- Ngày export.
+- Phiên bản OpenAPI.
+- Các giới hạn hoặc vấn đề contract còn tồn tại.
+
+Dùng tên inventory-service cho API Inventory hiện có.
+Không giả định có service tên showtime-service.
+
+Không đưa secret vào spec hoặc metadata.
+Không thêm Notification spec khi R28 đang hoãn.

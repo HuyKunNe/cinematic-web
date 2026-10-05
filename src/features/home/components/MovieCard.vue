@@ -51,7 +51,9 @@ watch(
         <Play aria-hidden="true" />
       </button>
 
-      <span class="home-badge home-movie-card__badge">ĐANG CHIẾU</span>
+      <span class="home-badge home-movie-card__badge">
+        {{ movie.status === 'UPCOMING' ? 'SẮP CHIẾU' : 'ĐANG CHIẾU' }}
+      </span>
     </div>
 
     <h3>

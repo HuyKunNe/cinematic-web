@@ -37,7 +37,20 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const hold = (
+  /**
+ * Requires inventory:write.
+ *
+ * The seat must be AVAILABLE and expiresAt must be in the future.
+ * The showtime must be OPEN_FOR_BOOKING and start in the future.
+ * Its room and cinema must both be active.
+ *
+ * Returns HTTP 409 with INVENTORY_SHOWTIME_NOT_BOOKABLE
+ * when showtime eligibility is not satisfied.
+ *
+ * This endpoint does not reuse an existing HELD seat.
+ * @summary Hold an available show seat
+ */
+export const hold = (
     showSeatId: string,
     holdShowSeatRequest: HoldShowSeatRequest,
  ) => {

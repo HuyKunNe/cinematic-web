@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ArrowDown } from 'lucide-vue-next'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppEmptyState from '@/components/ui/AppEmptyState.vue'
@@ -15,7 +16,24 @@ const PAGE_SIZE = 8
 const { data, isPending, isError, isFetching, refetch, scopeKey, catalogueLocationLabel } =
   useMoviesProgramme()
 
-const selectedStatus = ref<CatalogMovieStatus>('NOW_SHOWING')
+const route = useRoute()
+const router = useRouter()
+
+const selectedStatus = computed<CatalogMovieStatus>({
+  get: () => (route.query.status === 'UPCOMING' ? 'UPCOMING' : 'NOW_SHOWING'),
+  set: (status) => {
+    if (status === selectedStatus.value) return
+
+    void router.push({
+      path: route.path,
+      query: {
+        ...route.query,
+        status,
+      },
+      hash: route.hash,
+    })
+  },
+})
 const selectedGenre = ref('')
 const selectedSort = ref<MovieSort>('release-desc')
 const shownLimit = ref(PAGE_SIZE)
@@ -102,7 +120,7 @@ watch([selectedStatus, selectedGenre, selectedSort, scopeKey], () => {
   shownLimit.value = PAGE_SIZE
 })
 
-watch(scopeKey, () => {
+watch([scopeKey, selectedStatus], () => {
   selectedGenre.value = ''
 })
 
