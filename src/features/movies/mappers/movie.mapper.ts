@@ -1,5 +1,5 @@
 import type { MovieResponse } from '@/services/api/generated/movie-service/model/movieResponse'
-import type { CatalogMovie, MovieGenre } from '../models/movie.model'
+import type { CatalogMovie, MovieDetail, MovieGenre } from '../models/movie.model'
 
 function normalizeTrailerUrl(value: string | null | undefined): string | null {
   const candidate = value?.trim()
@@ -15,11 +15,19 @@ function normalizeTrailerUrl(value: string | null | undefined): string | null {
   }
 }
 
-export function toCatalogMovie(movie: MovieResponse): CatalogMovie | null {
+export function toMovieDetail(movie: MovieResponse): MovieDetail | null {
   const id = movie.id?.trim()
   const title = movie.title?.trim()
+  const status = movie.status
 
-  if (!id || !title || (movie.status !== 'NOW_SHOWING' && movie.status !== 'UPCOMING')) {
+  if (
+    !id ||
+    !title ||
+    (status !== 'NOW_SHOWING' &&
+      status !== 'UPCOMING' &&
+      status !== 'ENDED' &&
+      status !== 'INACTIVE')
+  ) {
     return null
   }
 
@@ -46,6 +54,19 @@ export function toCatalogMovie(movie: MovieResponse): CatalogMovie | null {
     ageRating: movie.ageRating ?? null,
     trailerUrl: normalizeTrailerUrl(movie.trailerUrl),
     genres,
-    status: movie.status,
+    status,
+  }
+}
+
+export function toCatalogMovie(movie: MovieResponse): CatalogMovie | null {
+  const detail = toMovieDetail(movie)
+
+  if (!detail || (detail.status !== 'NOW_SHOWING' && detail.status !== 'UPCOMING')) {
+    return null
+  }
+
+  return {
+    ...detail,
+    status: detail.status,
   }
 }

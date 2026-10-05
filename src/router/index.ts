@@ -9,6 +9,7 @@ const loadLoginPage = () => import('../features/auth/pages/LoginPage.vue')
 const loadAuthCallbackPage = () => import('../features/auth/pages/AuthCallbackPage.vue')
 const loadHomePage = () => import('../features/home/pages/HomePage.vue')
 const loadMoviesPage = () => import('../features/movies/pages/MoviesPage.vue')
+const loadMovieDetailPage = () => import('../features/movies/pages/MovieDetailPage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -26,11 +27,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.MOVIE_DETAIL,
     name: ROUTE_NAMES.MOVIE_DETAIL,
-    component: loadPlaceholder,
-    props: {
-      title: 'Chi tiết phim',
-      description: 'Chi tiết phim sẽ lấy theo movie ID từ backend.',
-    },
+    component: loadMovieDetailPage,
     meta: { layout: 'customer', title: 'Chi tiết phim' },
   },
   {

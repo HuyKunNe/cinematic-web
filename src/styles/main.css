@@ -3,8 +3,11 @@
 @import './base.css';
 @import './home.css';
 @import './movies.css';
+@import './movie-detail.css';
 
 @theme {
   --breakpoint-header-compact: 73.75rem;
   --breakpoint-customer-narrow: 24rem;
+  --breakpoint-movie-detail-tablet: 47.5rem;
+  --breakpoint-movie-detail-mobile: 32.5rem;
 }

@@ -18,3 +18,6 @@ export interface CatalogMovie {
   genres: MovieGenre[]
   status: CatalogMovieStatus
 }
+export type MovieDetail = Omit<CatalogMovie, 'status'> & {
+  status: NonNullable<MovieResponse['status']>
+}
