@@ -61,3 +61,17 @@ export function formatCinemaDateKey(dateKey: string): string {
 
   return calendarDateFormatter.format(date)
 }
+
+export function getCinemaDayRange(dateKey: string) {
+  if (!formatCinemaDateKey(dateKey)) return null
+
+  const start = parseTimestamp(`${dateKey}T00:00:00+07:00`)
+  if (!start) return null
+
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
+
+  return {
+    from: start.toISOString(),
+    to: end.toISOString(),
+  }
+}

@@ -4,9 +4,15 @@ import { useRouter } from 'vue-router'
 import { CalendarDays, Clapperboard, Clock3, MapPin } from 'lucide-vue-next'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { HomeMovie } from '../models/home-movie'
-import { useHomeShowtimes } from '../api/home-queries'
 import { useCinemaLocation } from '@/features/cinemas'
-import { getCinemaDateKey, formatCinemaDateKey, formatCinemaTime } from '@/utils/cinema-time'
+import {
+  getCinemaDateKey,
+  formatCinemaDateKey,
+  formatCinemaTime,
+  getCinemaDayRange,
+} from '@/utils/cinema-time'
+import { useHomeShowtimes, useHomeBookableShowtimes } from '../api/home-queries'
+import type { ShowtimeResponse } from '@/services/api/generated/inventory-service/model/showtimeResponse'
 
 const props = defineProps<{
   movies: HomeMovie[]
@@ -79,10 +85,10 @@ const showtimesReady = computed(
     !showtimesQuery.isFetching.value,
 )
 
-const available = computed(() => {
+function toAvailableShowtimes(showtimes: ShowtimeResponse[]) {
   if (!hasCinema.value || !hasMovie.value) return []
 
-  return (showtimesQuery.data.value ?? [])
+  return showtimes
     .flatMap((showtime) => {
       if (
         !showtime.id ||
@@ -110,14 +116,42 @@ const available = computed(() => {
       ]
     })
     .sort((a, b) => a.startsAtMs - b.startsAtMs)
-})
+}
+
+const available = computed(() => toAvailableShowtimes(showtimesQuery.data.value ?? []))
 
 const dates = computed(() => [
   ...new Set(available.value.map((showtime) => localDate(showtime.startsAt))),
 ])
 
+const bookableQuery = useHomeBookableShowtimes(() => {
+  if (
+    !hasCinema.value ||
+    !hasMovie.value ||
+    !selection.date ||
+    !dates.value.includes(selection.date)
+  ) {
+    return null
+  }
+
+  const range = getCinemaDayRange(selection.date)
+  if (!range) return null
+
+  return {
+    cinemaId: selection.cinema,
+    movieId: selection.movie,
+    ...range,
+  }
+})
+
+const bookableReady = computed(
+  () => bookableQuery.isSuccess.value && !bookableQuery.isFetching.value,
+)
+
 const times = computed(() =>
-  available.value.filter((showtime) => localDate(showtime.startsAt) === selection.date),
+  toAvailableShowtimes(bookableQuery.data.value ?? []).filter(
+    (showtime) => localDate(showtime.startsAt) === selection.date,
+  ),
 )
 
 const canChooseMovie = computed(
@@ -135,7 +169,11 @@ const canChooseDate = computed(
 )
 
 const canChooseShowtime = computed(
-  () => canChooseDate.value && dates.value.includes(selection.date) && times.value.length > 0,
+  () =>
+    canChooseDate.value &&
+    dates.value.includes(selection.date) &&
+    bookableReady.value &&
+    times.value.length > 0,
 )
 
 const canContinue = computed(
@@ -201,12 +239,11 @@ const fields = computed(() => [
     label: 'Chọn suất',
     mobileLabel: 'Suất chiếu',
     icon: Clock3,
-    placeholder:
-      showtimesQuery.isFetching.value && hasMovie.value
-        ? 'Đang cập nhật…'
-        : !selection.date
-          ? 'Chọn ngày trước'
-          : 'Chọn suất',
+    placeholder: !selection.date
+      ? 'Chọn ngày trước'
+      : bookableQuery.isFetching.value
+        ? 'Đang tải suất chiếu…'
+        : 'Chọn suất',
     disabled: checking.value || !canChooseShowtime.value,
     options: times.value.map((showtime) => ({
       value: showtime.id,
@@ -219,9 +256,15 @@ const errorMessage = computed(() => {
   if (navigationError.value) return navigationError.value
   if (cinemasQuery.isError.value) return 'Không thể tải rạp. Vui lòng thử lại.'
   if (props.moviesError) return 'Không thể tải phim. Vui lòng thử lại.'
+
   if (hasMovie.value && showtimesQuery.isError.value) {
     return 'Không thể tải lịch chiếu. Vui lòng thử lại.'
   }
+
+  if (selection.date && bookableQuery.isError.value) {
+    return 'Không thể tải suất mở bán của ngày đã chọn. Vui lòng thử lại.'
+  }
+
   return ''
 })
 
@@ -234,10 +277,21 @@ const helperMessage = computed(() => {
   if (!props.movies.length) return 'Chưa có phim đang chiếu.'
   if (!hasMovie.value) return 'Chọn phim để xem lịch mở bán tại rạp đã chọn.'
   if (showtimesQuery.isFetching.value) return 'Đang cập nhật lịch chiếu…'
+
   if (!available.value.length) {
     return 'Phim này chưa có suất mở bán trong thời gian tới tại rạp đã chọn.'
   }
+
   if (!selection.date) return 'Chọn ngày có suất mở bán.'
+
+  if (bookableQuery.isFetching.value || !bookableQuery.isSuccess.value) {
+    return 'Đang tải suất mở bán của ngày đã chọn…'
+  }
+
+  if (!times.value.length) {
+    return 'Ngày đã chọn hiện không có suất đủ điều kiện mở bán. Vui lòng chọn ngày khác.'
+  }
+
   if (!selection.showtime) return 'Chọn giờ chiếu và phòng chiếu phù hợp.'
   return 'Đã chọn suất chiếu. Nhấn Tiếp tục để sang bước tiếp theo.'
 })
@@ -246,7 +300,8 @@ const canRetry = computed(
   () =>
     cinemasQuery.isError.value ||
     props.moviesError ||
-    (hasMovie.value && showtimesQuery.isError.value),
+    (hasMovie.value && showtimesQuery.isError.value) ||
+    (Boolean(selection.date) && bookableQuery.isError.value),
 )
 
 function localDate(iso: string) {
@@ -289,6 +344,7 @@ watch(
   () => {
     navigationError.value = ''
   },
+  { flush: 'sync' },
 )
 
 watch(
@@ -313,10 +369,16 @@ function retryLoading() {
   if (checking.value) return
 
   navigationError.value = ''
+
   if (props.moviesError) emit('retry-movies')
   if (cinemasQuery.isError.value) void cinemasQuery.refetch()
+
   if (hasMovie.value && showtimesQuery.isError.value) {
     void showtimesQuery.refetch()
+  }
+
+  if (selection.date && bookableQuery.isError.value) {
+    void bookableQuery.refetch()
   }
 }
 
@@ -329,7 +391,7 @@ async function continueBooking() {
   navigationError.value = ''
 
   try {
-    const result = await showtimesQuery.refetch()
+    const result = await bookableQuery.refetch()
     if (disposed) return
 
     updateClock()
@@ -339,7 +401,7 @@ async function continueBooking() {
       return
     }
 
-    const stillAvailable = available.value.some(
+    const stillAvailable = times.value.some(
       (showtime) => showtime.id === chosen.showtime && localDate(showtime.startsAt) === chosen.date,
     )
 
@@ -461,7 +523,8 @@ onBeforeUnmount(() => {
           checking ||
           cinemasQuery.isFetching.value ||
           moviesLoading ||
-          showtimesQuery.isFetching.value
+          showtimesQuery.isFetching.value ||
+          bookableQuery.isFetching.value
         "
         @click="retryLoading"
       >
