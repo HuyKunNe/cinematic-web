@@ -4,15 +4,11 @@ import { useRouter } from 'vue-router'
 import { CalendarDays, Clapperboard, Clock3, MapPin } from 'lucide-vue-next'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { HomeMovie } from '../models/home-movie'
-import { useCinemaLocation } from '@/features/cinemas'
-import {
-  getCinemaDateKey,
-  formatCinemaDateKey,
-  formatCinemaTime,
-  getCinemaDayRange,
-} from '@/utils/cinema-time'
+import { useCinemaLocation, useCinemaRoomsQuery } from '@/features/cinemas'
+import { getCinemaDateKey, formatCinemaTime, getCinemaDayRange } from '@/utils/cinema-time'
 import { useHomeShowtimes, useHomeBookableShowtimes } from '../api/home-queries'
 import type { ShowtimeResponse } from '@/services/api/generated/inventory-service/model/showtimeResponse'
+import type { RoomResponseRoomType } from '@/services/api/generated/inventory-service/model/roomResponseRoomType'
 
 const props = defineProps<{
   movies: HomeMovie[]
@@ -73,6 +69,27 @@ let disposed = false
 
 const showtimesQuery = useHomeShowtimes(() => selection.movie)
 
+const roomsQuery = useCinemaRoomsQuery(() => selection.cinema)
+
+const roomTypeLabels: Record<RoomResponseRoomType, string> = {
+  STANDARD: 'Tiêu chuẩn',
+  IMAX: 'IMAX',
+  FOUR_DX: '4DX',
+  SCREEN_X: 'ScreenX',
+  VIP: 'VIP',
+}
+
+const roomsById = computed(
+  () =>
+    new Map(
+      (roomsQuery.data.value ?? [])
+        .filter(
+          (room) => Boolean(room.id) && room.active === true && room.cinemaId === selection.cinema,
+        )
+        .map((room) => [room.id, room] as const),
+    ),
+)
+
 const hasCinema = computed(() => cinemas.value.some((cinema) => cinema.id === selection.cinema))
 
 const hasMovie = computed(() => props.movies.some((movie) => movie.id === selection.movie))
@@ -110,6 +127,7 @@ function toAvailableShowtimes(showtimes: ShowtimeResponse[]) {
         {
           id: showtime.id,
           startsAt: showtime.startsAt,
+          roomId: showtime.roomId,
           startsAtMs,
           roomName: showtime.roomName,
         },
@@ -120,9 +138,14 @@ function toAvailableShowtimes(showtimes: ShowtimeResponse[]) {
 
 const available = computed(() => toAvailableShowtimes(showtimesQuery.data.value ?? []))
 
-const dates = computed(() => [
-  ...new Set(available.value.map((showtime) => localDate(showtime.startsAt))),
-])
+const dates = computed(() =>
+  [
+    ...new Set(available.value.map((showtime) => localDate(showtime.startsAt)).filter(Boolean)),
+  ].sort(),
+)
+
+const minDate = computed(() => dates.value[0])
+const maxDate = computed(() => dates.value[dates.value.length - 1])
 
 const bookableQuery = useHomeBookableShowtimes(() => {
   if (
@@ -195,6 +218,7 @@ const fields = computed(() => [
       cinemasQuery.isPending.value ||
       cinemasQuery.isFetching.value ||
       cinemasQuery.isError.value ||
+      (hasCinema.value && roomsQuery.isError.value) ||
       !cinemas.value.length,
     options: cinemas.value.map((cinema) => ({
       value: cinema.id,
@@ -229,10 +253,7 @@ const fields = computed(() => [
           ? 'Đang tải lịch chiếu…'
           : 'Chọn ngày',
     disabled: checking.value || !canChooseDate.value,
-    options: dates.value.map((date) => ({
-      value: date,
-      label: labelDate(date),
-    })),
+    options: [],
   },
   {
     key: 'showtime' as const,
@@ -247,7 +268,7 @@ const fields = computed(() => [
     disabled: checking.value || !canChooseShowtime.value,
     options: times.value.map((showtime) => ({
       value: showtime.id,
-      label: [labelTime(showtime.startsAt), showtime.roomName].filter(Boolean).join(' · '),
+      label: labelShowtime(showtime),
     })),
   },
 ])
@@ -264,7 +285,9 @@ const errorMessage = computed(() => {
   if (selection.date && bookableQuery.isError.value) {
     return 'Không thể tải suất mở bán của ngày đã chọn. Vui lòng thử lại.'
   }
-
+  if (hasCinema.value && roomsQuery.isError.value) {
+    return 'Chưa thể tải loại phòng. Bạn vẫn có thể chọn suất theo giờ và tên phòng.'
+  }
   return ''
 })
 
@@ -308,12 +331,43 @@ function localDate(iso: string) {
   return getCinemaDateKey(iso)
 }
 
-function labelDate(date: string) {
-  return formatCinemaDateKey(date)
-}
-
 function labelTime(iso: string) {
   return formatCinemaTime(iso)
+}
+
+function labelShowtime(showtime: (typeof available.value)[number]) {
+  const room = roomsById.value.get(showtime.roomId ?? '')
+
+  const roomTypeLabel = room?.roomType
+    ? roomTypeLabels[room.roomType]
+    : roomsQuery.isFetching.value
+      ? 'Đang tải loại phòng…'
+      : 'Chưa có loại phòng'
+
+  return [labelTime(showtime.startsAt), roomTypeLabel].filter(Boolean).join(' · ')
+}
+
+function handleDateChange(event: Event) {
+  const input = event.target
+  if (!(input instanceof HTMLInputElement)) return
+
+  const date = input.value
+  navigationError.value = ''
+
+  if (!date) {
+    selection.date = ''
+    return
+  }
+
+  if (!canChooseDate.value || !input.validity.valid || !dates.value.includes(date)) {
+    selection.date = ''
+    input.value = ''
+    navigationError.value =
+      'Ngày này không có suất mở bán cho phim tại rạp đã chọn. Vui lòng chọn ngày khác.'
+    return
+  }
+
+  selection.date = date
 }
 
 function updateClock() {
@@ -372,7 +426,9 @@ function retryLoading() {
 
   if (props.moviesError) emit('retry-movies')
   if (cinemasQuery.isError.value) void cinemasQuery.refetch()
-
+  if (hasCinema.value && roomsQuery.isError.value) {
+    void roomsQuery.refetch()
+  }
   if (hasMovie.value && showtimesQuery.isError.value) {
     void showtimesQuery.refetch()
   }
@@ -454,7 +510,6 @@ onBeforeUnmount(() => {
     aria-labelledby="quick-booking-title"
   >
     <h2 id="quick-booking-title">Đặt vé nhanh</h2>
-
     <template v-for="(field, index) in fields" :key="field.key">
       <div class="home-booking__step">
         <label :for="`home-${field.key}`">
@@ -475,8 +530,21 @@ onBeforeUnmount(() => {
           <span class="home-booking__mobile-label">
             {{ field.mobileLabel }}
           </span>
-
+          <input
+            v-if="field.key === 'date'"
+            :id="`home-${field.key}`"
+            class="home-booking__date"
+            type="date"
+            :value="selection.date"
+            :min="minDate"
+            :max="maxDate"
+            :disabled="field.disabled"
+            :title="field.placeholder"
+            aria-describedby="quick-booking-feedback"
+            @change="handleDateChange"
+          />
           <select
+            v-else
             :id="`home-${field.key}`"
             v-model="selection[field.key]"
             :disabled="field.disabled"
@@ -522,6 +590,7 @@ onBeforeUnmount(() => {
         :disabled="
           checking ||
           cinemasQuery.isFetching.value ||
+          roomsQuery.isFetching.value ||
           moviesLoading ||
           showtimesQuery.isFetching.value ||
           bookableQuery.isFetching.value

@@ -10,3 +10,5 @@ export type {
   CinemaLocation,
   CinemaLocationCatalog,
 } from './models/cinema-location.model'
+
+export { cinemaRoomQueryKeys, useCinemaRoomsQuery } from './api/cinema-room.queries'
