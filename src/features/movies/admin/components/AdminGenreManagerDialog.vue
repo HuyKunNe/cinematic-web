@@ -47,18 +47,44 @@ const detailQuery = useAdminGenreDetailQuery(() => selectedGenreId.value ?? '', 
 
 const mutation = useSaveAdminGenreMutation()
 
-const {
-  values,
-  errors,
-  isSubmitting,
-  resetForm,
-  setFieldValue,
-  setFieldError,
-  validateField,
-  handleSubmit,
-} = useForm({
-  validationSchema: toTypedSchema(adminGenreSchema),
-  initialValues: createAdminGenreValues(),
+const { errors, isSubmitting, submitCount, resetForm, defineField, isFieldTouched, handleSubmit } =
+  useForm({
+    validationSchema: toTypedSchema(adminGenreSchema),
+    initialValues: createAdminGenreValues(),
+    validateOnMount: false,
+  })
+
+type GenreField = 'name' | 'description'
+const serverFieldErrors = ref<Partial<Record<GenreField, string>>>({})
+
+const [name, nameAttrs] = defineField('name', (state) => ({
+  validateOnBlur: true,
+  validateOnInput: false,
+  validateOnChange: false,
+  validateOnModelUpdate: state.touched || submitCount.value > 0,
+}))
+
+const [description, descriptionAttrs] = defineField('description', (state) => ({
+  validateOnBlur: true,
+  validateOnInput: false,
+  validateOnChange: false,
+  validateOnModelUpdate: state.touched || submitCount.value > 0,
+}))
+
+const visibleErrors = computed(() => ({
+  name:
+    serverFieldErrors.value.name ??
+    (isFieldTouched('name') || submitCount.value > 0 ? errors.value.name : undefined),
+  description:
+    serverFieldErrors.value.description ??
+    (isFieldTouched('description') || submitCount.value > 0 ? errors.value.description : undefined),
+}))
+
+watch([name, description], ([newName, newDescription], [oldName, oldDescription]) => {
+  requestError.value = ''
+
+  if (newName !== oldName) serverFieldErrors.value.name = undefined
+  if (newDescription !== oldDescription) serverFieldErrors.value.description = undefined
 })
 
 const busy = computed(() => isSubmitting.value || mutation.isPending.value)
@@ -106,6 +132,7 @@ watch(
 function resetDraft() {
   selectedGenreId.value = null
   draftReady.value = true
+  serverFieldErrors.value = {}
   requestError.value = ''
   successMessage.value = ''
   resetForm({ values: createAdminGenreValues() })
@@ -123,6 +150,7 @@ function startEdit(id: string) {
 
   const sameGenre = selectedGenreId.value === id
 
+  serverFieldErrors.value = {}
   requestError.value = ''
   successMessage.value = ''
   draftReady.value = false
@@ -130,10 +158,6 @@ function startEdit(id: string) {
   selectedGenreId.value = id
 
   if (sameGenre) void detailQuery.refetch()
-}
-
-function updateDescription(event: Event) {
-  setFieldValue('description', (event.target as HTMLTextAreaElement).value)
 }
 
 function close() {
@@ -158,7 +182,7 @@ function restoreFocus(event: Event) {
   target?.focus()
 }
 
-const submit = handleSubmit(
+const save = handleSubmit(
   async (validatedValues) => {
     requestError.value = ''
     successMessage.value = ''
@@ -176,20 +200,27 @@ const submit = handleSubmit(
         input: toAdminGenreRequest(validatedValues),
       })
     } catch (error) {
-      requestError.value = adminGenreErrorMessage(error, 'Không thể lưu thể loại.')
+      let hasFieldError = false
 
       if (isApiError(error)) {
         if (error.code === 'GENRE_ALREADY_EXISTS') {
-          setFieldError('name', 'Tên thể loại đã được sử dụng.')
+          serverFieldErrors.value.name = 'Tên thể loại đã được sử dụng.'
+          hasFieldError = true
         }
 
         for (const item of error.fieldErrors) {
-          if (item.field === 'name' || item.field === 'description') {
-            setFieldError(item.field, item.message)
+          if ((item.field === 'name' || item.field === 'description') && item.message) {
+            serverFieldErrors.value[item.field] = item.message
+            hasFieldError = true
           }
         }
       }
+      if (!hasFieldError) {
+        requestError.value = adminGenreErrorMessage(error, 'Không thể lưu thể loại.')
+      }
 
+      await nextTick()
+      formElement.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
       return
     }
 
@@ -205,6 +236,13 @@ const submit = handleSubmit(
     formElement.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
   },
 )
+
+function submit(event: Event) {
+  requestError.value = ''
+  successMessage.value = ''
+  serverFieldErrors.value = {}
+  return save(event)
+}
 </script>
 
 <template>
@@ -302,20 +340,19 @@ const submit = handleSubmit(
                   type="text"
                   maxlength="100"
                   required
-                  :value="values.name ?? ''"
-                  :aria-invalid="Boolean(errors.name)"
-                  :aria-describedby="errors.name ? 'admin-genre-name-error' : undefined"
-                  @input="setFieldValue('name', ($event.target as HTMLInputElement).value)"
-                  @blur="validateField('name')"
+                  v-model="name"
+                  v-bind="nameAttrs"
+                  :aria-invalid="Boolean(visibleErrors.name)"
+                  :aria-describedby="visibleErrors.name ? 'admin-genre-name-error' : undefined"
                 />
 
                 <p
-                  v-if="errors.name"
+                  v-if="visibleErrors.name"
                   id="admin-genre-name-error"
                   class="admin-movies__error"
                   role="alert"
                 >
-                  {{ errors.name }}
+                  {{ visibleErrors.name }}
                 </p>
               </div>
 
@@ -326,22 +363,21 @@ const submit = handleSubmit(
                   id="admin-genre-description"
                   class="admin-movie-form__input admin-movie-form__textarea"
                   maxlength="500"
-                  :value="values.description ?? ''"
-                  :aria-invalid="Boolean(errors.description)"
+                  v-model="description"
+                  v-bind="descriptionAttrs"
+                  :aria-invalid="Boolean(visibleErrors.description)"
                   :aria-describedby="
-                    errors.description ? 'admin-genre-description-error' : undefined
+                    visibleErrors.description ? 'admin-genre-description-error' : undefined
                   "
-                  @input="updateDescription"
-                  @blur="validateField('description')"
                 />
 
                 <p
-                  v-if="errors.description"
+                   v-if="visibleErrors.description"
                   id="admin-genre-description-error"
                   class="admin-movies__error"
                   role="alert"
                 >
-                  {{ errors.description }}
+                   {{ visibleErrors.description }}
                 </p>
               </div>
             </fieldset>

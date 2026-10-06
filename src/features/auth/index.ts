@@ -1,1 +1,6 @@
-export { restoreAuthSession, signOut } from './services/auth.service'
+export {
+  getAccessToken,
+  refreshAuthSession,
+  restoreAuthSession,
+  signOut,
+} from './services/auth.service'

@@ -59,8 +59,7 @@ export const adminMovieSchema = z.object({
       const number = Number(value)
 
       return Number.isInteger(number) && number >= 1 && number <= 2147483647
-    }, 'Thời lượng phải từ 1 đến 2.147.483.647 phút.')
-    .transform(Number),
+    }, 'Thời lượng phải từ 1 đến 2.147.483.647 phút.'),
 
   releaseDate: z.string().trim().refine(isValidDate, 'Ngày phát hành không hợp lệ.'),
 
@@ -98,7 +97,7 @@ export function toAdminMovieRequest(values: AdminMovieFormOutput): CreateMovieRe
   return {
     title: values.title,
     description: values.description || undefined,
-    durationMinutes: values.durationMinutes,
+    durationMinutes: Number(values.durationMinutes),
     releaseDate: values.releaseDate || undefined,
     posterUrl: values.posterUrl || undefined,
     trailerUrl: values.trailerUrl || undefined,
