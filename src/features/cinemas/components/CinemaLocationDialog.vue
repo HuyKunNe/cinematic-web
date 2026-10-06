@@ -18,7 +18,7 @@ import {
   SelectValue,
   SelectViewport,
 } from 'reka-ui'
-import { AppButton, AppErrorState, AppSelect } from '@/components/ui'
+import { AppButton, AppErrorState } from '@/components/ui'
 import { useCinemaLocation } from '../composables/use-cinema-location'
 
 const props = defineProps<{
@@ -37,6 +37,8 @@ const draftCinemaId = ref('')
 const selectionError = ref('')
 const cinemaDropdownOpen = ref(false)
 const pendingCinemaDropdown = ref(false)
+const cityDropdownOpen = ref(false)
+const cityDropdownClosed = ref(true)
 const cityOptions = computed(() =>
   cities.value.map((city) => ({
     value: city.key,
@@ -65,12 +67,18 @@ const canApply = computed(
   () => Boolean(draftCityKey.value && draftCinema.value) && !controlsDisabled.value,
 )
 
-function changeCity(cityKey: string, autoOpenCinema = false) {
+function changeCity(cityKey: unknown, autoOpenCinema = false) {
+  if (typeof cityKey !== 'string') return
+
+  if (cityKey && !cityOptions.value.some((option) => option.value === cityKey)) {
+    return
+  }
   draftCityKey.value = cityKey
   draftCinemaId.value = ''
   selectionError.value = ''
   cinemaDropdownOpen.value = false
   pendingCinemaDropdown.value = Boolean(cityKey) && autoOpenCinema
+  cityDropdownOpen.value = false
 }
 
 function changeCinema(cinemaId: unknown) {
@@ -92,10 +100,40 @@ function updateCinemaDropdown(open: boolean) {
     open && props.open && !controlsDisabled.value && cinemaOptions.value.length > 0
 }
 
+function updateCityDropdown(open: boolean) {
+  if (open) {
+    if (!props.open || controlsDisabled.value) return
+
+    pendingCinemaDropdown.value = false
+    cinemaDropdownOpen.value = false
+    cityDropdownClosed.value = false
+  }
+
+  cityDropdownOpen.value = open
+}
+
+function handleCityDropdownClosed(event: Event) {
+  cityDropdownClosed.value = true
+
+  // Không trả focus về city khi đang chuyển sang chọn rạp.
+  if (pendingCinemaDropdown.value) {
+    event.preventDefault()
+  }
+}
+
 watch(
-  [() => props.open, pendingCinemaDropdown, controlsDisabled, cinemaOptions],
-  ([dialogOpen, pending, disabled, options], _previous, onCleanup) => {
+  [
+    () => props.open,
+    pendingCinemaDropdown,
+    controlsDisabled,
+    cinemaOptions,
+    cityDropdownOpen,
+    cityDropdownClosed,
+  ],
+  ([dialogOpen, pending, disabled, options, cityOpen, cityClosed], _previous, onCleanup) => {
     if (!dialogOpen) {
+      cityDropdownOpen.value = false
+      cityDropdownClosed.value = true
       cinemaDropdownOpen.value = false
       pendingCinemaDropdown.value = false
       return
@@ -106,7 +144,7 @@ watch(
       return
     }
 
-    if (!pending) return
+    if (!pending || cityOpen || !cityClosed) return
 
     if (!options.length) {
       pendingCinemaDropdown.value = false
@@ -126,6 +164,8 @@ watch(
           !props.open ||
           !pendingCinemaDropdown.value ||
           controlsDisabled.value ||
+          cityDropdownOpen.value ||
+          !cityDropdownClosed.value ||
           draftCityKey.value !== requestedCity ||
           !cinemaOptions.value.length
         ) {
@@ -278,22 +318,58 @@ watch(query.data, (catalog) => {
             Đang cập nhật danh sách rạp…
           </p>
 
-          <AppSelect
-            id="cinema-location-city"
-            label="Thành phố"
-            :model-value="draftCityKey"
-            :options="cityOptions"
-            placeholder="Chọn thành phố"
-            :disabled="controlsDisabled"
-            required
-            @update:model-value="changeCity($event, true)"
-          />
+          <div class="location-dialog__cinema-field">
+            <label class="location-dialog__cinema-label" for="cinema-location-city">
+              Thành phố
+            </label>
+
+            <SelectRoot
+              :model-value="draftCityKey"
+              :open="cityDropdownOpen"
+              :disabled="controlsDisabled"
+              required
+              @update:model-value="changeCity($event, true)"
+              @update:open="updateCityDropdown"
+            >
+              <SelectTrigger
+                id="cinema-location-city"
+                class="location-dialog__cinema-trigger"
+                aria-label="Thành phố"
+              >
+                <span class="location-dialog__cinema-value">
+                  <SelectValue placeholder="Chọn thành phố" />
+                </span>
+                <ChevronDown aria-hidden="true" />
+              </SelectTrigger>
+
+              <SelectPortal>
+                <SelectContent
+                  class="location-dialog__cinema-content"
+                  position="popper"
+                  side="bottom"
+                  align="start"
+                  @close-auto-focus="handleCityDropdownClosed"
+                >
+                  <SelectViewport>
+                    <SelectItem
+                      v-for="option in cityOptions"
+                      :key="option.value"
+                      :value="option.value"
+                      class="location-dialog__cinema-item"
+                    >
+                      <SelectItemText>{{ option.label }}</SelectItemText>
+                    </SelectItem>
+                  </SelectViewport>
+                </SelectContent>
+              </SelectPortal>
+            </SelectRoot>
+          </div>
 
           <div class="location-dialog__cinema-field">
             <label class="location-dialog__cinema-label" for="cinema-location-cinema"> Rạp </label>
 
             <SelectRoot
-              :model-value="draftCinemaId || undefined"
+              :model-value="draftCinemaId"
               :open="cinemaDropdownOpen"
               :disabled="controlsDisabled || !draftCityKey || !cinemaOptions.length"
               required
