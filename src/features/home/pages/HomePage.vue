@@ -9,9 +9,19 @@ import UpcomingMoviesSection from '../components/UpcomingMoviesSection.vue'
 import PromotionSection from '../components/PromotionSection.vue'
 import MembershipSection from '../components/MembershipSection.vue'
 import { useHomeProgramme } from '../composables/use-home-programme'
+import { useHomeHero } from '../composables/use-home-hero'
 
 const { scopeKey, nowShowing, upcoming, loading, error, errorMessage, retrying, retry } =
   useHomeProgramme()
+
+const {
+  movies: heroMovies,
+  loading: heroLoading,
+  error: heroError,
+  errorMessage: heroErrorMessage,
+  retrying: heroRetrying,
+  retry: retryHero,
+} = useHomeHero()
 
 const { location } = useCinemaLocation()
 const locationChanged = ref(false)
@@ -32,17 +42,17 @@ function dismissLocationNotice() {
   <div class="home-page">
     <HeroBanner
       :key="`hero-${scopeKey}`"
-      :movies="nowShowing"
-      :loading="loading"
-      :error="error"
-      :error-message="errorMessage"
-      :retrying="retrying"
+      :movies="heroMovies"
+      :loading="heroLoading"
+      :error="heroError"
+      :error-message="heroErrorMessage"
+      :retrying="heroRetrying"
       :empty-message="
         location.selectedCinemaId
-          ? 'Rạp đã chọn hiện chưa có phim đang mở bán.'
-          : 'Hiện chưa có phim đang chiếu.'
+          ? 'Rạp đã chọn hiện chưa có phim nổi bật phù hợp.'
+          : 'Phim nổi bật sẽ được cập nhật.'
       "
-      @retry="retry"
+      @retry="retryHero"
     />
 
     <div v-if="error" class="home-container">
@@ -52,7 +62,6 @@ function dismissLocationNotice() {
     </div>
 
     <QuickBooking
-      :key="`booking-${scopeKey}`"
       :movies="nowShowing"
       :movies-loading="loading"
       :movies-error="error"

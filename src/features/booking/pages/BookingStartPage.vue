@@ -144,7 +144,6 @@ async function updateSelectedMovie(movieId: string) {
       </p>
 
       <QuickBooking
-        :key="`booking-start-${scopeKey}`"
         class="booking-start__selector"
         :movies="bookingMovies"
         :movies-loading="loading || retrying"

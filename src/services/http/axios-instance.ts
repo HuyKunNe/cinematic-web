@@ -14,6 +14,9 @@ export const apiClient = axios.create({
   headers: {
     Accept: 'application/json',
   },
+  paramsSerializer: {
+    indexes: null,
+  },
 })
 
 let refreshInFlight: Promise<boolean> | null = null

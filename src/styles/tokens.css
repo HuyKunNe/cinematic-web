@@ -442,3 +442,8 @@
     --booking-start-page-space: var(--space-6);
   }
 }
+:root {
+  --home-booking-dropdown-max-height: 18rem;
+  --home-booking-dropdown-layer: var(--z-drawer);
+  --home-booking-dropdown-gap: var(--space-1);
+}

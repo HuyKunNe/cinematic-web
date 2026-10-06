@@ -9,9 +9,18 @@ import {
 } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
 import type { GetBookableShowtimesParams } from '@/services/api/generated/inventory-service/model/getBookableShowtimesParams'
 import { toHomeMovie } from '../mappers/home-movie.mapper'
+import { getHeroMovies } from '@/services/api/generated/movie-service/movie-hero-controller/movie-hero-controller'
+
+export interface HomeHeroScope {
+  cinemaId: string
+  ready: boolean
+  movieIds: readonly string[] | null
+}
 
 export const homeQueryKeys = {
   movies: ['home', 'movies'] as const,
+  hero: (cinemaId: string, limit: number, movieIds: readonly string[] | null) =>
+    ['home', 'hero', cinemaId, limit, movieIds] as const,
   cinemas: ['home', 'cinemas'] as const,
   showtimes: (movieId: string) => ['home', 'showtimes', movieId] as const,
   cinemaProgramme: cinemaProgrammeQueryKeys.programme,
@@ -31,6 +40,54 @@ export function useHomeMovies() {
     queryKey: homeQueryKeys.movies,
     queryFn: findAll,
     select: (response) => response.map(toHomeMovie).filter((movie) => movie !== null),
+  })
+}
+
+export function useHomeHeroMovies(scope: MaybeRefOrGetter<HomeHeroScope>, limit = 4) {
+  const request = computed(() => toValue(scope))
+
+  const movieIds = computed<string[] | null>(() => {
+    if (!request.value.cinemaId) {
+      return null
+    }
+
+    return [
+      ...new Set((request.value.movieIds ?? []).map((movieId) => movieId.trim()).filter(Boolean)),
+    ].sort()
+  })
+
+  return useQuery({
+    queryKey: computed(() => homeQueryKeys.hero(request.value.cinemaId, limit, movieIds.value)),
+
+    enabled: computed(
+      () => request.value.ready && (!request.value.cinemaId || Boolean(movieIds.value?.length)),
+    ),
+
+    retry: false,
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+
+    queryFn: ({ queryKey }) => {
+      const [, , cinemaId, requestedLimit, candidates] = queryKey
+
+      // Không để một bộ lọc rạp rỗng trở thành request toàn hệ thống.
+      if (cinemaId && !candidates?.length) {
+        return []
+      }
+
+      return getHeroMovies({
+        limit: requestedLimit,
+        ...(cinemaId && candidates ? { movieIds: [...candidates] } : {}),
+      })
+    },
+
+    select: (response) =>
+      response
+        .map(toHomeMovie)
+        .filter((movie) => movie !== null)
+        .filter((movie) => movie.status === 'NOW_SHOWING'),
   })
 }
 

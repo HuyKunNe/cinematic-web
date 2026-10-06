@@ -1,5 +1,24 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+  watchEffect,
+} from 'vue'
+import {
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
+} from 'reka-ui'
 import { useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { HomeMovie } from '../models/home-movie'
@@ -147,9 +166,6 @@ const dates = computed(() =>
   ].sort(),
 )
 
-const minDate = computed(() => dates.value[0])
-const maxDate = computed(() => dates.value[dates.value.length - 1])
-
 const bookableQuery = useHomeBookableShowtimes(() => {
   if (
     !hasCinema.value ||
@@ -217,7 +233,10 @@ const fields = computed(() => [
     icon: MapPin,
     placeholder: 'Chọn thành phố và rạp',
     disabled: checking.value,
-    options: [],
+    options: dates.value.map((date) => ({
+      value: date,
+      label: labelDate(date),
+    })),
   },
   {
     key: 'movie' as const,
@@ -406,28 +425,135 @@ function labelShowtime(showtime: (typeof available.value)[number]) {
   return [labelTime(showtime.startsAt), roomTypeLabel].filter(Boolean).join(' · ')
 }
 
-function handleDateChange(event: Event) {
-  const input = event.target
-  if (!(input instanceof HTMLInputElement)) return
-
-  const date = input.value
-  navigationError.value = ''
-
-  if (!date) {
-    selection.date = ''
-    return
-  }
-
-  if (!canChooseDate.value || !input.validity.valid || !dates.value.includes(date)) {
-    selection.date = ''
-    input.value = ''
-    navigationError.value =
-      'Ngày này không có suất mở bán cho phim tại rạp đã chọn. Vui lòng chọn ngày khác.'
-    return
-  }
-
-  selection.date = date
+function labelDate(date: string) {
+  return new Intl.DateTimeFormat('vi-VN', {
+    weekday: 'short',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Ho_Chi_Minh',
+  }).format(new Date(`${date}T12:00:00+07:00`))
 }
+
+type BookingDropdown = 'movie' | 'date' | 'showtime'
+
+const openField = ref<BookingDropdown | null>(null)
+const pendingField = ref<BookingDropdown | null>(null)
+
+function dropdownReady(field: BookingDropdown) {
+  if (checking.value || locationDialogOpen.value) return false
+
+  if (field === 'movie') return canChooseMovie.value
+  if (field === 'date') return canChooseDate.value
+  return canChooseShowtime.value
+}
+
+function requestDropdown(field: BookingDropdown | null) {
+  openField.value = null
+  pendingField.value = field
+}
+
+function handleDropdownOpen(fieldKey: string, open: boolean) {
+  if (fieldKey !== 'movie' && fieldKey !== 'date' && fieldKey !== 'showtime') {
+    return
+  }
+
+  if (open) {
+    // Người dùng mở một field thủ công: hủy bước tự mở đang chờ.
+    pendingField.value = null
+    openField.value = dropdownReady(fieldKey) ? fieldKey : null
+  } else if (openField.value === fieldKey) {
+    openField.value = null
+  }
+}
+
+function handleDropdownCloseFocus(event: Event) {
+  // Tránh dropdown vừa đóng lấy lại focus từ dropdown kế tiếp.
+  if (pendingField.value || openField.value) {
+    event.preventDefault()
+  }
+}
+
+function handleSelectChange(fieldKey: string, value: unknown) {
+  if (typeof value !== 'string') return
+
+  if (fieldKey === 'movie') {
+    if (!canChooseMovie.value || !props.movies.some((movie) => movie.id === value)) {
+      return
+    }
+
+    selection.movie = value
+    navigationError.value = ''
+    emit('movie-change', value)
+    requestDropdown('date')
+    return
+  }
+
+  if (fieldKey === 'date') {
+    if (!canChooseDate.value || !dates.value.includes(value)) return
+
+    selection.date = value
+    navigationError.value = ''
+    requestDropdown('showtime')
+    return
+  }
+
+  if (fieldKey === 'showtime') {
+    if (!canChooseShowtime.value || !times.value.some((showtime) => showtime.id === value)) {
+      return
+    }
+
+    selection.showtime = value
+    requestDropdown(null)
+  }
+}
+
+watch(
+  () => selection.cinema,
+  (cinemaId, previousCinemaId) => {
+    if (cinemaId === previousCinemaId) return
+
+    // Home chọn lại phim theo rạp mới.
+    // Trang /booking giữ phim được quản lý bằng URL.
+    if (props.selectedMovieId === undefined) {
+      selection.movie = ''
+    }
+
+    requestDropdown(cinemaId ? (selection.movie ? 'date' : 'movie') : null)
+  },
+  { flush: 'sync' },
+)
+
+watchEffect((onCleanup) => {
+  if (openField.value && !dropdownReady(openField.value)) {
+    openField.value = null
+  }
+
+  const field = pendingField.value
+  if (!field || !dropdownReady(field)) return
+
+  let cancelled = false
+  let frame: number | undefined
+
+  // Đợi DOM cập nhật và bước trả focus của dialog/dropdown trước.
+  void nextTick(() => {
+    if (cancelled || disposed) return
+
+    frame = window.requestAnimationFrame(() => {
+      if (cancelled || disposed || pendingField.value !== field || !dropdownReady(field)) {
+        return
+      }
+
+      pendingField.value = null
+      openField.value = field
+    })
+  })
+
+  onCleanup(() => {
+    cancelled = true
+    if (frame !== undefined) window.cancelAnimationFrame(frame)
+  })
+})
 
 function updateClock() {
   now.value = Date.now()
@@ -484,12 +610,6 @@ watch(
     }
   },
 )
-
-function handleSelectChange(fieldKey: string, event: Event) {
-  if (fieldKey === 'movie' && event.target instanceof HTMLSelectElement) {
-    emit('movie-change', event.target.value)
-  }
-}
 
 watch(
   () => selection.movie,
@@ -648,34 +768,47 @@ onBeforeUnmount(() => {
             <ChevronDown aria-hidden="true" />
           </button>
 
-          <input
-            v-else-if="field.key === 'date'"
-            :id="`home-${field.key}`"
-            class="home-booking__date"
-            type="date"
-            :value="selection.date"
-            :min="minDate"
-            :max="maxDate"
-            :disabled="field.disabled"
-            :title="field.placeholder"
-            aria-describedby="quick-booking-feedback"
-            @change="handleDateChange"
-          />
-
-          <select
+          <SelectRoot
             v-else
-            :id="`home-${field.key}`"
-            v-model="selection[field.key]"
+            :model-value="selection[field.key]"
+            :open="openField === field.key"
             :disabled="field.disabled"
-            aria-describedby="quick-booking-feedback"
-            @change="handleSelectChange(field.key, $event)"
+            @update:model-value="handleSelectChange(field.key, $event)"
+            @update:open="handleDropdownOpen(field.key, $event)"
           >
-            <option value="">{{ field.placeholder }}</option>
+            <SelectTrigger
+              :id="`home-${field.key}`"
+              class="home-booking__select-trigger"
+              :aria-label="field.label"
+              aria-describedby="quick-booking-feedback"
+            >
+              <span class="home-booking__select-value">
+                <SelectValue :placeholder="field.placeholder" />
+              </span>
+              <ChevronDown aria-hidden="true" />
+            </SelectTrigger>
 
-            <option v-for="option in field.options" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
+            <SelectPortal>
+              <SelectContent
+                class="home-booking__select-content"
+                position="popper"
+                side="bottom"
+                align="start"
+                @close-auto-focus="handleDropdownCloseFocus"
+              >
+                <SelectViewport class="home-booking__select-viewport">
+                  <SelectItem
+                    v-for="option in field.options"
+                    :key="option.value"
+                    :value="option.value"
+                    class="home-booking__select-item"
+                  >
+                    <SelectItemText>{{ option.label }}</SelectItemText>
+                  </SelectItem>
+                </SelectViewport>
+              </SelectContent>
+            </SelectPortal>
+          </SelectRoot>
         </div>
       </div>
 

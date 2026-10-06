@@ -299,7 +299,10 @@ onBeforeUnmount(() => {
             <div class="home-hero__actions">
               <RouterLink
                 class="home-button home-button--primary"
-                :to="{ name: ROUTE_NAMES.BOOKING_START }"
+                :to="{
+                  name: ROUTE_NAMES.BOOKING_START,
+                  query: { movieId: shown.id },
+                }"
               >
                 <Clapperboard aria-hidden="true" />
                 Đặt vé ngay
