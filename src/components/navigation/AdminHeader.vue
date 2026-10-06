@@ -1,71 +1,140 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ChevronDown, LogOut, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
+import {
+  ArrowUpRight,
+  ChevronDown,
+  LogOut,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  UserRound,
+} from 'lucide-vue-next'
+import {
+  DialogTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRoot,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from 'reka-ui'
+import { ROUTE_NAMES } from '../../router/route-constants'
 
-defineProps<{
-  mobile: boolean
-  tablet: boolean
-  mobileDrawerOpen: boolean
+const props = defineProps<{
+  drawer: boolean
   sidebarCollapsed: boolean
+  accountLabel: string
+  username: string | null
+  logoutPending: boolean
 }>()
 
 const emit = defineEmits<{
-  toggleNavigation: []
+  toggleSidebar: []
   logoutRequested: []
 }>()
 
-const userMenu = ref<HTMLDetailsElement | null>(null)
+const route = useRoute()
+const accountMenuOpen = ref(false)
+
+const currentTitle = computed(() =>
+  typeof route.meta.title === 'string' ? route.meta.title : 'Quản trị',
+)
+
+watch(
+  () => route.fullPath,
+  () => {
+    accountMenuOpen.value = false
+  },
+)
 
 function requestLogout() {
-  if (userMenu.value) userMenu.value.open = false
+  if (props.logoutPending) return
+
+  accountMenuOpen.value = false
   emit('logoutRequested')
 }
 </script>
 
 <template>
   <header class="admin-header">
+    <DialogTrigger v-if="drawer" as-child>
+      <button
+        id="admin-navigation-toggle"
+        class="admin-header__menu-button"
+        type="button"
+        aria-label="Mở điều hướng quản trị"
+      >
+        <Menu aria-hidden="true" />
+      </button>
+    </DialogTrigger>
+
     <button
-      v-if="mobile || tablet"
+      v-else
+      id="admin-navigation-toggle"
       class="admin-header__menu-button"
       type="button"
-      :aria-label="
-        mobile
-          ? mobileDrawerOpen
-            ? 'Đóng menu quản trị'
-            : 'Mở menu quản trị'
-          : tablet
-            ? sidebarCollapsed
-              ? 'Mở rộng thanh điều hướng'
-              : 'Thu gọn thanh điều hướng'
-            : 'Điều hướng quản trị'
-      "
-      :aria-expanded="mobile ? mobileDrawerOpen : tablet ? !sidebarCollapsed : undefined"
-      @click="emit('toggleNavigation')"
+      aria-controls="admin-desktop-navigation"
+      :aria-expanded="!sidebarCollapsed"
+      :aria-label="sidebarCollapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'"
+      @click="emit('toggleSidebar')"
     >
-      <Menu v-if="mobile" aria-hidden="true" />
-      <PanelLeftOpen v-else-if="tablet && sidebarCollapsed" aria-hidden="true" />
+      <PanelLeftOpen v-if="sidebarCollapsed" aria-hidden="true" />
       <PanelLeftClose v-else aria-hidden="true" />
     </button>
 
     <div class="admin-header__title">
-      <span class="admin-header__eyebrow">CINEMATIC</span>
-      <span class="admin-header__section">Quản trị</span>
+      <span class="admin-header__eyebrow">Không gian quản trị</span>
+      <strong class="admin-header__section">{{ currentTitle }}</strong>
     </div>
 
-    <details ref="userMenu" class="admin-user-menu">
-      <summary class="admin-user-menu__trigger" aria-label="Mở menu tài khoản">
-        <span class="admin-user-menu__avatar" aria-hidden="true">A</span>
-        <span class="admin-user-menu__label">Tài khoản</span>
-        <ChevronDown class="admin-user-menu__chevron" aria-hidden="true" />
-      </summary>
+    <RouterLink class="admin-header__customer-link" :to="{ name: ROUTE_NAMES.HOME }">
+      <span>Trang khách hàng</span>
+      <ArrowUpRight aria-hidden="true" />
+    </RouterLink>
 
-      <div class="admin-user-menu__panel">
-        <span class="admin-user-menu__identity">Phiên quản trị</span>
-        <button class="admin-user-menu__logout" type="button" @click="requestLogout">
-          <LogOut aria-hidden="true" />
-          <span>Đăng xuất</span>
+    <DropdownMenuRoot v-model:open="accountMenuOpen">
+      <DropdownMenuTrigger as-child>
+        <button
+          class="admin-user-menu__trigger"
+          type="button"
+          aria-label="Mở menu tài khoản quản trị"
+          :disabled="logoutPending"
+        >
+          <span class="admin-user-menu__avatar" aria-hidden="true">
+            <UserRound />
+          </span>
+
+          <span class="admin-user-menu__label">
+            {{ username || accountLabel }}
+          </span>
+
+          <ChevronDown class="admin-user-menu__chevron" aria-hidden="true" />
         </button>
-      </div>
-    </details>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuPortal>
+        <DropdownMenuContent class="admin-user-menu__panel" align="end">
+          <DropdownMenuLabel class="admin-user-menu__identity">
+            <strong>{{ username || accountLabel }}</strong>
+            <span v-if="username" class="admin-user-menu__role">
+              {{ accountLabel }}
+            </span>
+          </DropdownMenuLabel>
+
+          <DropdownMenuSeparator class="admin-user-menu__separator" />
+
+          <DropdownMenuItem
+            class="admin-user-menu__item"
+            :disabled="logoutPending"
+            @select="requestLogout"
+          >
+            <LogOut aria-hidden="true" />
+            <span>{{ logoutPending ? 'Đang đăng xuất…' : 'Đăng xuất' }}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenuPortal>
+    </DropdownMenuRoot>
   </header>
 </template>

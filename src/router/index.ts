@@ -5,6 +5,7 @@ import { ROUTE_NAMES, ROUTE_PATHS } from './route-constants'
 import type { RouteRecordRaw } from 'vue-router'
 
 const loadPlaceholder = () => import('../components/feedback/PlaceholderPage.vue')
+const loadAdminDashboardPage = () => import('../features/admin/pages/AdminDashboardPage.vue')
 const loadLoginPage = () => import('../features/auth/pages/LoginPage.vue')
 const loadAuthCallbackPage = () => import('../features/auth/pages/AuthCallbackPage.vue')
 const loadHomePage = () => import('../features/home/pages/HomePage.vue')
@@ -152,14 +153,10 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN,
     name: ROUTE_NAMES.ADMIN,
-    component: loadPlaceholder,
-    props: {
-      title: 'Quản trị',
-      description: 'Dashboard sẽ được triển khai theo dữ liệu backend hỗ trợ.',
-    },
+    component: loadAdminDashboardPage,
     meta: {
       layout: 'admin',
-      title: 'Quản trị',
+      title: 'Tổng quan',
       requiresAuth: true,
       roles: ADMIN_ROLES,
     },

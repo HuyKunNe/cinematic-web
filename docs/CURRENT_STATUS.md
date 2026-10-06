@@ -260,3 +260,48 @@ Remaining work:
 - Movie metadata and Hero configuration.
 - Cinema, room/seat and showtime management.
 - Resume booking minimap after backend layout/seat-map APIs are implemented.
+
+## F4.0 — Admin foundation redesign
+
+Proposed patch; application and manual verification are pending.
+
+Scope:
+
+- Rebuild AdminLayout, AdminHeader and AdminSidebar.
+- Add grouped, permission-aware navigation and the Overview entry.
+- Support persisted desktop sidebar collapse.
+- Use a Reka UI dialog drawer for tablet, mobile and compact landscape.
+- Close the drawer after navigation and restore navigation focus.
+- Use a Reka UI account dropdown.
+- Connect logout to the existing OIDC signOut flow.
+- Replace the admin home placeholder with AdminDashboardPage.
+- Load movie totals from catalog pagination metadata.
+- Load active cinema count from the existing cinema list API.
+- Show independent loading, error and retry states.
+- Use existing design tokens and introduce no dependencies.
+
+API scope:
+
+- GET /api/v1/movies/catalog
+- GET /api/v1/cinemas
+- Cinema count includes active cinemas only.
+- No revenue or booking metrics are introduced.
+
+Architecture:
+
+- Dashboard server state belongs to features/admin.
+- Existing generated clients remain unchanged.
+- Shared navigation components do not call business APIs.
+- Existing route authorization remains in place.
+
+Tests, lint, type checking and build were not run, following AGENTS.md.
+
+Next implementation rounds:
+
+1. Movie and genre management.
+2. Cinema management.
+3. Room and seat management.
+4. Showtime management.
+5. User management.
+
+Booking minimap remains deferred until backend layout/seat-map APIs are ready.

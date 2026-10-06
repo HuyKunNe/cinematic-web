@@ -8,6 +8,7 @@ export type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated'
 export const useAuthStore = defineStore('auth', () => {
   const status = ref<AuthStatus>('unknown')
   const subject = ref<string | null>(null)
+  const username = ref<string | null>(null)
   const roles = ref<AppRole[]>([])
   const permissions = ref<AppPermission[]>([])
 
@@ -18,10 +19,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setAuthorizationContext(context: {
     subject: string
+    username?: string | null
     roles: AppRole[]
     permissions: AppPermission[]
   }) {
     subject.value = context.subject
+    username.value = context.username?.trim() || null
     roles.value = [...context.roles]
     permissions.value = [...context.permissions]
     status.value = 'authenticated'
@@ -29,6 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function clearAuthorizationContext() {
     subject.value = null
+    username.value = null
     roles.value = []
     permissions.value = []
     status.value = 'unauthenticated'
@@ -49,6 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     status,
     subject,
+    username,
     roles,
     permissions,
     isAuthenticated,

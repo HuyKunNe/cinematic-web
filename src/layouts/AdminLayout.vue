@@ -1,89 +1,161 @@
 <script setup lang="ts">
-import { useMediaQuery } from '@vueuse/core'
-import { useRouter } from 'vue-router'
+import { computed, nextTick, ref, watch } from 'vue'
+import { useMediaQuery, useStorage } from '@vueuse/core'
+import { useQueryClient } from '@tanstack/vue-query'
+import { useRoute } from 'vue-router'
+import { X } from 'lucide-vue-next'
+import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from 'reka-ui'
 import AdminHeader from '../components/navigation/AdminHeader.vue'
 import AdminSidebar from '../components/navigation/AdminSidebar.vue'
 import Breadcrumbs from '../components/navigation/Breadcrumbs.vue'
+import { APP_ROLES } from '../config/authorization'
+import { ADMIN_MEDIA_QUERIES } from '../config/admin-responsive'
+import { restoreAuthSession, signOut } from '../features/auth'
 import { useAuthStore } from '../stores/auth.store'
-import { ROUTE_NAMES } from '../router/route-constants'
-import { computed, ref, watch } from 'vue'
 
-const isMobileWidth = useMediaQuery('(max-width: 47.999rem)')
-const isCompactLandscape = useMediaQuery(
-  '(orientation: landscape) and (max-height: 32rem) and (max-width: 63.999rem)',
-)
-const isTabletWidth = useMediaQuery('(min-width: 48rem) and (max-width: 63.999rem)')
-
-const isMobile = computed(() => isMobileWidth.value || isCompactLandscape.value)
-const isTablet = computed(() => isTabletWidth.value && !isCompactLandscape.value)
-
-watch(isMobile, (mobile) => {
-  if (!mobile) mobileDrawerOpen.value = false
-})
-const router = useRouter()
 const auth = useAuthStore()
+const route = useRoute()
+const queryClient = useQueryClient()
 
-const sidebarCollapsed = ref(true)
-const mobileDrawerOpen = ref(false)
+const isDrawer = useMediaQuery(ADMIN_MEDIA_QUERIES.drawer)
+const sidebarCollapsed = useStorage('cinematic:admin:sidebar-collapsed', false)
 
-function toggleNavigation() {
-  if (isMobile.value) {
-    mobileDrawerOpen.value = !mobileDrawerOpen.value
-    return
-  }
+const drawerOpen = ref(false)
+const logoutPending = ref(false)
+const logoutError = ref('')
 
-  if (isTablet.value) {
-    sidebarCollapsed.value = !sidebarCollapsed.value
-  }
+const accountLabel = computed(() => {
+  if (auth.hasRole(APP_ROLES.ADMIN)) return 'Quản trị viên'
+  if (auth.hasRole(APP_ROLES.STAFF)) return 'Nhân viên'
+  return 'Tài khoản'
+})
+
+watch(
+  () => route.fullPath,
+  () => {
+    drawerOpen.value = false
+    logoutError.value = ''
+  },
+)
+
+watch(
+  isDrawer,
+  () => {
+    drawerOpen.value = false
+  },
+  { flush: 'sync' },
+)
+
+function restoreNavigationFocus(event: Event) {
+  event.preventDefault()
+
+  void nextTick(() => {
+    const target =
+      document.getElementById('admin-navigation-toggle') ??
+      document.getElementById('admin-main-content')
+
+    target?.focus()
+  })
 }
 
-function closeMobileDrawer() {
-  mobileDrawerOpen.value = false
-}
+async function handleLogout() {
+  if (logoutPending.value) return
 
-function handleLogout() {
-  // OIDC end-session chưa được triển khai trong auth feature.
-  // Xóa authorization context phía client và đưa người dùng về auth placeholder.
-  auth.clearAuthorizationContext()
-  mobileDrawerOpen.value = false
-  void router.replace({ name: ROUTE_NAMES.AUTH_REQUIRED })
+  logoutPending.value = true
+  logoutError.value = ''
+  drawerOpen.value = false
+
+  try {
+    await signOut()
+    queryClient.clear()
+  } catch {
+    await restoreAuthSession()
+    logoutError.value = 'Không thể chuyển sang trang đăng xuất. Vui lòng thử lại.'
+  } finally {
+    logoutPending.value = false
+  }
 }
 </script>
 
 <template>
-  <div
-    class="admin-layout"
-    :class="{
-      'is-tablet': isTablet,
-      'is-mobile': isMobile,
-      'is-sidebar-collapsed': isTablet && sidebarCollapsed,
-    }"
-  >
-    <AdminSidebar
-      :collapsed="isTablet && sidebarCollapsed"
-      :mobile="isMobile"
-      :mobile-open="mobileDrawerOpen"
-      @close-mobile="closeMobileDrawer"
-    />
+  <DialogRoot v-model:open="drawerOpen">
+    <div
+      class="admin-layout"
+      :class="{
+        'is-drawer': isDrawer,
+        'is-sidebar-collapsed': !isDrawer && sidebarCollapsed,
+      }"
+    >
+      <a class="admin-skip-link" href="#admin-main-content"> Chuyển đến nội dung </a>
 
-    <div class="admin-layout__content">
-      <AdminHeader
-        :mobile="isMobile"
-        :tablet="isTablet"
-        :mobile-drawer-open="mobileDrawerOpen"
-        :sidebar-collapsed="sidebarCollapsed"
-        @toggle-navigation="toggleNavigation"
-        @logout-requested="handleLogout"
-      />
+      <aside
+        v-if="!isDrawer"
+        id="admin-desktop-navigation"
+        class="admin-layout__sidebar"
+        aria-label="Thanh điều hướng quản trị"
+      >
+        <AdminSidebar :collapsed="sidebarCollapsed" />
+      </aside>
 
-      <main class="admin-layout__main">
-        <div class="admin-layout__container">
-          <Breadcrumbs />
-          <slot />
-        </div>
-      </main>
+      <div class="admin-layout__content">
+        <AdminHeader
+          :drawer="isDrawer"
+          :sidebar-collapsed="sidebarCollapsed"
+          :account-label="accountLabel"
+          :username="auth.username"
+          :logout-pending="logoutPending"
+          @toggle-sidebar="sidebarCollapsed = !sidebarCollapsed"
+          @logout-requested="handleLogout"
+        />
+
+        <main id="admin-main-content" class="admin-layout__main" tabindex="-1">
+          <div class="admin-layout__container">
+            <Breadcrumbs />
+
+            <p v-if="logoutError" class="admin-layout__error" role="alert">
+              {{ logoutError }}
+            </p>
+
+            <slot />
+          </div>
+        </main>
+      </div>
     </div>
-  </div>
+
+    <DialogPortal v-if="isDrawer">
+      <DialogOverlay class="admin-drawer__overlay" />
+
+      <DialogContent class="admin-drawer" @close-auto-focus="restoreNavigationFocus">
+        <DialogTitle class="admin-visually-hidden"> Điều hướng quản trị </DialogTitle>
+
+        <DialogDescription class="admin-visually-hidden">
+          Chọn một chức năng quản trị hoặc quay về trang khách hàng.
+        </DialogDescription>
+
+        <AdminSidebar :collapsed="false" @navigate="drawerOpen = false">
+          <template #header-action>
+            <DialogClose as-child>
+              <button
+                class="admin-sidebar__close"
+                type="button"
+                aria-label="Đóng điều hướng quản trị"
+              >
+                <X aria-hidden="true" />
+              </button>
+            </DialogClose>
+          </template>
+        </AdminSidebar>
+      </DialogContent>
+    </DialogPortal>
+  </DialogRoot>
 </template>
 
 <style src="../styles/admin-navigation.css"></style>

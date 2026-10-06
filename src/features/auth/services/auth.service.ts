@@ -7,6 +7,7 @@ import { getUserManager } from './oidc-client'
 
 interface AccessTokenClaims {
   sub?: unknown
+  username?: unknown
   roles?: unknown
   permissions?: unknown
 }
@@ -74,6 +75,7 @@ function applyUser(user: User) {
 
   store.setAuthorizationContext({
     subject: typeof claims.sub === 'string' ? claims.sub : user.profile.sub,
+    username: typeof claims.username === 'string' ? claims.username.trim() || null : null,
     roles: validRoles(claims),
     permissions: validPermissions(claims),
   })
