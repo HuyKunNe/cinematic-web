@@ -233,10 +233,7 @@ const fields = computed(() => [
     icon: MapPin,
     placeholder: 'Chọn thành phố và rạp',
     disabled: checking.value,
-    options: dates.value.map((date) => ({
-      value: date,
-      label: labelDate(date),
-    })),
+    options: [],
   },
   {
     key: 'movie' as const,
@@ -266,7 +263,10 @@ const fields = computed(() => [
           ? 'Đang tải lịch chiếu…'
           : 'Chọn ngày',
     disabled: checking.value || !canChooseDate.value,
-    options: [],
+    options: dates.value.map((date) => ({
+      value: date,
+      label: labelDate(date),
+    })),
   },
   {
     key: 'showtime' as const,

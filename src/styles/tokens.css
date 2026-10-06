@@ -446,4 +446,6 @@
   --home-booking-dropdown-max-height: 18rem;
   --home-booking-dropdown-layer: var(--z-drawer);
   --home-booking-dropdown-gap: var(--space-1);
+  --location-dialog-dropdown-layer: calc(var(--z-modal) + 1);
+  --location-dialog-dropdown-max-height: 18rem;
 }

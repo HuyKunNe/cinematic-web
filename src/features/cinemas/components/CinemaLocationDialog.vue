@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
-import { X } from 'lucide-vue-next'
+import { ChevronDown, X } from 'lucide-vue-next'
 import {
   DialogClose,
   DialogContent,
@@ -9,6 +9,14 @@ import {
   DialogPortal,
   DialogRoot,
   DialogTitle,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport,
 } from 'reka-ui'
 import { AppButton, AppErrorState, AppSelect } from '@/components/ui'
 import { useCinemaLocation } from '../composables/use-cinema-location'
@@ -27,7 +35,8 @@ const { query, location, cities, cinemas, selectCinemaById } = useCinemaLocation
 const draftCityKey = ref('')
 const draftCinemaId = ref('')
 const selectionError = ref('')
-
+const cinemaDropdownOpen = ref(false)
+const pendingCinemaDropdown = ref(false)
 const cityOptions = computed(() =>
   cities.value.map((city) => ({
     value: city.key,
@@ -56,16 +65,85 @@ const canApply = computed(
   () => Boolean(draftCityKey.value && draftCinema.value) && !controlsDisabled.value,
 )
 
-function changeCity(cityKey: string) {
+function changeCity(cityKey: string, autoOpenCinema = false) {
   draftCityKey.value = cityKey
   draftCinemaId.value = ''
   selectionError.value = ''
+  cinemaDropdownOpen.value = false
+  pendingCinemaDropdown.value = Boolean(cityKey) && autoOpenCinema
 }
 
-function changeCinema(cinemaId: string) {
+function changeCinema(cinemaId: unknown) {
+  if (
+    typeof cinemaId !== 'string' ||
+    !cinemaOptions.value.some((option) => option.value === cinemaId)
+  ) {
+    return
+  }
   draftCinemaId.value = cinemaId
   selectionError.value = ''
+  cinemaDropdownOpen.value = false
+  pendingCinemaDropdown.value = false
 }
+
+function updateCinemaDropdown(open: boolean) {
+  pendingCinemaDropdown.value = false
+  cinemaDropdownOpen.value =
+    open && props.open && !controlsDisabled.value && cinemaOptions.value.length > 0
+}
+
+watch(
+  [() => props.open, pendingCinemaDropdown, controlsDisabled, cinemaOptions],
+  ([dialogOpen, pending, disabled, options], _previous, onCleanup) => {
+    if (!dialogOpen) {
+      cinemaDropdownOpen.value = false
+      pendingCinemaDropdown.value = false
+      return
+    }
+
+    if (disabled) {
+      cinemaDropdownOpen.value = false
+      return
+    }
+
+    if (!pending) return
+
+    if (!options.length) {
+      pendingCinemaDropdown.value = false
+      return
+    }
+
+    const requestedCity = draftCityKey.value
+    let cancelled = false
+    let frame: number | undefined
+
+    void nextTick(() => {
+      if (cancelled) return
+
+      frame = window.requestAnimationFrame(() => {
+        if (
+          cancelled ||
+          !props.open ||
+          !pendingCinemaDropdown.value ||
+          controlsDisabled.value ||
+          draftCityKey.value !== requestedCity ||
+          !cinemaOptions.value.length
+        ) {
+          return
+        }
+
+        pendingCinemaDropdown.value = false
+        cinemaDropdownOpen.value = true
+      })
+    })
+
+    onCleanup(() => {
+      cancelled = true
+      if (frame !== undefined) window.cancelAnimationFrame(frame)
+    })
+  },
+  { flush: 'post' },
+)
 
 function applySelection() {
   if (!canApply.value) return
@@ -208,19 +286,60 @@ watch(query.data, (catalog) => {
             placeholder="Chọn thành phố"
             :disabled="controlsDisabled"
             required
-            @update:model-value="changeCity"
+            @update:model-value="changeCity($event, true)"
           />
 
-          <AppSelect
-            id="cinema-location-cinema"
-            label="Rạp"
-            :model-value="draftCinemaId"
-            :options="cinemaOptions"
-            :placeholder="draftCityKey ? 'Chọn rạp' : 'Chọn thành phố trước'"
-            :disabled="controlsDisabled || !draftCityKey"
-            required
-            @update:model-value="changeCinema"
-          />
+          <div class="location-dialog__cinema-field">
+            <label class="location-dialog__cinema-label" for="cinema-location-cinema"> Rạp </label>
+
+            <SelectRoot
+              :model-value="draftCinemaId || undefined"
+              :open="cinemaDropdownOpen"
+              :disabled="controlsDisabled || !draftCityKey || !cinemaOptions.length"
+              required
+              @update:model-value="changeCinema"
+              @update:open="updateCinemaDropdown"
+            >
+              <SelectTrigger
+                id="cinema-location-cinema"
+                class="location-dialog__cinema-trigger"
+                aria-label="Rạp"
+              >
+                <span class="location-dialog__cinema-value">
+                  <SelectValue :placeholder="draftCityKey ? 'Chọn rạp' : 'Chọn thành phố trước'" />
+                </span>
+                <ChevronDown aria-hidden="true" />
+              </SelectTrigger>
+
+              <SelectPortal>
+                <SelectContent
+                  class="location-dialog__cinema-content"
+                  position="popper"
+                  side="bottom"
+                  align="start"
+                >
+                  <SelectViewport>
+                    <SelectItem
+                      v-for="option in cinemaOptions"
+                      :key="option.value"
+                      :value="option.value"
+                      class="location-dialog__cinema-item"
+                    >
+                      <SelectItemText>{{ option.label }}</SelectItemText>
+                    </SelectItem>
+                  </SelectViewport>
+                </SelectContent>
+              </SelectPortal>
+            </SelectRoot>
+
+            <p
+              v-if="draftCityKey && !controlsDisabled && !cinemaOptions.length"
+              class="location-dialog__message"
+              role="status"
+            >
+              Thành phố này hiện chưa có rạp hoạt động.
+            </p>
+          </div>
 
           <p v-if="draftCinema?.address" class="location-dialog__message">
             {{ draftCinema.address }}
@@ -352,5 +471,92 @@ watch(query.data, (catalog) => {
 .location-dialog__actions > button {
   flex: 1;
   min-width: 0;
+}
+.location-dialog__cinema-field {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-2);
+}
+
+.location-dialog__cinema-label {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.location-dialog__cinema-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: var(--app-select-height);
+  padding-inline: var(--app-select-padding-start);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  background: var(--color-surface-raised);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.location-dialog__cinema-value {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.location-dialog__cinema-trigger > svg {
+  flex-shrink: 0;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+.location-dialog__cinema-trigger:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+
+.location-dialog__cinema-trigger:disabled {
+  opacity: var(--app-select-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.location-dialog__cinema-content {
+  z-index: var(--location-dialog-dropdown-layer);
+  box-sizing: border-box;
+  width: var(--reka-select-trigger-width);
+  max-width: var(--reka-select-content-available-width);
+  max-height: min(
+    var(--location-dialog-dropdown-max-height),
+    var(--reka-select-content-available-height)
+  );
+  overflow: hidden;
+  padding: var(--space-1);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-raised);
+}
+
+.location-dialog__cinema-item {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.location-dialog__cinema-item[data-highlighted] {
+  outline: none;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
 }
 </style>
