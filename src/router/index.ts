@@ -11,6 +11,7 @@ const loadHomePage = () => import('../features/home/pages/HomePage.vue')
 const loadMoviesPage = () => import('../features/movies/pages/MoviesPage.vue')
 const loadMovieDetailPage = () => import('../features/movies/pages/MovieDetailPage.vue')
 const loadBookingStartPage = () => import('../features/booking/pages/BookingStartPage.vue')
+const loadBookingPage = () => import('../features/booking/pages/BookingPage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -73,14 +74,14 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.BOOKING,
     name: ROUTE_NAMES.BOOKING,
-    component: loadPlaceholder,
+    component: loadBookingPage,
     props: {
-      title: 'Đặt vé',
+      title: 'Chọn ghế',
       description: 'Luồng đặt vé sẽ dùng booking API đã xác nhận.',
     },
     meta: {
       layout: 'customer',
-      title: 'Đặt vé',
+      title: 'Chọn ghế',
       requiresAuth: true,
     },
   },
