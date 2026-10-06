@@ -4,6 +4,8 @@ import { ChevronLeft, ChevronRight, Clapperboard, Play } from 'lucide-vue-next'
 import type { HomeMovie } from '../models/home-movie'
 import { heroArtworkCandidates } from '../presentation/artwork'
 import { formatAgeRating } from '@/utils/movie-age-rating'
+import { ROUTE_NAMES } from '@/router/route-constants'
+
 const props = defineProps<{
   movies: HomeMovie[]
   loading: boolean
@@ -295,10 +297,13 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="home-hero__actions">
-              <a class="home-button home-button--primary" href="#quick-booking">
+              <RouterLink
+                class="home-button home-button--primary"
+                :to="{ name: ROUTE_NAMES.BOOKING_START }"
+              >
                 <Clapperboard aria-hidden="true" />
                 Đặt vé ngay
-              </a>
+              </RouterLink>
 
               <a
                 v-if="shown.trailerUrl"

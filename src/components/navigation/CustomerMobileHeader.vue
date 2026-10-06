@@ -259,7 +259,7 @@ onBeforeUnmount(() => {
 
           <RouterLink
             class="customer-mobile-drawer__booking"
-            :to="{ name: ROUTE_NAMES.SHOWTIMES }"
+            :to="{ name: ROUTE_NAMES.BOOKING_START }"
             @click="closeMenu()"
           >
             Đặt vé

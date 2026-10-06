@@ -74,11 +74,7 @@ function retryRooms() {
           :disabled="Boolean(checkingId) || locationQuery.isPending.value"
           @click="openLocation"
         >
-          {{
-            selectedCinema
-              ? `${selectedCinema.name} · ${selectedCity?.name ?? selectedCinema.city}`
-              : 'Chọn thành phố và rạp'
-          }}
+          {{ selectedCinema ? `${selectedCinema.name}` : 'Chọn thành phố và rạp' }}
         </AppButton>
       </div>
 

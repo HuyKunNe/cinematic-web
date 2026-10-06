@@ -10,6 +10,7 @@ const loadAuthCallbackPage = () => import('../features/auth/pages/AuthCallbackPa
 const loadHomePage = () => import('../features/home/pages/HomePage.vue')
 const loadMoviesPage = () => import('../features/movies/pages/MoviesPage.vue')
 const loadMovieDetailPage = () => import('../features/movies/pages/MovieDetailPage.vue')
+const loadBookingStartPage = () => import('../features/booking/pages/BookingStartPage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -59,6 +60,15 @@ const routes: RouteRecordRaw[] = [
       description: 'Backend hiện chưa có Promotions API. Trang này chưa hiển thị dữ liệu ưu đãi.',
     },
     meta: { layout: 'customer', title: 'Ưu đãi' },
+  },
+  {
+    path: ROUTE_PATHS.BOOKING_START,
+    name: ROUTE_NAMES.BOOKING_START,
+    component: loadBookingStartPage,
+    meta: {
+      layout: 'customer',
+      title: 'Đặt vé',
+    },
   },
   {
     path: ROUTE_PATHS.BOOKING,

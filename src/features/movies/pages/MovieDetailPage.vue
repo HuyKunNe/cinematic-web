@@ -205,7 +205,7 @@ function retry() {
             </dl>
 
             <div class="movie-detail__actions">
-              <a class="movie-detail__booking" href="#movie-showtimes"> Đặt vé </a>
+              <a class="movie-detail__booking" href="#movie-showtimes"> Chọn suất chiếu </a>
               <a
                 v-if="movie.trailerUrl"
                 class="movie-detail__trailer"

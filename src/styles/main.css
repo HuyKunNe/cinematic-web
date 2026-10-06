@@ -4,7 +4,7 @@
 @import './home.css';
 @import './movies.css';
 @import './movie-detail.css';
-
+@import './booking.css';
 @theme {
   --breakpoint-header-compact: 73.75rem;
   --breakpoint-customer-narrow: 24rem;

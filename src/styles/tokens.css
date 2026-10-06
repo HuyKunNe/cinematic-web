@@ -115,7 +115,7 @@
   --movie-card-art-aspect-ratio: 1.37 / 1;
   --movie-card-art-aspect-ratio-mobile: 1.55 / 1;
   --upcoming-art-aspect-ratio: 1 / 1;
-  
+
   /* Movie card navigation and independent actions */
   --movie-card-link-layer: 1;
   --movie-card-action-layer: 2;
@@ -424,5 +424,21 @@
     --movies-status-bottom: var(--space-2);
     --movies-status-size: 0.5625rem;
     --movies-cta-height: 2.375rem;
+  }
+}
+/* Booking start — adapted from the existing QuickBooking references. */
+:root {
+  --booking-start-columns: 2;
+  --booking-start-panel-width: 100%;
+  --booking-start-panel-padding: var(--space-6);
+  --booking-start-page-space: var(--space-8);
+  --booking-start-field-gap: var(--space-4);
+}
+
+@media (max-width: 47.999rem) {
+  :root {
+    --booking-start-columns: 1;
+    --booking-start-panel-padding: var(--space-3);
+    --booking-start-page-space: var(--space-6);
   }
 }

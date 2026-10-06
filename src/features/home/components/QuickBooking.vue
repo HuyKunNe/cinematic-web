@@ -15,11 +15,13 @@ const props = defineProps<{
   moviesLoading: boolean
   moviesError: boolean
   locationChanged: boolean
+  selectedMovieId?: string
 }>()
 
 const emit = defineEmits<{
   'retry-movies': []
   'dismiss-location-notice': []
+  'movie-change': [movieId: string]
 }>()
 
 const router = useRouter()
@@ -48,7 +50,7 @@ const cinemaSelection = computed(() => selectedCinema.value?.id ?? '')
 
 const selection = reactive({
   cinema: cinemaSelection,
-  movie: '',
+  movie: props.selectedMovieId ?? '',
   date: '',
   showtime: '',
 })
@@ -459,13 +461,35 @@ watch(
 )
 
 watch(
-  () => props.movies,
-  (movies) => {
+  () => props.selectedMovieId,
+  (movieId) => {
+    if (movieId !== undefined && movieId !== selection.movie) {
+      selection.movie = movieId
+    }
+  },
+  { flush: 'sync' },
+)
+
+watch(
+  [() => props.movies, () => props.moviesLoading, () => props.moviesError],
+  ([movies, moviesLoading, moviesError]) => {
+    // Trang đặt vé quản lý phim qua URL.
+    // Không xóa phim trong lúc tải dữ liệu hoặc đổi rạp.
+    if (moviesLoading || moviesError || props.selectedMovieId !== undefined) {
+      return
+    }
+
     if (selection.movie && !movies.some((movie) => movie.id === selection.movie)) {
       selection.movie = ''
     }
   },
 )
+
+function handleSelectChange(fieldKey: string, event: Event) {
+  if (fieldKey === 'movie' && event.target instanceof HTMLSelectElement) {
+    emit('movie-change', event.target.value)
+  }
+}
 
 watch(
   () => selection.movie,
@@ -644,6 +668,7 @@ onBeforeUnmount(() => {
             v-model="selection[field.key]"
             :disabled="field.disabled"
             aria-describedby="quick-booking-feedback"
+            @change="handleSelectChange(field.key, $event)"
           >
             <option value="">{{ field.placeholder }}</option>
 

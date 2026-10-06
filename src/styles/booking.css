@@ -1,0 +1,78 @@
+.booking-start-page {
+  min-width: 0;
+  padding-block: var(--booking-start-page-space);
+}
+
+.booking-start__intro {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.booking-start__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.booking-start__title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-display);
+  line-height: var(--line-height-heading);
+  overflow-wrap: anywhere;
+}
+
+.booking-start__description {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-base);
+  overflow-wrap: anywhere;
+}
+
+.booking-start__error {
+  margin: 0 0 var(--space-4);
+  color: var(--color-error);
+  line-height: var(--line-height-base);
+  overflow-wrap: anywhere;
+}
+
+/* Panel nằm trong AppContainer, nên không cộng gutter lần thứ hai. */
+.booking-start__selector.home-booking {
+  display: grid;
+  width: var(--booking-start-panel-width);
+  max-width: var(--booking-start-panel-width);
+  min-width: 0;
+  grid-template-columns: repeat(var(--booking-start-columns), minmax(0, 1fr));
+  align-items: start;
+  gap: var(--booking-start-field-gap);
+  margin: 0;
+  padding: var(--booking-start-panel-padding);
+}
+
+.booking-start__selector .home-booking__step {
+  margin: 0;
+}
+
+.booking-start__selector .home-booking__chevron {
+  display: none;
+}
+
+.booking-start__selector .home-booking__continue {
+  grid-column: 1 / -1;
+  width: var(--booking-start-panel-width);
+  margin: 0;
+}
+
+@media (max-width: 47.999rem) {
+  .booking-start__selector.home-booking h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: var(--font-size-xl);
+  }
+}

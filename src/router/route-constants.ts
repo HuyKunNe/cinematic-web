@@ -5,6 +5,7 @@ export const ROUTE_NAMES = {
   CINEMAS: 'cinemas',
   SHOWTIMES: 'showtimes',
   PROMOTIONS: 'promotions',
+  BOOKING_START: 'booking-start',
   BOOKING: 'booking',
   ACCOUNT: 'account',
   ACCOUNT_BOOKINGS: 'account-bookings',
@@ -33,6 +34,7 @@ export const ROUTE_PATHS = {
   SHOWTIMES: '/showtimes',
   PROMOTIONS: '/promotions',
   BOOKING: '/booking/:showtimeId',
+  BOOKING_START: '/booking',
   ACCOUNT: '/account',
   ACCOUNT_BOOKINGS: '/account/bookings',
 

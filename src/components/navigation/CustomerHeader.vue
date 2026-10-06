@@ -87,16 +87,13 @@ function isActive(routeName: string) {
           <ChevronDown aria-hidden="true" class="customer-navigation__icon" />
         </button>
 
-        <RouterLink
-          class="customer-header__account"
-          :to="{ name: ROUTE_NAMES.ACCOUNT }"
-        >
+        <RouterLink class="customer-header__account" :to="{ name: ROUTE_NAMES.ACCOUNT }">
           <UserRound aria-hidden="true" class="customer-navigation__icon" />
           <span>{{ auth.isAuthenticated ? 'Tài khoản' : 'Đăng nhập' }}</span>
           <ChevronDown aria-hidden="true" class="customer-navigation__icon" />
         </RouterLink>
 
-        <RouterLink class="customer-header__booking" :to="{ name: ROUTE_NAMES.SHOWTIMES }">
+        <RouterLink class="customer-header__booking" :to="{ name: ROUTE_NAMES.BOOKING_START }">
           Đặt vé
         </RouterLink>
       </div>

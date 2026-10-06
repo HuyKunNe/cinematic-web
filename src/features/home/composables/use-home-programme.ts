@@ -7,6 +7,7 @@ export function useHomeProgramme() {
 
   const moviesQuery = useHomeMovies()
   const programmeQuery = useHomeCinemaProgramme(() => location.selectedCinemaId)
+  const catalogMovies = computed(() => moviesQuery.data.value ?? [])
 
   const now = ref(Date.now())
   let clockTimer: number | undefined
@@ -139,6 +140,7 @@ export function useHomeProgramme() {
 
   return {
     scopeKey,
+    catalogMovies,
     nowShowing,
     upcoming,
     loading,
