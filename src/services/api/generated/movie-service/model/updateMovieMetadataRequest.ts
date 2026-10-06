@@ -12,8 +12,12 @@ export interface UpdateMovieMetadataRequest {
      * Absolute HTTP/HTTPS URL. Null clears the artwork.
      * @minLength 0
      * @maxLength 500
+     * @nullable
      */
-  backdropUrl: string;
-  /** Confirmed classification. Null clears the classification. */
+  backdropUrl: string | null;
+  /**
+     * Confirmed classification. Null clears the classification.
+     * @nullable
+     */
   ageRating: UpdateMovieMetadataRequestAgeRating;
 }

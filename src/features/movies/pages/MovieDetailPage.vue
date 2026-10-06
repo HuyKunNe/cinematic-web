@@ -11,6 +11,7 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import { formatAgeRating } from '@/utils/movie-age-rating'
 import { useMovieDetailQuery } from '../api/movie-queries'
 import type { MovieDetail } from '../models/movie.model'
+import MovieShowtimes from '../components/MovieShowtimes.vue'
 
 const route = useRoute()
 
@@ -204,6 +205,7 @@ function retry() {
             </dl>
 
             <div class="movie-detail__actions">
+              <a class="movie-detail__booking" href="#movie-showtimes"> Đặt vé </a>
               <a
                 v-if="movie.trailerUrl"
                 class="movie-detail__trailer"
@@ -227,6 +229,7 @@ function retry() {
             {{ movie.description.trim() || 'Nội dung phim chưa được cập nhật.' }}
           </p>
         </section>
+        <MovieShowtimes :key="movie.id" :movie-id="movie.id" />
       </template>
 
       <AppErrorState

@@ -8,8 +8,9 @@
 
 /**
  * Confirmed classification. Null clears the classification.
+ * @nullable
  */
-export type UpdateMovieMetadataRequestAgeRating = typeof UpdateMovieMetadataRequestAgeRating[keyof typeof UpdateMovieMetadataRequestAgeRating];
+export type UpdateMovieMetadataRequestAgeRating = typeof UpdateMovieMetadataRequestAgeRating[keyof typeof UpdateMovieMetadataRequestAgeRating] | null;
 
 
 export const UpdateMovieMetadataRequestAgeRating = {

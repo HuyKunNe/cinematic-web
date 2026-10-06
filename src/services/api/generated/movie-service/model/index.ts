@@ -7,19 +7,23 @@
  */
 
 export * from './apiResponse';
+export * from './apiResponseData';
 export * from './createGenreRequest';
 export * from './createMovieRequest';
 export * from './createMovieRequestStatus';
 export * from './errorBody';
 export * from './genreResponse';
+export * from './getHeroMoviesParams';
 export * from './getMovieCatalogParams';
 export * from './getMovieCatalogStatus';
+export * from './movieHeroConfigurationResponse';
 export * from './movieResponse';
 export * from './movieResponseAgeRating';
 export * from './movieResponseStatus';
 export * from './pageInfo';
 export * from './pageResponseMovieResponse';
 export * from './updateGenreRequest';
+export * from './updateMovieHeroRequest';
 export * from './updateMovieMetadataRequest';
 export * from './updateMovieMetadataRequestAgeRating';
 export * from './updateMovieRequest';

@@ -22,8 +22,14 @@ export interface MovieResponse {
   version?: number;
   createdAt?: string;
   updatedAt?: string;
-  /** Landscape artwork URL. Null when unavailable. */
-  backdropUrl?: string;
-  /** Confirmed age classification. Null when unknown. */
+  /**
+     * Landscape artwork URL. Null when unavailable.
+     * @nullable
+     */
+  backdropUrl?: string | null;
+  /**
+     * Confirmed age classification. Null when unknown.
+     * @nullable
+     */
   ageRating?: MovieResponseAgeRating;
 }

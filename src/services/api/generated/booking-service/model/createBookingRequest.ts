@@ -12,6 +12,7 @@ export interface CreateBookingRequest {
      * @maxLength 100
      */
   clientRequestId: string;
+  /** Showtime resource ID: UUID v5 for imported data or UUID v7 for generated data */
   showtimeId: string;
   /**
      * @minItems 1
