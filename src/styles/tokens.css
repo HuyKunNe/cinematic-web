@@ -115,6 +115,10 @@
   --movie-card-art-aspect-ratio: 1.37 / 1;
   --movie-card-art-aspect-ratio-mobile: 1.55 / 1;
   --upcoming-art-aspect-ratio: 1 / 1;
+  
+  /* Movie card navigation and independent actions */
+  --movie-card-link-layer: 1;
+  --movie-card-action-layer: 2;
 
   /* Radius */
   --radius-sm: 0.375rem;

@@ -445,3 +445,34 @@
     --movies-status-size: var(--movies-compact-status-size);
   }
 }
+/* Make the card clickable while keeping its actions independent. */
+.movies-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.movies-card__detail-link {
+  position: absolute;
+  inset: 0;
+  z-index: var(--movie-card-link-layer);
+  border-radius: var(--radius-md);
+}
+
+.movies-card__detail-link:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+
+.movies-card__play,
+.movies-card__cta {
+  z-index: var(--movie-card-action-layer);
+}
+
+.movies-card__cta {
+  position: relative;
+}
+
+.movies-card__status,
+.movies-card__age {
+  pointer-events: none;
+}

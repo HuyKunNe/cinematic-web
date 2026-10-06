@@ -9,6 +9,14 @@ import { formatAgeRating } from '@/utils/movie-age-rating'
 const props = defineProps<{ movie: HomeMovie }>()
 const ageRating = computed(() => formatAgeRating(props.movie.ageRating))
 const image = ref(movieArtwork(props.movie))
+const detailLocation = computed(() => ({
+  name: ROUTE_NAMES.MOVIE_DETAIL,
+  params: { movieId: props.movie.id },
+}))
+
+const actionLabel = computed(() =>
+  props.movie.status === 'NOW_SHOWING' ? 'Đặt vé' : 'Xem chi tiết',
+)
 
 watch(
   () => props.movie,
@@ -20,6 +28,11 @@ watch(
 
 <template>
   <article class="home-movie-card">
+    <RouterLink
+      class="home-movie-card__detail-link"
+      :to="detailLocation"
+      :aria-label="`Xem chi tiết phim ${movie.title}`"
+    />
     <div class="home-movie-card__poster">
       <img
         :src="image"
@@ -56,13 +69,8 @@ watch(
       </span>
     </div>
 
-    <h3>
-      <RouterLink
-        :to="{ name: ROUTE_NAMES.MOVIE_DETAIL, params: { movieId: movie.id } }"
-        :title="movie.title"
-      >
-        {{ movie.title }}
-      </RouterLink>
+    <h3 :title="movie.title">
+      {{ movie.title }}
     </h3>
 
     <p>{{ movie.genres.join(' · ') || 'Phim điện ảnh' }}</p>
@@ -83,5 +91,12 @@ watch(
         {{ formatReleaseDate(movie.releaseDate) }}
       </span>
     </div>
+    <RouterLink
+      class="home-button home-button--primary home-movie-card__cta"
+      :to="detailLocation"
+      :aria-label="`${actionLabel}: ${movie.title}`"
+    >
+      {{ actionLabel }}
+    </RouterLink>
   </article>
 </template>

@@ -35,10 +35,19 @@ const detailLocation = computed(() => ({
   name: ROUTE_NAMES.MOVIE_DETAIL,
   params: { movieId: props.movie.id },
 }))
+
+const actionLabel = computed(() =>
+  props.movie.status === 'NOW_SHOWING' ? 'Đặt vé' : 'Xem chi tiết',
+)
 </script>
 
 <template>
   <article class="movies-card">
+    <RouterLink
+      class="movies-card__detail-link"
+      :to="detailLocation"
+      :aria-label="`Xem chi tiết phim ${movie.title}`"
+    />
     <div class="movies-card__poster">
       <img
         v-if="movie.posterUrl && !imageFailed"
@@ -93,10 +102,8 @@ const detailLocation = computed(() => ({
       </button>
     </div>
 
-    <h2 class="movies-card__title">
-      <RouterLink :to="detailLocation" :title="movie.title">
-        {{ movie.title }}
-      </RouterLink>
+    <h2 class="movies-card__title" :title="movie.title">
+      {{ movie.title }}
     </h2>
 
     <p class="movies-card__genres" :title="genreLabel">
@@ -107,10 +114,13 @@ const detailLocation = computed(() => ({
       <span v-if="movie.durationMinutes"> {{ movie.durationMinutes }} phút </span>
       <span v-if="releaseDateLabel">{{ releaseDateLabel }}</span>
     </div>
-
-    <RouterLink class="movies-card__cta" :to="detailLocation">
-      Xem chi tiết
-      <span class="movies-sr-only"> {{ movie.title }}</span>
+    
+    <RouterLink
+      class="movies-card__cta"
+      :to="detailLocation"
+      :aria-label="`${actionLabel}: ${movie.title}`"
+    >
+      {{ actionLabel }}
     </RouterLink>
   </article>
 </template>

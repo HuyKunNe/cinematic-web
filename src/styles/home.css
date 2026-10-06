@@ -1532,3 +1532,44 @@
     flex-basis: 100%;
   }
 }
+/* Make the card clickable while keeping its actions independent. */
+.home-movie-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-movie-card__detail-link {
+  position: absolute;
+  inset: 0;
+  z-index: var(--movie-card-link-layer);
+  border-radius: var(--radius-md);
+}
+
+.home-movie-card__detail-link:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+
+.home-movie-card__play,
+.home-movie-card__cta {
+  z-index: var(--movie-card-action-layer);
+}
+
+.home-movie-card__badge {
+  pointer-events: none;
+}
+
+.home-movie-card__cta {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--control-height-md);
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
