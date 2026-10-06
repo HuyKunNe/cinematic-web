@@ -602,7 +602,7 @@ watch(query.data, (catalog) => {
   cursor: not-allowed;
 }
 
-.location-dialog__cinema-content {
+:global(.location-dialog__cinema-content) {
   z-index: var(--location-dialog-dropdown-layer);
   box-sizing: border-box;
   width: var(--reka-select-trigger-width);
@@ -620,7 +620,7 @@ watch(query.data, (catalog) => {
   box-shadow: var(--shadow-raised);
 }
 
-.location-dialog__cinema-item {
+:global(.location-dialog__cinema-item) {
   padding: var(--space-3);
   border-radius: var(--radius-sm);
   font-family: var(--font-family-base);
@@ -630,7 +630,7 @@ watch(query.data, (catalog) => {
   cursor: pointer;
 }
 
-.location-dialog__cinema-item[data-highlighted] {
+:global(.location-dialog__cinema-item[data-highlighted]) {
   outline: none;
   color: var(--color-on-primary);
   background: var(--color-primary);

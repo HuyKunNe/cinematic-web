@@ -75,12 +75,14 @@ const selection = reactive({
 })
 
 const checking = ref(false)
+const locationOpenedByQuickBooking = ref(false)
 function openBookingLocation(event: Event) {
   if (checking.value) return
 
   const trigger = event.currentTarget
 
   if (trigger instanceof HTMLButtonElement) {
+    locationOpenedByQuickBooking.value = true
     openLocation(trigger)
   }
 }
@@ -453,6 +455,19 @@ function requestDropdown(field: BookingDropdown | null) {
   pendingField.value = field
 }
 
+watch(
+  locationDialogOpen,
+  (open) => {
+    if (open) {
+      // Hủy dropdown đang mở hoặc đang chờ trước khi chọn địa điểm.
+      requestDropdown(null)
+    } else {
+      locationOpenedByQuickBooking.value = false
+    }
+  },
+  { flush: 'sync' },
+)
+
 function handleDropdownOpen(fieldKey: string, open: boolean) {
   if (fieldKey !== 'movie' && fieldKey !== 'date' && fieldKey !== 'showtime') {
     return
@@ -519,7 +534,10 @@ watch(
       selection.movie = ''
     }
 
-    requestDropdown(cinemaId ? (selection.movie ? 'date' : 'movie') : null)
+    const autoOpen =
+      Boolean(cinemaId) && locationDialogOpen.value && locationOpenedByQuickBooking.value
+
+    requestDropdown(autoOpen ? (selection.movie ? 'date' : 'movie') : null)
   },
   { flush: 'sync' },
 )
