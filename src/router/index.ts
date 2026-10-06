@@ -10,6 +10,7 @@ const loadAuthCallbackPage = () => import('../features/auth/pages/AuthCallbackPa
 const loadHomePage = () => import('../features/home/pages/HomePage.vue')
 const loadMoviesPage = () => import('../features/movies/pages/MoviesPage.vue')
 const loadMovieDetailPage = () => import('../features/movies/pages/MovieDetailPage.vue')
+const loadAdminMoviesPage = () => import('../features/movies/admin/pages/AdminMoviesPage.vue')
 const loadBookingStartPage = () => import('../features/booking/pages/BookingStartPage.vue')
 const loadBookingPage = () => import('../features/booking/pages/BookingPage.vue')
 
@@ -166,11 +167,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_MOVIES,
     name: ROUTE_NAMES.ADMIN_MOVIES,
-    component: loadPlaceholder,
-    props: {
-      title: 'Quản lý phim',
-      description: 'Movie Service hỗ trợ quản lý phim và thể loại.',
-    },
+    component: loadAdminMoviesPage,
     meta: {
       layout: 'admin',
       title: 'Quản lý phim',

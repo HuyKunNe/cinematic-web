@@ -43,7 +43,7 @@ export function useHomeMovies() {
   })
 }
 
-export function useHomeHeroMovies(scope: MaybeRefOrGetter<HomeHeroScope>, limit = 4) {
+export function useHomeHeroMovies(scope: MaybeRefOrGetter<HomeHeroScope>, limit = 6) {
   const request = computed(() => toValue(scope))
 
   const movieIds = computed<string[] | null>(() => {

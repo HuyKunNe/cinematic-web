@@ -234,3 +234,29 @@ Visual source: `docs/design/reference/html-convert/cinematic-home-{desktop,mobil
 - Promotion prices/benefits are visible only as labeled design previews; no live promotion or membership action is exposed.
 - Footer displays the reference's social, store and policy labels without dummy destinations. Existing movie/booking routes beyond Home are still placeholders.
 - Manual browser review should confirm image crop, heading height for one/two-line titles, slide swapping, overflow and fixed mobile navigation at all requested viewports before approval.
+
+## F4.1 — Admin Movies: proposed implementation
+
+Scope:
+
+- Replace the Admin Movies placeholder.
+- Use the existing admin layout and movie:manage authorization.
+- Load the paginated catalog with status and genre filters.
+- Create movies and edit core movie information.
+- Fetch fresh movie details when opening the editor.
+- Validate forms with VeeValidate and Zod.
+- Use existing generated Movie Service clients.
+- Invalidate movies, home and booking query caches after saving.
+- Prevent dialog dismissal while a save request is pending.
+- Keep table overflow inside the table region on narrow screens.
+
+Application and manual verification are pending.
+
+Tests, lint, type checking and build were not run, following AGENTS.md.
+
+Remaining work:
+
+- Genre management.
+- Movie metadata and Hero configuration.
+- Cinema, room/seat and showtime management.
+- Resume booking minimap after backend layout/seat-map APIs are implemented.
