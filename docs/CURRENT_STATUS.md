@@ -305,3 +305,32 @@ Next implementation rounds:
 5. User management.
 
 Booking minimap remains deferred until backend layout/seat-map APIs are ready.
+
+## F4.2 — Genre management: proposed patch
+
+Application and manual verification are pending.
+
+Scope:
+
+- Add the Genre management button to Admin Movies.
+- Create genres and edit genre names/descriptions.
+- Fetch fresh genre details before editing.
+- Reuse the existing genre-list query cache.
+- Validate name length (100) and description length (500).
+- Display duplicate-name and backend field errors.
+- Preserve form input after failed saves.
+- Prevent dismissal and repeated submission while saving.
+- Invalidate movies, home and booking caches after saving.
+
+Existing APIs:
+
+- GET /api/v1/genres
+- GET /api/v1/genres/{id}
+- POST /api/v1/genres
+- PUT /api/v1/genres/{id}
+
+No dependencies, generated clients or backend files are changed.
+
+Tests, lint, type checking and build were not run, following AGENTS.md.
+
+Next: movie metadata and Hero configuration.

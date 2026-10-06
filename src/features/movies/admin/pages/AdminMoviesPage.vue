@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import type { GetMovieCatalogParams } from '@/services/api/generated/movie-service/model'
 import AdminMovieEditorDialog from '../components/AdminMovieEditorDialog.vue'
 import { useAdminMovieCatalogQuery, useAdminMovieGenresQuery } from '../api/admin-movie-queries'
+import AdminGenreManagerDialog from '../components/AdminGenreManagerDialog.vue'
 import {
   adminMovieErrorMessage,
   isMovieStatus,
@@ -22,6 +23,7 @@ const canManage = computed(
 
 const statusFilter = ref('all')
 const genreFilter = ref('all')
+const genreManagerOpen = ref(false)
 const page = ref(0)
 
 const params = computed<GetMovieCatalogParams>(() => ({
@@ -117,7 +119,13 @@ function formatDate(value?: string) {
         <p class="admin-movies__muted">Quản lý thông tin phim, trạng thái và thể loại.</p>
       </div>
 
-      <AppButton :disabled="!canManage" @click="openEditor(null)"> Thêm phim </AppButton>
+      <div class="admin-movies__heading-actions">
+        <AppButton variant="secondary" :disabled="!canManage" @click="genreManagerOpen = true">
+          Thể loại
+        </AppButton>
+
+        <AppButton :disabled="!canManage" @click="openEditor(null)"> Thêm phim </AppButton>
+      </div>
     </header>
 
     <p v-if="successMessage" class="admin-movies__success" role="status">
@@ -281,5 +289,6 @@ function formatDate(value?: string) {
       @close="editorOpen = false"
       @saved="onSaved"
     />
+    <AdminGenreManagerDialog v-if="genreManagerOpen" @close="genreManagerOpen = false" />
   </section>
 </template>
