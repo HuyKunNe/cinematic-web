@@ -4,3 +4,4 @@ export * from './room-layout-controller/room-layout-controller';
 export * from './seat-controller/seat-controller';
 export * from './show-seat-controller/show-seat-controller';
 export * from './showtime-controller/showtime-controller';
+export * from './showtime-seat-map-controller/showtime-seat-map-controller';
