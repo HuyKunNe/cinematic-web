@@ -42,7 +42,41 @@ function vietnamDay(date: Date) {
 
 const today = computed(() => vietnamDay(now.value))
 const selectedDate = ref(vietnamDay(now.value))
-const dashboard = useAdminDashboardQueries(selectedDate, now)
+const draftCinemaId = ref('')
+const draftMovieId = ref('')
+const appliedScope = ref({ cinemaId: '', movieId: '' })
+const dashboard = useAdminDashboardQueries(selectedDate, now, appliedScope)
+
+const scopeSummary = computed(() => {
+  const { cinemaId, movieId } = appliedScope.value
+  const cinema = cinemaId
+    ? dashboard.cinemaOptions.value.find((item) => item.value === cinemaId)?.label || 'Rạp đã chọn'
+    : ''
+  const movie = movieId
+    ? dashboard.movieOptions.value.find((item) => item.value === movieId)?.label || 'Phim đã chọn'
+    : ''
+
+  return [movie, cinema].filter(Boolean).join(' · ') || 'Toàn hệ thống'
+})
+
+const hasDraftChanges = computed(
+  () =>
+    draftCinemaId.value !== appliedScope.value.cinemaId ||
+    draftMovieId.value !== appliedScope.value.movieId,
+)
+
+function applyScope() {
+  appliedScope.value = {
+    cinemaId: draftCinemaId.value,
+    movieId: draftMovieId.value,
+  }
+}
+
+function resetScope() {
+  draftCinemaId.value = ''
+  draftMovieId.value = ''
+  appliedScope.value = { cinemaId: '', movieId: '' }
+}
 
 const modules = computed(() =>
   getVisibleAdminNavigation(auth).filter((item) => item.routeName !== ROUTE_NAMES.ADMIN),
@@ -60,7 +94,7 @@ const metricDefinitions = [
   {
     id: 'total-movies',
     label: 'Tổng phim',
-    hint: 'Toàn bộ trạng thái',
+    hint: 'Toàn hệ thống · tất cả trạng thái',
     tone: 'primary',
     icon: Film,
     permission: APP_PERMISSIONS.MOVIE_MANAGE,
@@ -69,7 +103,7 @@ const metricDefinitions = [
   {
     id: 'now-showing',
     label: 'Đang chiếu',
-    hint: 'Theo trạng thái hiện tại',
+    hint: 'Toàn hệ thống · trạng thái hiện tại',
     tone: 'success',
     icon: Clapperboard,
     permission: APP_PERMISSIONS.MOVIE_MANAGE,
@@ -87,7 +121,7 @@ const metricDefinitions = [
   {
     id: 'active-cinemas',
     label: 'Rạp hoạt động',
-    hint: 'Đang vận hành',
+    hint: 'Toàn hệ thống · đang vận hành',
     tone: 'neutral',
     icon: Building2,
     permission: APP_PERMISSIONS.INVENTORY_MANAGE,
@@ -107,7 +141,15 @@ const metrics = computed(() =>
           metric.id === 'showtimes' && selectedDate.value === today.value
             ? 'Suất chiếu hôm nay'
             : metric.label,
-        value: Array.isArray(data) ? data.length : data,
+        hint: metric.id === 'showtimes' ? `${scopeSummary.value} · tất cả trạng thái` : metric.hint,
+        value:
+          metric.id === 'showtimes'
+            ? data == null
+              ? null
+              : dashboard.scopedShowtimes.value.length
+            : Array.isArray(data)
+              ? data.length
+              : data,
         loading: metric.query.isFetching.value,
         error: metric.query.isError.value ? errorMessage(metric.query.error.value) : null,
       }
@@ -190,7 +232,105 @@ function changeDate(event: Event) {
         </button>
       </div>
     </header>
+    <form
+      v-if="dashboard.canManageShowtimes.value"
+      class="admin-dashboard__scope"
+      aria-label="Lọc dữ liệu dashboard"
+      @submit.prevent="applyScope"
+      @reset.prevent="resetScope"
+    >
+      <label class="admin-dashboard__scope-field" for="dashboard-cinema">
+        <span>Rạp</span>
+        <select
+          id="dashboard-cinema"
+          v-model="draftCinemaId"
+          :disabled="
+            dashboard.activeCinemas.isPending.value || dashboard.activeCinemas.isError.value
+          "
+        >
+          <option value="">
+            {{ dashboard.activeCinemas.isPending.value ? 'Đang tải rạp…' : 'Tất cả rạp' }}
+          </option>
+          <option
+            v-for="item in dashboard.cinemaOptions.value"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </option>
+        </select>
+      </label>
 
+      <label class="admin-dashboard__scope-field" for="dashboard-movie">
+        <span>Phim</span>
+        <select
+          id="dashboard-movie"
+          v-model="draftMovieId"
+          :disabled="dashboard.movieCatalog.isPending.value || dashboard.movieCatalog.isError.value"
+        >
+          <option value="">
+            {{ dashboard.movieCatalog.isPending.value ? 'Đang tải phim…' : 'Tất cả phim' }}
+          </option>
+          <option
+            v-for="item in dashboard.movieOptions.value"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </option>
+        </select>
+      </label>
+
+      <button class="admin-dashboard__scope-button" type="reset">Xóa lọc</button>
+      <button
+        class="admin-dashboard__scope-button is-primary"
+        type="submit"
+        :disabled="!hasDraftChanges"
+      >
+        Áp dụng
+      </button>
+
+      <p class="admin-dashboard__scope-description" aria-live="polite">
+        Phạm vi đã áp dụng: {{ scopeSummary }}
+        <span v-if="hasDraftChanges"> · Có thay đổi chưa áp dụng</span>
+      </p>
+      <p class="admin-dashboard__scope-description">
+        Bộ lọc áp dụng cho lịch chiếu. Chỉ số phim/rạp hiển thị toàn hệ thống. Danh sách chọn gồm
+        rạp đang hoạt động.
+      </p>
+
+      <div
+        v-if="dashboard.activeCinemas.isError.value"
+        class="admin-dashboard__scope-error"
+        role="alert"
+      >
+        <p>Danh sách rạp: {{ errorMessage(dashboard.activeCinemas.error.value) }}</p>
+        <button
+          class="admin-dashboard__text-button"
+          type="button"
+          :disabled="dashboard.activeCinemas.isFetching.value"
+          @click="dashboard.activeCinemas.refetch()"
+        >
+          Thử lại
+        </button>
+      </div>
+
+      <div
+        v-if="dashboard.movieCatalog.isError.value"
+        class="admin-dashboard__scope-error"
+        role="alert"
+      >
+        <p>Danh sách phim: {{ errorMessage(dashboard.movieCatalog.error.value) }}</p>
+        <button
+          class="admin-dashboard__text-button"
+          type="button"
+          :disabled="dashboard.movieCatalog.isFetching.value"
+          @click="dashboard.movieCatalog.refetch()"
+        >
+          Thử lại
+        </button>
+      </div>
+    </form>
     <div v-if="metrics.length" class="admin-dashboard__metrics" aria-label="Số liệu tổng quan">
       <article
         v-for="metric in metrics"
@@ -229,8 +369,22 @@ function changeDate(event: Event) {
         <header class="admin-dashboard__panel-heading">
           <div>
             <h2>Doanh thu &amp; lượt đặt vé</h2>
-            <p>Diễn biến trong ngày</p>
+            <p>Thống kê doanh thu và hoạt động đặt vé</p>
           </div>
+          <label class="admin-dashboard__period">
+            <span class="admin-visually-hidden">Kỳ thống kê</span>
+            <select
+              class="admin-dashboard__panel-select"
+              disabled
+              aria-describedby="dashboard-revenue-message"
+            >
+              <option value="today">
+                {{ selectedDate === today ? 'Hôm nay' : 'Ngày đã chọn' }}
+              </option>
+              <option value="7d">7 ngày qua</option>
+              <option value="30d">30 ngày qua</option>
+            </select>
+          </label>
         </header>
 
         <div class="admin-dashboard__legend" aria-hidden="true">
@@ -241,7 +395,7 @@ function changeDate(event: Event) {
         <div class="admin-dashboard__chart-empty">
           <BarChart3 aria-hidden="true" />
           <strong>Chưa có số liệu</strong>
-          <p>Số liệu doanh thu và lượt đặt vé chưa khả dụng.</p>
+          <p id="dashboard-revenue-message">Số liệu doanh thu và lượt đặt vé chưa khả dụng.</p>
         </div>
       </article>
 
@@ -299,7 +453,7 @@ function changeDate(event: Event) {
         <header class="admin-dashboard__panel-heading">
           <div>
             <h2>Suất chiếu sắp tới</h2>
-            <p>Các suất chiếu còn lại trong ngày đã chọn</p>
+            <p>Các suất chiếu còn lại trong ngày · {{ scopeSummary }}</p><p>Các suất chiếu còn lại trong ngày đã chọn</p>
           </div>
           <RouterLink
             class="admin-dashboard__text-link"

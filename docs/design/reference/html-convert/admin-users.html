@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý người dùng | CINEMA Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-cinemas.css" />
+    <link rel="stylesheet" href="./admin-users.css" />
+  </head>
+
+  <body class="admin-page">
+    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+      <a class="admin-brand" href="./admin-dashboard.html" aria-label="CINEMA Admin">
+        <span class="admin-brand__mark" aria-hidden="true">C</span>
+        <span class="admin-brand__text">CINEMA <small>ADMIN</small></span>
+      </a>
+
+      <p class="admin-sidebar__label">Quản trị</p>
+      <nav class="admin-nav">
+        <a class="admin-nav__link" href="./admin-dashboard.html"><span aria-hidden="true">⌂</span>Tổng quan</a>
+        <a class="admin-nav__link" href="#movies"><span aria-hidden="true">▤</span>Phim</a>
+        <a class="admin-nav__link" href="./admin-cinemas.html"><span aria-hidden="true">▣</span>Rạp chiếu</a>
+        <a class="admin-nav__link" href="./admin-rooms.html"><span aria-hidden="true">▦</span>Phòng chiếu</a>
+        <a class="admin-nav__link" href="./admin-showtimes.html"><span aria-hidden="true">◷</span>Suất chiếu</a>
+        <a class="admin-nav__link" href="./admin-bookings.html"><span aria-hidden="true">▧</span>Đặt vé</a>
+        <a class="admin-nav__link" href="./admin-promotions.html"><span aria-hidden="true">◇</span>Khuyến mãi</a>
+        <a class="admin-nav__link is-active" href="#users" aria-current="page"><span aria-hidden="true">♙</span>Người dùng</a>
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Hệ thống đang hoạt động</span>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="icon-button admin-menu-button" type="button" aria-label="Mở menu">☰</button>
+        <label class="admin-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Tìm kiếm trong quản trị..." />
+          <kbd>⌘ K</kbd>
+        </label>
+        <button class="icon-button admin-notifications" type="button" aria-label="Thông báo">
+          ♧<span class="notification-count" aria-hidden="true">2</span>
+        </button>
+        <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
+          <span class="admin-avatar" aria-hidden="true">AD</span>
+          <span class="admin-account__name">Quản trị viên</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+      </header>
+
+      <main class="admin-content">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./admin-dashboard.html">Quản trị</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Người dùng</span>
+        </nav>
+
+        <section class="page-heading">
+          <div>
+            <p class="eyebrow">Tài khoản & quyền truy cập</p>
+            <h1>Quản lý người dùng</h1>
+            <p class="page-heading__description">
+              Tra cứu tài khoản và vai trò trong hệ thống.
+            </p>
+          </div>
+          <button class="action-button action-button--primary" type="button">
+            <span aria-hidden="true">＋</span>Thêm người dùng
+          </button>
+        </section>
+
+        <aside class="prototype-note">
+          <span aria-hidden="true">ⓘ</span>
+          <span>Prototype giao diện — tài khoản và số liệu trong bảng chỉ dùng để minh họa.</span>
+        </aside>
+
+        <section class="user-stats" aria-label="Tổng quan người dùng">
+          <article class="user-stat panel">
+            <span>Tổng tài khoản</span>
+            <strong>8.420</strong>
+            <small>Dữ liệu minh họa</small>
+          </article>
+          <article class="user-stat panel">
+            <span>Khách hàng</span>
+            <strong>8.392</strong>
+            <small>Dữ liệu minh họa</small>
+          </article>
+          <article class="user-stat panel">
+            <span>Tài khoản quản trị</span>
+            <strong>28</strong>
+            <small>Dữ liệu minh họa</small>
+          </article>
+        </section>
+
+        <section class="user-filters" aria-label="Tìm và lọc người dùng">
+          <label class="filter-field user-search">
+            <span>Tìm người dùng</span>
+            <input type="search" placeholder="Tên, email hoặc mã tài khoản" />
+          </label>
+
+          <label class="filter-field">
+            <span>Vai trò</span>
+            <select>
+              <option value="">Tất cả vai trò</option>
+              <option>Quản trị viên</option>
+              <option>Nhân viên rạp</option>
+              <option>Khách hàng</option>
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span>Trạng thái</span>
+            <select>
+              <option value="">Tất cả trạng thái</option>
+              <option>Đang hoạt động</option>
+              <option>Đã khóa</option>
+            </select>
+          </label>
+
+          <span class="filter-hint">Bộ lọc tự cập nhật khi thay đổi</span>
+        </section>
+
+        <section class="user-list panel" aria-labelledby="user-list-title">
+          <div class="cinema-list__heading">
+            <div>
+              <h2 id="user-list-title">Danh sách tài khoản</h2>
+              <p>Vai trò và trạng thái truy cập</p>
+            </div>
+            <span class="result-count">8.420 tài khoản minh họa</span>
+          </div>
+
+          <div class="table-scroll">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th scope="col">Người dùng</th>
+                  <th scope="col">Vai trò</th>
+                  <th scope="col">Ngày tạo</th>
+                  <th scope="col">Hoạt động gần nhất</th>
+                  <th scope="col">Trạng thái</th>
+                  <th scope="col"><span class="sr-only">Chi tiết</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="user-identity">
+                      <span class="user-avatar" aria-hidden="true">NA</span>
+                      <span><strong>Nguyễn An</strong><small>an.nguyen@example.com</small></span>
+                    </div>
+                  </td>
+                  <td><span class="role-chip role-chip--admin">Quản trị viên</span></td>
+                  <td>12/03/2026</td>
+                  <td>Hôm nay, 09:42</td>
+                  <td><span class="status-pill status-pill--active">Đang hoạt động</span></td>
+                  <td><button class="user-detail" type="button">Chi tiết</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="user-identity">
+                      <span class="user-avatar" aria-hidden="true">TB</span>
+                      <span><strong>Trần Bình</strong><small>binh.tran@example.com</small></span>
+                    </div>
+                  </td>
+                  <td><span class="role-chip role-chip--staff">Nhân viên rạp</span></td>
+                  <td>18/04/2026</td>
+                  <td>Hôm qua, 18:15</td>
+                  <td><span class="status-pill status-pill--active">Đang hoạt động</span></td>
+                  <td><button class="user-detail" type="button">Chi tiết</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="user-identity">
+                      <span class="user-avatar" aria-hidden="true">LC</span>
+                      <span><strong>Lê Chi</strong><small>chi.le@example.com</small></span>
+                    </div>
+                  </td>
+                  <td><span class="role-chip">Khách hàng</span></td>
+                  <td>02/06/2026</td>
+                  <td>25/09/2026, 14:20</td>
+                  <td><span class="status-pill status-pill--active">Đang hoạt động</span></td>
+                  <td><button class="user-detail" type="button">Chi tiết</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="user-identity">
+                      <span class="user-avatar" aria-hidden="true">PM</span>
+                      <span><strong>Phạm Minh</strong><small>minh.pham@example.com</small></span>
+                    </div>
+                  </td>
+                  <td><span class="role-chip">Khách hàng</span></td>
+                  <td>21/07/2026</td>
+                  <td>18/08/2026, 11:05</td>
+                  <td><span class="status-pill status-pill--locked">Đã khóa</span></td>
+                  <td><button class="user-detail" type="button">Chi tiết</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <footer class="table-footer">
+            <span>Hiển thị 1–4 trong 8.420 tài khoản minh họa</span>
+            <nav class="pagination" aria-label="Phân trang">
+              <button type="button" aria-label="Trang trước" disabled>‹</button>
+              <button type="button" class="is-current" aria-current="page">1</button>
+              <button type="button">2</button>
+              <button type="button">3</button>
+              <button type="button" aria-label="Trang tiếp theo">›</button>
+            </nav>
+          </footer>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

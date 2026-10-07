@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý khuyến mãi | CINEMA Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-cinemas.css" />
+    <link rel="stylesheet" href="./admin-promotions.css" />
+  </head>
+
+  <body class="admin-page">
+    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+      <a class="admin-brand" href="./admin-dashboard.html" aria-label="CINEMA Admin">
+        <span class="admin-brand__mark" aria-hidden="true">C</span>
+        <span class="admin-brand__text">CINEMA <small>ADMIN</small></span>
+      </a>
+
+      <p class="admin-sidebar__label">Quản trị</p>
+      <nav class="admin-nav">
+        <a class="admin-nav__link" href="./admin-dashboard.html"
+          ><span aria-hidden="true">⌂</span>Tổng quan</a
+        >
+        <a class="admin-nav__link" href="#movies"><span aria-hidden="true">▤</span>Phim</a>
+        <a class="admin-nav__link" href="./admin-cinemas.html"
+          ><span aria-hidden="true">▣</span>Rạp chiếu</a
+        >
+        <a class="admin-nav__link" href="./admin-rooms.html"
+          ><span aria-hidden="true">▦</span>Phòng chiếu</a
+        >
+        <a class="admin-nav__link" href="./admin-showtimes.html"
+          ><span aria-hidden="true">◷</span>Suất chiếu</a
+        >
+        <a class="admin-nav__link" href="./admin-bookings.html"
+          ><span aria-hidden="true">▧</span>Đặt vé</a
+        >
+        <a class="admin-nav__link is-active" href="#promotions" aria-current="page"
+          ><span aria-hidden="true">◇</span>Khuyến mãi</a
+        >
+        <a class="admin-nav__link" href="#users"><span aria-hidden="true">♙</span>Người dùng</a>
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Hệ thống đang hoạt động</span>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="icon-button admin-menu-button" type="button" aria-label="Mở menu">☰</button>
+        <label class="admin-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Tìm kiếm trong quản trị..." />
+          <kbd>⌘ K</kbd>
+        </label>
+        <button class="icon-button admin-notifications" type="button" aria-label="Thông báo">
+          ♧<span class="notification-count" aria-hidden="true">2</span>
+        </button>
+        <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
+          <span class="admin-avatar" aria-hidden="true">AD</span>
+          <span class="admin-account__name">Quản trị viên</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+      </header>
+
+      <main class="admin-content">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./admin-dashboard.html">Quản trị</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Khuyến mãi</span>
+        </nav>
+
+        <section class="page-heading">
+          <div>
+            <p class="eyebrow">Chiến dịch</p>
+            <h1>Quản lý khuyến mãi</h1>
+            <p class="page-heading__description">Tạo và theo dõi các chương trình ưu đãi.</p>
+          </div>
+          <button class="action-button action-button--primary" type="button">
+            <span aria-hidden="true">＋</span>Tạo khuyến mãi
+          </button>
+        </section>
+
+        <aside class="prototype-note">
+          <span aria-hidden="true">ⓘ</span>
+          <span>Prototype giao diện — chiến dịch và số liệu trong bảng chỉ dùng để minh họa.</span>
+        </aside>
+
+        <section class="promotion-stats" aria-label="Tổng quan khuyến mãi">
+          <article class="promotion-stat panel">
+            <span>Đang diễn ra</span>
+            <strong>08</strong>
+            <small>Dữ liệu minh họa</small>
+          </article>
+          <article class="promotion-stat panel">
+            <span>Sắp bắt đầu</span>
+            <strong>03</strong>
+            <small>Dữ liệu minh họa</small>
+          </article>
+          <article class="promotion-stat panel">
+            <span>Đã kết thúc</span>
+            <strong>24</strong>
+            <small>Dữ liệu minh họa</small>
+          </article>
+        </section>
+
+        <section class="promotion-filters" aria-label="Tìm và lọc khuyến mãi">
+          <label class="filter-field">
+            <span>Tìm chương trình</span>
+            <input type="search" placeholder="Tên chương trình hoặc mã ưu đãi" />
+          </label>
+          <label class="filter-field">
+            <span>Trạng thái</span>
+            <select>
+              <option value="">Tất cả trạng thái</option>
+              <option>Đang diễn ra</option>
+              <option>Sắp bắt đầu</option>
+              <option>Tạm dừng</option>
+              <option>Đã kết thúc</option>
+            </select>
+          </label>
+          <label class="filter-field">
+            <span>Thời gian</span>
+            <select>
+              <option value="">Tất cả thời gian</option>
+              <option>Đang có hiệu lực</option>
+              <option>Sắp diễn ra</option>
+              <option>Đã kết thúc</option>
+            </select>
+          </label>
+          <button class="action-button action-button--secondary" type="button">Đặt lại</button>
+        </section>
+
+        <section class="promotion-list panel" aria-labelledby="promotion-list-title">
+          <div class="cinema-list__heading">
+            <div>
+              <h2 id="promotion-list-title">Danh sách chương trình</h2>
+              <p>Mã ưu đãi, thời hạn và trạng thái áp dụng</p>
+            </div>
+            <span class="result-count">35 chương trình minh họa</span>
+          </div>
+
+          <div class="table-scroll">
+            <table class="promotion-table">
+              <thead>
+                <tr>
+                  <th scope="col">Chương trình</th>
+                  <th scope="col">Ưu đãi</th>
+                  <th scope="col">Phạm vi</th>
+                  <th scope="col">Thời hạn</th>
+                  <th scope="col">Lượt sử dụng</th>
+                  <th scope="col">Trạng thái</th>
+                  <th scope="col"><span class="sr-only">Thao tác</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong class="promotion-name">Ưu đãi thành viên</strong>
+                    <small class="promotion-code">MEMBER15</small>
+                  </td>
+                  <td><span class="discount-tag">Giảm 15%</span></td>
+                  <td>Toàn hệ thống</td>
+                  <td>01/09/2026 – 30/09/2026</td>
+                  <td>245 / 500</td>
+                  <td><span class="status-pill status-pill--active">Đang diễn ra</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác Ưu đãi thành viên"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong class="promotion-name">Ưu đãi cuối tuần</strong>
+                    <small class="promotion-code">WEEKEND20</small>
+                  </td>
+                  <td><span class="discount-tag">Giảm 20%</span></td>
+                  <td>Rạp được chọn</td>
+                  <td>01/10/2026 – 31/10/2026</td>
+                  <td>—</td>
+                  <td><span class="status-pill status-pill--scheduled">Sắp bắt đầu</span></td>
+                  <td>
+                    <button class="row-action" type="button" aria-label="Thao tác Ưu đãi cuối tuần">
+                      •••
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong class="promotion-name">Vé xem phim tháng 9</strong>
+                    <small class="promotion-code">SEPT50</small>
+                  </td>
+                  <td><span class="discount-tag">Giảm 50.000đ</span></td>
+                  <td>Toàn hệ thống</td>
+                  <td>01/09/2026 – 15/09/2026</td>
+                  <td>380 / 380</td>
+                  <td><span class="status-pill status-pill--ended">Đã kết thúc</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác Vé xem phim tháng 9"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong class="promotion-name">Ưu đãi ngày thành viên</strong>
+                    <small class="promotion-code">CINEMA10</small>
+                  </td>
+                  <td><span class="discount-tag">Giảm 10%</span></td>
+                  <td>Toàn hệ thống</td>
+                  <td>01/09/2026 – 31/12/2026</td>
+                  <td>68 / 300</td>
+                  <td><span class="status-pill status-pill--paused">Tạm dừng</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác Ưu đãi ngày thành viên"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <footer class="table-footer">
+            <span>Hiển thị 1–4 trong 35 chương trình minh họa</span>
+            <nav class="pagination" aria-label="Phân trang">
+              <button type="button" aria-label="Trang trước" disabled>‹</button>
+              <button type="button" class="is-current" aria-current="page">1</button>
+              <button type="button">2</button>
+              <button type="button">3</button>
+              <button type="button" aria-label="Trang tiếp theo">›</button>
+            </nav>
+          </footer>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

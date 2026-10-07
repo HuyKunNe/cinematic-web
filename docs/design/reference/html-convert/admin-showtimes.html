@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý suất chiếu | CINEMA Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-cinemas.css" />
+    <link rel="stylesheet" href="./admin-showtimes.css" />
+  </head>
+
+  <body class="admin-page">
+    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+      <a class="admin-brand" href="./admin-dashboard.html" aria-label="CINEMA Admin">
+        <span class="admin-brand__mark" aria-hidden="true">C</span>
+        <span class="admin-brand__text">CINEMA <small>ADMIN</small></span>
+      </a>
+
+      <p class="admin-sidebar__label">Quản trị</p>
+      <nav class="admin-nav">
+        <a class="admin-nav__link" href="./admin-dashboard.html"
+          ><span aria-hidden="true">⌂</span>Tổng quan</a
+        >
+        <a class="admin-nav__link" href="#movies"><span aria-hidden="true">▤</span>Phim</a>
+        <a class="admin-nav__link" href="./admin-cinemas.html"
+          ><span aria-hidden="true">▣</span>Rạp chiếu</a
+        >
+        <a class="admin-nav__link" href="./admin-rooms.html"
+          ><span aria-hidden="true">▦</span>Phòng chiếu</a
+        >
+        <a class="admin-nav__link is-active" href="#showtimes" aria-current="page"
+          ><span aria-hidden="true">◷</span>Suất chiếu</a
+        >
+        <a class="admin-nav__link" href="#bookings"><span aria-hidden="true">▧</span>Đặt vé</a>
+        <a class="admin-nav__link" href="#promotions"
+          ><span aria-hidden="true">◇</span>Khuyến mãi</a
+        >
+        <a class="admin-nav__link" href="#users"><span aria-hidden="true">♙</span>Người dùng</a>
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Hệ thống đang hoạt động</span>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="icon-button admin-menu-button" type="button" aria-label="Mở menu">☰</button>
+        <label class="admin-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Tìm kiếm trong quản trị..." />
+          <kbd>⌘ K</kbd>
+        </label>
+        <button class="icon-button admin-notifications" type="button" aria-label="Thông báo">
+          ♧<span class="notification-count" aria-hidden="true">2</span>
+        </button>
+        <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
+          <span class="admin-avatar" aria-hidden="true">AD</span>
+          <span class="admin-account__name">Quản trị viên</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+      </header>
+
+      <main class="admin-content">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./admin-dashboard.html">Quản trị</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Suất chiếu</span>
+        </nav>
+
+        <section class="page-heading">
+          <div>
+            <p class="eyebrow">Lịch vận hành</p>
+            <h1>Quản lý suất chiếu</h1>
+            <p class="page-heading__description">Theo dõi và quản lý lịch chiếu tại các rạp.</p>
+          </div>
+          <button class="action-button action-button--primary" type="button">
+            <span aria-hidden="true">＋</span>Tạo suất chiếu
+          </button>
+        </section>
+
+        <aside class="prototype-note">
+          <span aria-hidden="true">ⓘ</span>
+          <span>Prototype giao diện — lịch chiếu và dữ liệu trong bảng chỉ dùng để minh họa.</span>
+        </aside>
+
+        <section class="showtime-datebar panel" aria-label="Chọn ngày xem lịch">
+          <div class="showtime-datebar__title">
+            <strong>Lịch chiếu</strong>
+            <span>Thứ Sáu, 25 tháng 9</span>
+          </div>
+          <div class="showtime-datebar__controls">
+            <button class="date-step" type="button" aria-label="Ngày trước">‹</button>
+            <button class="action-button action-button--secondary" type="button">Hôm nay</button>
+            <input type="date" aria-label="Chọn ngày" value="2026-09-25" />
+            <button class="date-step" type="button" aria-label="Ngày tiếp theo">›</button>
+          </div>
+        </section>
+
+        <section class="showtime-filters" aria-label="Lọc suất chiếu">
+          <label class="filter-field">
+            <span>Tìm phim</span>
+            <input type="search" placeholder="Nhập tên phim" />
+          </label>
+          <label class="filter-field">
+            <span>Rạp</span>
+            <select>
+              <option value="">Tất cả rạp</option>
+              <option>CINEMA Hồ Gươm</option>
+              <option>CINEMA Thủ Đức</option>
+            </select>
+          </label>
+          <label class="filter-field">
+            <span>Phòng</span>
+            <select>
+              <option value="">Tất cả phòng</option>
+              <option>Phòng 01</option>
+              <option>Phòng 02</option>
+            </select>
+          </label>
+          <label class="filter-field">
+            <span>Trạng thái</span>
+            <select>
+              <option value="">Tất cả trạng thái</option>
+              <option>Đang mở bán</option>
+              <option>Đã đầy</option>
+              <option>Đã hủy</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="showtime-list panel" aria-labelledby="showtime-list-title">
+          <div class="cinema-list__heading">
+            <div>
+              <h2 id="showtime-list-title">Suất chiếu trong ngày</h2>
+              <p>25 tháng 9, 2026 · Dữ liệu minh họa</p>
+            </div>
+            <span class="result-count">18 suất chiếu</span>
+          </div>
+
+          <div class="table-scroll">
+            <table class="showtime-table">
+              <thead>
+                <tr>
+                  <th scope="col">Giờ chiếu</th>
+                  <th scope="col">Phim</th>
+                  <th scope="col">Rạp / Phòng</th>
+                  <th scope="col">Định dạng</th>
+                  <th scope="col">Trạng thái</th>
+                  <th scope="col"><span class="sr-only">Thao tác</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong class="showtime-time">10:00</strong></td>
+                  <td><strong class="showtime-movie">Hành Tinh Lạ</strong></td>
+                  <td>CINEMA Hồ Gươm <small>Phòng 01</small></td>
+                  <td>2D</td>
+                  <td><span class="status-pill status-pill--active">Đang mở bán</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác suất chiếu Hành Tinh Lạ"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong class="showtime-time">12:30</strong></td>
+                  <td><strong class="showtime-movie">Bình Minh Đỏ</strong></td>
+                  <td>CINEMA Hồ Gươm <small>Phòng 02</small></td>
+                  <td>3D</td>
+                  <td><span class="status-pill status-pill--active">Đang mở bán</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác suất chiếu Bình Minh Đỏ"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong class="showtime-time">15:15</strong></td>
+                  <td><strong class="showtime-movie">Đêm Cuối</strong></td>
+                  <td>CINEMA Thủ Đức <small>Phòng 03</small></td>
+                  <td>2D</td>
+                  <td><span class="status-pill status-pill--full">Đã đầy</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác suất chiếu Đêm Cuối"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong class="showtime-time">18:00</strong></td>
+                  <td><strong class="showtime-movie">Vùng Đất Câm Lặng</strong></td>
+                  <td>CINEMA Thủ Đức <small>Phòng 01</small></td>
+                  <td>2D</td>
+                  <td><span class="status-pill status-pill--cancelled">Đã hủy</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác suất chiếu Vùng Đất Câm Lặng"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <footer class="table-footer">
+            <span>Hiển thị 1–4 trong 18 suất chiếu minh họa</span>
+            <nav class="pagination" aria-label="Phân trang">
+              <button type="button" aria-label="Trang trước" disabled>‹</button>
+              <button type="button" class="is-current" aria-current="page">1</button>
+              <button type="button">2</button>
+              <button type="button">3</button>
+              <button type="button" aria-label="Trang tiếp theo">›</button>
+            </nav>
+          </footer>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

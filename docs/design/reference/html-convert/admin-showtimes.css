@@ -1,0 +1,161 @@
+:root {
+  --showtime-table-min-width: 58rem;
+  --showtime-datebar-min-height: 5rem;
+  --showtime-date-control-height: 2.75rem;
+  --showtime-time-width: 5rem;
+  --showtime-font-xs: 0.6875rem;
+  --showtime-font-sm: 0.75rem;
+  --showtime-font-md: 0.8125rem;
+}
+
+.showtime-datebar {
+  display: flex;
+  min-height: var(--showtime-datebar-min-height);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+.showtime-datebar__title {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.showtime-datebar__title strong {
+  font-size: 1rem;
+}
+
+.showtime-datebar__title span {
+  color: var(--color-text-secondary);
+  font-size: var(--showtime-font-sm);
+}
+
+.showtime-datebar__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.showtime-datebar__controls input,
+.date-step {
+  min-height: var(--showtime-date-control-height);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  background: var(--color-background-soft);
+}
+
+.showtime-datebar__controls input {
+  padding-inline: var(--space-3);
+}
+
+.date-step {
+  width: var(--showtime-date-control-height);
+  font-size: 1.25rem;
+}
+
+.showtime-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.showtime-filters .filter-field input,
+.showtime-filters .filter-field select {
+  width: 100%;
+  min-height: var(--showtime-date-control-height);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  background: var(--color-background-soft);
+}
+
+.showtime-table {
+  width: 100%;
+  min-width: var(--showtime-table-min-width);
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.showtime-table th,
+.showtime-table td {
+  padding: var(--space-4) var(--space-5);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.showtime-table th {
+  color: var(--color-text-tertiary);
+  background: var(--color-background-soft);
+  font-size: var(--showtime-font-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.showtime-table td {
+  color: var(--color-text-secondary);
+  font-size: var(--showtime-font-md);
+}
+
+.showtime-time {
+  display: inline-block;
+  min-width: var(--showtime-time-width);
+  color: var(--color-primary);
+}
+
+.showtime-movie {
+  color: var(--color-text-primary);
+}
+
+.showtime-table td small {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-tertiary);
+  font-size: var(--showtime-font-xs);
+}
+
+.status-pill--full {
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+}
+
+.status-pill--cancelled {
+  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+}
+
+@media (max-width: 70rem) {
+  .showtime-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 48rem) {
+  .showtime-datebar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .showtime-datebar__controls {
+    width: 100%;
+  }
+
+  .showtime-datebar__controls input {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .showtime-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

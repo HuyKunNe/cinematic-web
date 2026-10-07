@@ -1,0 +1,178 @@
+:root {
+  --booking-table-min-width: 72rem;
+  --booking-stat-min-height: 7rem;
+  --booking-code-size: 0.6875rem;
+  --booking-customer-width: 9rem;
+  --booking-detail-height: 2rem;
+  --booking-font-sm: 0.75rem;
+  --booking-font-md: 0.8125rem;
+}
+
+.booking-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.booking-stat {
+  display: grid;
+  min-height: var(--booking-stat-min-height);
+  align-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.booking-stat > span,
+.booking-stat > small {
+  color: var(--color-text-secondary);
+  font-size: var(--booking-font-sm);
+}
+
+.booking-stat > strong {
+  font-size: 1.5rem;
+}
+
+.booking-stat__positive {
+  color: var(--color-success) !important;
+}
+
+.booking-stat__pending {
+  color: var(--color-warning) !important;
+}
+
+.booking-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.booking-filters .filter-field input,
+.booking-filters .filter-field select {
+  width: 100%;
+  min-height: var(--admin-control-height);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  background: var(--color-background-soft);
+}
+
+.booking-table {
+  width: 100%;
+  min-width: var(--booking-table-min-width);
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.booking-table th,
+.booking-table td {
+  padding: var(--space-4);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.booking-table th {
+  color: var(--color-text-tertiary);
+  background: var(--color-background-soft);
+  font-size: var(--booking-code-size);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.booking-table td {
+  color: var(--color-text-secondary);
+  font-size: var(--booking-font-sm);
+}
+
+.booking-table td small {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-tertiary);
+  font-size: var(--booking-code-size);
+}
+
+.booking-code {
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.booking-customer {
+  display: inline-block;
+  min-width: var(--booking-customer-width);
+  color: var(--color-text-primary);
+}
+
+.booking-amount {
+  color: var(--color-text-primary) !important;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.payment-state {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.payment-state--paid {
+  color: var(--color-success);
+}
+
+.payment-state--pending {
+  color: var(--color-warning);
+}
+
+.payment-state--refunded {
+  color: var(--color-text-secondary);
+}
+
+.status-pill--pending {
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+}
+
+.status-pill--cancelled {
+  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+}
+
+.booking-detail {
+  min-height: var(--booking-detail-height);
+  padding-inline: var(--space-2);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  background: var(--color-surface-raised);
+  font-size: var(--booking-code-size);
+  white-space: nowrap;
+}
+
+.booking-detail:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+@media (max-width: 70rem) {
+  .booking-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .booking-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 48rem) {
+  .booking-stats,
+  .booking-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

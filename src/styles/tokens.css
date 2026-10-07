@@ -534,7 +534,16 @@
   --admin-dashboard-chart-height: 14rem;
   --admin-dashboard-donut-size: 9.5rem;
   --admin-dashboard-donut-hole: 68%;
-  --admin-dashboard-analytics-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.9fr);
+  --admin-dashboard-booking-min-width: 17rem;
+  --admin-dashboard-links-min-width: 16rem;
+  --admin-dashboard-analytics-columns: minmax(0, 1.6fr)
+    minmax(var(--admin-dashboard-booking-min-width), 1fr)
+    minmax(var(--admin-dashboard-links-min-width), 0.9fr);
+  --admin-dashboard-filter-height: 2.625rem;
+  --admin-dashboard-filter-min-width: 11.875rem;
+  --admin-dashboard-filter-gap: var(--space-3);
+  --admin-dashboard-filter-radius: var(--radius-md);
+  --admin-dashboard-panel-filter-height: var(--space-9);
   --admin-dashboard-table-width: 35rem;
   --admin-dashboard-table-row-height: var(--space-13);
   --admin-dashboard-thumb-width: var(--space-7);

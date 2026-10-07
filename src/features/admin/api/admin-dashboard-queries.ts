@@ -5,6 +5,7 @@ import { getVisibleAdminNavigation } from '@/config/admin-navigation'
 import { useAuthStore } from '@/stores/auth.store'
 import {
   findById,
+  findAll,
   getMovieCatalog,
 } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import { getActiveCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
@@ -22,9 +23,15 @@ import type { ApiError } from '@/services/http/api-error'
 
 type MovieStatusFilter = GetMovieCatalogParams['status']
 
+export interface AdminDashboardScope {
+  cinemaId: string
+  movieId: string
+}
+
 export const adminDashboardKeys = {
   movieCount: (status: MovieStatusFilter) =>
     ['movies', 'admin', 'summary', status ?? 'all'] as const,
+  movieOptions: ['movies', 'admin', 'dashboard', 'options'] as const,
   activeCinemas: ['cinemas', 'admin', 'summary', 'active'] as const,
   schedule: (from: string, to: string) => ['showtimes', 'admin', 'dashboard', from, to] as const,
   movieLabel: (id: string) => ['movies', 'admin', 'dashboard', 'detail', id] as const,
@@ -56,6 +63,7 @@ function dayRange(day: string) {
 export function useAdminDashboardQueries(
   selectedDate: MaybeRefOrGetter<string>,
   now: MaybeRefOrGetter<Date>,
+  scope: MaybeRefOrGetter<AdminDashboardScope> = { cinemaId: '', movieId: '' },
 ) {
   const auth = useAuthStore()
   const navigation = computed(() => getVisibleAdminNavigation(auth))
@@ -87,15 +95,39 @@ export function useAdminDashboardQueries(
   const totalMovies = useMovieCount(undefined)
   const nowShowingMovies = useMovieCount('NOW_SHOWING')
 
-  const activeCinemas = useQuery<CinemaResponse[], ApiError, number | null>({
+  const activeCinemas = useQuery<CinemaResponse[], ApiError>({
     queryKey: adminDashboardKeys.activeCinemas,
     queryFn: () => getActiveCinemas(),
-    select: (response) => (Array.isArray(response) ? response.length : null),
-    enabled: canManageInventory,
+    enabled: computed(() => canManageInventory.value || canManageShowtimes.value),
     staleTime: 30_000,
     retry: false,
     refetchOnWindowFocus: false,
   })
+
+  const movieCatalog = useQuery<MovieResponse[], ApiError>({
+    queryKey: adminDashboardKeys.movieOptions,
+    queryFn: () => findAll(),
+    enabled: canManageShowtimes,
+    staleTime: 60_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
+
+  const cinemaOptions = computed(() =>
+    (activeCinemas.data.value ?? [])
+      .flatMap((cinema) =>
+        cinema.id && cinema.name?.trim() ? [{ value: cinema.id, label: cinema.name.trim() }] : [],
+      )
+      .sort((a, b) => a.label.localeCompare(b.label, 'vi')),
+  )
+
+  const movieOptions = computed(() =>
+    (movieCatalog.data.value ?? [])
+      .flatMap((movie) =>
+        movie.id && movie.title?.trim() ? [{ value: movie.id, label: movie.title.trim() }] : [],
+      )
+      .sort((a, b) => a.label.localeCompare(b.label, 'vi')),
+  )
 
   const range = computed(() => dayRange(toValue(selectedDate)))
 
@@ -125,8 +157,18 @@ export function useAdminDashboardQueries(
     refetchOnWindowFocus: false,
   })
 
+  const scopedShowtimes = computed(() => {
+    const selectedScope = toValue(scope)
+
+    return (showtimes.data.value ?? []).filter(
+      (item) =>
+        (!selectedScope.cinemaId || item.cinemaId === selectedScope.cinemaId) &&
+        (!selectedScope.movieId || item.movieId === selectedScope.movieId),
+    )
+  })
+
   const upcomingShowtimes = computed(() =>
-    [...(showtimes.data.value ?? [])]
+    [...scopedShowtimes.value]
       .filter(
         (item) =>
           Date.parse(item.startsAt ?? '') >= toValue(now).getTime() &&
@@ -175,6 +217,7 @@ export function useAdminDashboardQueries(
       totalMovies.isFetching.value ||
       nowShowingMovies.isFetching.value ||
       activeCinemas.isFetching.value ||
+      movieCatalog.isFetching.value ||
       showtimes.isFetching.value ||
       movieQueries.value.some((query) => query.isFetching),
   )
@@ -186,10 +229,12 @@ export function useAdminDashboardQueries(
       requests.push(totalMovies.refetch(), nowShowingMovies.refetch())
     }
 
-    if (canManageInventory.value) requests.push(activeCinemas.refetch())
+    if (canManageInventory.value || canManageShowtimes.value) {
+      requests.push(activeCinemas.refetch())
+    }
 
     if (canManageShowtimes.value && range.value) {
-      requests.push(showtimes.refetch())
+      requests.push(showtimes.refetch(), movieCatalog.refetch())
     }
 
     requests.push(...movieQueries.value.map((query) => query.refetch()))
@@ -200,7 +245,11 @@ export function useAdminDashboardQueries(
     totalMovies,
     nowShowingMovies,
     activeCinemas,
+    movieCatalog,
+    cinemaOptions,
+    movieOptions,
     showtimes,
+    scopedShowtimes,
     upcomingShowtimes,
     movieLabels,
     canManageShowtimes,

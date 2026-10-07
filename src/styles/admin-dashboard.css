@@ -176,6 +176,7 @@
 
 .admin-dashboard__panel-heading {
   align-items: flex-start;
+  flex-wrap: wrap;
   margin-bottom: var(--space-4);
 }
 
@@ -443,6 +444,125 @@
   white-space: normal;
 }
 
+.admin-dashboard__scope {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--admin-dashboard-filter-gap);
+  min-width: 0;
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--admin-dashboard-card-radius);
+  background: var(--color-surface);
+}
+
+.admin-dashboard__scope-field {
+  display: grid;
+  flex: 1 1 var(--admin-dashboard-filter-min-width);
+  gap: var(--space-2);
+  min-width: min(100%, var(--admin-dashboard-filter-min-width));
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-dashboard__scope-field select,
+.admin-dashboard__panel-select {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--admin-dashboard-filter-height);
+  padding-inline: var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border-strong);
+  border-radius: var(--admin-dashboard-filter-radius);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  color-scheme: dark;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-dashboard__scope-field option,
+.admin-dashboard__panel-select option {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.admin-dashboard__scope-button {
+  flex: 0 0 auto;
+  min-height: var(--admin-dashboard-filter-height);
+  padding-inline: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--admin-dashboard-filter-radius);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard);
+}
+
+.admin-dashboard__scope-button.is-primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-background);
+}
+
+.admin-dashboard__scope-button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.admin-dashboard__scope-button.is-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.admin-dashboard__scope-button:disabled,
+.admin-dashboard__scope-field select:disabled,
+.admin-dashboard__panel-select:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.admin-dashboard__scope-button:focus-visible,
+.admin-dashboard__scope-field select:focus-visible,
+.admin-dashboard__panel-select:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+
+.admin-dashboard__scope-description {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--admin-dashboard-tiny-size);
+  overflow-wrap: anywhere;
+}
+
+.admin-dashboard__scope-error {
+  display: grid;
+  flex-basis: 100%;
+  gap: var(--space-2);
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+}
+
+.admin-dashboard__scope-error p {
+  margin: 0;
+}
+
+.admin-dashboard__period {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  max-width: 100%;
+}
+
+.admin-dashboard__panel-select {
+  min-height: var(--admin-dashboard-panel-filter-height);
+  font-size: var(--admin-dashboard-tiny-size);
+}
+
 @variant admin-compact {
   .admin-dashboard__metrics,
   .admin-dashboard__analytics {
@@ -474,5 +594,18 @@
 
   .admin-dashboard__panel-heading {
     flex-wrap: wrap;
+  }
+
+  .admin-dashboard__scope {
+    align-items: stretch;
+  }
+
+  .admin-dashboard__scope-field {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
+  .admin-dashboard__scope-button {
+    width: 100%;
   }
 }

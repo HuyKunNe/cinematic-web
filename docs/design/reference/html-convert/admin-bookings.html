@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý đặt vé | CINEMA Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-cinemas.css" />
+    <link rel="stylesheet" href="./admin-bookings.css" />
+  </head>
+
+  <body class="admin-page">
+    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+      <a class="admin-brand" href="./admin-dashboard.html" aria-label="CINEMA Admin">
+        <span class="admin-brand__mark" aria-hidden="true">C</span>
+        <span class="admin-brand__text">CINEMA <small>ADMIN</small></span>
+      </a>
+
+      <p class="admin-sidebar__label">Quản trị</p>
+      <nav class="admin-nav">
+        <a class="admin-nav__link" href="./admin-dashboard.html"
+          ><span aria-hidden="true">⌂</span>Tổng quan</a
+        >
+        <a class="admin-nav__link" href="#movies"><span aria-hidden="true">▤</span>Phim</a>
+        <a class="admin-nav__link" href="./admin-cinemas.html"
+          ><span aria-hidden="true">▣</span>Rạp chiếu</a
+        >
+        <a class="admin-nav__link" href="./admin-rooms.html"
+          ><span aria-hidden="true">▦</span>Phòng chiếu</a
+        >
+        <a class="admin-nav__link" href="./admin-showtimes.html"
+          ><span aria-hidden="true">◷</span>Suất chiếu</a
+        >
+        <a class="admin-nav__link is-active" href="#bookings" aria-current="page"
+          ><span aria-hidden="true">▧</span>Đặt vé</a
+        >
+        <a class="admin-nav__link" href="#promotions"
+          ><span aria-hidden="true">◇</span>Khuyến mãi</a
+        >
+        <a class="admin-nav__link" href="#users"><span aria-hidden="true">♙</span>Người dùng</a>
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Hệ thống đang hoạt động</span>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="icon-button admin-menu-button" type="button" aria-label="Mở menu">☰</button>
+        <label class="admin-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Tìm kiếm trong quản trị..." />
+          <kbd>⌘ K</kbd>
+        </label>
+        <button class="icon-button admin-notifications" type="button" aria-label="Thông báo">
+          ♧<span class="notification-count" aria-hidden="true">2</span>
+        </button>
+        <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
+          <span class="admin-avatar" aria-hidden="true">AD</span>
+          <span class="admin-account__name">Quản trị viên</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+      </header>
+
+      <main class="admin-content">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./admin-dashboard.html">Quản trị</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Đặt vé</span>
+        </nav>
+
+        <section class="page-heading">
+          <div>
+            <p class="eyebrow">Giao dịch</p>
+            <h1>Quản lý đặt vé</h1>
+            <p class="page-heading__description">Tra cứu booking và trạng thái thanh toán.</p>
+          </div>
+        </section>
+
+        <aside class="prototype-note">
+          <span aria-hidden="true">ⓘ</span>
+          <span>Dữ liệu minh họa. Trang chưa nối API quản trị booking.</span>
+        </aside>
+
+        <section class="booking-stats" aria-label="Tổng quan đặt vé">
+          <article class="booking-stat panel">
+            <span>Tổng booking</span>
+            <strong>1.284</strong>
+            <small>Dữ liệu minh họa</small>
+          </article>
+          <article class="booking-stat panel">
+            <span>Đã xác nhận</span>
+            <strong>1.106</strong>
+            <small class="booking-stat__positive">● Đã thanh toán</small>
+          </article>
+          <article class="booking-stat panel">
+            <span>Đang xử lý</span>
+            <strong>42</strong>
+            <small class="booking-stat__pending">● Chờ cập nhật</small>
+          </article>
+          <article class="booking-stat panel">
+            <span>Đã hủy</span>
+            <strong>136</strong>
+            <small>Dữ liệu minh họa</small>
+          </article>
+        </section>
+
+        <section class="booking-filters" aria-label="Lọc booking">
+          <label class="filter-field">
+            <span>Tìm booking</span>
+            <input type="search" placeholder="Mã booking hoặc khách hàng" />
+          </label>
+          <label class="filter-field">
+            <span>Trạng thái booking</span>
+            <select>
+              <option value="">Tất cả trạng thái</option>
+              <option>Đã xác nhận</option>
+              <option>Đang xử lý</option>
+              <option>Đã hủy</option>
+            </select>
+          </label>
+          <label class="filter-field">
+            <span>Thanh toán</span>
+            <select>
+              <option value="">Tất cả</option>
+              <option>Đã thanh toán</option>
+              <option>Chưa thanh toán</option>
+              <option>Hoàn tiền</option>
+            </select>
+          </label>
+          <label class="filter-field">
+            <span>Ngày đặt</span>
+            <input type="date" value="2026-09-25" />
+          </label>
+        </section>
+
+        <section class="booking-list panel" aria-labelledby="booking-list-title">
+          <div class="cinema-list__heading">
+            <div>
+              <h2 id="booking-list-title">Danh sách booking</h2>
+              <p>Thông tin giao dịch và suất chiếu liên quan</p>
+            </div>
+            <span class="result-count">1.284 booking minh họa</span>
+          </div>
+
+          <div class="table-scroll">
+            <table class="booking-table">
+              <thead>
+                <tr>
+                  <th scope="col">Booking</th>
+                  <th scope="col">Khách hàng</th>
+                  <th scope="col">Suất chiếu</th>
+                  <th scope="col">Ghế</th>
+                  <th scope="col">Tổng tiền</th>
+                  <th scope="col">Thanh toán</th>
+                  <th scope="col">Trạng thái</th>
+                  <th scope="col"><span class="sr-only">Chi tiết</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong class="booking-code">BK-20260925-0142</strong
+                    ><small>25/09/2026 · 09:42</small>
+                  </td>
+                  <td><strong class="booking-customer">Nguyễn Văn A</strong></td>
+                  <td><strong>Đêm Cuối</strong><small>CINEMA Hồ Gươm · 14:10</small></td>
+                  <td>A5, A6</td>
+                  <td class="booking-amount">200.000đ</td>
+                  <td><span class="payment-state payment-state--paid">Đã thanh toán</span></td>
+                  <td><span class="status-pill status-pill--active">Đã xác nhận</span></td>
+                  <td><button class="booking-detail" type="button">Chi tiết</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong class="booking-code">BK-20260925-0141</strong
+                    ><small>25/09/2026 · 09:35</small>
+                  </td>
+                  <td><strong class="booking-customer">Trần Thị B</strong></td>
+                  <td><strong>Bình Minh Đỏ</strong><small>CINEMA Thủ Đức · 15:20</small></td>
+                  <td>C3–C6</td>
+                  <td class="booking-amount">480.000đ</td>
+                  <td><span class="payment-state payment-state--paid">Đã thanh toán</span></td>
+                  <td><span class="status-pill status-pill--active">Đã xác nhận</span></td>
+                  <td><button class="booking-detail" type="button">Chi tiết</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong class="booking-code">BK-20260925-0140</strong
+                    ><small>25/09/2026 · 09:28</small>
+                  </td>
+                  <td><strong class="booking-customer">Lê Minh C</strong></td>
+                  <td><strong>Hành Tinh Lạ</strong><small>CINEMA Hồ Gươm · 17:00</small></td>
+                  <td>D7–D9</td>
+                  <td class="booking-amount">360.000đ</td>
+                  <td><span class="payment-state payment-state--pending">Chưa thanh toán</span></td>
+                  <td><span class="status-pill status-pill--pending">Đang xử lý</span></td>
+                  <td><button class="booking-detail" type="button">Chi tiết</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong class="booking-code">BK-20260925-0139</strong
+                    ><small>25/09/2026 · 09:11</small>
+                  </td>
+                  <td><strong class="booking-customer">Phạm Anh D</strong></td>
+                  <td><strong>Đêm Cuối</strong><small>CINEMA Sông Hàn · 19:30</small></td>
+                  <td>E8</td>
+                  <td class="booking-amount">100.000đ</td>
+                  <td><span class="payment-state payment-state--refunded">Đã hoàn tiền</span></td>
+                  <td><span class="status-pill status-pill--cancelled">Đã hủy</span></td>
+                  <td><button class="booking-detail" type="button">Chi tiết</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <footer class="table-footer">
+            <span>Hiển thị 1–4 trong 1.284 booking minh họa</span>
+            <nav class="pagination" aria-label="Phân trang">
+              <button type="button" aria-label="Trang trước" disabled>‹</button>
+              <button type="button" class="is-current" aria-current="page">1</button>
+              <button type="button">2</button>
+              <button type="button">3</button>
+              <button type="button" aria-label="Trang tiếp theo">›</button>
+            </nav>
+          </footer>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
