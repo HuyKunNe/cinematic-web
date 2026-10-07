@@ -53,13 +53,13 @@ const ready = ref(props.cinemaId === null)
 const requestError = ref('')
 const serverErrors = ref<Partial<Record<AdminCinemaField, string>>>({})
 const formElement = ref<HTMLFormElement | null>(null)
-
+const interactionStarted = ref(false)
+const touchedFields = ref<Partial<Record<AdminCinemaField, boolean>>>({})
 const {
   errors,
   submitCount,
   isSubmitting,
   defineField,
-  isFieldTouched,
   setFieldTouched,
   validateField,
   resetForm,
@@ -71,11 +71,11 @@ const {
 })
 
 function createField(field: AdminCinemaField) {
-  return defineField(field, (state) => ({
-    validateOnBlur: true,
+  return defineField(field, () => ({
+    validateOnBlur: false,
     validateOnInput: false,
     validateOnChange: false,
-    validateOnModelUpdate: state.touched || submitCount.value > 0,
+    validateOnModelUpdate: Boolean(touchedFields.value[field] || submitCount.value > 0),
   }))
 }
 
@@ -111,9 +111,16 @@ function canonicalCity(value: string) {
   return cityOptions.value.find((option) => cityKey(option) === cityKey(normalized)) ?? normalized
 }
 
+function onFieldBlur(field: AdminCinemaField) {
+  if (!interactionStarted.value && submitCount.value === 0) return
+
+  touchedFields.value[field] = true
+  setFieldTouched(field, true)
+  void validateField(field)
+}
+
 function onCityBlur() {
-  setFieldTouched('city', true)
-  void validateField('city')
+  onFieldBlur('city')
 }
 
 const models = { name, address, city }
@@ -136,7 +143,9 @@ const visibleErrors = computed(() => {
   for (const field of fields) {
     result[field.name] =
       serverErrors.value[field.name] ??
-      (isFieldTouched(field.name) || submitCount.value > 0 ? errors.value[field.name] : undefined)
+      (touchedFields.value[field.name] || submitCount.value > 0
+        ? errors.value[field.name]
+        : undefined)
   }
 
   return result
@@ -149,15 +158,10 @@ watch([name, address, city], () => {
 
 const busy = computed(() => isSubmitting.value || mutation.isPending.value)
 
-async function focusName() {
+async function focusDialog() {
   await nextTick()
 
-  const input = document.getElementById('admin-cinema-name')
-  if (input instanceof HTMLInputElement && !input.disabled) {
-    input.focus()
-  } else {
-    document.getElementById('admin-cinema-close')?.focus()
-  }
+  document.getElementById('admin-cinema-close')?.focus()
 }
 
 watch(
@@ -175,8 +179,12 @@ watch(
     }
 
     resetForm({ values: createAdminCinemaValues(cinema) })
+    touchedFields.value = {}
+    interactionStarted.value = false
+    serverErrors.value = {}
+    requestError.value = ''
     ready.value = true
-    void focusName()
+    void focusDialog()
   },
   { immediate: true },
 )
@@ -195,7 +203,7 @@ function preventDuringSave(event: Event) {
 
 function onOpenAutoFocus(event: Event) {
   event.preventDefault()
-  void focusName()
+  void focusDialog()
 }
 
 function restoreFocus(event: Event) {
@@ -315,7 +323,16 @@ function submit(event: Event) {
           </p>
         </div>
 
-        <form v-if="ready" ref="formElement" class="admin-cinema-form" novalidate @submit="submit">
+        <form
+          v-if="ready"
+          ref="formElement"
+          class="admin-cinema-form"
+          novalidate
+          @pointerdown.capture="interactionStarted = true"
+          @keydown.capture="interactionStarted = true"
+          @input.capture="interactionStarted = true"
+          @submit="submit"
+        >
           <fieldset class="admin-cinema-form__fields" :disabled="busy || !canManage">
             <div v-for="field in fields" :key="field.name" class="admin-cinemas__field">
               <label v-if="field.name !== 'city'" :for="`admin-cinema-${field.name}`">
@@ -325,14 +342,15 @@ function submit(event: Event) {
               <AppCreatableAutocomplete
                 v-if="field.name === 'city'"
                 id="admin-cinema-city"
-                v-model="city"
+                :model-value="city ?? ''"
+                @update:model-value="city = $event"
                 label="Thành phố"
                 :options="cityOptions"
                 :loading="cityCatalog.isFetching.value"
                 :disabled="busy || !canManage"
                 :error="visibleErrors.city"
                 :maxlength="100"
-                content-class="admin-reference-autocomplete"
+                content-class="admin-reference-autocomplete admin-cinema-city-dropdown"
                 helper-text="Chọn thành phố đã có hoặc nhập mới. Tên mới được lưu cùng rạp."
                 required
                 @blur="onCityBlur"
@@ -342,6 +360,7 @@ function submit(event: Event) {
                 v-bind="attributes[field.name].value"
                 :id="`admin-cinema-${field.name}`"
                 v-model="models[field.name].value"
+                @blur="onFieldBlur(field.name)"
                 class="admin-cinemas__input"
                 type="text"
                 :maxlength="field.maxLength"

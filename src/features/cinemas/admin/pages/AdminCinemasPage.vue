@@ -189,7 +189,7 @@ function statusLabel(active?: boolean) {
         </label>
 
         <AppAutocomplete
-          id="admin-cinema-city"
+          id="admin-cinema-city-filter"
           v-model="city"
           label="Khu vực"
           all-label="Tất cả khu vực"
