@@ -102,7 +102,7 @@ function isActive(routeName: string) {
     </nav>
 
     <footer class="admin-sidebar__footer">
-      <p v-if="!collapsed" class="admin-sidebar__access">
+      <p class="admin-sidebar__access" :aria-hidden="collapsed">
         <span class="admin-sidebar__status-dot" aria-hidden="true" />
         <span :title="`${moduleCount} chức năng được cấp quyền`"> Không gian quản trị </span>
       </p>

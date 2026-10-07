@@ -486,6 +486,10 @@
   --booking-start-panel-padding: var(--space-6);
   --booking-start-page-space: var(--space-8);
   --booking-start-field-gap: var(--space-4);
+  
+  /* Admin sidebar motion */
+  --admin-sidebar-motion-duration: var(--duration-slow);
+  --admin-sidebar-motion-easing: var(--easing-standard);
 
   /* Admin navigation */
   --admin-shell-sidebar-size: var(--admin-sidebar-width);
