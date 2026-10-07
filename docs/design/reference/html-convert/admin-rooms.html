@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý phòng chiếu | CINEMA Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-cinemas.css" />
+    <link rel="stylesheet" href="./admin-rooms.css" />
+  </head>
+
+  <body class="admin-page">
+    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+      <a class="admin-brand" href="./admin-dashboard.html" aria-label="CINEMA Admin">
+        <span class="admin-brand__mark" aria-hidden="true">C</span>
+        <span class="admin-brand__text">CINEMA <small>ADMIN</small></span>
+      </a>
+
+      <p class="admin-sidebar__label">Quản trị</p>
+      <nav class="admin-nav">
+        <a class="admin-nav__link" href="./admin-dashboard.html"
+          ><span aria-hidden="true">⌂</span>Tổng quan</a
+        >
+        <a class="admin-nav__link" href="#movies"><span aria-hidden="true">▤</span>Phim</a>
+        <a class="admin-nav__link" href="./admin-cinemas.html"
+          ><span aria-hidden="true">▣</span>Rạp chiếu</a
+        >
+        <a class="admin-nav__link is-active" href="#rooms" aria-current="page"
+          ><span aria-hidden="true">▦</span>Phòng chiếu</a
+        >
+        <a class="admin-nav__link" href="#showtimes"><span aria-hidden="true">◷</span>Suất chiếu</a>
+        <a class="admin-nav__link" href="#bookings"><span aria-hidden="true">▧</span>Đặt vé</a>
+        <a class="admin-nav__link" href="#promotions"
+          ><span aria-hidden="true">◇</span>Khuyến mãi</a
+        >
+        <a class="admin-nav__link" href="#users"><span aria-hidden="true">♙</span>Người dùng</a>
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Hệ thống đang hoạt động</span>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="icon-button admin-menu-button" type="button" aria-label="Mở menu">☰</button>
+
+        <label class="admin-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Tìm kiếm trong quản trị..." />
+          <kbd>⌘ K</kbd>
+        </label>
+
+        <button class="icon-button admin-notifications" type="button" aria-label="Thông báo">
+          ♧<span class="notification-count" aria-hidden="true">2</span>
+        </button>
+
+        <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
+          <span class="admin-avatar" aria-hidden="true">AD</span>
+          <span class="admin-account__name">Quản trị viên</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+      </header>
+
+      <main class="admin-content">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./admin-dashboard.html">Quản trị</a>
+          <span aria-hidden="true">/</span>
+          <a href="./admin-cinemas.html">Rạp chiếu</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Phòng chiếu</span>
+        </nav>
+
+        <section class="page-heading">
+          <div>
+            <p class="eyebrow">Hệ thống rạp</p>
+            <h1>Quản lý phòng chiếu</h1>
+            <p class="page-heading__description">
+              Theo dõi phòng chiếu, định dạng và trạng thái hoạt động.
+            </p>
+          </div>
+          <button class="action-button action-button--primary" type="button">
+            <span aria-hidden="true">＋</span>Thêm phòng
+          </button>
+        </section>
+
+        <aside class="prototype-note">
+          <span aria-hidden="true">ⓘ</span>
+          <span>Prototype giao diện — số liệu và bản ghi trong trang chỉ dùng để minh họa.</span>
+        </aside>
+
+        <section class="room-stats" aria-label="Tổng quan phòng chiếu">
+          <article class="room-stat panel">
+            <span class="room-stat__label">Tổng phòng chiếu</span>
+            <strong>36</strong>
+            <span class="room-stat__hint">Dữ liệu minh họa</span>
+          </article>
+          <article class="room-stat panel">
+            <span class="room-stat__label">Đang hoạt động</span>
+            <strong>32</strong>
+            <span class="room-stat__hint room-stat__hint--success">● Có thể xếp lịch</span>
+          </article>
+          <article class="room-stat panel">
+            <span class="room-stat__label">Đang bảo trì</span>
+            <strong>4</strong>
+            <span class="room-stat__hint room-stat__hint--warning">● Tạm ngưng xếp lịch</span>
+          </article>
+        </section>
+
+        <section class="filter-panel" aria-label="Tìm và lọc phòng chiếu">
+          <label class="filter-field filter-field--search">
+            <span>Tìm phòng</span>
+            <input type="search" placeholder="Nhập tên hoặc mã phòng" />
+          </label>
+
+          <label class="filter-field">
+            <span>Rạp</span>
+            <select>
+              <option value="">Tất cả rạp</option>
+              <option>CINEMA Hồ Gươm</option>
+              <option>CINEMA Thủ Đức</option>
+              <option>CINEMA Sông Hàn</option>
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span>Trạng thái</span>
+            <select>
+              <option value="">Tất cả trạng thái</option>
+              <option>Đang hoạt động</option>
+              <option>Đang bảo trì</option>
+            </select>
+          </label>
+
+          <button class="action-button action-button--secondary" type="button">Đặt lại</button>
+        </section>
+
+        <section class="room-list panel" aria-labelledby="room-list-title">
+          <div class="cinema-list__heading">
+            <div>
+              <h2 id="room-list-title">Danh sách phòng</h2>
+              <p>Chọn một phòng để xem hoặc chỉnh sửa thông tin</p>
+            </div>
+            <span class="result-count">36 phòng minh họa</span>
+          </div>
+
+          <div class="table-scroll">
+            <table class="room-table">
+              <thead>
+                <tr>
+                  <th scope="col">Phòng</th>
+                  <th scope="col">Rạp</th>
+                  <th scope="col">Định dạng</th>
+                  <th scope="col">Sức chứa</th>
+                  <th scope="col">Trạng thái</th>
+                  <th scope="col"><span class="sr-only">Thao tác</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong class="room-name">Phòng 01</strong
+                    ><small class="room-code">Mã phòng: R-001</small>
+                  </td>
+                  <td>CINEMA Hồ Gươm</td>
+                  <td><span class="room-format">2D</span></td>
+                  <td>120 ghế</td>
+                  <td><span class="status-pill status-pill--active">Đang hoạt động</span></td>
+                  <td>
+                    <button class="row-action" type="button" aria-label="Thao tác Phòng 01">
+                      •••
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong class="room-name">Phòng 02</strong
+                    ><small class="room-code">Mã phòng: R-002</small>
+                  </td>
+                  <td>CINEMA Hồ Gươm</td>
+                  <td><span class="room-format room-format--premium">3D</span></td>
+                  <td>96 ghế</td>
+                  <td><span class="status-pill status-pill--active">Đang hoạt động</span></td>
+                  <td>
+                    <button class="row-action" type="button" aria-label="Thao tác Phòng 02">
+                      •••
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong class="room-name">Phòng Premium</strong
+                    ><small class="room-code">Mã phòng: R-003</small>
+                  </td>
+                  <td>CINEMA Thủ Đức</td>
+                  <td><span class="room-format room-format--premium">IMAX</span></td>
+                  <td>180 ghế</td>
+                  <td><span class="status-pill status-pill--active">Đang hoạt động</span></td>
+                  <td>
+                    <button class="row-action" type="button" aria-label="Thao tác Phòng Premium">
+                      •••
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong class="room-name">Phòng 04</strong
+                    ><small class="room-code">Mã phòng: R-004</small>
+                  </td>
+                  <td>CINEMA Sông Hàn</td>
+                  <td><span class="room-format">2D</span></td>
+                  <td>100 ghế</td>
+                  <td><span class="status-pill status-pill--maintenance">Đang bảo trì</span></td>
+                  <td>
+                    <button class="row-action" type="button" aria-label="Thao tác Phòng 04">
+                      •••
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <footer class="table-footer">
+            <span>Hiển thị 1–4 trong 36 phòng minh họa</span>
+            <nav class="pagination" aria-label="Phân trang">
+              <button type="button" aria-label="Trang trước" disabled>‹</button>
+              <button type="button" class="is-current" aria-current="page">1</button>
+              <button type="button">2</button>
+              <button type="button">3</button>
+              <button type="button" aria-label="Trang tiếp theo">›</button>
+            </nav>
+          </footer>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

@@ -12,6 +12,7 @@
 /* Admin pages */
 @import './admin-movies.css';
 @import './admin-dashboard.css';
+@import './admin-cinemas.css';
 
 /* Navigation styles remain imported by their owning layouts. */
 @theme {

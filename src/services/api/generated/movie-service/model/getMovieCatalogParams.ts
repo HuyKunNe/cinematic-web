@@ -12,4 +12,8 @@ status?: GetMovieCatalogStatus;
 genre?: string;
 page?: number;
 size?: number;
+/**
+ * Optional candidate movie UUIDs. Send repeated movieIds query parameters. Filtering is applied before pagination and counting. The configured input limit defaults to 100.
+ */
+movieIds?: string[];
 };

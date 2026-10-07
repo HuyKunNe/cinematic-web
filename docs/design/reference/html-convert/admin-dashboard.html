@@ -85,7 +85,30 @@
               <span aria-hidden="true">⌄</span>
             </button>
           </div>
+          <form class="dashboard-scope-bar" id="dashboard-scope-form">
+            <label class="scope-field">
+              <span>Rạp</span>
+              <select id="dashboard-cinema" name="cinemaId">
+                <option value="">Tất cả rạp</option>
+                <!-- Thay bằng danh sách rạp lấy từ API -->
+              </select>
+            </label>
 
+            <label class="scope-field">
+              <span>Phim</span>
+              <select id="dashboard-movie" name="movieId">
+                <option value="">Tất cả phim</option>
+                <!-- Thay bằng danh sách phim lấy từ API -->
+              </select>
+            </label>
+
+            <button class="button button-subtle" type="reset">Xóa lọc</button>
+            <button class="button button-primary" type="submit">Áp dụng</button>
+
+            <p class="scope-description" id="dashboard-scope-summary" aria-live="polite">
+              Phạm vi: Toàn hệ thống
+            </p>
+          </form>
           <section class="metric-grid" aria-label="Chỉ số tổng quan">
             <article class="metric-card metric-card--primary">
               <div class="metric-card__icon" aria-hidden="true">▤</div>
@@ -136,6 +159,14 @@
                   <p>Diễn biến trong ngày</p>
                 </div>
                 <button class="select-button" type="button">Hôm nay <span>⌄</span></button>
+                <label class="panel-filter">
+                  <span class="sr-only">Kỳ thống kê</span>
+                  <select class="panel-select" aria-label="Kỳ thống kê doanh thu và lượt đặt vé">
+                    <option value="today">Hôm nay</option>
+                    <option value="7d">7 ngày qua</option>
+                    <option value="30d">30 ngày qua</option>
+                  </select>
+                </label>
               </header>
 
               <div class="chart-legend">
@@ -365,4 +396,58 @@
       </div>
     </div>
   </body>
+  <script>
+    const scopeForm = document.querySelector('#dashboard-scope-form')
+    const cinemaSelect = document.querySelector('#dashboard-cinema')
+    const movieSelect = document.querySelector('#dashboard-movie')
+    const scopeSummary = document.querySelector('#dashboard-scope-summary')
+
+    function getScope() {
+      const cinemaId = cinemaSelect.value || null
+      const movieId = movieSelect.value || null
+
+      let label = 'Toàn hệ thống'
+
+      if (cinemaId && movieId) {
+        label = `${movieSelect.selectedOptions[0].textContent} tại ${cinemaSelect.selectedOptions[0].textContent}`
+      } else if (cinemaId) {
+        label = cinemaSelect.selectedOptions[0].textContent
+      } else if (movieId) {
+        label = movieSelect.selectedOptions[0].textContent
+      }
+
+      return {
+        cinemaId,
+        movieId,
+        label,
+      }
+    }
+
+    function updateScopeSummary() {
+      const scope = getScope()
+      scopeSummary.textContent = `Phạm vi: ${scope.label}`
+    }
+
+    scopeForm.addEventListener('change', updateScopeSummary)
+
+    scopeForm.addEventListener('reset', () => {
+      requestAnimationFrame(updateScopeSummary)
+    })
+
+    scopeForm.addEventListener('submit', (event) => {
+      event.preventDefault()
+
+      const scope = getScope()
+      updateScopeSummary()
+
+      document.dispatchEvent(
+        new CustomEvent('dashboard:scope-change', {
+          detail: {
+            cinemaId: scope.cinemaId,
+            movieId: scope.movieId,
+          },
+        }),
+      )
+    })
+  </script>
 </html>

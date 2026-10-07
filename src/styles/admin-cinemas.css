@@ -1,0 +1,431 @@
+.admin-cinemas {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.admin-cinemas__heading,
+.admin-cinemas__list-heading,
+.admin-cinemas__table-footer,
+.admin-cinema-dialog__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.admin-cinemas__heading {
+  flex-wrap: wrap;
+}
+
+.admin-cinemas__eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-primary);
+  font-size: var(--admin-dashboard-tiny-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--admin-cinema-heading-tracking);
+  text-transform: uppercase;
+}
+
+.admin-cinemas__heading h1 {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: var(--admin-cinema-heading-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.admin-cinemas__description {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.admin-cinemas__heading svg,
+.admin-cinemas__row-action svg,
+.admin-cinemas__pagination svg,
+.admin-cinema-menu__item svg {
+  flex: 0 0 auto;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+.admin-cinemas__filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.admin-cinemas__field {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-cinemas__input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+}
+
+.admin-cinemas__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.admin-cinemas__input[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.admin-cinemas__input:disabled {
+  opacity: var(--opacity-disabled);
+}
+
+.admin-cinemas__panel {
+  min-width: 0;
+  overflow: hidden;
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.admin-cinemas__list-heading {
+  padding: var(--space-5);
+}
+
+.admin-cinemas__list-heading h2 {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.admin-cinemas__list-heading p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-cinemas__table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.admin-cinemas__table {
+  width: 100%;
+  min-width: var(--admin-cinema-table-min-width);
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-cinemas__table th,
+.admin-cinemas__table td {
+  padding: var(--space-4) var(--space-5);
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+
+.admin-cinemas__table th {
+  background: var(--color-background);
+  color: var(--color-text-muted);
+  font-size: var(--admin-dashboard-tiny-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+.admin-cinemas__table td {
+  color: var(--color-text-secondary);
+  font-size: var(--admin-dashboard-link-size);
+}
+
+.admin-cinemas__name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-primary);
+}
+
+.admin-cinemas__name > span:last-child {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.admin-cinemas__name strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+.admin-cinemas__name small {
+  color: var(--color-text-muted);
+  font-size: var(--admin-dashboard-tiny-size);
+}
+
+.admin-cinemas__avatar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: var(--admin-cinema-avatar-size);
+  height: var(--admin-cinema-avatar-size);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-primary);
+  font-size: var(--admin-dashboard-tiny-size);
+  font-weight: var(--font-weight-bold);
+}
+
+.admin-cinemas__avatar svg {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+}
+
+.admin-cinemas__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--space-6);
+  padding-inline: var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: var(--admin-dashboard-tiny-size);
+  white-space: nowrap;
+}
+
+.admin-cinemas__status.is-active {
+  border-color: var(--admin-cinema-active-border);
+  background: var(--admin-cinema-active-background);
+  color: var(--color-success);
+}
+
+.admin-cinemas__status.is-paused {
+  border-color: var(--admin-cinema-paused-border);
+  background: var(--admin-cinema-paused-background);
+  color: var(--color-warning);
+}
+
+.admin-cinemas__row-action {
+  display: grid;
+  place-items: center;
+  width: var(--control-height-md);
+  height: var(--control-height-md);
+  padding: 0;
+  border: var(--border-width-thin) solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.admin-cinemas__row-action:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-primary);
+}
+
+.admin-cinemas__row-action:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.admin-cinemas__table td.admin-cinemas__empty {
+  height: var(--admin-cinema-empty-height);
+  text-align: center;
+}
+
+.admin-cinemas__table-footer {
+  padding: var(--space-4) var(--space-5);
+  border-top: var(--border-width-thin) solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-cinemas__pagination {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.admin-cinemas__pagination button {
+  display: grid;
+  place-items: center;
+  min-width: var(--space-8);
+  height: var(--space-8);
+  padding: var(--space-1);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-cinemas__pagination button.is-current {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.admin-cinemas__pagination button:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.admin-cinemas__feedback {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--font-size-sm);
+}
+
+.admin-cinemas__feedback p,
+.admin-cinema-form p {
+  margin: 0;
+}
+
+.admin-cinemas__muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-cinemas__error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+  overflow-wrap: anywhere;
+}
+
+.admin-cinemas__success {
+  margin: 0;
+  color: var(--color-success);
+  font-size: var(--font-size-sm);
+}
+
+.admin-cinema-menu {
+  z-index: var(--z-modal);
+  width: var(--admin-cinema-menu-width);
+  max-width: var(--reka-dropdown-menu-content-available-width);
+  padding: var(--space-2);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-raised);
+}
+
+.admin-cinema-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.admin-cinema-menu__item[data-highlighted] {
+  outline: none;
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.admin-cinema-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--color-overlay);
+}
+
+.admin-cinema-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: var(--z-toast);
+  display: grid;
+  gap: var(--space-5);
+  width: min(var(--admin-cinema-dialog-width), calc(var(--viewport-width) - var(--space-8)));
+  max-height: calc(var(--viewport-dynamic-height) - var(--space-8));
+  overflow-y: auto;
+  padding: var(--space-6);
+  transform: translate(-50%, -50%);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-raised);
+}
+
+.admin-cinema-dialog__heading {
+  align-items: flex-start;
+}
+
+.admin-cinema-dialog__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.admin-cinema-form,
+.admin-cinema-form__fields {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.admin-cinema-form__fields {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.admin-cinema-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@variant tablet-down {
+  .admin-cinemas__filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-cinemas__search {
+    grid-column: 1 / -1;
+  }
+}
+
+@variant mobile-layout {
+  .admin-cinemas__heading,
+  .admin-cinemas__list-heading,
+  .admin-cinemas__table-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-cinemas__heading > .app-button {
+    width: 100%;
+  }
+
+  .admin-cinemas__filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-cinemas__search {
+    grid-column: auto;
+  }
+
+  .admin-cinema-dialog {
+    padding: var(--space-4);
+  }
+}

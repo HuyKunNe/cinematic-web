@@ -14,6 +14,7 @@ const loadMovieDetailPage = () => import('../features/movies/pages/MovieDetailPa
 const loadAdminMoviesPage = () => import('../features/movies/admin/pages/AdminMoviesPage.vue')
 const loadBookingStartPage = () => import('../features/booking/pages/BookingStartPage.vue')
 const loadBookingPage = () => import('../features/booking/pages/BookingPage.vue')
+const loadAdminCinemasPage = () => import('../features/cinemas/admin/pages/AdminCinemasPage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -176,11 +177,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_CINEMAS,
     name: ROUTE_NAMES.ADMIN_CINEMAS,
-    component: loadPlaceholder,
-    props: {
-      title: 'Quản lý rạp',
-      description: 'Inventory Service hỗ trợ quản lý rạp.',
-    },
+    component: loadAdminCinemasPage,
     meta: {
       layout: 'admin',
       title: 'Quản lý rạp',
