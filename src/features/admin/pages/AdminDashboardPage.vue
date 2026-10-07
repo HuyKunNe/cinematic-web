@@ -12,6 +12,8 @@ import {
   DoorOpen,
   Film,
   RefreshCw,
+  Tags,
+  Ticket,
   Users,
 } from 'lucide-vue-next'
 import { getVisibleAdminNavigation, type AdminNavigationIcon } from '@/config/admin-navigation'
@@ -71,6 +73,8 @@ const icons: Partial<Record<AdminNavigationIcon, typeof Film>> = {
   cinemas: Building2,
   rooms: DoorOpen,
   showtimes: CalendarClock,
+  bookings: Ticket,
+  promotions: Tags,
   users: Users,
 }
 

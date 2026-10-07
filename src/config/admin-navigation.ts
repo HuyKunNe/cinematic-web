@@ -8,10 +8,12 @@ export type AdminRouteName =
   | typeof ROUTE_NAMES.ADMIN_CINEMAS
   | typeof ROUTE_NAMES.ADMIN_ROOMS
   | typeof ROUTE_NAMES.ADMIN_SHOWTIMES
+  | typeof ROUTE_NAMES.ADMIN_BOOKINGS
+  | typeof ROUTE_NAMES.ADMIN_PROMOTIONS
   | typeof ROUTE_NAMES.ADMIN_USERS
 
 export type AdminNavigationIcon =
-  'overview' | 'movies' | 'cinemas' | 'rooms' | 'showtimes' | 'users'
+  'overview' | 'movies' | 'cinemas' | 'rooms' | 'showtimes' | 'bookings' | 'promotions' | 'users'
 
 export type AdminNavigationGroup = 'overview' | 'content' | 'operations' | 'system'
 
@@ -36,6 +38,22 @@ export const ADMIN_NAVIGATION_GROUPS: readonly {
 ]
 
 export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
+  {
+    label: 'Đặt vé',
+    description: 'Tra cứu giao dịch đặt vé và thanh toán.',
+    routeName: ROUTE_NAMES.ADMIN_BOOKINGS,
+    icon: 'bookings',
+    group: 'operations',
+    roles: ADMIN_ROLES,
+  },
+  {
+    label: 'Khuyến mãi',
+    description: 'Các chương trình ưu đãi và chiến dịch.',
+    routeName: ROUTE_NAMES.ADMIN_PROMOTIONS,
+    icon: 'promotions',
+    group: 'content',
+    roles: ADMIN_ROLES,
+  },
   {
     label: 'Tổng quan',
     description: 'Theo dõi dữ liệu và truy cập các chức năng quản trị.',

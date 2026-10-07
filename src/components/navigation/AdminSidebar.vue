@@ -8,6 +8,8 @@ import {
   DoorOpen,
   Film,
   LayoutDashboard,
+  Tags,
+  Ticket,
   Users,
 } from 'lucide-vue-next'
 import { ADMIN_NAVIGATION_GROUPS, getVisibleAdminNavigation } from '../../config/admin-navigation'
@@ -50,10 +52,18 @@ const icons: Record<AdminNavigationIcon, typeof Film> = {
   cinemas: Building2,
   rooms: DoorOpen,
   showtimes: CalendarClock,
+  bookings: Ticket,
+  promotions: Tags,
   users: Users,
 }
 
 function isActive(routeName: string) {
+  if (
+    routeName === ROUTE_NAMES.ADMIN_SHOWTIMES &&
+    route.name === ROUTE_NAMES.ADMIN_SHOWTIME_CREATE
+  ) {
+    return true
+  }
   return route.name === routeName || route.matched.some((record) => record.name === routeName)
 }
 </script>

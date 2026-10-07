@@ -110,11 +110,11 @@ function formatDate(value?: string) {
   }).format(date)
 }
 </script>
-
 <template>
   <section class="admin-movies" aria-labelledby="admin-movies-title">
     <header class="admin-movies__heading">
       <div>
+        <p class="admin-movies__eyebrow">Nội dung</p>
         <h1 id="admin-movies-title" tabindex="-1">Quản lý phim</h1>
         <p class="admin-movies__muted">Quản lý thông tin phim, trạng thái và thể loại.</p>
       </div>
@@ -123,28 +123,28 @@ function formatDate(value?: string) {
         <AppButton variant="secondary" :disabled="!canManage" @click="genreManagerOpen = true">
           Thể loại
         </AppButton>
-
-        <AppButton :disabled="!canManage" @click="openEditor(null)"> Thêm phim </AppButton>
+        <AppButton :disabled="!canManage" @click="openEditor(null)">
+          <span aria-hidden="true">＋</span>
+          Thêm phim
+        </AppButton>
       </div>
     </header>
 
     <p v-if="successMessage" class="admin-movies__success" role="status">
       {{ successMessage }}
     </p>
-
     <p v-if="!canManage" class="admin-movies__error" role="alert">
       Tài khoản không có quyền quản lý phim.
     </p>
 
     <template v-else>
-      <div class="admin-movies__filters">
+      <section class="admin-movies__filters" aria-label="Lọc phim">
         <AppSelect
           id="admin-movies-status-filter"
           v-model="statusFilter"
           label="Trạng thái"
           :options="statusOptions"
         />
-
         <AppSelect
           id="admin-movies-genre-filter"
           v-model="genreFilter"
@@ -153,43 +153,71 @@ function formatDate(value?: string) {
           :loading="genresQuery.isFetching.value"
           :disabled="genresQuery.isError.value"
         />
-      </div>
+        <AppButton
+          variant="secondary"
+          @click="
+            () => {
+              statusFilter = 'all'
+              genreFilter = 'all'
+            }
+          "
+        >
+          Đặt lại
+        </AppButton>
+      </section>
 
       <div v-if="genresQuery.isError.value" class="admin-movies__feedback">
         <p class="admin-movies__error" role="alert">
           {{ adminMovieErrorMessage(genresQuery.error.value, 'Không thể tải bộ lọc thể loại.') }}
         </p>
-        <AppButton variant="secondary" @click="genresQuery.refetch()"> Tải lại thể loại </AppButton>
-      </div>
-
-      <p v-if="catalog.isFetching.value" role="status">Đang tải danh sách phim…</p>
-
-      <div v-if="catalog.isError.value" class="admin-movies__feedback">
-        <p class="admin-movies__error" role="alert">
-          {{ adminMovieErrorMessage(catalog.error.value) }}
-        </p>
         <AppButton
           variant="secondary"
-          :disabled="catalog.isFetching.value"
-          @click="catalog.refetch()"
+          :loading="genresQuery.isFetching.value"
+          @click="genresQuery.refetch()"
         >
-          Thử lại
+          Tải lại thể loại
         </AppButton>
       </div>
 
-      <template v-if="catalog.data.value">
+      <section
+        class="admin-movies__panel"
+        aria-labelledby="admin-movie-list-title"
+        :aria-busy="catalog.isFetching.value"
+      >
+        <header class="admin-movies__list-heading">
+          <div>
+            <h2 id="admin-movie-list-title">Danh sách phim</h2>
+            <p>Thông tin phim theo bộ lọc hiện tại</p>
+          </div>
+          <span class="admin-movies__muted"> {{ pageInfo?.totalElements ?? '—' }} phim </span>
+        </header>
+
+        <p v-if="catalog.isFetching.value" class="admin-cinemas__feedback" role="status">
+          Đang tải danh sách phim…
+        </p>
+        <div v-if="catalog.isError.value" class="admin-cinemas__feedback">
+          <p class="admin-movies__error" role="alert">
+            {{ adminMovieErrorMessage(catalog.error.value) }}
+          </p>
+          <AppButton
+            variant="secondary"
+            :loading="catalog.isFetching.value"
+            @click="catalog.refetch()"
+          >
+            Thử lại
+          </AppButton>
+        </div>
+
         <div
           class="admin-movies__table-container"
           role="region"
           aria-label="Danh sách phim"
           tabindex="0"
-          :aria-busy="catalog.isFetching.value"
         >
           <table class="admin-movies__table">
-            <caption>
+            <caption class="admin-visually-hidden">
               Danh sách phim theo bộ lọc hiện tại
             </caption>
-
             <thead>
               <tr>
                 <th scope="col">Phim</th>
@@ -197,10 +225,9 @@ function formatDate(value?: string) {
                 <th scope="col">Trạng thái</th>
                 <th scope="col">Thời lượng</th>
                 <th scope="col">Phát hành</th>
-                <th scope="col">Thao tác</th>
+                <th scope="col"><span class="admin-visually-hidden">Thao tác</span></th>
               </tr>
             </thead>
-
             <tbody>
               <tr v-for="(movie, index) in rows" :key="movie.id ?? `missing-id-${index}`">
                 <th scope="row">
@@ -211,7 +238,6 @@ function formatDate(value?: string) {
                     {{ movie.id || 'Thiếu mã phim' }}
                   </span>
                 </th>
-
                 <td>
                   {{
                     (movie.genres ?? [])
@@ -220,22 +246,16 @@ function formatDate(value?: string) {
                       .join(', ') || '—'
                   }}
                 </td>
-
                 <td>
-                  <span class="admin-movies__status">
-                    {{ statusLabel(movie.status) }}
-                  </span>
+                  <span class="admin-movies__status">{{ statusLabel(movie.status) }}</span>
                 </td>
-
                 <td>
                   {{ movie.durationMinutes == null ? '—' : `${movie.durationMinutes} phút` }}
                 </td>
-
                 <td>{{ formatDate(movie.releaseDate) }}</td>
-
                 <td>
                   <AppButton
-                    variant="secondary"
+                    variant="ghost"
                     size="sm"
                     :disabled="!movie.id || !canManage"
                     :aria-label="`Sửa phim ${movie.title ?? ''}`"
@@ -247,18 +267,25 @@ function formatDate(value?: string) {
               </tr>
 
               <tr v-if="!rows.length">
-                <td colspan="6" class="admin-movies__empty">Không có phim phù hợp với bộ lọc.</td>
+                <td colspan="6" class="admin-movies__empty">
+                  {{
+                    catalog.isFetching.value
+                      ? 'Đang tải danh sách phim…'
+                      : catalog.isError.value
+                        ? 'Chưa tải được danh sách phim.'
+                        : 'Không có phim phù hợp với bộ lọc.'
+                  }}
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <footer class="admin-movies__pagination">
-          <p class="admin-movies__muted">
+        <footer v-if="catalog.data.value" class="admin-movies__pagination">
+          <span>
             Tổng {{ pageInfo?.totalElements ?? '—' }} phim
-            <template v-if="totalPages > 0"> · Trang {{ page + 1 }}/{{ totalPages }} </template>
-          </p>
-
+            <template v-if="totalPages > 0"> · Trang {{ page + 1 }}/{{ totalPages }}</template>
+          </span>
           <div class="admin-movies__pagination-actions">
             <AppButton
               variant="secondary"
@@ -268,7 +295,6 @@ function formatDate(value?: string) {
             >
               Trước
             </AppButton>
-
             <AppButton
               variant="secondary"
               size="sm"
@@ -279,7 +305,7 @@ function formatDate(value?: string) {
             </AppButton>
           </div>
         </footer>
-      </template>
+      </section>
     </template>
 
     <AdminMovieEditorDialog

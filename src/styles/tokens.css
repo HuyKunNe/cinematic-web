@@ -557,6 +557,47 @@
   --admin-dashboard-dot-size: var(--space-2);
   --admin-dashboard-eyebrow-tracking: 0.12em;
 
+  /* Admin management reference */
+  --admin-reference-background-soft: #091722;
+  --admin-reference-border-strong: #415766;
+  --admin-reference-hover: #142938;
+  --admin-reference-primary-hover: #ffd27f;
+  --admin-reference-primary-tint: rgb(245 190 99 / 12%);
+  --admin-reference-topbar-background: rgb(6 17 26 / 92%);
+  --admin-reference-topbar-blur: 1rem;
+
+  --admin-reference-sidebar-width: 16rem;
+  --admin-reference-header-height: 4.5rem;
+  --admin-reference-content-width: 90rem;
+  --admin-reference-search-width: 32rem;
+  --admin-reference-heading-size: clamp(2rem, 3vw, 2.75rem);
+  --admin-reference-heading-tracking: 0.14em;
+  --admin-reference-table-tracking: 0.08em;
+  --admin-reference-copy-size: 0.8125rem;
+  --admin-reference-tiny-size: 0.6875rem;
+
+  --admin-reference-radius-sm: 0.5rem;
+  --admin-reference-radius-md: 0.75rem;
+  --admin-reference-panel-shadow: 0 1rem 3rem rgb(0 0 0 / 20%);
+  --admin-reference-pagination-size: 2rem;
+  --admin-reference-id-width: 15rem;
+  --admin-reference-empty-height: 12rem;
+
+  --admin-reference-active-border: color-mix(in srgb, var(--color-success) 40%, transparent);
+  --admin-reference-active-background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  --admin-reference-premium-border: color-mix(in srgb, var(--color-primary) 45%, transparent);
+
+  --admin-reference-showtime-table-width: 58rem;
+  --admin-reference-booking-table-width: 72rem;
+  --admin-reference-user-table-width: 64rem;
+  --admin-reference-promotion-table-width: 68rem;
+  --admin-reference-stat-height: 6.5rem;
+  --admin-reference-booking-stat-height: 7rem;
+  --admin-reference-datebar-height: 5rem;
+  --admin-reference-preview-width: 18rem;
+
+  --admin-dashboard-heading-line-height: 1.15;
+
   /* Admin cinemas */
   --admin-cinema-heading-size: clamp(2rem, 3vw, 2.75rem);
   --admin-cinema-heading-tracking: 0.14em;

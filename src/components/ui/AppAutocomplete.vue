@@ -20,11 +20,13 @@ const props = withDefaults(
     modelValue: string
     options: readonly { value: string; label: string }[]
     allLabel?: string
+    contentClass?: string
     loading?: boolean
     disabled?: boolean
   }>(),
   {
     allLabel: 'Tất cả',
+    contentClass: '',
     loading: false,
     disabled: false,
   },
@@ -161,7 +163,11 @@ watch(busy, (isBusy) => {
       </ComboboxAnchor>
 
       <ComboboxPortal>
-        <ComboboxContent class="app-autocomplete__content" position="popper" align="start">
+        <ComboboxContent
+          :class="['app-autocomplete__content', contentClass]"
+          position="popper"
+          align="start"
+        >
           <ComboboxViewport>
             <ComboboxItem v-if="showAllOption" class="app-autocomplete__item" :value="ALL_OPTION">
               <span>{{ allLabel }}</span>

@@ -29,7 +29,7 @@
   margin: 0;
   font-size: var(--admin-dashboard-heading-size);
   font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-heading);
+  line-height: var(--admin-dashboard-heading-line-height);
 }
 
 .admin-dashboard__subtitle {
@@ -553,7 +553,6 @@
 }
 
 @variant admin-compact {
-  .admin-dashboard__metrics,
   .admin-dashboard__analytics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -561,15 +560,12 @@
   .admin-dashboard__revenue {
     grid-column: 1 / -1;
   }
-
-  .admin-dashboard__data {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
-@variant mobile-layout {
+@variant admin-reference-mobile {
   .admin-dashboard__metrics,
-  .admin-dashboard__analytics {
+  .admin-dashboard__analytics,
+  .admin-dashboard__data {
     grid-template-columns: minmax(0, 1fr);
   }
 

@@ -55,6 +55,11 @@ const filtered = computed(() => {
 })
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)))
+const pageNumbers = computed(() => {
+  const count = Math.min(5, totalPages.value)
+  const start = Math.min(Math.max(1, page.value - 2), totalPages.value - count + 1)
+  return Array.from({ length: count }, (_, index) => start + index)
+})
 const rows = computed(() =>
   filtered.value.slice((page.value - 1) * pageSize, page.value * pageSize),
 )
@@ -200,6 +205,7 @@ const emptyMessage = computed(() => {
           v-model="cinemaId"
           label="Rạp chiếu"
           all-label="Chọn rạp"
+          content-class="admin-reference-autocomplete"
           :options="cinemaOptions"
           :loading="cinemas.isFetching.value"
         />
@@ -306,7 +312,14 @@ const emptyMessage = computed(() => {
                 </td>
                 <td>{{ selectedCinema?.label }}</td>
                 <td>
-                  <span class="admin-rooms__type">{{ adminRoomTypeLabel(room.roomType) }}</span>
+                  <span
+                    class="admin-rooms__type"
+                    :class="{
+                      'is-premium': Boolean(room.roomType && room.roomType !== 'STANDARD'),
+                    }"
+                  >
+                    {{ adminRoomTypeLabel(room.roomType) }}
+                  </span>
                 </td>
                 <td>
                   <span class="admin-rooms__status" :class="{ 'is-active': room.active === true }">
@@ -316,6 +329,7 @@ const emptyMessage = computed(() => {
                 <td>
                   <AppButton
                     :id="`admin-room-edit-${room.id}`"
+                    class="admin-rooms__row-action"
                     variant="ghost"
                     size="sm"
                     :disabled="!room.id"
@@ -323,7 +337,6 @@ const emptyMessage = computed(() => {
                     @click="room.id && openEditor(room.id)"
                   >
                     <Pencil aria-hidden="true" />
-                    Sửa
                   </AppButton>
                 </td>
               </tr>
@@ -337,18 +350,26 @@ const emptyMessage = computed(() => {
         <footer v-if="hasData" class="admin-rooms__table-footer">
           <span>Hiển thị {{ firstResult }}–{{ lastResult }} trong {{ filtered.length }} phòng</span>
           <nav class="admin-rooms__pagination" aria-label="Phân trang phòng">
-            <AppButton variant="secondary" size="sm" :disabled="page === 1" @click="page--">
-              Trước
-            </AppButton>
-            <span aria-live="polite">Trang {{ page }}/{{ totalPages }}</span>
-            <AppButton
-              variant="secondary"
-              size="sm"
+            <button type="button" aria-label="Trang trước" :disabled="page === 1" @click="page--">
+              ‹
+            </button>
+            <button
+              v-for="number in pageNumbers"
+              :key="number"
+              type="button"
+              :class="{ 'is-current': page === number }"
+              :aria-label="`Trang ${number}`"
+              :aria-current="page === number ? 'page' : undefined"
+              @click="page = number"
+            >
+              {{ number }}
+            </button>
+            <button
+              type="button"
+              aria-label="Trang tiếp theo"
               :disabled="page === totalPages"
               @click="page++"
-            >
-              Sau
-            </AppButton>
+            ></button>
           </nav>
         </footer>
       </section>

@@ -15,6 +15,7 @@ import type { CinemaResponse } from '@/services/api/generated/inventory-service/
 import AdminCinemaEditorDialog from '../components/AdminCinemaEditorDialog.vue'
 import { useAdminCinemaCatalogQuery } from '../api/admin-cinema-queries'
 import { adminCinemaErrorMessage } from '../schemas/admin-cinema.schema'
+import AppAutocomplete from '@/components/ui/AppAutocomplete.vue'
 
 const auth = useAuthStore()
 const canManage = computed(
@@ -187,13 +188,23 @@ function statusLabel(active?: boolean) {
           />
         </label>
 
+        <AppAutocomplete
+          id="admin-cinema-city"
+          v-model="city"
+          label="Khu vực"
+          all-label="Tất cả khu vực"
+          content-class="admin-reference-autocomplete"
+          :options="cities.map((item) => ({ value: item, label: item }))"
+        />
+
         <label class="admin-cinemas__field">
-          <span>Khu vực</span>
-          <select v-model="city" class="admin-cinemas__input">
-            <option value="">Tất cả khu vực</option>
-            <option v-for="item in cities" :key="item" :value="item">
-              {{ item }}
-            </option>
+          <span>Trạng thái</span>
+          <select
+            class="admin-cinemas__input"
+            disabled
+            aria-label="Danh sách chỉ gồm rạp đang hoạt động"
+          >
+            <option>Đang hoạt động</option>
           </select>
         </label>
 

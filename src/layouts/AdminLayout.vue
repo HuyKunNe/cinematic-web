@@ -93,6 +93,7 @@ async function handleLogout() {
       :class="{
         'is-drawer': isDrawer,
         'is-sidebar-collapsed': !isDrawer && sidebarCollapsed,
+        'is-management': route.name !== ROUTE_NAMES.ADMIN,
       }"
     >
       <a class="admin-skip-link" href="#admin-main-content"> Chuyển đến nội dung </a>

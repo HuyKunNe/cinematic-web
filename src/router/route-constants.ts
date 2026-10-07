@@ -20,7 +20,9 @@ export const ROUTE_NAMES = {
   ADMIN_CINEMAS: 'admin-cinemas',
   ADMIN_ROOMS: 'admin-rooms',
   ADMIN_SHOWTIMES: 'admin-showtimes',
+  ADMIN_SHOWTIME_CREATE: 'admin-showtime-create',
   ADMIN_BOOKINGS: 'admin-bookings',
+  ADMIN_PROMOTIONS: 'admin-promotions',
   ADMIN_USERS: 'admin-users',
 
   NOT_FOUND: 'not-found',
@@ -48,7 +50,9 @@ export const ROUTE_PATHS = {
   ADMIN_CINEMAS: '/admin/cinemas',
   ADMIN_ROOMS: '/admin/rooms',
   ADMIN_SHOWTIMES: '/admin/showtimes',
+  ADMIN_SHOWTIME_CREATE: '/admin/showtimes/new',
   ADMIN_BOOKINGS: '/admin/bookings',
+  ADMIN_PROMOTIONS: '/admin/promotions',
   ADMIN_USERS: '/admin/users',
 
   NOT_FOUND: '/:pathMatch(.*)*',

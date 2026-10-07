@@ -16,6 +16,7 @@ const loadBookingStartPage = () => import('../features/booking/pages/BookingStar
 const loadBookingPage = () => import('../features/booking/pages/BookingPage.vue')
 const loadAdminCinemasPage = () => import('../features/cinemas/admin/pages/AdminCinemasPage.vue')
 const loadAdminRoomsPage = () => import('../features/rooms/admin/pages/AdminRoomsPage.vue')
+const loadAdminReferencePage = () => import('../features/admin/pages/AdminReferencePage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -202,11 +203,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_SHOWTIMES,
     name: ROUTE_NAMES.ADMIN_SHOWTIMES,
-    component: loadPlaceholder,
-    props: {
-      title: 'Quản lý lịch chiếu',
-      description: 'Inventory Service hỗ trợ quản lý lịch chiếu.',
-    },
+    component: loadAdminReferencePage,
+    props: { module: 'showtimes' },
     meta: {
       layout: 'admin',
       title: 'Quản lý lịch chiếu',
@@ -218,12 +216,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_BOOKINGS,
     name: ROUTE_NAMES.ADMIN_BOOKINGS,
-    component: loadPlaceholder,
-    props: {
-      title: 'Booking quản trị',
-      description:
-        'Booking Service hiện chỉ cung cấp danh sách booking của người dùng hiện tại; chưa có API quản trị booking.',
-    },
+    component: loadAdminReferencePage,
+    props: { module: 'bookings' },
     meta: {
       layout: 'admin',
       title: 'Booking quản trị',
@@ -234,17 +228,39 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_USERS,
     name: ROUTE_NAMES.ADMIN_USERS,
-    component: loadPlaceholder,
-    props: {
-      title: 'Quản lý người dùng',
-      description: 'User Service hỗ trợ các thao tác khóa và mở tài khoản.',
-    },
+    component: loadAdminReferencePage,
+    props: { module: 'users' },
     meta: {
       layout: 'admin',
       title: 'Quản lý người dùng',
       requiresAuth: true,
       roles: ADMIN_ROLES,
       permissions: [APP_PERMISSIONS.USER_MANAGE],
+    },
+  },
+  {
+    path: ROUTE_PATHS.ADMIN_SHOWTIME_CREATE,
+    name: ROUTE_NAMES.ADMIN_SHOWTIME_CREATE,
+    component: loadAdminReferencePage,
+    props: { module: 'showtime-form' },
+    meta: {
+      layout: 'admin',
+      title: 'Tạo suất chiếu',
+      requiresAuth: true,
+      roles: ADMIN_ROLES,
+      permissions: [APP_PERMISSIONS.SHOWTIME_MANAGE],
+    },
+  },
+  {
+    path: ROUTE_PATHS.ADMIN_PROMOTIONS,
+    name: ROUTE_NAMES.ADMIN_PROMOTIONS,
+    component: loadAdminReferencePage,
+    props: { module: 'promotions' },
+    meta: {
+      layout: 'admin',
+      title: 'Quản lý khuyến mãi',
+      requiresAuth: true,
+      roles: ADMIN_ROLES,
     },
   },
   {

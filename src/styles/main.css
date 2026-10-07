@@ -14,6 +14,7 @@
 @import './admin-dashboard.css';
 @import './admin-cinemas.css';
 @import './admin-rooms.css';
+@import './admin-reference.css';
 
 /* Navigation styles remain imported by their owning layouts. */
 @theme {
@@ -35,3 +36,5 @@
 @custom-variant movies-mobile (@media (max-width: 40rem));
 @custom-variant catalog-compact (@container catalog-card (max-width: 14rem));
 @custom-variant admin-compact (@media (max-width: 75rem));
+@custom-variant admin-filters-compact (@media (max-width: 70rem));
+@custom-variant admin-reference-mobile (@media (max-width: 48rem));

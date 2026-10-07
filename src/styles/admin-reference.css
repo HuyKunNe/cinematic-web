@@ -1,0 +1,846 @@
+/* Management shell uses the cinema reference.
+   Dashboard retains its own shell dimensions. */
+.admin-layout.is-management {
+  --admin-sidebar-width: var(--admin-reference-sidebar-width);
+  --admin-header-height: var(--admin-reference-header-height);
+  --admin-content-width: var(--admin-reference-content-width);
+  --admin-shell-gutter: var(--space-8);
+}
+
+:is(
+  .admin-layout.is-management,
+  .admin-movie-dialog,
+  .admin-cinema-dialog,
+  .admin-room-dialog,
+  .admin-reference-autocomplete
+) {
+  --color-border-strong: var(--admin-reference-border-strong);
+  --color-surface-hover: var(--admin-reference-hover);
+  --color-primary-hover: var(--admin-reference-primary-hover);
+  --radius-sm: var(--admin-reference-radius-sm);
+  --radius-md: var(--admin-reference-radius-md);
+}
+
+.admin-layout.is-management .admin-layout__main {
+  padding: var(--space-8);
+}
+
+.admin-layout.is-management .admin-layout__container {
+  gap: var(--space-6);
+}
+
+.admin-layout.is-management .admin-layout__sidebar,
+.admin-layout.is-management .admin-sidebar {
+  background: var(--admin-reference-background-soft);
+}
+
+.admin-layout.is-management .admin-sidebar {
+  gap: 0;
+  padding: 0;
+}
+
+.admin-layout.is-management .admin-sidebar__top {
+  min-height: var(--admin-header-height);
+  padding: 0 var(--space-5);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.admin-layout.is-management .admin-sidebar__brand-mark {
+  border-radius: var(--radius-md);
+}
+
+.admin-layout.is-management .admin-sidebar__brand-copy strong {
+  color: var(--color-text-primary);
+}
+
+.admin-layout.is-management .admin-sidebar__nav {
+  gap: 0;
+  padding: 0 var(--space-3) var(--space-4);
+}
+
+.admin-layout.is-management .admin-sidebar__group-label {
+  margin: var(--space-6) 0 var(--space-2);
+  padding-inline: var(--space-2);
+  letter-spacing: var(--admin-reference-heading-tracking);
+}
+
+.admin-layout.is-management .admin-sidebar__link {
+  border-radius: var(--radius-sm);
+}
+
+.admin-layout.is-management .admin-sidebar__link:is(:hover, .is-active) {
+  border-color: transparent;
+  background: var(--admin-reference-primary-tint);
+  color: var(--color-primary);
+}
+
+.admin-layout.is-management .admin-sidebar__footer {
+  padding: var(--space-4);
+}
+
+.admin-layout.is-management .admin-header {
+  background: var(--admin-reference-topbar-background);
+  backdrop-filter: blur(var(--admin-reference-topbar-blur));
+}
+
+.admin-layout.is-management .admin-header__search {
+  width: min(var(--admin-reference-search-width), 50%);
+  min-height: var(--control-height-md);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.admin-layout.is-management .admin-user-menu__trigger {
+  padding-left: var(--space-4);
+  border: 0;
+  border-left: var(--border-width-thin) solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.admin-layout.is-management .admin-user-menu__avatar {
+  width: var(--space-10);
+  height: var(--space-10);
+  border: var(--border-width-thin) solid var(--color-border-strong);
+  background: var(--color-surface-raised);
+  color: var(--color-primary);
+}
+
+.admin-layout.is-management .admin-breadcrumbs__list {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+/* Existing management pages and pages awaiting integration. */
+:is(.admin-movies, .admin-cinemas, .admin-rooms, .admin-reference) {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+:is(
+  .admin-movies__heading,
+  .admin-cinemas__heading,
+  .admin-rooms__heading,
+  .admin-reference__heading
+) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+:is(
+    .admin-movies__heading,
+    .admin-cinemas__heading,
+    .admin-rooms__heading,
+    .admin-reference__heading
+  )
+  h1 {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: var(--admin-reference-heading-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+:is(
+  .admin-movies__eyebrow,
+  .admin-cinemas__eyebrow,
+  .admin-rooms__eyebrow,
+  .admin-reference__eyebrow
+) {
+  margin: 0 0 var(--space-2);
+  color: var(--color-primary);
+  font-size: var(--admin-reference-tiny-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--admin-reference-heading-tracking);
+  text-transform: uppercase;
+}
+
+.admin-movies__heading > div:first-child {
+  display: block;
+}
+
+.admin-movies__heading .admin-movies__muted,
+.admin-rooms__heading .admin-rooms__muted,
+.admin-reference__description {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+  .app-button {
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+  .app-button--secondary {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-raised);
+}
+
+:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+  .app-button--secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-surface-raised);
+}
+
+/* Filters */
+:is(
+  .admin-movies__filters,
+  .admin-cinemas__filters,
+  .admin-rooms__filters,
+  .admin-reference__filters
+) {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.admin-movies__filters {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+}
+
+:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+  :is(
+    .admin-cinemas__input,
+    .admin-rooms__input,
+    .admin-movie-form__input,
+    .app-select__native,
+    .app-autocomplete__anchor,
+    .admin-reference__input
+  ) {
+  min-height: var(--control-height-md);
+  border: var(--border-width-thin) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--admin-reference-background-soft);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  color-scheme: dark;
+}
+
+:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+  :is(
+    .admin-cinemas__input,
+    .admin-rooms__input,
+    .admin-movie-form__input,
+    .app-select__native
+  )[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.admin-layout.is-management .app-select__label,
+.admin-layout.is-management .app-autocomplete__label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+}
+
+.admin-layout.is-management .app-autocomplete__input {
+  font-size: var(--font-size-sm);
+}
+
+.admin-reference-autocomplete.app-autocomplete__content {
+  border-color: var(--admin-reference-border-strong);
+  border-radius: var(--admin-reference-radius-sm);
+  background: var(--color-surface-raised);
+}
+
+.admin-reference-autocomplete .app-autocomplete__item {
+  font-size: var(--font-size-sm);
+}
+
+/* Panels and table headers */
+:is(
+  .admin-movies__panel,
+  .admin-cinemas__panel,
+  .admin-rooms__panel,
+  .admin-rooms__stat,
+  .admin-reference__panel,
+  .admin-reference__stat
+) {
+  min-width: 0;
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--admin-reference-panel-shadow);
+}
+
+.admin-movies__panel,
+.admin-reference__panel {
+  overflow: hidden;
+}
+
+:is(
+  .admin-movies__list-heading,
+  .admin-cinemas__list-heading,
+  .admin-rooms__list-heading,
+  .admin-reference__list-heading
+) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+:is(
+    .admin-movies__list-heading,
+    .admin-cinemas__list-heading,
+    .admin-rooms__list-heading,
+    .admin-reference__list-heading
+  )
+  h2 {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+}
+
+:is(
+    .admin-movies__list-heading,
+    .admin-cinemas__list-heading,
+    .admin-rooms__list-heading,
+    .admin-reference__list-heading
+  )
+  p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-movies__table-container {
+  border: 0;
+  border-radius: 0;
+}
+
+:is(.admin-movies__table, .admin-cinemas__table, .admin-rooms__table, .admin-reference__table) {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+:is(.admin-movies__table, .admin-cinemas__table, .admin-rooms__table, .admin-reference__table)
+  :is(th, td) {
+  padding: var(--space-4) var(--space-5);
+  border-top: var(--border-width-thin) solid var(--color-border);
+  vertical-align: middle;
+}
+
+:is(.admin-movies__table, .admin-cinemas__table, .admin-rooms__table, .admin-reference__table)
+  thead
+  th {
+  background: var(--admin-reference-background-soft);
+  color: var(--color-text-muted);
+  font-size: var(--admin-reference-tiny-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--admin-reference-table-tracking);
+  text-transform: uppercase;
+}
+
+:is(.admin-movies__table, .admin-cinemas__table, .admin-rooms__table, .admin-reference__table)
+  tbody
+  :is(th, td) {
+  color: var(--color-text-secondary);
+  font-size: var(--admin-reference-copy-size);
+}
+
+.admin-movies__table tbody th {
+  font-weight: var(--font-weight-regular);
+}
+
+.admin-movies__movie-title,
+.admin-rooms__name strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.admin-rooms__name small,
+.admin-movies__movie-id {
+  max-width: var(--admin-reference-id-width);
+  color: var(--color-text-muted);
+  font-size: var(--admin-reference-tiny-size);
+  overflow-wrap: anywhere;
+}
+
+.admin-movies__table caption.admin-visually-hidden {
+  padding: 0;
+}
+
+.admin-rooms__type {
+  display: inline-grid;
+  min-width: var(--space-14);
+  min-height: var(--space-7);
+  padding: var(--space-1) var(--space-2);
+  place-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--admin-reference-tiny-size);
+  font-weight: var(--font-weight-bold);
+}
+
+.admin-rooms__type.is-premium {
+  border-color: var(--admin-reference-premium-border);
+  color: var(--color-primary);
+  background: var(--admin-reference-primary-tint);
+}
+
+.admin-rooms__status {
+  min-height: var(--space-6);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--admin-reference-tiny-size);
+}
+
+.admin-rooms__status.is-active {
+  border-color: var(--admin-reference-active-border);
+  background: var(--admin-reference-active-background);
+  color: var(--color-success);
+}
+
+.admin-layout.is-management .admin-rooms__row-action {
+  width: var(--control-height-md);
+  height: var(--control-height-md);
+  min-height: var(--control-height-md);
+  padding: 0;
+  border-color: transparent;
+}
+
+.admin-layout.is-management .admin-rooms__row-action:hover:not(:disabled) {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-primary);
+}
+
+/* Footers */
+:is(
+  .admin-movies__pagination,
+  .admin-cinemas__table-footer,
+  .admin-rooms__table-footer,
+  .admin-reference__table-footer
+) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-top: var(--border-width-thin) solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-rooms__pagination,
+.admin-reference__pagination {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.admin-rooms__pagination button,
+.admin-reference__pagination button {
+  min-width: var(--admin-reference-pagination-size);
+  height: var(--admin-reference-pagination-size);
+  padding: 0 var(--space-2);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--admin-reference-background-soft);
+  color: var(--color-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-rooms__pagination button.is-current {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.admin-rooms__pagination button:disabled,
+.admin-reference__pagination button:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Editor dialogs follow the shared management form styling. */
+:is(.admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog) {
+  border-radius: var(--radius-md);
+}
+
+:is(.admin-movie-dialog__title, .admin-cinema-dialog__title, .admin-room-dialog__title) {
+  font-size: var(--font-size-xl);
+}
+
+.admin-movie-form__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Pages awaiting data integration */
+.admin-reference__note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-reference__note svg {
+  flex: 0 0 auto;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  color: var(--color-primary);
+}
+
+.admin-reference__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.admin-reference.is-bookings .admin-reference__stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-reference__stat {
+  display: grid;
+  align-content: center;
+  gap: var(--space-2);
+  min-height: var(--admin-reference-stat-height);
+  padding: var(--space-4);
+}
+
+.admin-reference.is-bookings .admin-reference__stat {
+  min-height: var(--admin-reference-booking-stat-height);
+}
+
+.admin-reference__stat span,
+.admin-reference__stat small,
+.admin-reference__muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-reference__stat strong {
+  font-size: var(--font-size-2xl);
+}
+
+.admin-reference__filters,
+.admin-reference__form-fields {
+  min-width: 0;
+  margin: 0;
+}
+
+.admin-reference.is-showtimes .admin-reference__filters,
+.admin-reference.is-bookings .admin-reference__filters {
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+}
+
+.admin-reference.is-users .admin-reference__filters {
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
+}
+
+.admin-reference__field {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-reference__input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
+}
+
+.admin-reference__input:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.admin-reference__datebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--admin-reference-datebar-height);
+  padding: var(--space-4) var(--space-5);
+}
+
+.admin-reference__datebar-title {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.admin-reference__datebar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admin-reference__datebar-controls input {
+  width: auto;
+}
+
+.admin-reference__table-scroll {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.admin-reference__table {
+  min-width: var(--admin-reference-showtime-table-width);
+}
+
+.admin-reference.is-bookings .admin-reference__table {
+  min-width: var(--admin-reference-booking-table-width);
+}
+
+.admin-reference.is-users .admin-reference__table {
+  min-width: var(--admin-reference-user-table-width);
+}
+
+.admin-reference.is-promotions .admin-reference__table {
+  min-width: var(--admin-reference-promotion-table-width);
+}
+
+.admin-reference__table td.admin-reference__empty {
+  height: var(--admin-reference-empty-height);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.admin-reference__form-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(var(--admin-reference-preview-width), 0.38fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.admin-reference__form,
+.admin-reference__preview {
+  padding: var(--space-5);
+}
+
+.admin-reference__form h2,
+.admin-reference__preview h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.admin-reference__form-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  padding: 0;
+  border: 0;
+}
+
+.admin-reference__field.is-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-reference__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+
+.admin-reference__preview {
+  position: sticky;
+  top: calc(var(--admin-header-height) + var(--space-4));
+}
+
+.admin-reference__preview dl {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+  padding-top: var(--space-4);
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+
+.admin-reference__preview dl > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.admin-reference__preview dt {
+  color: var(--color-text-muted);
+  font-size: var(--admin-reference-tiny-size);
+}
+
+.admin-reference__preview dd {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xs);
+}
+
+.admin-reference__link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.admin-reference__link-button.is-primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.admin-reference__link-button:hover {
+  border-color: var(--color-primary);
+}
+
+/* Central variants are declared in main.css. */
+@variant admin-filters-compact {
+  :is(.admin-cinemas__filters, .admin-rooms__filters, .admin-reference__filters),
+  .admin-reference.is-showtimes .admin-reference__filters,
+  .admin-reference.is-bookings .admin-reference__filters,
+  .admin-reference.is-users .admin-reference__filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-cinemas__search,
+  .admin-rooms__filters > :first-child,
+  .admin-reference.is-promotions .admin-reference__filters > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .admin-reference.is-bookings .admin-reference__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@variant tablet-down {
+  .admin-reference__form-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-reference__preview {
+    position: static;
+  }
+}
+
+@variant admin-reference-mobile {
+  .admin-layout.is-management .admin-layout__main {
+    padding: var(--space-5) var(--space-3);
+  }
+
+  .admin-layout.is-management .admin-layout__container {
+    gap: var(--space-4);
+  }
+
+  .admin-layout.is-management.is-drawer .admin-header__search {
+    flex: 1;
+    width: auto;
+  }
+
+  :is(
+    .admin-movies__heading,
+    .admin-cinemas__heading,
+    .admin-rooms__heading,
+    .admin-reference__heading,
+    .admin-movies__list-heading,
+    .admin-cinemas__list-heading,
+    .admin-rooms__list-heading,
+    .admin-reference__list-heading,
+    .admin-movies__pagination,
+    .admin-cinemas__table-footer,
+    .admin-rooms__table-footer,
+    .admin-reference__table-footer,
+    .admin-reference__datebar
+  ) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  :is(.admin-cinemas__heading, .admin-rooms__heading, .admin-reference__heading)
+    > :is(.app-button, .admin-reference__link-button),
+  .admin-movies__heading-actions,
+  .admin-movies__heading-actions .app-button {
+    width: 100%;
+  }
+
+  .admin-movies__heading-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :is(
+    .admin-movies__filters,
+    .admin-cinemas__filters,
+    .admin-rooms__filters,
+    .admin-reference__filters
+  ),
+  .admin-reference.is-showtimes .admin-reference__filters,
+  .admin-reference.is-bookings .admin-reference__filters,
+  .admin-reference.is-users .admin-reference__filters,
+  .admin-reference__stats,
+  .admin-reference.is-bookings .admin-reference__stats,
+  .admin-reference__form-fields,
+  .admin-movie-form__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-cinemas__search,
+  .admin-rooms__filters > :first-child,
+  .admin-reference.is-promotions .admin-reference__filters > :first-child,
+  .admin-reference__field.is-wide {
+    grid-column: auto;
+  }
+
+  .admin-rooms__stats {
+    gap: var(--space-2);
+  }
+
+  .admin-rooms__stat {
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .admin-reference__datebar-controls {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .admin-reference__datebar-controls input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  :is(
+    .admin-movie-form__actions,
+    .admin-cinema-form__actions,
+    .admin-room-form__actions,
+    .admin-reference__form-actions
+  ) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
