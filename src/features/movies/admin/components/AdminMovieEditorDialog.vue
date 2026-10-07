@@ -56,16 +56,17 @@ const returnFocus = document.activeElement instanceof HTMLElement ? document.act
 
 const {
   values,
+  submitCount,
   errors,
   isSubmitting,
   setFieldValue,
-  setFieldError,
   validateField,
   resetForm,
   handleSubmit,
 } = useForm({
   validationSchema: toTypedSchema(adminMovieSchema),
   initialValues: createAdminMovieFormValues(),
+  validateOnMount: false,
 })
 
 watch(
@@ -76,6 +77,9 @@ watch(
     }
 
     resetForm({ values: createAdminMovieFormValues(movie) })
+    touched.value = {}
+    serverErrors.value = {}
+    requestError.value = ''
     ready.value = true
   },
   { immediate: true },
@@ -154,12 +158,57 @@ const formFieldNames = [
   'genreIds',
 ] as const
 
+type MovieFormField = (typeof formFieldNames)[number]
+
+const touched = ref<Partial<Record<MovieFormField, boolean>>>({})
+const serverErrors = ref<Partial<Record<MovieFormField, string>>>({})
+
+const visibleErrors = computed(() => {
+  const result: Partial<Record<MovieFormField, string>> = {}
+
+  for (const field of formFieldNames) {
+    result[field] =
+      serverErrors.value[field] ??
+      (touched.value[field] || submitCount.value > 0 ? errors.value[field] : undefined)
+  }
+
+  return result
+})
+
+watch(
+  () => values,
+  () => {
+    serverErrors.value = {}
+    requestError.value = ''
+  },
+  { deep: true },
+)
+
+function shouldValidate(field: MovieFormField) {
+  return Boolean(touched.value[field] || submitCount.value > 0)
+}
+
+function blurField(field: MovieFormField) {
+  touched.value[field] = true
+  void validateField(field)
+}
+
 function updateInput(name: (typeof inputFields)[number]['name'], event: Event) {
-  setFieldValue(name, (event.target as HTMLInputElement).value)
+  setFieldValue(name, (event.target as HTMLInputElement).value, shouldValidate(name))
+}
+
+function updateDescription(event: Event) {
+  setFieldValue(
+    'description',
+    (event.target as HTMLTextAreaElement).value,
+    shouldValidate('description'),
+  )
 }
 
 function changeStatus(value: string) {
-  if (isMovieStatus(value)) setFieldValue('status', value)
+  if (!isMovieStatus(value)) return
+  touched.value.status = true
+  setFieldValue('status', value)
 }
 
 function changeGenre(id: string, event: Event) {
@@ -170,7 +219,7 @@ function changeGenre(id: string, event: Event) {
   } else {
     selected.delete(id)
   }
-
+  touched.value.genreIds = true
   setFieldValue('genreIds', [...selected])
 }
 
@@ -196,7 +245,7 @@ function restoreFocus(event: Event) {
   target?.focus()
 }
 
-const submit = handleSubmit(
+const save = handleSubmit(
   async (validatedValues) => {
     requestError.value = ''
 
@@ -213,8 +262,6 @@ const submit = handleSubmit(
         input: toAdminMovieRequest(validatedValues),
       })
     } catch (error) {
-      requestError.value = adminMovieErrorMessage(error, 'Không thể lưu phim.')
-
       if (isApiError(error)) {
         for (const item of error.fieldErrors) {
           const field = formFieldNames.find(
@@ -222,10 +269,12 @@ const submit = handleSubmit(
               name === item.field || (name === 'genreIds' && item.field.startsWith('genreIds[')),
           )
 
-          if (field) setFieldError(field, item.message)
+          if (field) serverErrors.value[field] = item.message
         }
       }
-
+      if (!Object.values(serverErrors.value).some(Boolean)) {
+        requestError.value = adminMovieErrorMessage(error, 'Không thể lưu phim.')
+      }
       return
     }
 
@@ -237,6 +286,17 @@ const submit = handleSubmit(
     formElement.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
   },
 )
+
+function submit(event: Event) {
+  if (busy.value || !canManage.value) {
+    event.preventDefault()
+    return
+  }
+
+  requestError.value = ''
+  serverErrors.value = {}
+  return save(event)
+}
 </script>
 
 <template>
@@ -330,7 +390,7 @@ const submit = handleSubmit(
                     errors[field.name] ? `admin-movie-${field.name}-error` : undefined
                   "
                   @input="updateInput(field.name, $event)"
-                  @blur="validateField(field.name)"
+                  @blur="blurField(field.name)"
                 />
 
                 <p
@@ -365,8 +425,8 @@ const submit = handleSubmit(
                 maxlength="5000"
                 :aria-invalid="Boolean(errors.description)"
                 :aria-describedby="errors.description ? 'admin-movie-description-error' : undefined"
-                @input="setFieldValue('description', ($event.target as HTMLTextAreaElement).value)"
-                @blur="validateField('description')"
+                @input="updateDescription"
+                @blur="blurField('description')"
               />
 
               <p

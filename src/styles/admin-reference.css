@@ -1,14 +1,7 @@
-/* Management shell uses the cinema reference.
-   Dashboard retains its own shell dimensions. */
-.admin-layout.is-management {
-  --admin-sidebar-width: var(--admin-reference-sidebar-width);
-  --admin-header-height: var(--admin-reference-header-height);
-  --admin-content-width: var(--admin-reference-content-width);
-  --admin-shell-gutter: var(--space-8);
-}
-
+/* Shared header/sidebar are styled in admin-navigation.css.
+   Reference styles apply only to management content and dialogs. */
 :is(
-  .admin-layout.is-management,
+  .admin-layout.is-management .admin-layout__main,
   .admin-movie-dialog,
   .admin-cinema-dialog,
   .admin-room-dialog,
@@ -21,92 +14,7 @@
   --radius-md: var(--admin-reference-radius-md);
 }
 
-.admin-layout.is-management .admin-layout__main {
-  padding: var(--space-8);
-}
-
-.admin-layout.is-management .admin-layout__container {
-  gap: var(--space-6);
-}
-
-.admin-layout.is-management .admin-layout__sidebar,
-.admin-layout.is-management .admin-sidebar {
-  background: var(--admin-reference-background-soft);
-}
-
-.admin-layout.is-management .admin-sidebar {
-  gap: 0;
-  padding: 0;
-}
-
-.admin-layout.is-management .admin-sidebar__top {
-  min-height: var(--admin-header-height);
-  padding: 0 var(--space-5);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
-}
-
-.admin-layout.is-management .admin-sidebar__brand-mark {
-  border-radius: var(--radius-md);
-}
-
-.admin-layout.is-management .admin-sidebar__brand-copy strong {
-  color: var(--color-text-primary);
-}
-
-.admin-layout.is-management .admin-sidebar__nav {
-  gap: 0;
-  padding: 0 var(--space-3) var(--space-4);
-}
-
-.admin-layout.is-management .admin-sidebar__group-label {
-  margin: var(--space-6) 0 var(--space-2);
-  padding-inline: var(--space-2);
-  letter-spacing: var(--admin-reference-heading-tracking);
-}
-
-.admin-layout.is-management .admin-sidebar__link {
-  border-radius: var(--radius-sm);
-}
-
-.admin-layout.is-management .admin-sidebar__link:is(:hover, .is-active) {
-  border-color: transparent;
-  background: var(--admin-reference-primary-tint);
-  color: var(--color-primary);
-}
-
-.admin-layout.is-management .admin-sidebar__footer {
-  padding: var(--space-4);
-}
-
-.admin-layout.is-management .admin-header {
-  background: var(--admin-reference-topbar-background);
-  backdrop-filter: blur(var(--admin-reference-topbar-blur));
-}
-
-.admin-layout.is-management .admin-header__search {
-  width: min(var(--admin-reference-search-width), 50%);
-  min-height: var(--control-height-md);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-}
-
-.admin-layout.is-management .admin-user-menu__trigger {
-  padding-left: var(--space-4);
-  border: 0;
-  border-left: var(--border-width-thin) solid var(--color-border);
-  border-radius: 0;
-  background: transparent;
-}
-
-.admin-layout.is-management .admin-user-menu__avatar {
-  width: var(--space-10);
-  height: var(--space-10);
-  border: var(--border-width-thin) solid var(--color-border-strong);
-  background: var(--color-surface-raised);
-  color: var(--color-primary);
-}
-
-.admin-layout.is-management .admin-breadcrumbs__list {
+.admin-layout.is-management .admin-layout__main .admin-breadcrumbs__list {
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
 }
@@ -171,20 +79,35 @@
   font-size: var(--font-size-sm);
 }
 
-:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+:is(
+    .admin-layout.is-management .admin-layout__main,
+    .admin-movie-dialog,
+    .admin-cinema-dialog,
+    .admin-room-dialog
+  )
   .app-button {
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
 }
 
-:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+:is(
+    .admin-layout.is-management .admin-layout__main,
+    .admin-movie-dialog,
+    .admin-cinema-dialog,
+    .admin-room-dialog
+  )
   .app-button--secondary {
   border-color: var(--color-border-strong);
   background: var(--color-surface-raised);
 }
 
-:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+:is(
+    .admin-layout.is-management .admin-layout__main,
+    .admin-movie-dialog,
+    .admin-cinema-dialog,
+    .admin-room-dialog
+  )
   .app-button--secondary:hover:not(:disabled) {
   border-color: var(--color-primary);
   background: var(--color-surface-raised);
@@ -211,7 +134,12 @@
   grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
 }
 
-:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+:is(
+    .admin-layout.is-management .admin-layout__main,
+    .admin-movie-dialog,
+    .admin-cinema-dialog,
+    .admin-room-dialog
+  )
   :is(
     .admin-cinemas__input,
     .admin-rooms__input,
@@ -229,7 +157,12 @@
   color-scheme: dark;
 }
 
-:is(.admin-layout.is-management, .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog)
+:is(
+    .admin-layout.is-management .admin-layout__main,
+    .admin-movie-dialog,
+    .admin-cinema-dialog,
+    .admin-room-dialog
+  )
   :is(
     .admin-cinemas__input,
     .admin-rooms__input,
@@ -239,14 +172,14 @@
   border-color: var(--color-error);
 }
 
-.admin-layout.is-management .app-select__label,
-.admin-layout.is-management .app-autocomplete__label {
+.admin-layout.is-management .admin-layout__main .app-select__label,
+.admin-layout.is-management .admin-layout__main .app-autocomplete__label {
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-regular);
 }
 
-.admin-layout.is-management .app-autocomplete__input {
+.admin-layout.is-management .admin-layout__main .app-autocomplete__input {
   font-size: var(--font-size-sm);
 }
 
@@ -407,7 +340,7 @@
   color: var(--color-success);
 }
 
-.admin-layout.is-management .admin-rooms__row-action {
+.admin-layout.is-management .admin-layout__main .admin-rooms__row-action {
   width: var(--control-height-md);
   height: var(--control-height-md);
   min-height: var(--control-height-md);
@@ -415,7 +348,7 @@
   border-color: transparent;
 }
 
-.admin-layout.is-management .admin-rooms__row-action:hover:not(:disabled) {
+.admin-layout.is-management .admin-layout__main .admin-rooms__row-action:hover:not(:disabled) {
   border-color: var(--color-border);
   background: var(--color-surface-raised);
   color: var(--color-primary);
@@ -748,19 +681,6 @@
 }
 
 @variant admin-reference-mobile {
-  .admin-layout.is-management .admin-layout__main {
-    padding: var(--space-5) var(--space-3);
-  }
-
-  .admin-layout.is-management .admin-layout__container {
-    gap: var(--space-4);
-  }
-
-  .admin-layout.is-management.is-drawer .admin-header__search {
-    flex: 1;
-    width: auto;
-  }
-
   :is(
     .admin-movies__heading,
     .admin-cinemas__heading,

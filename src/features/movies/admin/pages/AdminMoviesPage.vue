@@ -221,6 +221,7 @@ function formatDate(value?: string) {
             <thead>
               <tr>
                 <th scope="col">Phim</th>
+                <th scope="col">Độ tuổi</th>
                 <th scope="col">Thể loại</th>
                 <th scope="col">Trạng thái</th>
                 <th scope="col">Thời lượng</th>
@@ -234,10 +235,8 @@ function formatDate(value?: string) {
                   <span class="admin-movies__movie-title">
                     {{ movie.title || 'Chưa có tên phim' }}
                   </span>
-                  <span class="admin-movies__movie-id">
-                    {{ movie.id || 'Thiếu mã phim' }}
-                  </span>
                 </th>
+                <td>{{ movie.ageRating ?? 'Chưa xác định' }}</td>
                 <td>
                   {{
                     (movie.genres ?? [])
@@ -267,7 +266,7 @@ function formatDate(value?: string) {
               </tr>
 
               <tr v-if="!rows.length">
-                <td colspan="6" class="admin-movies__empty">
+                <td colspan="7" class="admin-movies__empty">
                   {{
                     catalog.isFetching.value
                       ? 'Đang tải danh sách phim…'

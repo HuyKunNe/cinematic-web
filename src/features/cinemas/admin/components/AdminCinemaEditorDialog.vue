@@ -11,10 +11,16 @@ import {
   DialogTitle,
 } from 'reka-ui'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppCreatableAutocomplete from '@/components/ui/AppCreatableAutocomplete.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
 import type { CinemaResponse } from '@/services/api/generated/inventory-service/model'
-import { useAdminCinemaDetailQuery, useSaveAdminCinemaMutation } from '../api/admin-cinema-queries'
+import {
+  useAdminCinemaCatalogQuery,
+  useAdminCinemaDetailQuery,
+  useSaveAdminCinemaMutation,
+} from '../api/admin-cinema-queries'
+
 import {
   adminCinemaErrorMessage,
   adminCinemaSchema,
@@ -41,18 +47,28 @@ const canManage = computed(
 )
 
 const detail = useAdminCinemaDetailQuery(() => props.cinemaId ?? '', canManage)
+const cityCatalog = useAdminCinemaCatalogQuery(canManage)
 const mutation = useSaveAdminCinemaMutation()
 const ready = ref(props.cinemaId === null)
 const requestError = ref('')
 const serverErrors = ref<Partial<Record<AdminCinemaField, string>>>({})
 const formElement = ref<HTMLFormElement | null>(null)
 
-const { errors, submitCount, isSubmitting, defineField, isFieldTouched, resetForm, handleSubmit } =
-  useForm({
-    validationSchema: toTypedSchema(adminCinemaSchema),
-    initialValues: createAdminCinemaValues(),
-    validateOnMount: false,
-  })
+const {
+  errors,
+  submitCount,
+  isSubmitting,
+  defineField,
+  isFieldTouched,
+  setFieldTouched,
+  validateField,
+  resetForm,
+  handleSubmit,
+} = useForm({
+  validationSchema: toTypedSchema(adminCinemaSchema),
+  initialValues: createAdminCinemaValues(),
+  validateOnMount: false,
+})
 
 function createField(field: AdminCinemaField) {
   return defineField(field, (state) => ({
@@ -66,6 +82,39 @@ function createField(field: AdminCinemaField) {
 const [name, nameAttrs] = createField('name')
 const [address, addressAttrs] = createField('address')
 const [city, cityAttrs] = createField('city')
+
+function cleanCity(value: string) {
+  return value.normalize('NFC').trim().replace(/\s/g, ' ')
+}
+
+function cityKey(value: string) {
+  return cleanCity(value).toLocaleLowerCase('vi-VN')
+}
+
+const cityOptions = computed(() => {
+  const unique = new Map<string, string>()
+  const currentCity = detail.data.value?.id === props.cinemaId ? detail.data.value?.city : undefined
+
+  const candidates = [currentCity, ...(cityCatalog.data.value ?? []).map((cinema) => cinema.city)]
+
+  for (const candidate of candidates) {
+    if (!candidate) continue
+    const label = cleanCity(candidate)
+    if (label && !unique.has(cityKey(label))) unique.set(cityKey(label), label)
+  }
+
+  return [...unique.values()].sort((a, b) => a.localeCompare(b, 'vi'))
+})
+
+function canonicalCity(value: string) {
+  const normalized = cleanCity(value)
+  return cityOptions.value.find((option) => cityKey(option) === cityKey(normalized)) ?? normalized
+}
+
+function onCityBlur() {
+  setFieldTouched('city', true)
+  void validateField('city')
+}
 
 const models = { name, address, city }
 const attributes = { name: nameAttrs, address: addressAttrs, city: cityAttrs }
@@ -178,7 +227,10 @@ const save = handleSubmit(async (validatedValues) => {
   try {
     cinema = await mutation.mutateAsync({
       cinemaId: props.cinemaId,
-      input: toAdminCinemaRequest(validatedValues),
+      input: {
+        ...toAdminCinemaRequest(validatedValues),
+        city: canonicalCity(validatedValues.city),
+      },
     })
   } catch (error) {
     if (isAdminCinemaApiError(error)) {
@@ -266,12 +318,27 @@ function submit(event: Event) {
         <form v-if="ready" ref="formElement" class="admin-cinema-form" novalidate @submit="submit">
           <fieldset class="admin-cinema-form__fields" :disabled="busy || !canManage">
             <div v-for="field in fields" :key="field.name" class="admin-cinemas__field">
-              <label :for="`admin-cinema-${field.name}`">
+              <label v-if="field.name !== 'city'" :for="`admin-cinema-${field.name}`">
                 {{ field.label }}
                 <span class="admin-cinemas__error" aria-hidden="true">*</span>
               </label>
-
+              <AppCreatableAutocomplete
+                v-if="field.name === 'city'"
+                id="admin-cinema-city"
+                v-model="city"
+                label="Thành phố"
+                :options="cityOptions"
+                :loading="cityCatalog.isFetching.value"
+                :disabled="busy || !canManage"
+                :error="visibleErrors.city"
+                :maxlength="100"
+                content-class="admin-reference-autocomplete"
+                helper-text="Chọn thành phố đã có hoặc nhập mới. Tên mới được lưu cùng rạp."
+                required
+                @blur="onCityBlur"
+              />
               <input
+                v-else
                 v-bind="attributes[field.name].value"
                 :id="`admin-cinema-${field.name}`"
                 v-model="models[field.name].value"
@@ -287,7 +354,7 @@ function submit(event: Event) {
               />
 
               <p
-                v-if="visibleErrors[field.name]"
+                v-if="field.name !== 'city' && visibleErrors[field.name]"
                 :id="`admin-cinema-${field.name}-error`"
                 class="admin-cinemas__error"
                 role="alert"
@@ -296,7 +363,20 @@ function submit(event: Event) {
               </p>
             </div>
           </fieldset>
-
+          <div v-if="cityCatalog.isError.value" class="admin-movies__feedback">
+            <p class="admin-cinemas__muted">
+              Chưa tải được gợi ý thành phố. Bạn vẫn có thể nhập tên trực tiếp.
+            </p>
+            <AppButton
+              variant="secondary"
+              size="sm"
+              :disabled="busy || !canManage"
+              :loading="cityCatalog.isFetching.value"
+              @click="cityCatalog.refetch()"
+            >
+              Tải lại gợi ý
+            </AppButton>
+          </div>
           <p class="admin-cinemas__muted">
             {{
               cinemaId
