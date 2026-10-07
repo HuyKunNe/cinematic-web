@@ -15,6 +15,7 @@ const loadAdminMoviesPage = () => import('../features/movies/admin/pages/AdminMo
 const loadBookingStartPage = () => import('../features/booking/pages/BookingStartPage.vue')
 const loadBookingPage = () => import('../features/booking/pages/BookingPage.vue')
 const loadAdminCinemasPage = () => import('../features/cinemas/admin/pages/AdminCinemasPage.vue')
+const loadAdminRoomsPage = () => import('../features/rooms/admin/pages/AdminRoomsPage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -189,11 +190,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_ROOMS,
     name: ROUTE_NAMES.ADMIN_ROOMS,
-    component: loadPlaceholder,
-    props: {
-      title: 'Quản lý phòng',
-      description: 'Inventory Service hỗ trợ quản lý phòng.',
-    },
+    component: loadAdminRoomsPage,
     meta: {
       layout: 'admin',
       title: 'Quản lý phòng',
