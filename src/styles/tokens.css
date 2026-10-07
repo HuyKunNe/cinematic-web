@@ -9,6 +9,7 @@
   --primitive-color-ink-950: #06111a;
   --primitive-color-ink-900: #0b1823;
   --primitive-color-ink-800: #10202d;
+  --primitive-color-ink-700: #20313d;
   --primitive-color-ink-600: #2d4250;
   --primitive-color-amber-300: #ffe0a0;
   --primitive-color-amber-400: #f5be63;
@@ -19,6 +20,7 @@
   /* Semantic colors */
   --color-on-primary: var(--primitive-color-black);
   --color-primary: var(--primitive-color-amber-400);
+  --color-primary-soft: var(--primitive-color-amber-300);
   --color-primary-hover: var(--primitive-color-amber-500);
   --color-primary-active: var(--primitive-color-amber-500);
   --color-focus: var(--primitive-color-amber-300);
@@ -157,7 +159,7 @@
   --border-width-thin: 0.0625rem;
   --border-width-strong: 0.125rem;
 
-  /* F3.1 Home: values translated from the desktop/mobile HTML references. */
+  /* Component tokens: Home */
   --home-background-deep: #030a10;
   --home-surface-soft: rgb(13 27 38 / 98%);
   --home-surface-dark: rgb(8 18 26 / 97%);
@@ -295,7 +297,7 @@
   --home-now-control-size: var(--control-height-md);
   --home-now-control-disabled-opacity: 0.45;
 
-  /* F3.2 Movies — cinematic-movies.html/css */
+  /* Component tokens: Movie catalog */
   --movies-page-gutter: clamp(1.25rem, 4vw, 3.5rem);
   --movies-intro-top: 3.375rem;
   --movies-intro-bottom: 2.125rem;
@@ -358,12 +360,202 @@
   --app-select-padding-start: var(--space-3);
   --app-select-padding-end: var(--space-8);
   --app-select-chevron-size: var(--space-2);
-  --app-select-disabled-opacity: 0.56;
+  --app-select-disabled-opacity: var(--opacity-disabled);
+
+  /* Shared layout, interaction and accessibility */
+  --page-min-width: 20rem;
+  --viewport-width: 100vw;
+  --viewport-height: 100vh;
+  --viewport-dynamic-height: 100dvh;
+  --visually-hidden-size: 1px;
+  --motion-reduced-duration: 0.01ms;
+  --filter-brightness-hover: 1.06;
+  --opacity-disabled: 0.56;
+
+  /* Shared surfaces */
+  --surface-gradient-primary: linear-gradient(
+    135deg,
+    var(--color-primary-soft),
+    var(--color-primary-hover)
+  );
+  --surface-gradient-navigation: linear-gradient(
+    135deg,
+    var(--color-primary-hover),
+    var(--color-primary)
+  );
+  --surface-gradient-panel: linear-gradient(
+    135deg,
+    var(--home-surface-soft),
+    var(--home-surface-dark)
+  );
+  --surface-gradient-placeholder: linear-gradient(
+    135deg,
+    var(--color-surface-raised),
+    var(--color-background)
+  );
+
+  /* Home composition */
+  --home-page-background: radial-gradient(
+    circle at 50% 0,
+    var(--color-surface-raised),
+    var(--color-background) 40%,
+    var(--home-background-deep)
+  );
+  --home-hero-overlay:
+    linear-gradient(
+      90deg,
+      var(--home-hero-shade),
+      var(--home-hero-mid) 29%,
+      transparent 64%,
+      var(--home-hero-edge)
+    ),
+    linear-gradient(0deg, var(--color-background), transparent 34%);
+  --home-hero-overlay-mobile:
+    linear-gradient(90deg, var(--home-hero-shade), var(--home-hero-edge) 66%, transparent),
+    linear-gradient(0deg, var(--color-background), transparent 45%);
+  --home-card-overlay: linear-gradient(0deg, var(--home-image-shade), transparent 45%);
+  --home-promotion-background:
+    radial-gradient(circle at 76% 30%, var(--home-promo-glow), transparent 34%),
+    linear-gradient(120deg, var(--home-promo-start), var(--home-promo-end) 68%);
+  --home-combo-background:
+    radial-gradient(circle at 75% 36%, var(--home-promo-glow), transparent 38%),
+    linear-gradient(120deg, var(--home-combo-start), var(--home-combo-end));
+  --home-membership-background: linear-gradient(
+    90deg,
+    var(--home-surface-translucent),
+    var(--home-background-deep)
+  );
+  --home-member-card-background:
+    radial-gradient(circle at 85% 15%, var(--home-member-glow), transparent 22%),
+    linear-gradient(
+      140deg,
+      var(--home-member-start),
+      var(--home-member-mid) 58%,
+      var(--home-member-end)
+    );
+  --home-button-hover-offset: -1px;
+  --home-button-disabled-opacity: 0.55;
+  --home-hero-art-layer: -2;
+  --home-hero-shade-layer: -1;
+  --home-overlay-layer: 1;
+  --home-hero-art-position: center 42%;
+  --home-hero-art-position-mobile: 56% center;
+  --home-hero-arrow-top: 46%;
+  --home-hero-copy-width: 32%;
+  --home-hero-tagline-width-mobile: 80%;
+  --home-hero-actions-columns-mobile: 1.2fr 0.95fr;
+  --home-promotion-copy-width: 70%;
+  --home-promotion-label-tracking: 0.14em;
+  --home-member-min-height: 12rem;
+  --home-member-card-rotation: 4deg;
+  --home-member-card-tracking: 0.18em;
+  --home-member-benefit-min-height: 5.875rem;
+  --home-member-columns-mobile: 42% minmax(0, 1fr);
+  --home-member-card-width-narrow: 70%;
+  --home-member-benefit-line-height-mobile: 1;
+  --home-footer-columns: 1.3fr repeat(3, 1fr) 1.5fr;
+  --home-footer-columns-mobile: 1.3fr 1fr 1fr;
+
+  /* Movie catalog composition */
+  --movies-page-background: radial-gradient(
+    circle at 50% 0,
+    var(--color-surface-raised),
+    var(--color-background) 34%,
+    var(--home-background-deep)
+  );
+  --movies-card-overlay: linear-gradient(0deg, var(--home-image-shade), transparent 48%);
+
+  /* Movie detail responsive sizes */
+  --detail-poster-width-tablet: 11.875rem;
+  --detail-title-size-tablet: 1.6875rem;
+  --detail-poster-width-mobile: 7.5rem;
+  --detail-title-size-mobile: 1.3125rem;
+  --detail-section-title-size-mobile: 1.3125rem;
+  --schedule-slot-width-mobile: 7.5rem;
+
+  /* Select dropdowns */
+  --home-booking-dropdown-max-height: 18rem;
+  --home-booking-dropdown-layer: var(--z-drawer);
+  --home-booking-dropdown-gap: var(--space-1);
+  --location-dialog-dropdown-layer: calc(var(--z-modal) + 1);
+  --location-dialog-dropdown-max-height: 18rem;
+
+  /* Booking start */
+  --booking-start-columns: 2;
+  --booking-start-panel-width: 100%;
+  --booking-start-panel-padding: var(--space-6);
+  --booking-start-page-space: var(--space-8);
+  --booking-start-field-gap: var(--space-4);
+
+  /* Admin navigation */
+  --admin-shell-sidebar-size: var(--admin-sidebar-width);
+  --admin-user-label-max-width: 10rem;
+  --admin-shell-gutter: clamp(var(--space-4), 2vw, var(--space-8));
+  --admin-shell-section-gap: var(--space-8);
+  --admin-metric-min-width: 14rem;
+  --admin-module-min-width: 18rem;
+  --admin-drawer-content-layer: calc(var(--z-drawer) + 1);
+  --admin-disabled-opacity: var(--opacity-disabled);
+  --admin-visually-hidden-size: var(--border-width-thin);
+
+  /* Admin movie and genre management */
+  --admin-movie-dialog-width: 48rem;
+  --admin-movie-dialog-edge: var(--space-4);
+  --admin-movie-table-min-width: 50rem;
+  --admin-movie-filter-min-width: 14rem;
+  --admin-movie-field-min-width: 16rem;
+  --admin-movie-textarea-min-height: 8rem;
+  --admin-movie-disabled-opacity: var(--opacity-disabled);
+  --admin-genre-dialog-width: 56rem;
+  --admin-genre-table-min-width: 30rem;
+  --admin-genre-description-min-height: 5rem;
+
+  /* Movie detail */
+  --detail-page-gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --detail-poster-width: 18.75rem;
+  --detail-overview-gap: var(--space-12);
+  --detail-overview-align: center;
+  --detail-title-size: clamp(1.875rem, 4vw, 3rem);
+  --detail-section-title-size: 1.625rem;
+  --detail-credit-columns: 6.875rem minmax(0, 1fr);
+  --detail-credit-gap: var(--space-3);
+  --detail-actions-direction: row;
+  --detail-actions-width: auto;
+  --detail-actions-top: var(--space-8);
+  --detail-inline-age-display: inline-grid;
+  --detail-age-width: 2.375rem;
+  --detail-age-height: 1.875rem;
+  --detail-overlay-layer: 1;
+  --detail-eyebrow-tracking: 0.18em;
+  --detail-synopsis-width: 56.25rem;
+  --detail-synopsis-line-height: 1.8;
+  --detail-breadcrumb-size: var(--font-size-sm);
+  --detail-breadcrumb-padding: var(--space-6);
+  --detail-genres-size: var(--font-size-md);
+  --detail-facts-size: var(--font-size-xs);
+  --detail-facts-padding-block: var(--space-2);
+  --detail-facts-padding-inline: var(--space-3);
+
+  /* Showtime schedule */
+  --schedule-control-width: 22rem;
+  --schedule-date-width: 12rem;
+  --schedule-slot-width: 8rem;
+  --schedule-slot-height: 4rem;
+  --schedule-panel-padding: var(--space-6);
+  --schedule-scroll-offset: calc(var(--header-height) + var(--space-4));
+  --schedule-disabled-opacity: 0.55;
+
+  /* Seat booking */
+  --booking-summary-width: 20rem;
+  --booking-seats-columns: minmax(0, 1fr) var(--booking-summary-width);
+  --booking-panel-padding: var(--space-6);
+  --booking-seat-min-width: 8rem;
+  --booking-seat-disabled-opacity: 0.6;
+  --booking-context-columns: repeat(3, minmax(0, 1fr));
 }
 
-/* Breakpoint conditions are kept as CSS media-query constants.
-   CSS variables cannot be used as media-query conditions. */
-@media (max-width: 47.999rem) {
+/* Responsive token overrides: variants are defined in main.css. */
+@variant mobile-layout {
   :root {
     --page-gutter: 1.25rem;
     --section-space: 1.5rem;
@@ -379,10 +571,13 @@
     --home-promotion-carousel-bottom-space: var(--space-3);
     --home-age-min-width: 2.125rem;
     --home-age-height: 1.8125rem;
+    --booking-start-columns: 1;
+    --booking-start-panel-padding: var(--space-3);
+    --booking-start-page-space: var(--space-6);
   }
 }
 
-@media (min-width: 48rem) and (max-width: 63.999rem) {
+@variant motion-reduce {
   :root {
     --page-gutter: 2rem;
     --section-space: 1.75rem;
@@ -400,13 +595,13 @@
   }
 }
 /* Breakpoints from cinematic-movies.css: 900px / 640px */
-@media (max-width: 56.25rem) {
+@variant movies-tablet {
   :root {
     --movies-columns: 3;
   }
 }
 
-@media (max-width: 40rem) {
+@variant movies-mobile {
   :root {
     --movies-page-gutter: var(--space-5);
     --movies-intro-top: 2.125rem;
@@ -425,27 +620,4 @@
     --movies-status-size: 0.5625rem;
     --movies-cta-height: 2.375rem;
   }
-}
-/* Booking start — adapted from the existing QuickBooking references. */
-:root {
-  --booking-start-columns: 2;
-  --booking-start-panel-width: 100%;
-  --booking-start-panel-padding: var(--space-6);
-  --booking-start-page-space: var(--space-8);
-  --booking-start-field-gap: var(--space-4);
-}
-
-@media (max-width: 47.999rem) {
-  :root {
-    --booking-start-columns: 1;
-    --booking-start-panel-padding: var(--space-3);
-    --booking-start-page-space: var(--space-6);
-  }
-}
-:root {
-  --home-booking-dropdown-max-height: 18rem;
-  --home-booking-dropdown-layer: var(--z-drawer);
-  --home-booking-dropdown-gap: var(--space-1);
-  --location-dialog-dropdown-layer: calc(var(--z-modal) + 1);
-  --location-dialog-dropdown-max-height: 18rem;
 }

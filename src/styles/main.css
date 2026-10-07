@@ -1,15 +1,33 @@
+/* Framework and shared foundations */
 @import 'tailwindcss';
 @import './tokens.css';
 @import './base.css';
+
+/* Customer pages */
 @import './home.css';
 @import './movies.css';
 @import './movie-detail.css';
 @import './booking.css';
+
+/* Admin pages */
 @import './admin-movies.css';
 
+/* Navigation styles remain imported by their owning layouts. */
 @theme {
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
   --breakpoint-header-compact: 73.75rem;
   --breakpoint-customer-narrow: 24rem;
   --breakpoint-movie-detail-tablet: 47.5rem;
   --breakpoint-movie-detail-mobile: 32.5rem;
 }
+
+/* Preserve the existing inclusive media-query boundaries. */
+@custom-variant mobile-layout (@media (max-width: 47.999rem));
+@custom-variant tablet-layout (@media (min-width: 48rem) and (max-width: 63.999rem));
+@custom-variant tablet-down (@media (max-width: 63.999rem));
+@custom-variant home-compact (@media (max-width: 73.75rem));
+@custom-variant home-narrow (@media (max-width: 23.125rem));
+@custom-variant movies-tablet (@media (max-width: 56.25rem));
+@custom-variant movies-mobile (@media (max-width: 40rem));
+@custom-variant catalog-compact (@container catalog-card (max-width: 14rem));

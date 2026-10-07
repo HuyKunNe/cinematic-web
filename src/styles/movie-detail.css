@@ -1,29 +1,4 @@
 .movie-detail-page {
-  --detail-page-gutter: clamp(1.25rem, 4vw, 3.5rem);
-  --detail-poster-width: 18.75rem;
-  --detail-overview-gap: var(--space-12);
-  --detail-overview-align: center;
-  --detail-title-size: clamp(1.875rem, 4vw, 3rem);
-  --detail-section-title-size: 1.625rem;
-  --detail-credit-columns: 6.875rem minmax(0, 1fr);
-  --detail-credit-gap: var(--space-3);
-  --detail-actions-direction: row;
-  --detail-actions-width: auto;
-  --detail-actions-top: var(--space-8);
-  --detail-inline-age-display: inline-grid;
-  --detail-age-width: 2.375rem;
-  --detail-age-height: 1.875rem;
-  --detail-overlay-layer: 1;
-  --detail-eyebrow-tracking: 0.18em;
-  --detail-synopsis-width: 56.25rem;
-  --detail-synopsis-line-height: 1.8;
-  --detail-breadcrumb-size: var(--font-size-sm);
-  --detail-breadcrumb-padding: var(--space-6);
-  --detail-genres-size: var(--font-size-md);
-  --detail-facts-size: var(--font-size-xs);
-  --detail-facts-padding-block: var(--space-2);
-  --detail-facts-padding-inline: var(--space-3);
-
   --page-gutter: var(--detail-page-gutter);
 
   min-width: 0;
@@ -32,10 +7,10 @@
 
   @variant max-movie-detail-tablet {
     --detail-page-gutter: var(--space-5);
-    --detail-poster-width: 11.875rem;
+    --detail-poster-width: var(--detail-poster-width-tablet);
     --detail-overview-gap: var(--space-6);
     --detail-overview-align: start;
-    --detail-title-size: 1.6875rem;
+    --detail-title-size: var(--detail-title-size-tablet);
     --detail-credit-columns: minmax(0, 1fr);
     --detail-credit-gap: var(--space-1);
     --detail-actions-direction: column;
@@ -43,10 +18,10 @@
   }
 
   @variant max-movie-detail-mobile {
-    --detail-poster-width: 7.5rem;
+    --detail-poster-width: var(--detail-poster-width-mobile);
     --detail-overview-gap: var(--space-4);
-    --detail-title-size: 1.3125rem;
-    --detail-section-title-size: 1.3125rem;
+    --detail-title-size: var(--detail-title-size-mobile);
+    --detail-section-title-size: var(--detail-section-title-size-mobile);
     --detail-inline-age-display: none;
     --detail-breadcrumb-size: var(--font-size-xs);
     --detail-breadcrumb-padding: var(--space-4);
@@ -325,21 +300,13 @@
 }
 
 .movie-showtimes {
-  --schedule-control-width: 22rem;
-  --schedule-date-width: 12rem;
-  --schedule-slot-width: 8rem;
-  --schedule-slot-height: 4rem;
-  --schedule-panel-padding: var(--space-6);
-  --schedule-scroll-offset: calc(var(--header-height) + var(--space-4));
-  --schedule-disabled-opacity: 0.55;
-
   min-width: 0;
   padding-block: var(--space-8);
   border-top: var(--border-width-thin) solid var(--color-border);
   scroll-margin-top: var(--schedule-scroll-offset);
 
   @variant max-movie-detail-mobile {
-    --schedule-slot-width: 7.5rem;
+    --schedule-slot-width: var(--schedule-slot-width-mobile);
     --schedule-panel-padding: var(--space-4);
     --schedule-control-width: 100%;
     --schedule-date-width: 100%;

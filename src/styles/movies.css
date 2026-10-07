@@ -2,21 +2,7 @@
   --page-gutter: var(--movies-page-gutter);
   min-width: 0;
   padding-bottom: var(--space-8);
-  background: radial-gradient(
-    circle at 50% 0,
-    var(--color-surface-raised),
-    var(--color-background) 34%,
-    var(--home-background-deep)
-  );
-}
-
-.movies-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
+  background: var(--movies-page-background);
 }
 
 .movies-intro {
@@ -50,14 +36,14 @@
   padding: var(--movies-panel-padding);
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--home-surface-soft), var(--home-surface-dark));
+ background: var(--surface-gradient-panel);
   box-shadow: var(--shadow-card);
 }
 
 .movies-status-button.is-active,
 .movies-card__cta {
   color: var(--color-on-primary);
-  background: linear-gradient(135deg, var(--primitive-color-amber-300), var(--color-primary-hover));
+  background: var(--surface-gradient-primary);
   font-weight: var(--font-weight-bold);
 }
 
@@ -208,10 +194,12 @@
 
 .movies-card {
   display: flex;
+  position: relative;
   min-width: 0;
   flex-direction: column;
   container-type: inline-size;
   container-name: catalog-card;
+  isolation: isolate;
 }
 
 .movies-card__poster {
@@ -235,7 +223,7 @@
 .movies-card__poster::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, var(--home-image-shade), transparent 48%);
+  background: var(--movies-card-overlay);
   pointer-events: none;
   content: '';
 }
@@ -258,7 +246,7 @@
   gap: var(--space-2);
   padding: var(--space-3);
   color: var(--color-text-muted);
-  background: linear-gradient(135deg, var(--color-surface-raised), var(--color-background));
+  background: var(--surface-gradient-placeholder);
   font-size: var(--font-size-xs);
   text-align: center;
 }
@@ -384,6 +372,7 @@
 }
 
 .movies-card__cta {
+  position: relative;
   display: flex;
   min-height: var(--movies-cta-height);
   align-items: center;
@@ -435,7 +424,7 @@
 }
 /* Adapt overlays to actual card width.
    14rem is the component's compact-layout threshold. */
-@container catalog-card (max-width: 14rem) {
+@variant catalog-compact {
   .movies-card__poster {
     --movies-card-play-size: var(--movies-compact-play-size);
     --movies-card-age-width: var(--movies-compact-age-width);
@@ -444,11 +433,6 @@
     --movies-status-bottom: var(--space-2);
     --movies-status-size: var(--movies-compact-status-size);
   }
-}
-/* Make the card clickable while keeping its actions independent. */
-.movies-card {
-  position: relative;
-  isolation: isolate;
 }
 
 .movies-card__detail-link {
@@ -466,10 +450,6 @@
 .movies-card__play,
 .movies-card__cta {
   z-index: var(--movie-card-action-layer);
-}
-
-.movies-card__cta {
-  position: relative;
 }
 
 .movies-card__status,

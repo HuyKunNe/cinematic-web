@@ -8,7 +8,7 @@
 .customer-layout__main {
   min-width: 0;
   max-width: 100%;
-  min-height: calc(100vh - var(--header-height-mobile));
+ min-height: calc(var(--viewport-height) - var(--header-height-mobile));
   padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
 }
 
@@ -65,7 +65,9 @@
 .customer-header__nav,
 .customer-header__actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  min-width: 0;
 }
 
 .customer-header__nav {
@@ -137,6 +139,7 @@
 
 .customer-header__location {
   min-width: 0;
+  max-width: var(--customer-desktop-location-max-width);
   padding-inline: var(--space-4);
   border-color: var(--color-border);
 }
@@ -161,18 +164,14 @@
   min-height: var(--control-height-md);
   padding-inline: var(--space-6);
   color: var(--color-on-primary);
-  background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
+  background: var(--surface-gradient-navigation);
   font-weight: var(--font-weight-bold);
   transition: filter var(--duration-fast) var(--easing-standard);
 }
 
 .customer-header__booking:hover,
 .customer-mobile-drawer__booking:hover {
-  filter: brightness(1.06);
-}
-
-.customer-header__location {
-  max-width: var(--customer-desktop-location-max-width);
+ filter: brightness(var(--filter-brightness-hover));
 }
 
 .customer-mobile-drawer__actions > button > span {
@@ -265,6 +264,7 @@
   flex-direction: column;
   gap: var(--space-6);
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   padding: var(--space-6) var(--page-gutter) calc(var(--space-6) + env(safe-area-inset-bottom));
   border-top: var(--border-width-thin) solid var(--color-border);
   background: var(--color-surface);
@@ -314,7 +314,7 @@
 .customer-mobile-drawer__booking {
   justify-content: center;
   color: var(--color-on-primary);
-  background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
+  background: var(--surface-gradient-navigation);
   font-weight: var(--font-weight-bold);
 }
 
@@ -378,12 +378,6 @@
   box-shadow: var(--shadow-focus);
 }
 
-.customer-header__nav,
-.customer-header__actions {
-  min-width: 0;
-  flex-wrap: wrap;
-}
-
 .customer-header__location span {
   min-width: 0;
   overflow: hidden;
@@ -395,10 +389,6 @@
 .customer-mobile-drawer__actions {
   min-width: 0;
   flex-shrink: 0;
-}
-
-.customer-mobile-drawer__panel {
-  overscroll-behavior-y: contain;
 }
 
 /* Keep the location action accessible on narrow screens.
@@ -446,15 +436,5 @@
 
   .customer-header__actions {
     gap: var(--space-2);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .customer-header *,
-  .customer-mobile-header *,
-  .customer-mobile-drawer *,
-  .mobile-bottom-nav * {
-    scroll-behavior: auto;
-    transition-duration: 0ms;
   }
 }

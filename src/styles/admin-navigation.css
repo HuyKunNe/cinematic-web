@@ -1,21 +1,9 @@
-:root {
-  --admin-shell-sidebar-size: var(--admin-sidebar-width);
-  --admin-user-label-max-width: 10rem;
-  --admin-shell-gutter: clamp(var(--space-4), 2vw, var(--space-8));
-  --admin-shell-section-gap: var(--space-8);
-  --admin-metric-min-width: 14rem;
-  --admin-module-min-width: 18rem;
-  --admin-drawer-content-layer: calc(var(--z-drawer) + 1);
-  --admin-disabled-opacity: 0.56;
-  --admin-visually-hidden-size: 0.0625rem;
-}
-
 /* Shell */
 
 .admin-layout {
   display: grid;
   grid-template-columns: var(--admin-shell-sidebar-size) minmax(0, 1fr);
-  min-height: 100dvh;
+  min-height: var(--viewport-dynamic-height);
   background: var(--color-background);
   color: var(--color-text-primary);
 }
@@ -32,7 +20,7 @@
   position: sticky;
   top: 0;
   min-width: 0;
-  height: 100dvh;
+  height: var(--viewport-dynamic-height);
   align-self: start;
   border-right: var(--border-width-thin) solid var(--color-border);
   background: var(--color-surface);
@@ -221,7 +209,10 @@
 .admin-user-menu__panel {
   z-index: var(--z-modal);
   width: var(--admin-user-menu-width);
-  max-width: min(calc(100vw - var(--space-8)), var(--reka-dropdown-menu-content-available-width));
+  max-width: min(
+    calc(var(--viewport-width) - var(--space-8)),
+    var(--reka-dropdown-menu-content-available-width)
+  );
   max-height: var(--reka-dropdown-menu-content-available-height);
   overflow-y: auto;
   padding: var(--space-2);
@@ -464,7 +455,7 @@
   left: 0;
   z-index: var(--admin-drawer-content-layer);
   width: var(--admin-drawer-width);
-  height: 100dvh;
+  height: var(--viewport-dynamic-height);
   border-right: var(--border-width-thin) solid var(--color-border);
   background: var(--color-surface);
   box-shadow: var(--shadow-raised);
@@ -745,17 +736,6 @@
 
 .admin-dashboard__empty a {
   color: var(--color-primary);
-}
-
-.admin-visually-hidden {
-  position: absolute;
-  width: var(--admin-visually-hidden-size);
-  height: var(--admin-visually-hidden-size);
-  overflow: hidden;
-  padding: 0;
-  border: 0;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 :root {
   --admin-dashboard-metrics-columns: repeat(4, minmax(0, 1fr));

@@ -20,15 +20,15 @@
 }
 
 html {
-  min-width: 20rem;
+  min-width: var(--page-min-width);
   min-height: 100%;
   background: var(--color-background);
   scroll-behavior: smooth;
 }
 
 body {
-  min-width: 20rem;
-  min-height: 100vh;
+  min-width: var(--page-min-width);
+  min-height: var(--viewport-height);
   margin: 0;
   color: var(--color-text-primary);
   background: var(--color-background);
@@ -72,13 +72,31 @@ a {
   background: var(--color-primary);
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Preserve existing class names used by the templates. */
+.home-sr-only,
+.movies-sr-only,
+.admin-visually-hidden {
+  position: absolute;
+  width: var(--visually-hidden-size);
+  height: var(--visually-hidden-size);
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.admin-visually-hidden {
+  --visually-hidden-size: var(--admin-visually-hidden-size);
+}
+
+@variant motion-reduce {
   *,
   *::before,
   *::after {
     scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
+    animation-duration: var(--motion-reduced-duration) !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: var(--motion-reduced-duration) !important;
   }
 }
