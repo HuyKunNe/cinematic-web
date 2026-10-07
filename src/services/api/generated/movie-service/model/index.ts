@@ -15,6 +15,7 @@ export * from './errorBody';
 export * from './genreResponse';
 export * from './getHeroMoviesParams';
 export * from './getMovieCatalogParams';
+export * from './getMovieCatalogSort';
 export * from './getMovieCatalogStatus';
 export * from './movieHeroConfigurationResponse';
 export * from './movieResponse';

@@ -190,7 +190,7 @@ watch(busy, (isBusy) => {
   </div>
 </template>
 
-<style scoped>
+<style>
 .app-autocomplete {
   display: grid;
   gap: var(--space-2);

@@ -32,7 +32,8 @@
   --color-surface: var(--primitive-color-ink-900);
   --color-surface-raised: var(--primitive-color-ink-800);
   --color-border: var(--primitive-color-ink-600);
-
+  --color-border-strong: var(--color-border);
+  --color-surface-hover: var(--primitive-color-ink-600);
   --color-text-primary: var(--primitive-color-warm-white);
   --color-text-secondary: var(--primitive-color-gray-300);
   --color-text-muted: var(--primitive-color-gray-500);

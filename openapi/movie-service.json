@@ -354,6 +354,24 @@
             "in": "query",
             "required": false,
             "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "movieIds",
+            "in": "query",
+            "description": "Optional candidate movie UUIDs. Send repeated movieIds query parameters. Filtering is applied before pagination and counting. The configured input limit defaults to 100.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Catalog order. Release-date sorts put null dates last. Title order uses the database collation. All orders use ascending movie ID as the final tie-breaker.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "RELEASE_DESC",
+              "enum": ["RELEASE_DESC", "RELEASE_ASC", "TITLE_ASC"]
+            }
           }
         ],
         "responses": {

@@ -5,6 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
+import type { GetMovieCatalogSort } from './getMovieCatalogSort';
 import type { GetMovieCatalogStatus } from './getMovieCatalogStatus';
 
 export type GetMovieCatalogParams = {
@@ -16,4 +17,8 @@ size?: number;
  * Optional candidate movie UUIDs. Send repeated movieIds query parameters. Filtering is applied before pagination and counting. The configured input limit defaults to 100.
  */
 movieIds?: string[];
+/**
+ * Catalog order. Release-date sorts put null dates last. Title order uses the database collation. All orders use ascending movie ID as the final tie-breaker.
+ */
+sort?: GetMovieCatalogSort;
 };
