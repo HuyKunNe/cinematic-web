@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tạo suất chiếu | CINEMA Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-cinemas.css" />
+    <link rel="stylesheet" href="./admin-showtime-form.css" />
+  </head>
+
+  <body class="admin-page">
+    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+      <a class="admin-brand" href="./admin-dashboard.html" aria-label="CINEMA Admin">
+        <span class="admin-brand__mark" aria-hidden="true">C</span>
+        <span class="admin-brand__text">CINEMA <small>ADMIN</small></span>
+      </a>
+
+      <p class="admin-sidebar__label">Quản trị</p>
+      <nav class="admin-nav">
+        <a class="admin-nav__link" href="./admin-dashboard.html"
+          ><span aria-hidden="true">⌂</span>Tổng quan</a
+        >
+        <a class="admin-nav__link" href="#movies"><span aria-hidden="true">▤</span>Phim</a>
+        <a class="admin-nav__link" href="./admin-cinemas.html"
+          ><span aria-hidden="true">▣</span>Rạp chiếu</a
+        >
+        <a class="admin-nav__link" href="./admin-rooms.html"
+          ><span aria-hidden="true">▦</span>Phòng chiếu</a
+        >
+        <a class="admin-nav__link is-active" href="./admin-showtimes.html" aria-current="page"
+          ><span aria-hidden="true">◷</span>Suất chiếu</a
+        >
+        <a class="admin-nav__link" href="./admin-bookings.html"
+          ><span aria-hidden="true">▧</span>Đặt vé</a
+        >
+        <a class="admin-nav__link" href="./admin-promotions.html"
+          ><span aria-hidden="true">◇</span>Khuyến mãi</a
+        >
+        <a class="admin-nav__link" href="./admin-users.html"
+          ><span aria-hidden="true">♙</span>Người dùng</a
+        >
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Hệ thống đang hoạt động</span>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="icon-button admin-menu-button" type="button" aria-label="Mở menu">☰</button>
+        <label class="admin-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Tìm kiếm trong quản trị..." />
+          <kbd>⌘ K</kbd>
+        </label>
+        <button class="icon-button admin-notifications" type="button" aria-label="Thông báo">
+          ♧<span class="notification-count" aria-hidden="true">2</span>
+        </button>
+        <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
+          <span class="admin-avatar" aria-hidden="true">AD</span>
+          <span class="admin-account__name">Quản trị viên</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+      </header>
+
+      <main class="admin-content">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./admin-dashboard.html">Quản trị</a>
+          <span aria-hidden="true">/</span>
+          <a href="./admin-showtimes.html">Suất chiếu</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Tạo mới</span>
+        </nav>
+
+        <section class="page-heading">
+          <div>
+            <p class="eyebrow">Lịch vận hành</p>
+            <h1>Tạo suất chiếu</h1>
+            <p class="page-heading__description">Chọn phim, rạp, phòng và thời gian chiếu.</p>
+          </div>
+          <a class="action-button action-button--secondary" href="./admin-showtimes.html">
+            Quay lại danh sách
+          </a>
+        </section>
+
+        <aside class="prototype-note">
+          <span aria-hidden="true">ⓘ</span>
+          <span>Prototype giao diện — chưa kiểm tra trùng lịch hoặc lưu dữ liệu.</span>
+        </aside>
+
+        <form class="showtime-form-layout">
+          <section class="showtime-form panel" aria-labelledby="form-title">
+            <div class="form-section-heading">
+              <h2 id="form-title">Thông tin suất chiếu</h2>
+              <p>Các trường bắt buộc được đánh dấu <span aria-hidden="true">*</span></p>
+            </div>
+
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Rạp <b aria-hidden="true">*</b></span>
+                <select required>
+                  <option value="">Chọn rạp</option>
+                  <option>CINEMA Hồ Gươm</option>
+                  <option>CINEMA Thủ Đức</option>
+                </select>
+              </label>
+
+              <label class="form-field">
+                <span>Phòng chiếu <b aria-hidden="true">*</b></span>
+                <select required>
+                  <option value="">Chọn phòng</option>
+                  <option>Phòng 01</option>
+                  <option>Phòng 02</option>
+                </select>
+                <small>Danh sách phòng sẽ phụ thuộc vào rạp đã chọn.</small>
+              </label>
+
+              <label class="form-field form-field--wide">
+                <span>Phim <b aria-hidden="true">*</b></span>
+                <select required>
+                  <option value="">Chọn phim</option>
+                  <option>Hành Tinh Lạ</option>
+                  <option>Bình Minh Đỏ</option>
+                  <option>Đêm Cuối</option>
+                </select>
+              </label>
+
+              <label class="form-field">
+                <span>Ngày chiếu <b aria-hidden="true">*</b></span>
+                <input type="date" required />
+              </label>
+
+              <label class="form-field">
+                <span>Giờ bắt đầu <b aria-hidden="true">*</b></span>
+                <input type="time" required />
+              </label>
+
+              <label class="form-field">
+                <span>Thời lượng phim</span>
+                <input type="text" value="Tự lấy từ thông tin phim" readonly />
+                <small>Thời lượng được lấy từ dữ liệu phim.</small>
+              </label>
+
+              <label class="form-field">
+                <span>Giờ kết thúc dự kiến</span>
+                <input type="text" value="Tự tính sau khi chọn phim và giờ bắt đầu" readonly />
+              </label>
+            </div>
+
+            <div class="schedule-check" role="status">
+              <span aria-hidden="true">ⓘ</span>
+              <p>Kiểm tra trùng lịch phòng trước khi lưu suất chiếu.</p>
+            </div>
+
+            <footer class="form-actions">
+              <a class="action-button action-button--secondary" href="./admin-showtimes.html">
+                Hủy
+              </a>
+              <button class="action-button action-button--primary" type="submit">
+                Lưu suất chiếu
+              </button>
+            </footer>
+          </section>
+
+          <aside class="showtime-preview panel" aria-labelledby="preview-title">
+            <p class="eyebrow">Xem trước</p>
+            <h2 id="preview-title">Lịch chiếu</h2>
+            <div class="preview-divider"></div>
+
+            <dl class="preview-list">
+              <div>
+                <dt>Phim</dt>
+                <dd>Chưa chọn phim</dd>
+              </div>
+              <div>
+                <dt>Rạp</dt>
+                <dd>Chưa chọn rạp</dd>
+              </div>
+              <div>
+                <dt>Phòng</dt>
+                <dd>Chưa chọn phòng</dd>
+              </div>
+              <div>
+                <dt>Ngày</dt>
+                <dd>Chưa chọn ngày</dd>
+              </div>
+              <div>
+                <dt>Thời gian</dt>
+                <dd>--:-- – --:--</dd>
+              </div>
+            </dl>
+
+            <div class="preview-note">
+              Sơ đồ ghế và sức chứa không nằm trong bước này; quản lý riêng theo dữ liệu phòng.
+            </div>
+          </aside>
+        </form>
+      </main>
+    </div>
+  </body>
+</html>

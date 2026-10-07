@@ -55,8 +55,14 @@ function normalize(value: string) {
     .trim()
 }
 
+const normalizedSearch = computed(() => (searching.value ? normalize(searchTerm.value) : ''))
+
+const showAllOption = computed(
+  () => !normalizedSearch.value || normalize(props.allLabel).includes(normalizedSearch.value),
+)
+
 const filteredOptions = computed(() => {
-  const term = searching.value ? normalize(searchTerm.value) : ''
+  const term = normalizedSearch.value
   if (!term) return props.options
 
   const words = term.split(/\s+/)
@@ -157,7 +163,7 @@ watch(busy, (isBusy) => {
       <ComboboxPortal>
         <ComboboxContent class="app-autocomplete__content" position="popper" align="start">
           <ComboboxViewport>
-            <ComboboxItem class="app-autocomplete__item" :value="ALL_OPTION">
+            <ComboboxItem v-if="showAllOption" class="app-autocomplete__item" :value="ALL_OPTION">
               <span>{{ allLabel }}</span>
               <ComboboxItemIndicator class="app-autocomplete__indicator">
                 <Check aria-hidden="true" />
@@ -176,7 +182,11 @@ watch(busy, (isBusy) => {
               </ComboboxItemIndicator>
             </ComboboxItem>
 
-            <p v-if="!filteredOptions.length" class="app-autocomplete__message" role="status">
+            <p
+              v-if="!filteredOptions.length && !showAllOption"
+              class="app-autocomplete__message"
+              role="status"
+            >
               Không có kết quả phù hợp.
             </p>
           </ComboboxViewport>

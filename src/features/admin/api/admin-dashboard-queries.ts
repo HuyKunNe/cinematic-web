@@ -179,11 +179,25 @@ export function useAdminDashboardQueries(
       .slice(0, 5),
   )
 
-  const movieIds = computed(() =>
-    [...new Set(upcomingShowtimes.value.map((item) => item.movieId))].filter((id): id is string =>
-      Boolean(id),
-    ),
-  )
+  const catalogMovieLabels = computed(() => {
+    const labels = new Map<string, string>()
+
+    for (const movie of movieCatalog.data.value ?? []) {
+      const title = movie.title?.trim()
+      if (movie.id && title) labels.set(movie.id, title)
+    }
+
+    return labels
+  })
+
+  const movieIds = computed(() => {
+    // Chờ danh sách phim trước khi quyết định cần tải chi tiết phim nào.
+    if (movieCatalog.isPending.value) return []
+
+    return [...new Set(upcomingShowtimes.value.map((item) => item.movieId))]
+      .filter((id): id is string => Boolean(id))
+      .filter((id) => !catalogMovieLabels.value.has(id))
+  })
 
   const movieQueries = useQueries({
     queries: computed(() =>
@@ -197,20 +211,37 @@ export function useAdminDashboardQueries(
     ),
   })
 
-  const movieLabels = computed(
-    () =>
-      new Map(
-        movieIds.value.map((id, index) => {
-          const query = movieQueries.value[index]
-          const title = query?.data?.title?.trim()
+  const movieLabels = computed(() => {
+    const labels = new Map<string, string>()
+    const detailQueries = new Map(
+      movieIds.value.map((id, index) => [id, movieQueries.value[index]] as const),
+    )
 
-          return [
-            id,
-            title || (query?.isPending ? 'Đang tải tên phim…' : 'Chưa tải được tên phim'),
-          ] as const
-        }),
-      ),
-  )
+    for (const showtime of upcomingShowtimes.value) {
+      const id = showtime.movieId
+      if (!id || labels.has(id)) continue
+
+      const catalogTitle = catalogMovieLabels.value.get(id)
+
+      if (catalogTitle) {
+        labels.set(id, catalogTitle)
+        continue
+      }
+
+      const query = detailQueries.get(id)
+      const detailTitle = query?.data?.title?.trim()
+
+      labels.set(
+        id,
+        detailTitle ||
+          (movieCatalog.isPending.value || !query || query.isPending
+            ? 'Đang tải tên phim…'
+            : 'Chưa tải được tên phim'),
+      )
+    }
+
+    return labels
+  })
 
   const isRefreshing = computed(
     () =>

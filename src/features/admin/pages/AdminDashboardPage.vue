@@ -254,10 +254,6 @@ function changeDate(event: Event) {
       <p class="admin-dashboard__scope-description" aria-live="polite">
         Phạm vi: {{ scopeSummary }}
       </p>
-      <p class="admin-dashboard__scope-description">
-        Bộ lọc áp dụng cho lịch chiếu. Chỉ số phim/rạp hiển thị toàn hệ thống. Danh sách chọn gồm
-        rạp đang hoạt động.
-      </p>
 
       <div
         v-if="dashboard.activeCinemas.isError.value"
