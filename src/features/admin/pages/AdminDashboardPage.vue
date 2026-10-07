@@ -1,9 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ArrowUpRight, Building2, CalendarDays, Clapperboard, Film } from 'lucide-vue-next'
-import AppButton from '@/components/ui/AppButton.vue'
-import { ADMIN_NAVIGATION_GROUPS, getVisibleAdminNavigation } from '@/config/admin-navigation'
+import { useIntervalFn, useNow } from '@vueuse/core'
+import {
+  BarChart3,
+  Building2,
+  CalendarClock,
+  CalendarDays,
+  ChevronRight,
+  Clapperboard,
+  DoorOpen,
+  Film,
+  RefreshCw,
+  Users,
+} from 'lucide-vue-next'
+import { getVisibleAdminNavigation, type AdminNavigationIcon } from '@/config/admin-navigation'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
@@ -11,17 +22,46 @@ import type { ApiError } from '@/services/http/api-error'
 import { useAdminDashboardQueries } from '../api/admin-dashboard-queries'
 
 const auth = useAuthStore()
-const dashboard = useAdminDashboardQueries()
+const now = useNow({
+  scheduler: (update) => useIntervalFn(update, 30_000),
+})
+const numberFormatter = new Intl.NumberFormat('vi-VN')
+
+const dayFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Ho_Chi_Minh',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+function vietnamDay(date: Date) {
+  const parts = dayFormatter.formatToParts(date)
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? ''
+  return `${part('year')}-${part('month')}-${part('day')}`
+}
+
+const today = computed(() => vietnamDay(now.value))
+const selectedDate = ref(vietnamDay(now.value))
+const dashboard = useAdminDashboardQueries(selectedDate, now)
 
 const modules = computed(() =>
   getVisibleAdminNavigation(auth).filter((item) => item.routeName !== ROUTE_NAMES.ADMIN),
 )
 
+const icons: Partial<Record<AdminNavigationIcon, typeof Film>> = {
+  movies: Film,
+  cinemas: Building2,
+  rooms: DoorOpen,
+  showtimes: CalendarClock,
+  users: Users,
+}
+
 const metricDefinitions = [
   {
     id: 'total-movies',
     label: 'Tổng phim',
-    hint: 'Bao gồm tất cả trạng thái',
+    hint: 'Toàn bộ trạng thái',
+    tone: 'primary',
     icon: Film,
     permission: APP_PERMISSIONS.MOVIE_MANAGE,
     query: dashboard.totalMovies,
@@ -29,23 +69,26 @@ const metricDefinitions = [
   {
     id: 'now-showing',
     label: 'Đang chiếu',
-    hint: 'Phim có trạng thái đang chiếu',
+    hint: 'Theo trạng thái hiện tại',
+    tone: 'success',
     icon: Clapperboard,
     permission: APP_PERMISSIONS.MOVIE_MANAGE,
     query: dashboard.nowShowingMovies,
   },
   {
-    id: 'upcoming',
-    label: 'Sắp chiếu',
-    hint: 'Phim có trạng thái sắp chiếu',
-    icon: CalendarDays,
-    permission: APP_PERMISSIONS.MOVIE_MANAGE,
-    query: dashboard.upcomingMovies,
+    id: 'showtimes',
+    label: 'Suất chiếu trong ngày',
+    hint: 'Toàn bộ trạng thái',
+    tone: 'warning',
+    icon: CalendarClock,
+    permission: APP_PERMISSIONS.SHOWTIME_MANAGE,
+    query: dashboard.showtimes,
   },
   {
     id: 'active-cinemas',
     label: 'Rạp hoạt động',
-    hint: 'Chỉ bao gồm rạp đang hoạt động',
+    hint: 'Đang vận hành',
+    tone: 'neutral',
     icon: Building2,
     permission: APP_PERMISSIONS.INVENTORY_MANAGE,
     query: dashboard.activeCinemas,
@@ -55,244 +98,319 @@ const metricDefinitions = [
 const metrics = computed(() =>
   metricDefinitions
     .filter((metric) => modules.value.some((item) => item.permission === metric.permission))
-    .map((metric) => ({
-      ...metric,
-      value: metric.query.data.value,
-      loading: metric.query.isFetching.value,
-      failed: metric.query.isError.value,
-      error: metric.query.error.value,
-    })),
+    .map((metric) => {
+      const data = metric.query.data.value
+
+      return {
+        ...metric,
+        label:
+          metric.id === 'showtimes' && selectedDate.value === today.value
+            ? 'Suất chiếu hôm nay'
+            : metric.label,
+        value: Array.isArray(data) ? data.length : data,
+        loading: metric.query.isFetching.value,
+        error: metric.query.isError.value ? errorMessage(metric.query.error.value) : null,
+      }
+    }),
 )
 
-const canViewMovieMetrics = computed(() =>
-  modules.value.some((item) => item.permission === APP_PERMISSIONS.MOVIE_MANAGE),
-)
+const upcoming = dashboard.upcomingShowtimes
+const showtimes = dashboard.showtimes
 
-const movieSummaryQueries = [
-  dashboard.totalMovies,
-  dashboard.nowShowingMovies,
-  dashboard.upcomingMovies,
-]
+const statusLabels: Record<string, string> = {
+  SCHEDULED: 'Đã lên lịch',
+  OPEN_FOR_BOOKING: 'Đang mở bán',
+  CLOSED: 'Đã đóng',
+  CANCELLED: 'Đã hủy',
+  COMPLETED: 'Hoàn tất',
+}
 
-const movieSummaryLoading = computed(() =>
-  movieSummaryQueries.some((query) => query.isFetching.value),
-)
-
-const movieSummaryError = computed(() => {
-  const error =
-    dashboard.totalMovies.error.value ??
-    dashboard.nowShowingMovies.error.value ??
-    dashboard.upcomingMovies.error.value
-
-  return error ? errorMessage(error) : null
-})
-
-const movieComposition = computed(() => {
-  const total = dashboard.totalMovies.data.value
-  const nowShowing = dashboard.nowShowingMovies.data.value
-  const upcoming = dashboard.upcomingMovies.data.value
-
-  if (total == null || nowShowing == null || upcoming == null) return null
-  if (nowShowing + upcoming > total) return null
-
-  const other = total - nowShowing - upcoming
-  const percent = (value: number) => (total === 0 ? 0 : (value / total) * 100)
-
-  const nowShowingEnd = percent(nowShowing)
-  const upcomingEnd = nowShowingEnd + percent(upcoming)
-
-  const background =
-    total === 0
-      ? 'conic-gradient(var(--color-surface-raised) 0% 100%)'
-      : `conic-gradient(
-          var(--color-primary) 0% ${nowShowingEnd}%,
-          var(--color-success) ${nowShowingEnd}% ${upcomingEnd}%,
-          var(--color-text-muted) ${upcomingEnd}% 100%
-        )`
-
-  return {
-    total,
-    nowShowing,
-    upcoming,
-    other,
-    background,
-  }
-})
-
-const numberFormatter = new Intl.NumberFormat('vi-VN')
+function statusTone(status?: string) {
+  if (status === 'OPEN_FOR_BOOKING') return 'success'
+  if (status === 'SCHEDULED') return 'warning'
+  if (status === 'CANCELLED') return 'error'
+  return 'neutral'
+}
 
 function formatCount(value: number | null | undefined) {
   return value == null ? '—' : numberFormatter.format(value)
 }
 
 function errorMessage(error: ApiError | null) {
-  if (error?.status === 401) {
-    return 'Phiên đăng nhập đã hết hạn.'
-  }
-
-  if (error?.status === 403) {
-    return 'Không đủ quyền tải dữ liệu.'
-  }
-
-  if (error?.status === null) {
-    return 'Không thể kết nối dịch vụ.'
-  }
-
-  return error?.message || 'Không thể tải số liệu.'
+  if (error?.status === 401) return 'Phiên đăng nhập đã hết hạn.'
+  if (error?.status === 403) return 'Không đủ quyền tải dữ liệu.'
+  if (error?.status === null) return 'Không thể kết nối dịch vụ.'
+  return error?.message || 'Không thể tải dữ liệu.'
 }
 
-function groupLabel(group: string) {
-  return ADMIN_NAVIGATION_GROUPS.find((item) => item.id === group)?.label ?? ''
+const timeFormatter = new Intl.DateTimeFormat('vi-VN', {
+  timeZone: 'Asia/Ho_Chi_Minh',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
+
+function formatTime(value?: string) {
+  const time = Date.parse(value ?? '')
+  return Number.isFinite(time) ? timeFormatter.format(time) : '—'
+}
+
+function changeDate(event: Event) {
+  const value = (event.target as HTMLInputElement).value
+  selectedDate.value = value || today.value
 }
 </script>
 
 <template>
   <section class="admin-dashboard" aria-labelledby="admin-dashboard-title">
-    <header class="admin-page-heading">
-      <div class="admin-page-heading__copy">
-        <p class="admin-page-heading__eyebrow">CINEMATIC ADMIN</p>
+    <header class="admin-dashboard__heading">
+      <div>
+        <p class="admin-dashboard__eyebrow">CINEMATIC ADMIN</p>
         <h1 id="admin-dashboard-title">Tổng quan</h1>
-        <p class="admin-page-heading__description">
-          Theo dõi dữ liệu hiện tại và truy cập các chức năng quản trị.
-        </p>
+        <p class="admin-dashboard__subtitle">Theo dõi hoạt động quản trị trong ngày.</p>
       </div>
 
-      <AppButton
-        v-if="metrics.length"
-        variant="secondary"
-        :loading="dashboard.isRefreshing.value"
-        @click="dashboard.refresh()"
-      >
-        Cập nhật số liệu
-      </AppButton>
+      <div class="admin-dashboard__controls">
+        <label class="admin-dashboard__date">
+          <CalendarDays aria-hidden="true" />
+          <span class="admin-visually-hidden">Ngày xem lịch chiếu</span>
+          <input type="date" :value="selectedDate" @change="changeDate" />
+        </label>
+
+        <button
+          v-if="metrics.length"
+          class="admin-dashboard__refresh"
+          type="button"
+          aria-label="Cập nhật số liệu"
+          title="Cập nhật số liệu"
+          :disabled="dashboard.isRefreshing.value"
+          @click="dashboard.refresh()"
+        >
+          <RefreshCw aria-hidden="true" />
+        </button>
+      </div>
     </header>
 
     <div v-if="metrics.length" class="admin-dashboard__metrics" aria-label="Số liệu tổng quan">
       <article
         v-for="metric in metrics"
         :key="metric.id"
-        class="admin-metric"
+        class="admin-dashboard__metric"
+        :class="`is-${metric.tone}`"
         :aria-busy="metric.loading"
         :aria-labelledby="`${metric.id}-label`"
       >
-        <div class="admin-metric__heading">
+        <span class="admin-dashboard__metric-icon" aria-hidden="true">
+          <component :is="metric.icon" />
+        </span>
+
+        <div class="admin-dashboard__metric-copy">
           <h2 :id="`${metric.id}-label`">{{ metric.label }}</h2>
-          <component :is="metric.icon" aria-hidden="true" />
+          <strong>{{ formatCount(metric.value) }}</strong>
+          <p>{{ metric.hint }}</p>
+
+          <p v-if="metric.loading" role="status">Đang cập nhật…</p>
+          <template v-else-if="metric.error">
+            <p class="admin-dashboard__error" role="alert">{{ metric.error }}</p>
+            <button
+              class="admin-dashboard__text-button"
+              type="button"
+              @click="metric.query.refetch()"
+            >
+              Thử lại
+            </button>
+          </template>
         </div>
-
-        <p class="admin-metric__value">{{ formatCount(metric.value) }}</p>
-        <p class="admin-metric__hint">{{ metric.hint }}</p>
-
-        <p v-if="metric.loading" class="admin-metric__state" role="status">Đang cập nhật…</p>
-
-        <template v-else-if="metric.failed">
-          <p class="admin-metric__error" role="alert">
-            {{ errorMessage(metric.error) }}
-          </p>
-
-          <p v-if="metric.value != null" class="admin-metric__state">
-            Đang hiển thị số liệu từ lần tải trước.
-          </p>
-
-          <AppButton variant="ghost" size="sm" @click="metric.query.refetch()"> Thử lại </AppButton>
-        </template>
-
-        <p v-else-if="metric.value == null" class="admin-metric__state">Chưa nhận được số liệu.</p>
       </article>
     </div>
 
-    <div class="admin-dashboard__overview">
-      <article
-        v-if="canViewMovieMetrics"
-        class="admin-dashboard__panel"
-        aria-labelledby="admin-movie-summary-title"
-        :aria-busy="movieSummaryLoading"
-      >
-        <header class="admin-dashboard__section-heading">
+    <div class="admin-dashboard__analytics">
+      <article class="admin-dashboard__panel admin-dashboard__revenue">
+        <header class="admin-dashboard__panel-heading">
           <div>
-            <h2 id="admin-movie-summary-title">Cơ cấu phim</h2>
-            <p>Phân bố theo trạng thái hiện tại</p>
+            <h2>Doanh thu &amp; lượt đặt vé</h2>
+            <p>Diễn biến trong ngày</p>
           </div>
         </header>
 
-        <div v-if="movieComposition" class="admin-dashboard__movie-summary">
-          <div
-            class="admin-dashboard__movie-donut"
-            role="img"
-            :style="{ background: movieComposition.background }"
-            :aria-label="`Tổng ${formatCount(movieComposition.total)} phim`"
-          >
-            <div class="admin-dashboard__movie-donut-center">
-              <span>Tổng phim</span>
-              <strong>{{ formatCount(movieComposition.total) }}</strong>
-            </div>
-          </div>
-
-          <ul class="admin-dashboard__movie-legend">
-            <li>
-              <span class="admin-dashboard__movie-dot is-now-showing" aria-hidden="true" />
-              <span>Đang chiếu</span>
-              <strong>{{ formatCount(movieComposition.nowShowing) }}</strong>
-            </li>
-            <li>
-              <span class="admin-dashboard__movie-dot is-upcoming" aria-hidden="true" />
-              <span>Sắp chiếu</span>
-              <strong>{{ formatCount(movieComposition.upcoming) }}</strong>
-            </li>
-            <li>
-              <span class="admin-dashboard__movie-dot is-other" aria-hidden="true" />
-              <span>Trạng thái khác</span>
-              <strong>{{ formatCount(movieComposition.other) }}</strong>
-            </li>
-          </ul>
+        <div class="admin-dashboard__legend" aria-hidden="true">
+          <span><i class="is-primary" />Doanh thu</span>
+          <span><i class="is-success" />Lượt đặt vé</span>
         </div>
 
-        <p v-else-if="movieSummaryLoading" class="admin-dashboard__empty-message" role="status">
-          Đang tải dữ liệu phim…
-        </p>
-
-        <p v-else-if="movieSummaryError" class="admin-dashboard__empty-message" role="alert">
-          {{ movieSummaryError }}
-        </p>
-
-        <p v-else class="admin-dashboard__empty-message">
-          Chưa đủ dữ liệu để tổng hợp trạng thái phim.
-        </p>
+        <div class="admin-dashboard__chart-empty">
+          <BarChart3 aria-hidden="true" />
+          <strong>Chưa có số liệu</strong>
+          <p>Số liệu doanh thu và lượt đặt vé chưa khả dụng.</p>
+        </div>
       </article>
 
-      <section class="admin-dashboard__panel" aria-labelledby="admin-quick-links-title">
-        <header class="admin-dashboard__section-heading">
+      <article class="admin-dashboard__panel">
+        <header class="admin-dashboard__panel-heading">
           <div>
-            <h2 id="admin-quick-links-title">Truy cập nhanh</h2>
-            <p>{{ modules.length }} chức năng được cấp quyền</p>
+            <h2>Trạng thái booking</h2>
+            <p>Tỷ lệ theo trạng thái</p>
+          </div>
+        </header>
+
+        <div class="admin-dashboard__booking-empty">
+          <div class="admin-dashboard__donut" aria-hidden="true">
+            <div>
+              <span>Tổng booking</span>
+              <strong>—</strong>
+            </div>
+          </div>
+          <p>Chưa có dữ liệu booking toàn hệ thống.</p>
+        </div>
+      </article>
+
+      <article class="admin-dashboard__panel">
+        <header class="admin-dashboard__panel-heading">
+          <div>
+            <h2>Chức năng quản trị</h2>
+            <p>Lối tắt đến các khu vực</p>
           </div>
         </header>
 
         <nav
           v-if="modules.length"
           class="admin-dashboard__quick-links"
-          aria-label="Chức năng quản trị"
+          aria-label="Lối tắt quản trị"
         >
-          <RouterLink
-            v-for="item in modules"
-            :key="item.routeName"
-            class="admin-dashboard__quick-link"
-            :to="{ name: item.routeName }"
-          >
-            <span>
-              <strong>{{ item.label }}</strong>
-              <small>{{ groupLabel(item.group) }}</small>
-            </span>
-            <ArrowUpRight aria-hidden="true" />
+          <RouterLink v-for="item in modules" :key="item.routeName" :to="{ name: item.routeName }">
+            <component :is="icons[item.icon]" aria-hidden="true" />
+            <span>{{ item.label }}</span>
+            <ChevronRight aria-hidden="true" />
           </RouterLink>
         </nav>
 
-        <div v-else class="admin-dashboard__empty-message" role="status">
-          <h3>Chưa có chức năng được cấp quyền</h3>
-          <p>Tài khoản này chưa được cấp quyền truy cập các chức năng quản trị.</p>
-          <RouterLink :to="{ name: ROUTE_NAMES.HOME }">Về trang khách hàng</RouterLink>
+        <p v-else class="admin-dashboard__message">
+          Tài khoản chưa được cấp quyền truy cập các chức năng quản trị.
+        </p>
+      </article>
+    </div>
+
+    <div class="admin-dashboard__data">
+      <article
+        v-if="dashboard.canManageShowtimes.value"
+        class="admin-dashboard__panel"
+        :aria-busy="showtimes.isFetching.value"
+      >
+        <header class="admin-dashboard__panel-heading">
+          <div>
+            <h2>Suất chiếu sắp tới</h2>
+            <p>Các suất chiếu còn lại trong ngày đã chọn</p>
+          </div>
+          <RouterLink
+            class="admin-dashboard__text-link"
+            :to="{ name: ROUTE_NAMES.ADMIN_SHOWTIMES }"
+          >
+            Xem tất cả <ChevronRight aria-hidden="true" />
+          </RouterLink>
+        </header>
+
+        <p v-if="showtimes.isFetching.value" class="admin-dashboard__message" role="status">
+          Đang cập nhật lịch chiếu…
+        </p>
+
+        <div v-if="showtimes.isError.value" class="admin-dashboard__message" role="alert">
+          <p>{{ errorMessage(showtimes.error.value) }}</p>
+          <button class="admin-dashboard__text-button" type="button" @click="showtimes.refetch()">
+            Thử lại
+          </button>
         </div>
-      </section>
+
+        <div
+          class="admin-dashboard__table-scroll"
+          role="region"
+          aria-label="Suất chiếu sắp tới"
+          tabindex="0"
+        >
+          <table>
+            <caption class="admin-visually-hidden">
+              Suất chiếu trong ngày đã chọn
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Phim</th>
+                <th scope="col">Rạp / Phòng</th>
+                <th scope="col">Giờ chiếu</th>
+                <th scope="col">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in upcoming" :key="item.id">
+                <td>
+                  <span class="admin-dashboard__movie-cell">
+                    <span class="admin-dashboard__thumb" aria-hidden="true"><Film /></span>
+                    <span>
+                      {{
+                        dashboard.movieLabels.value.get(item.movieId ?? '') ??
+                        'Chưa có thông tin phim'
+                      }}
+                    </span>
+                  </span>
+                </td>
+                <td>{{ item.cinemaName || '—' }} / {{ item.roomName || '—' }}</td>
+                <td>{{ formatTime(item.startsAt) }}</td>
+                <td>
+                  <span class="admin-dashboard__status" :class="`is-${statusTone(item.status)}`">
+                    {{ statusLabels[item.status ?? ''] || 'Chưa xác định' }}
+                  </span>
+                </td>
+              </tr>
+              <tr v-if="!upcoming.length">
+                <td colspan="4" class="admin-dashboard__table-empty">
+                  {{
+                    showtimes.isFetching.value
+                      ? 'Đang tải lịch chiếu…'
+                      : showtimes.isError.value
+                        ? 'Chưa tải được lịch chiếu.'
+                        : 'Không có suất chiếu sắp tới trong ngày đã chọn.'
+                  }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="admin-dashboard__panel">
+        <header class="admin-dashboard__panel-heading">
+          <div>
+            <h2>Booking gần đây</h2>
+            <p>Hoạt động đặt vé mới nhất</p>
+          </div>
+        </header>
+
+        <div
+          class="admin-dashboard__table-scroll"
+          role="region"
+          aria-label="Booking gần đây"
+          tabindex="0"
+        >
+          <table>
+            <caption class="admin-visually-hidden">
+              Booking gần đây trên toàn hệ thống
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Mã booking</th>
+                <th scope="col">Khách hàng</th>
+                <th scope="col">Số vé</th>
+                <th scope="col">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="4" class="admin-dashboard__table-empty">
+                  Chưa có dữ liệu booking toàn hệ thống.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
     </div>
   </section>
 </template>

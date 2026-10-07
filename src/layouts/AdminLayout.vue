@@ -20,6 +20,7 @@ import { APP_ROLES } from '../config/authorization'
 import { ADMIN_MEDIA_QUERIES } from '../config/admin-responsive'
 import { restoreAuthSession, signOut } from '../features/auth'
 import { useAuthStore } from '../stores/auth.store'
+import { ROUTE_NAMES } from '../router/route-constants'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -118,7 +119,7 @@ async function handleLogout() {
 
         <main id="admin-main-content" class="admin-layout__main" tabindex="-1">
           <div class="admin-layout__container">
-            <Breadcrumbs />
+            <Breadcrumbs v-if="route.name !== ROUTE_NAMES.ADMIN" />
 
             <p v-if="logoutError" class="admin-layout__error" role="alert">
               {{ logoutError }}

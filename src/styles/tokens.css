@@ -510,6 +510,34 @@
   --admin-genre-table-min-width: 30rem;
   --admin-genre-description-min-height: 5rem;
 
+  /* Admin dashboard reference */
+  --admin-reference-control-height: var(--space-10);
+  --admin-sidebar-padding-inline: 0.875rem;
+  --admin-sidebar-label-size: 0.6875rem;
+  --admin-search-width: 28rem;
+  --admin-search-dialog-width: 34rem;
+  --admin-search-results-height: 24rem;
+  --admin-dashboard-gap: var(--space-4);
+  --admin-dashboard-card-padding: 1.125rem;
+  --admin-dashboard-card-radius: var(--radius-lg);
+  --admin-dashboard-heading-size: clamp(1.75rem, 3vw, 2.25rem);
+  --admin-dashboard-metric-size: clamp(1.25rem, 2vw, 1.75rem);
+  --admin-dashboard-panel-title-size: 0.9375rem;
+  --admin-dashboard-link-size: 0.8125rem;
+  --admin-dashboard-tiny-size: 0.6875rem;
+  --admin-dashboard-icon-box: var(--space-11);
+  --admin-dashboard-metric-height: 7rem;
+  --admin-dashboard-chart-height: 14rem;
+  --admin-dashboard-donut-size: 9.5rem;
+  --admin-dashboard-donut-hole: 68%;
+  --admin-dashboard-analytics-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.9fr);
+  --admin-dashboard-table-width: 35rem;
+  --admin-dashboard-table-row-height: var(--space-13);
+  --admin-dashboard-thumb-width: var(--space-7);
+  --admin-dashboard-thumb-height: var(--space-9);
+  --admin-dashboard-dot-size: var(--space-2);
+  --admin-dashboard-eyebrow-tracking: 0.12em;
+
   /* Movie detail */
   --detail-page-gutter: clamp(1.25rem, 4vw, 3.5rem);
   --detail-poster-width: 18.75rem;

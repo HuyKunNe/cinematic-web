@@ -11,6 +11,7 @@
 
 /* Admin pages */
 @import './admin-movies.css';
+@import './admin-dashboard.css';
 
 /* Navigation styles remain imported by their owning layouts. */
 @theme {
@@ -31,3 +32,4 @@
 @custom-variant movies-tablet (@media (max-width: 56.25rem));
 @custom-variant movies-mobile (@media (max-width: 40rem));
 @custom-variant catalog-compact (@container catalog-card (max-width: 14rem));
+@custom-variant admin-compact (@media (max-width: 75rem));

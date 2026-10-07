@@ -1,16 +1,26 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { useEventListener } from '@vueuse/core'
 import {
-  ArrowUpRight,
   ChevronDown,
+  ChevronRight,
   LogOut,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  Search,
   UserRound,
+  X,
 } from 'lucide-vue-next'
 import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
   DialogTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -20,7 +30,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from 'reka-ui'
-import { ROUTE_NAMES } from '../../router/route-constants'
+import { getVisibleAdminNavigation } from '../../config/admin-navigation'
+import { useAuthStore } from '../../stores/auth.store'
 
 const props = defineProps<{
   drawer: boolean
@@ -35,19 +46,47 @@ const emit = defineEmits<{
   logoutRequested: []
 }>()
 
+const auth = useAuthStore()
 const route = useRoute()
 const accountMenuOpen = ref(false)
+const searchOpen = ref(false)
+const searchText = ref('')
 
-const currentTitle = computed(() =>
-  typeof route.meta.title === 'string' ? route.meta.title : 'Quản trị',
-)
+function normalize(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim()
+}
+
+const searchResults = computed(() => {
+  const keyword = normalize(searchText.value)
+
+  return getVisibleAdminNavigation(auth).filter((item) =>
+    normalize(`${item.label} ${item.description}`).includes(keyword),
+  )
+})
 
 watch(
   () => route.fullPath,
   () => {
     accountMenuOpen.value = false
+    searchOpen.value = false
+    searchText.value = ''
   },
 )
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.repeat || event.key.toLowerCase() !== 'k' || (!event.ctrlKey && !event.metaKey)) {
+    return
+  }
+
+  event.preventDefault()
+  searchOpen.value = true
+})
 
 function requestLogout() {
   if (props.logoutPending) return
@@ -84,15 +123,69 @@ function requestLogout() {
       <PanelLeftClose v-else aria-hidden="true" />
     </button>
 
-    <div class="admin-header__title">
-      <span class="admin-header__eyebrow">Không gian quản trị</span>
-      <strong class="admin-header__section">{{ currentTitle }}</strong>
-    </div>
+    <DialogRoot v-model:open="searchOpen">
+      <DialogTrigger as-child>
+        <button class="admin-header__search" type="button">
+          <Search aria-hidden="true" />
+          <span>Tìm kiếm chức năng…</span>
+          <kbd>Ctrl / ⌘ K</kbd>
+        </button>
+      </DialogTrigger>
 
-    <RouterLink class="admin-header__customer-link" :to="{ name: ROUTE_NAMES.HOME }">
-      <span>Trang khách hàng</span>
-      <ArrowUpRight aria-hidden="true" />
-    </RouterLink>
+      <DialogPortal>
+        <DialogOverlay class="admin-drawer__overlay" />
+
+        <DialogContent class="admin-search-dialog">
+          <header class="admin-search-dialog__heading">
+            <DialogTitle>Tìm kiếm chức năng</DialogTitle>
+
+            <DialogClose as-child>
+              <button class="admin-sidebar__close" type="button" aria-label="Đóng tìm kiếm">
+                <X aria-hidden="true" />
+              </button>
+            </DialogClose>
+          </header>
+
+          <DialogDescription class="admin-search-dialog__description">
+            Tìm và mở các chức năng tài khoản được cấp quyền.
+          </DialogDescription>
+
+          <label class="admin-search-dialog__field">
+            <Search aria-hidden="true" />
+            <span class="admin-visually-hidden">Tên chức năng</span>
+            <input
+              v-model="searchText"
+              type="search"
+              placeholder="Phim, rạp, lịch chiếu…"
+              autocomplete="off"
+            />
+          </label>
+
+          <nav
+            v-if="searchResults.length"
+            class="admin-search-dialog__results"
+            aria-label="Kết quả tìm kiếm"
+          >
+            <RouterLink
+              v-for="item in searchResults"
+              :key="item.routeName"
+              :to="{ name: item.routeName }"
+              @click="searchOpen = false"
+            >
+              <span>
+                <strong>{{ item.label }}</strong>
+                <small>{{ item.description }}</small>
+              </span>
+              <ChevronRight aria-hidden="true" />
+            </RouterLink>
+          </nav>
+
+          <p v-else class="admin-search-dialog__description" role="status">
+            Không tìm thấy chức năng phù hợp.
+          </p>
+        </DialogContent>
+      </DialogPortal>
+    </DialogRoot>
 
     <DropdownMenuRoot v-model:open="accountMenuOpen">
       <DropdownMenuTrigger as-child>
@@ -105,11 +198,7 @@ function requestLogout() {
           <span class="admin-user-menu__avatar" aria-hidden="true">
             <UserRound />
           </span>
-
-          <span class="admin-user-menu__label">
-            {{ username || accountLabel }}
-          </span>
-
+          <span class="admin-user-menu__label">{{ username || accountLabel }}</span>
           <ChevronDown class="admin-user-menu__chevron" aria-hidden="true" />
         </button>
       </DropdownMenuTrigger>

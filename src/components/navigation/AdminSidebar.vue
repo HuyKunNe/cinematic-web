@@ -71,7 +71,7 @@ function isActive(routeName: string) {
 
         <span class="admin-sidebar__brand-copy">
           <strong>CINEMATIC</strong>
-          <span>Không gian quản trị</span>
+          <span>Quản trị</span>
         </span>
       </RouterLink>
 
@@ -103,7 +103,8 @@ function isActive(routeName: string) {
 
     <footer class="admin-sidebar__footer">
       <p v-if="!collapsed" class="admin-sidebar__access">
-        {{ moduleCount }} chức năng được cấp quyền
+        <span class="admin-sidebar__status-dot" aria-hidden="true" />
+        <span :title="`${moduleCount} chức năng được cấp quyền`"> Không gian quản trị </span>
       </p>
 
       <RouterLink
