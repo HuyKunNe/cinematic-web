@@ -9,7 +9,7 @@
 /**
  * Stored ShowSeat status; null when ShowSeat is missing.
  */
-export type ShowtimeSeatMapSeatResponseStatus = typeof ShowtimeSeatMapSeatResponseStatus[keyof typeof ShowtimeSeatMapSeatResponseStatus];
+export type ShowtimeSeatMapSeatResponseStatus = typeof ShowtimeSeatMapSeatResponseStatus[keyof typeof ShowtimeSeatMapSeatResponseStatus] | null;
 
 
 export const ShowtimeSeatMapSeatResponseStatus = {

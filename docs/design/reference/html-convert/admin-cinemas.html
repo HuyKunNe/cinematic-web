@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý rạp | CINEMA Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-cinemas.css" />
+  </head>
+
+  <body class="admin-page">
+    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+      <a class="admin-brand" href="./admin-dashboard.html" aria-label="CINEMA Admin">
+        <span class="admin-brand__mark" aria-hidden="true">C</span>
+        <span class="admin-brand__text">CINEMA <small>ADMIN</small></span>
+      </a>
+
+      <p class="admin-sidebar__label">Quản trị</p>
+      <nav class="admin-nav">
+        <a class="admin-nav__link" href="./admin-dashboard.html">
+          <span aria-hidden="true">⌂</span>Tổng quan
+        </a>
+        <a class="admin-nav__link" href="#movies"> <span aria-hidden="true">▤</span>Phim </a>
+        <a class="admin-nav__link is-active" href="#cinemas" aria-current="page">
+          <span aria-hidden="true">▣</span>Rạp chiếu
+        </a>
+        <a class="admin-nav__link" href="#rooms"> <span aria-hidden="true">▦</span>Phòng chiếu </a>
+        <a class="admin-nav__link" href="#showtimes">
+          <span aria-hidden="true">◷</span>Suất chiếu
+        </a>
+        <a class="admin-nav__link" href="#bookings"> <span aria-hidden="true">▧</span>Đặt vé </a>
+        <a class="admin-nav__link" href="#promotions">
+          <span aria-hidden="true">◇</span>Khuyến mãi
+        </a>
+        <a class="admin-nav__link" href="#users"> <span aria-hidden="true">♙</span>Người dùng </a>
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Hệ thống đang hoạt động</span>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="icon-button admin-menu-button" type="button" aria-label="Mở menu">☰</button>
+
+        <label class="admin-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Tìm kiếm trong quản trị..." />
+          <kbd>⌘ K</kbd>
+        </label>
+
+        <button class="icon-button admin-notifications" type="button" aria-label="Thông báo">
+          ♧
+          <span class="notification-count" aria-hidden="true">2</span>
+        </button>
+
+        <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
+          <span class="admin-avatar" aria-hidden="true">AD</span>
+          <span class="admin-account__name">Quản trị viên</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+      </header>
+
+      <main class="admin-content">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./admin-dashboard.html">Quản trị</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Rạp chiếu</span>
+        </nav>
+
+        <section class="page-heading">
+          <div>
+            <p class="eyebrow">Hệ thống rạp</p>
+            <h1>Quản lý rạp chiếu</h1>
+            <p class="page-heading__description">
+              Theo dõi danh sách và trạng thái hoạt động của các rạp.
+            </p>
+          </div>
+
+          <button class="action-button action-button--primary" type="button">
+            <span aria-hidden="true">＋</span>
+            Thêm rạp
+          </button>
+        </section>
+
+        <aside class="prototype-note">
+          <span aria-hidden="true">ⓘ</span>
+          <span> Prototype giao diện — dữ liệu trong bảng chỉ dùng để minh họa. </span>
+        </aside>
+
+        <section class="filter-panel" aria-label="Tìm và lọc rạp">
+          <label class="filter-field filter-field--search">
+            <span>Tìm rạp</span>
+            <input type="search" placeholder="Nhập tên rạp hoặc địa chỉ" />
+          </label>
+
+          <label class="filter-field">
+            <span>Khu vực</span>
+            <select>
+              <option value="">Tất cả khu vực</option>
+              <option>Hà Nội</option>
+              <option>TP. Hồ Chí Minh</option>
+              <option>Đà Nẵng</option>
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span>Trạng thái</span>
+            <select>
+              <option value="">Tất cả trạng thái</option>
+              <option>Đang hoạt động</option>
+              <option>Tạm ngưng</option>
+            </select>
+          </label>
+
+          <button class="action-button action-button--secondary" type="button">Đặt lại</button>
+        </section>
+
+        <section class="cinema-list panel" aria-labelledby="cinema-list-title">
+          <div class="cinema-list__heading">
+            <div>
+              <h2 id="cinema-list-title">Danh sách rạp</h2>
+              <p>Thông tin rạp và trạng thái hiện tại</p>
+            </div>
+            <span class="result-count">12 rạp minh họa</span>
+          </div>
+
+          <div class="table-scroll">
+            <table class="cinema-table">
+              <thead>
+                <tr>
+                  <th scope="col">Rạp</th>
+                  <th scope="col">Địa chỉ</th>
+                  <th scope="col">Khu vực</th>
+                  <th scope="col">Trạng thái</th>
+                  <th scope="col"><span class="sr-only">Thao tác</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="cinema-name">
+                      <span class="cinema-avatar" aria-hidden="true">CG</span>
+                      <span>
+                        <strong>CINEMA Hồ Gươm</strong>
+                        <small>Rạp chiếu phim</small>
+                      </span>
+                    </div>
+                  </td>
+                  <td>126 Trần Duy Hưng</td>
+                  <td>Hà Nội</td>
+                  <td><span class="status-pill status-pill--active">Đang hoạt động</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác với CINEMA Hồ Gươm"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <div class="cinema-name">
+                      <span class="cinema-avatar" aria-hidden="true">TD</span>
+                      <span>
+                        <strong>CINEMA Thủ Đức</strong>
+                        <small>Rạp chiếu phim</small>
+                      </span>
+                    </div>
+                  </td>
+                  <td>18 Võ Văn Ngân</td>
+                  <td>TP. Hồ Chí Minh</td>
+                  <td><span class="status-pill status-pill--active">Đang hoạt động</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác với CINEMA Thủ Đức"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <div class="cinema-name">
+                      <span class="cinema-avatar" aria-hidden="true">DN</span>
+                      <span>
+                        <strong>CINEMA Sông Hàn</strong>
+                        <small>Rạp chiếu phim</small>
+                      </span>
+                    </div>
+                  </td>
+                  <td>52 Bạch Đằng</td>
+                  <td>Đà Nẵng</td>
+                  <td><span class="status-pill status-pill--paused">Tạm ngưng</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác với CINEMA Sông Hàn"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <div class="cinema-name">
+                      <span class="cinema-avatar" aria-hidden="true">BD</span>
+                      <span>
+                        <strong>CINEMA Bình Dương</strong>
+                        <small>Rạp chiếu phim</small>
+                      </span>
+                    </div>
+                  </td>
+                  <td>25 Đại lộ Bình Dương</td>
+                  <td>Bình Dương</td>
+                  <td><span class="status-pill status-pill--active">Đang hoạt động</span></td>
+                  <td>
+                    <button
+                      class="row-action"
+                      type="button"
+                      aria-label="Thao tác với CINEMA Bình Dương"
+                    >
+                      •••
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <footer class="table-footer">
+            <span>Hiển thị 1–4 trong 12 rạp minh họa</span>
+            <nav class="pagination" aria-label="Phân trang">
+              <button type="button" aria-label="Trang trước" disabled>‹</button>
+              <button type="button" class="is-current" aria-current="page">1</button>
+              <button type="button">2</button>
+              <button type="button">3</button>
+              <button type="button" aria-label="Trang tiếp theo">›</button>
+            </nav>
+          </footer>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

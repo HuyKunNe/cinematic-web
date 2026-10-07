@@ -9,21 +9,22 @@ import type { ShowtimeSeatMapSeatResponseSeatType } from './showtimeSeatMapSeatR
 import type { ShowtimeSeatMapSeatResponseStatus } from './showtimeSeatMapSeatResponseStatus';
 
 export interface ShowtimeSeatMapSeatResponse {
-  seatId?: string;
-  showSeatId?: string;
-  seatNumber?: string;
-  rowLabel?: string;
-  seatType?: ShowtimeSeatMapSeatResponseSeatType;
-  capacity?: number;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  rotationDegrees?: number;
+  seatId: string;
+  /** ShowSeat identifier; null when ShowSeat is missing. */
+  showSeatId: string | null;
+  seatNumber: string;
+  rowLabel: string;
+  seatType: ShowtimeSeatMapSeatResponseSeatType;
+  capacity: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotationDegrees: number;
   /** Price from ShowSeat; null when ShowSeat is missing. */
-  price?: number;
-  currency?: string;
+  price: number | null;
+  currency: string;
   /** Stored ShowSeat status; null when ShowSeat is missing. */
-  status?: ShowtimeSeatMapSeatResponseStatus;
-  selectable?: boolean;
+  status: ShowtimeSeatMapSeatResponseStatus;
+  selectable: boolean;
 }

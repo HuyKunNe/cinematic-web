@@ -1,0 +1,1485 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cinema Booking System API",
+    "description": "API documentation for Cinema Booking System",
+    "contact": { "name": "Cinema System" },
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "http://localhost:8083", "description": "Generated server url" }],
+  "security": [{ "oauth2": [] }],
+  "paths": {
+    "/api/v1/showtimes/{showtimeId}": {
+      "get": {
+        "tags": ["showtime-controller"],
+        "operationId": "getById",
+        "parameters": [
+          {
+            "name": "showtimeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowtimeResponse" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["showtime-controller"],
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "showtimeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateShowtimeRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowtimeResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/show-seats/{showSeatId}/unavailable": {
+      "put": {
+        "tags": ["show-seat-controller"],
+        "operationId": "makeUnavailable",
+        "parameters": [
+          {
+            "name": "showSeatId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowSeatResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/show-seats/{showSeatId}/release": {
+      "put": {
+        "tags": ["show-seat-controller"],
+        "operationId": "release",
+        "parameters": [
+          {
+            "name": "showSeatId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ShowSeatBookingRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowSeatResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/show-seats/{showSeatId}/hold": {
+      "put": {
+        "tags": ["show-seat-controller"],
+        "summary": "Hold an available show seat",
+        "description": "Requires inventory:write.\n\nThe seat must be AVAILABLE and expiresAt must be in the future.\nThe showtime must be OPEN_FOR_BOOKING and start in the future.\nIts room and cinema must both be active.\n\nReturns HTTP 409 with INVENTORY_SHOWTIME_NOT_BOOKABLE\nwhen showtime eligibility is not satisfied.\n\nThis endpoint does not reuse an existing HELD seat.\n",
+        "operationId": "hold",
+        "parameters": [
+          {
+            "name": "showSeatId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/HoldShowSeatRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowSeatResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/show-seats/{showSeatId}/book": {
+      "put": {
+        "tags": ["show-seat-controller"],
+        "operationId": "book",
+        "parameters": [
+          {
+            "name": "showSeatId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ShowSeatBookingRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowSeatResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/show-seats/{showSeatId}/available": {
+      "put": {
+        "tags": ["show-seat-controller"],
+        "operationId": "makeAvailable",
+        "parameters": [
+          {
+            "name": "showSeatId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowSeatResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/seats/{seatId}": {
+      "get": {
+        "tags": ["seat-controller"],
+        "operationId": "getById_1",
+        "parameters": [
+          {
+            "name": "seatId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SeatResponse" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["seat-controller"],
+        "operationId": "update_1",
+        "parameters": [
+          {
+            "name": "seatId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateSeatRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SeatResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms/{roomId}": {
+      "get": {
+        "tags": ["room-controller"],
+        "operationId": "getById_2",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RoomResponse" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["room-controller"],
+        "operationId": "update_2",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateRoomRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RoomResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/room-layouts/{layoutId}/content": {
+      "get": {
+        "tags": ["room-layout-controller"],
+        "summary": "Get room layout content",
+        "description": "Requires inventory:manage.\nReturns layout metadata, seat snapshots and elements.\nThis response is for administration.\n",
+        "operationId": "getRoomLayoutContent",
+        "parameters": [
+          {
+            "name": "layoutId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "403": {
+            "description": "Requires inventory:manage",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "404": {
+            "description": "Room or layout not found",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          }
+        },
+        "security": [{ "oauth2": ["inventory:manage"] }]
+      },
+      "put": {
+        "tags": ["room-layout-controller"],
+        "summary": "Replace draft room layout content",
+        "description": "Requires inventory:manage.\nReplaces all seats and elements in a DRAFT layout.\nEmpty arrays clear the corresponding content.\nexpectedVersion must match the current layout version field.\nThis operation does not publish or bind the layout to showtimes.\n",
+        "operationId": "replaceRoomLayoutContent",
+        "parameters": [
+          {
+            "name": "layoutId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReplaceRoomLayoutContentRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "403": {
+            "description": "Requires inventory:manage",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "404": {
+            "description": "Room or layout not found",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "409": {
+            "description": "Layout is not DRAFT or expectedVersion is stale",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          }
+        },
+        "security": [{ "oauth2": ["inventory:manage"] }]
+      }
+    },
+    "/api/v1/cinemas/{cinemaId}": {
+      "get": {
+        "tags": ["cinema-controller"],
+        "operationId": "getById_3",
+        "parameters": [
+          {
+            "name": "cinemaId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/CinemaResponse" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["cinema-controller"],
+        "operationId": "update_3",
+        "parameters": [
+          {
+            "name": "cinemaId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateCinemaRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/CinemaResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/showtimes": {
+      "get": {
+        "tags": ["showtime-controller"],
+        "operationId": "getByTimeRange",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date-time" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ShowtimeResponse" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["showtime-controller"],
+        "summary": "Create a showtime and generate its seats",
+        "description": "Requires showtime:manage.\n\nroomLayoutId is optional.\nWhen provided, it must identify a PUBLISHED layout of roomId.\nSeats are generated from that layout after validating its snapshots.\nActive seats start AVAILABLE; inactive seats start UNAVAILABLE.\n\nWhen omitted, existing active-seat generation is retained.\nSeat prices are calculated from basePrice using SeatPricingPolicy.\n\nThe layout cannot be changed after creation.\n",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateShowtimeRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowtimeResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/show-seats": {
+      "get": {
+        "tags": ["show-seat-controller"],
+        "operationId": "getByShowtimeId",
+        "parameters": [
+          {
+            "name": "showtimeId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "availableOnly",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean", "default": false }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ShowSeatResponse" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["show-seat-controller"],
+        "operationId": "generate",
+        "parameters": [
+          {
+            "name": "showtimeId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/GenerateShowSeatsRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ShowSeatResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/seats": {
+      "get": {
+        "tags": ["seat-controller"],
+        "operationId": "getActiveSeats",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SeatResponse" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["seat-controller"],
+        "operationId": "create_1",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateSeatRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SeatResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/seats/range": {
+      "post": {
+        "tags": ["seat-controller"],
+        "operationId": "createRange",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateSeatRangeRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SeatResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms": {
+      "get": {
+        "tags": ["room-controller"],
+        "operationId": "getActiveRooms",
+        "parameters": [
+          {
+            "name": "cinemaId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RoomResponse" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["room-controller"],
+        "operationId": "create_2",
+        "parameters": [
+          {
+            "name": "cinemaId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateRoomRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RoomResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/room-layouts": {
+      "get": {
+        "tags": ["room-layout-controller"],
+        "summary": "Get room layout metadata by room",
+        "description": "Returns all layout versions, newest first.\nReturns an empty array when the room has no layouts.\n",
+        "operationId": "getRoomLayoutsByRoom",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "403": {
+            "description": "Requires inventory:manage",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "404": {
+            "description": "Room or layout not found",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          }
+        },
+        "security": [{ "oauth2": ["inventory:manage"] }]
+      },
+      "post": {
+        "tags": ["room-layout-controller"],
+        "summary": "Create room layout draft",
+        "description": "Creates an empty DRAFT layout.\nThe backend assigns the next layoutVersion for the room.\nCanvas dimensions use logical layout units.\nThis operation does not publish or bind a layout to showtimes.\n",
+        "operationId": "createRoomLayoutDraft",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateRoomLayoutRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Draft created",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/RoomLayoutResponse" } }
+            }
+          },
+          "409": {
+            "description": "Room layout version limit reached",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "403": {
+            "description": "Requires inventory:manage",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "404": {
+            "description": "Room or layout not found",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          }
+        },
+        "security": [{ "oauth2": ["inventory:manage"] }]
+      }
+    },
+    "/api/v1/room-layouts/{layoutId}/publish": {
+      "post": {
+        "tags": ["room-layout-controller"],
+        "summary": "Publish a validated room layout",
+        "description": "Requires inventory:manage.\nexpectedVersion must match the current version field.\nRequires at least one seat and one SCREEN.\nValidates rotated geometry inside the canvas.\nRejects seat-seat and seat-element overlaps.\nPublishes this layout version without binding it to showtimes.\n",
+        "operationId": "publishRoomLayout",
+        "parameters": [
+          {
+            "name": "layoutId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PublishRoomLayoutRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Layout published",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/RoomLayoutResponse" } }
+            }
+          },
+          "409": {
+            "description": "Layout is not DRAFT or expectedVersion is stale",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "403": {
+            "description": "Requires inventory:manage",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "404": {
+            "description": "Room or layout not found",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          }
+        },
+        "security": [{ "oauth2": ["inventory:manage"] }]
+      }
+    },
+    "/api/v1/cinemas": {
+      "get": {
+        "tags": ["cinema-controller"],
+        "operationId": "getActiveCinemas",
+        "parameters": [
+          { "name": "city", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CinemaResponse" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["cinema-controller"],
+        "operationId": "create_3",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateCinemaRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/CinemaResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/showtimes/{showtimeId}/open": {
+      "patch": {
+        "tags": ["showtime-controller"],
+        "operationId": "openForBooking",
+        "parameters": [
+          {
+            "name": "showtimeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowtimeResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/showtimes/{showtimeId}/complete": {
+      "patch": {
+        "tags": ["showtime-controller"],
+        "operationId": "complete",
+        "parameters": [
+          {
+            "name": "showtimeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowtimeResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/showtimes/{showtimeId}/close": {
+      "patch": {
+        "tags": ["showtime-controller"],
+        "operationId": "close",
+        "parameters": [
+          {
+            "name": "showtimeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowtimeResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/showtimes/{showtimeId}/cancel": {
+      "patch": {
+        "tags": ["showtime-controller"],
+        "operationId": "cancel",
+        "parameters": [
+          {
+            "name": "showtimeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowtimeResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/showtimes/{showtimeId}/seat-map": {
+      "get": {
+        "tags": ["showtime-seat-map-controller"],
+        "summary": "Get the pinned seat map of a showtime",
+        "description": "Public read API.\n\nGeometry comes from the pinned published layout.\nPrice and status come from ShowSeat.\nMissing ShowSeat yields null showSeatId, price and status,\nwith selectable=false.\n\nselectable also requires the showtime to be eligible for booking.\nHELD seats are not automatically released by this API.\n\nNo booking-owner information is returned.\nReading the map does not reserve seats.\n",
+        "operationId": "getShowtimeSeatMap",
+        "parameters": [
+          {
+            "name": "showtimeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seat map",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/ShowtimeSeatMapResponse" } }
+            }
+          },
+          "400": {
+            "description": "Invalid showtime UUID",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "404": {
+            "description": "Showtime not found",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "409": {
+            "description": "Missing pinned layout, unpublished layout or inconsistent seat map",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/showtimes/by-room/{roomId}": {
+      "get": {
+        "tags": ["showtime-controller"],
+        "operationId": "getByRoomId",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ShowtimeResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/showtimes/by-movie/{movieId}": {
+      "get": {
+        "tags": ["showtime-controller"],
+        "operationId": "getByMovieId",
+        "parameters": [
+          {
+            "name": "movieId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ShowtimeResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/showtimes/bookable": {
+      "get": {
+        "tags": ["showtime-controller"],
+        "summary": "Get bookable showtimes for a cinema",
+        "description": "Returns future OPEN_FOR_BOOKING showtimes in active rooms\nand an active cinema.\n\nThe time interval is [from, to).\nfrom and to must include an ISO-8601 offset.\nmovieId is optional.\n\nOPEN_FOR_BOOKING does not guarantee available seats.\n",
+        "operationId": "getBookableShowtimes",
+        "parameters": [
+          {
+            "name": "cinemaId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "movieId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching showtimes, or an empty array",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ShowtimeResponse" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters or time range",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/show-seats/{showSeatId}": {
+      "get": {
+        "tags": ["show-seat-controller"],
+        "operationId": "getById_4",
+        "parameters": [
+          {
+            "name": "showSeatId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ShowSeatResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/v1/room-layouts/{layoutId}": {
+      "get": {
+        "tags": ["room-layout-controller"],
+        "summary": "Get room layout metadata",
+        "operationId": "getRoomLayoutById",
+        "parameters": [
+          {
+            "name": "layoutId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "403": {
+            "description": "Requires inventory:manage",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          },
+          "404": {
+            "description": "Room or layout not found",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiResponse" } } }
+          }
+        },
+        "security": [{ "oauth2": ["inventory:manage"] }]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateShowtimeRequest": {
+        "type": "object",
+        "properties": {
+          "startsAt": { "type": "string", "format": "date-time" },
+          "endsAt": { "type": "string", "format": "date-time" },
+          "status": {
+            "type": "string",
+            "enum": ["SCHEDULED", "OPEN_FOR_BOOKING", "CLOSED", "CANCELLED", "COMPLETED"]
+          }
+        },
+        "required": ["endsAt", "startsAt", "status"]
+      },
+      "ShowtimeResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "movieId": { "type": "string", "format": "uuid" },
+          "roomId": { "type": "string", "format": "uuid" },
+          "roomName": { "type": "string" },
+          "cinemaId": { "type": "string", "format": "uuid" },
+          "cinemaName": { "type": "string" },
+          "startsAt": { "type": "string", "format": "date-time" },
+          "endsAt": { "type": "string", "format": "date-time" },
+          "status": {
+            "type": "string",
+            "enum": ["SCHEDULED", "OPEN_FOR_BOOKING", "CLOSED", "CANCELLED", "COMPLETED"]
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "roomLayoutId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Published layout pinned when the showtime was created."
+          }
+        }
+      },
+      "ShowSeatResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "showtimeId": { "type": "string", "format": "uuid" },
+          "seatId": { "type": "string", "format": "uuid" },
+          "seatNumber": { "type": "string" },
+          "seatType": { "type": "string", "enum": ["STANDARD", "VIP", "COUPLE", "ACCESSIBLE"] },
+          "price": { "type": "number" },
+          "status": { "type": "string", "enum": ["AVAILABLE", "HELD", "BOOKED", "UNAVAILABLE"] },
+          "heldByBookingId": { "type": "string", "format": "uuid" },
+          "holdExpiresAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ShowSeatBookingRequest": {
+        "type": "object",
+        "properties": { "bookingId": { "type": "string", "format": "uuid" } },
+        "required": ["bookingId"]
+      },
+      "HoldShowSeatRequest": {
+        "type": "object",
+        "properties": {
+          "bookingId": { "type": "string", "format": "uuid" },
+          "expiresAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["bookingId", "expiresAt"]
+      },
+      "UpdateSeatRequest": {
+        "type": "object",
+        "properties": {
+          "seatNumber": { "type": "string", "maxLength": 20, "minLength": 0 },
+          "rowLabel": { "type": "string", "maxLength": 10, "minLength": 0 },
+          "seatType": { "type": "string", "enum": ["STANDARD", "VIP", "COUPLE", "ACCESSIBLE"] },
+          "active": { "type": "boolean" }
+        },
+        "required": ["active", "rowLabel", "seatNumber", "seatType"]
+      },
+      "SeatResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "roomId": { "type": "string", "format": "uuid" },
+          "seatNumber": { "type": "string" },
+          "rowLabel": { "type": "string" },
+          "seatType": { "type": "string", "enum": ["STANDARD", "VIP", "COUPLE", "ACCESSIBLE"] },
+          "active": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UpdateRoomRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "roomType": {
+            "type": "string",
+            "enum": ["STANDARD", "IMAX", "FOUR_DX", "SCREEN_X", "VIP"]
+          },
+          "active": { "type": "boolean" }
+        },
+        "required": ["active", "name", "roomType"]
+      },
+      "RoomResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "cinemaId": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "roomType": {
+            "type": "string",
+            "enum": ["STANDARD", "IMAX", "FOUR_DX", "SCREEN_X", "VIP"]
+          },
+          "active": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ReplaceRoomLayoutContentRequest": {
+        "type": "object",
+        "description": "Geometry uses logical layout units.\nx and y identify the unrotated top-left corner.\nRotation is around the rectangle center.\nPositive rotationDegrees rotate clockwise in screen coordinates.\n",
+        "properties": {
+          "expectedVersion": { "type": "integer", "format": "int64" },
+          "seats": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RoomLayoutSeatInput" }
+          },
+          "elements": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RoomLayoutElementInput" }
+          }
+        },
+        "required": ["elements", "expectedVersion", "seats"]
+      },
+      "RoomLayoutElementInput": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "enum": ["SCREEN", "AISLE", "EXIT"] },
+          "label": { "type": "string", "maxLength": 150, "minLength": 0 },
+          "geometry": { "$ref": "#/components/schemas/RoomLayoutGeometryInput" }
+        },
+        "required": ["geometry", "kind"]
+      },
+      "RoomLayoutGeometryInput": {
+        "type": "object",
+        "properties": {
+          "x": { "type": "number", "minimum": 0 },
+          "y": { "type": "number", "minimum": 0 },
+          "width": { "type": "number", "minimum": 0 },
+          "height": { "type": "number", "minimum": 0 },
+          "rotationDegrees": { "type": "number" }
+        },
+        "required": ["height", "rotationDegrees", "width", "x", "y"]
+      },
+      "RoomLayoutSeatInput": {
+        "type": "object",
+        "properties": {
+          "seatId": { "type": "string", "format": "uuid" },
+          "geometry": { "$ref": "#/components/schemas/RoomLayoutGeometryInput" }
+        },
+        "required": ["geometry", "seatId"]
+      },
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "data": {},
+          "error": { "$ref": "#/components/schemas/ErrorBody" }
+        }
+      },
+      "ErrorBody": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "category": { "type": "string" },
+          "details": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ValidationError" }
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": { "field": { "type": "string" }, "message": { "type": "string" } }
+      },
+      "UpdateCinemaRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 150, "minLength": 0 },
+          "address": { "type": "string", "maxLength": 500, "minLength": 0 },
+          "city": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "active": { "type": "boolean" }
+        },
+        "required": ["active", "address", "city", "name"]
+      },
+      "CinemaResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "address": { "type": "string" },
+          "city": { "type": "string" },
+          "active": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateShowtimeRequest": {
+        "type": "object",
+        "properties": {
+          "movieId": { "type": "string", "format": "uuid" },
+          "roomId": { "type": "string", "format": "uuid" },
+          "startsAt": { "type": "string", "format": "date-time" },
+          "endsAt": { "type": "string", "format": "date-time" },
+          "basePrice": { "type": "number", "minimum": 0.01 },
+          "roomLayoutId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Optional published layout belonging to roomId. When omitted, the existing active-seat generation is used."
+          }
+        },
+        "required": ["basePrice", "endsAt", "movieId", "roomId", "startsAt"]
+      },
+      "GenerateShowSeatsRequest": {
+        "type": "object",
+        "properties": { "defaultPrice": { "type": "number", "minimum": 0.01 } },
+        "required": ["defaultPrice"]
+      },
+      "CreateSeatRequest": {
+        "type": "object",
+        "properties": {
+          "seatNumber": { "type": "string", "maxLength": 20, "minLength": 0 },
+          "rowLabel": { "type": "string", "maxLength": 10, "minLength": 0 },
+          "seatType": { "type": "string", "enum": ["STANDARD", "VIP", "COUPLE", "ACCESSIBLE"] }
+        },
+        "required": ["rowLabel", "seatNumber", "seatType"]
+      },
+      "CreateSeatRangeRequest": {
+        "type": "object",
+        "properties": {
+          "rowLabel": { "type": "string", "maxLength": 10, "minLength": 0 },
+          "startNumber": { "type": "integer", "format": "int32", "maximum": 999, "minimum": 1 },
+          "endNumber": { "type": "integer", "format": "int32", "maximum": 999, "minimum": 1 },
+          "seatType": { "type": "string", "enum": ["STANDARD", "VIP", "COUPLE", "ACCESSIBLE"] }
+        },
+        "required": ["endNumber", "rowLabel", "seatType", "startNumber"]
+      },
+      "CreateRoomRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "roomType": {
+            "type": "string",
+            "enum": ["STANDARD", "IMAX", "FOUR_DX", "SCREEN_X", "VIP"]
+          }
+        },
+        "required": ["name", "roomType"]
+      },
+      "CreateRoomLayoutRequest": {
+        "type": "object",
+        "properties": {
+          "roomId": { "type": "string", "format": "uuid" },
+          "canvasWidth": { "type": "number", "minimum": 0 },
+          "canvasHeight": { "type": "number", "minimum": 0 }
+        },
+        "required": ["canvasHeight", "canvasWidth", "roomId"]
+      },
+      "RoomLayoutResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "roomId": { "type": "string", "format": "uuid" },
+          "layoutVersion": { "type": "integer", "format": "int64" },
+          "status": { "type": "string", "enum": ["DRAFT", "PUBLISHED"] },
+          "canvasWidth": { "type": "number" },
+          "canvasHeight": { "type": "number" },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Absent while the layout is a draft"
+          },
+          "version": { "type": "integer", "format": "int64" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "PublishRoomLayoutRequest": {
+        "type": "object",
+        "properties": { "expectedVersion": { "type": "integer", "format": "int64" } },
+        "required": ["expectedVersion"]
+      },
+      "CreateCinemaRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 150, "minLength": 0 },
+          "address": { "type": "string", "maxLength": 500, "minLength": 0 },
+          "city": { "type": "string", "maxLength": 100, "minLength": 0 }
+        },
+        "required": ["address", "city", "name"]
+      },
+      "ShowtimeSeatMapElementResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "kind": { "type": "string", "enum": ["SCREEN", "AISLE", "EXIT"] },
+          "label": { "type": "string" },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "width": { "type": "number" },
+          "height": { "type": "number" },
+          "rotationDegrees": { "type": "number" }
+        }
+      },
+      "ShowtimeSeatMapResponse": {
+        "type": "object",
+        "properties": {
+          "showtimeId": { "type": "string", "format": "uuid" },
+          "cinemaId": { "type": "string", "format": "uuid" },
+          "roomId": { "type": "string", "format": "uuid" },
+          "layoutId": { "type": "string", "format": "uuid" },
+          "layoutVersion": { "type": "integer", "format": "int64" },
+          "serverTime": { "type": "string", "format": "date-time" },
+          "canvasWidth": { "type": "number" },
+          "canvasHeight": { "type": "number" },
+          "elements": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ShowtimeSeatMapElementResponse" }
+          },
+          "seats": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ShowtimeSeatMapSeatResponse" }
+          }
+        }
+      },
+      "ShowtimeSeatMapSeatResponse": {
+        "type": "object",
+        "properties": {
+          "seatId": { "type": "string", "format": "uuid" },
+          "showSeatId": { "type": "string", "format": "uuid" },
+          "seatNumber": { "type": "string" },
+          "rowLabel": { "type": "string" },
+          "seatType": { "type": "string", "enum": ["STANDARD", "VIP", "COUPLE", "ACCESSIBLE"] },
+          "capacity": { "type": "integer", "format": "int32" },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "width": { "type": "number" },
+          "height": { "type": "number" },
+          "rotationDegrees": { "type": "number" },
+          "price": {
+            "type": "number",
+            "description": "Price from ShowSeat; null when ShowSeat is missing."
+          },
+          "currency": { "type": "string" },
+          "status": {
+            "type": "string",
+            "description": "Stored ShowSeat status; null when ShowSeat is missing.",
+            "enum": ["AVAILABLE", "HELD", "BOOKED", "UNAVAILABLE"]
+          },
+          "selectable": { "type": "boolean" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "http://localhost:8082/oauth2/authorize",
+            "tokenUrl": "http://localhost:8082/oauth2/token",
+            "scopes": {
+              "openid": "OpenID Connect",
+              "profile": "Read profile",
+              "email": "Read email",
+              "booking:create": "Create bookings",
+              "booking:read": "Read bookings",
+              "booking:cancel": "Cancel bookings",
+              "movie:manage": "Manage movies and genres",
+              "showtime:manage": "Manage showtimes",
+              "inventory:manage": "Manage cinema inventory",
+              "payment:read": "Read payments",
+              "user:manage": "Manage users"
+            }
+          }
+        }
+      }
+    }
+  }
+}

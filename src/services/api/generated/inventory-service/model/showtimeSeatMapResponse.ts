@@ -9,14 +9,14 @@ import type { ShowtimeSeatMapElementResponse } from './showtimeSeatMapElementRes
 import type { ShowtimeSeatMapSeatResponse } from './showtimeSeatMapSeatResponse';
 
 export interface ShowtimeSeatMapResponse {
-  showtimeId?: string;
-  cinemaId?: string;
-  roomId?: string;
-  layoutId?: string;
-  layoutVersion?: number;
-  serverTime?: string;
-  canvasWidth?: number;
-  canvasHeight?: number;
-  elements?: ShowtimeSeatMapElementResponse[];
-  seats?: ShowtimeSeatMapSeatResponse[];
+  showtimeId: string;
+  cinemaId: string;
+  roomId: string;
+  layoutId: string;
+  layoutVersion: number;
+  serverTime: string;
+  canvasWidth: number;
+  canvasHeight: number;
+  elements: ShowtimeSeatMapElementResponse[];
+  seats: ShowtimeSeatMapSeatResponse[];
 }
