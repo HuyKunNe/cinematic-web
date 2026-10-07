@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tổng quan quản trị | CINEMA</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-dashboard.css" />
+  </head>
+
+  <body class="admin-body">
+    <div class="admin-shell">
+      <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+        <a class="admin-brand" href="#overview">
+          <span class="admin-brand__mark" aria-hidden="true">C</span>
+          <span class="admin-brand__copy">
+            <strong>CINEMATIC</strong>
+            <small>Quản trị</small>
+          </span>
+        </a>
+
+        <nav class="admin-nav">
+          <p class="admin-nav__label">Điều hành</p>
+          <a class="admin-nav__item is-active" href="#overview" aria-current="page">
+            <span aria-hidden="true">⌂</span>
+            Tổng quan
+          </a>
+
+          <p class="admin-nav__label">Nội dung</p>
+          <a class="admin-nav__item" href="#movies"><span aria-hidden="true">▤</span>Phim</a>
+
+          <p class="admin-nav__label">Vận hành</p>
+          <a class="admin-nav__item" href="#cinemas"><span aria-hidden="true">▣</span>Rạp</a>
+          <a class="admin-nav__item" href="#rooms"><span aria-hidden="true">▦</span>Phòng và ghế</a>
+          <a class="admin-nav__item" href="#showtimes"
+            ><span aria-hidden="true">◷</span>Lịch chiếu</a
+          >
+
+          <p class="admin-nav__label">Hệ thống</p>
+          <a class="admin-nav__item" href="#users"><span aria-hidden="true">♙</span>Người dùng</a>
+        </nav>
+
+        <div class="admin-sidebar__footer">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>Không gian quản trị</span>
+        </div>
+      </aside>
+
+      <div class="admin-main">
+        <header class="admin-topbar">
+          <button class="icon-button mobile-menu" type="button" aria-label="Mở menu">☰</button>
+
+          <label class="admin-search">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" placeholder="Tìm kiếm..." aria-label="Tìm kiếm trong quản trị" />
+            <kbd>⌘ K</kbd>
+          </label>
+
+          <button class="icon-button notification-button" type="button" aria-label="Thông báo">
+            ♧
+            <span class="notification-badge">3</span>
+          </button>
+
+          <button class="admin-account" type="button">
+            <span class="admin-account__avatar">QA</span>
+            <span class="admin-account__name">Quản trị viên</span>
+            <span aria-hidden="true">⌄</span>
+          </button>
+        </header>
+
+        <main id="overview" class="admin-content">
+          <div class="dashboard-heading">
+            <div>
+              <p class="eyebrow">CINEMATIC ADMIN</p>
+              <h1>Tổng quan</h1>
+              <p class="dashboard-subtitle">
+                Theo dõi hoạt động quản trị trong ngày.
+                <span class="preview-badge">Dữ liệu minh họa</span>
+              </p>
+            </div>
+
+            <button class="date-filter" type="button">
+              <span aria-hidden="true">▦</span>
+              07.10.2026
+              <span aria-hidden="true">⌄</span>
+            </button>
+          </div>
+
+          <section class="metric-grid" aria-label="Chỉ số tổng quan">
+            <article class="metric-card metric-card--primary">
+              <div class="metric-card__icon" aria-hidden="true">▤</div>
+              <div class="metric-card__content">
+                <span>Tổng phim</span>
+                <strong>128</strong>
+                <small>Toàn bộ trạng thái</small>
+              </div>
+              <span class="metric-card__trend">↑ 12%</span>
+            </article>
+
+            <article class="metric-card metric-card--success">
+              <div class="metric-card__icon" aria-hidden="true">▶</div>
+              <div class="metric-card__content">
+                <span>Đang chiếu</span>
+                <strong>42</strong>
+                <small>Phim đang mở bán</small>
+              </div>
+              <span class="metric-card__trend">↑ 8%</span>
+            </article>
+
+            <article class="metric-card metric-card--warning">
+              <div class="metric-card__icon" aria-hidden="true">◷</div>
+              <div class="metric-card__content">
+                <span>Suất chiếu hôm nay</span>
+                <strong>86</strong>
+                <small>Trên toàn hệ thống</small>
+              </div>
+              <span class="metric-card__trend">Hôm nay</span>
+            </article>
+
+            <article class="metric-card metric-card--neutral">
+              <div class="metric-card__icon" aria-hidden="true">▣</div>
+              <div class="metric-card__content">
+                <span>Rạp hoạt động</span>
+                <strong>12</strong>
+                <small>Đang vận hành</small>
+              </div>
+              <span class="metric-card__trend">Ổn định</span>
+            </article>
+          </section>
+
+          <section class="analytics-grid" aria-label="Thống kê">
+            <article class="panel revenue-panel">
+              <header class="panel-heading">
+                <div>
+                  <h2>Doanh thu & lượt đặt vé</h2>
+                  <p>Diễn biến trong ngày</p>
+                </div>
+                <button class="select-button" type="button">Hôm nay <span>⌄</span></button>
+              </header>
+
+              <div class="chart-legend">
+                <span><i class="legend-dot legend-dot--primary"></i>Doanh thu</span>
+                <span><i class="legend-dot legend-dot--success"></i>Lượt đặt vé</span>
+              </div>
+
+              <div
+                class="line-chart"
+                role="img"
+                aria-label="Biểu đồ minh họa doanh thu và lượt đặt vé"
+              >
+                <div class="chart-y-labels">
+                  <span>200tr</span>
+                  <span>150tr</span>
+                  <span>100tr</span>
+                  <span>50tr</span>
+                  <span>0</span>
+                </div>
+
+                <div class="chart-area">
+                  <div class="chart-grid" aria-hidden="true">
+                    <i></i><i></i><i></i><i></i><i></i>
+                  </div>
+
+                  <svg viewBox="0 0 700 220" preserveAspectRatio="none" aria-hidden="true">
+                    <path
+                      class="chart-area-fill"
+                      d="M0 175 C60 165 75 185 130 155 S205 115 270 135 S350 70 410 92 S500 125 545 95 S620 52 700 72 L700 220 L0 220Z"
+                    />
+                    <path
+                      class="chart-line chart-line--primary"
+                      d="M0 175 C60 165 75 185 130 155 S205 115 270 135 S350 70 410 92 S500 125 545 95 S620 52 700 72"
+                    />
+                    <path
+                      class="chart-line chart-line--success"
+                      d="M0 190 C60 185 75 195 130 175 S205 150 270 162 S350 115 410 130 S500 148 545 128 S620 105 700 118"
+                    />
+                  </svg>
+
+                  <div class="chart-x-labels">
+                    <span>00:00</span><span>06:00</span><span>09:00</span><span>12:00</span>
+                    <span>15:00</span><span>18:00</span><span>21:00</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel booking-panel">
+              <header class="panel-heading">
+                <div>
+                  <h2>Trạng thái booking</h2>
+                  <p>Tỷ lệ theo trạng thái</p>
+                </div>
+                <button class="more-button" type="button" aria-label="Thêm tùy chọn">•••</button>
+              </header>
+
+              <div class="booking-summary">
+                <div
+                  class="booking-donut"
+                  role="img"
+                  aria-label="Biểu đồ minh họa trạng thái booking"
+                  style="
+                    --booking-chart: conic-gradient(
+                      var(--color-success) 0 68%,
+                      var(--color-primary) 68% 82%,
+                      var(--color-error) 82% 90%,
+                      var(--color-text-muted) 90% 100%
+                    );
+                  "
+                >
+                  <div class="booking-donut__center">
+                    <span>Tổng</span>
+                    <strong>1.284</strong>
+                  </div>
+                </div>
+
+                <ul class="booking-legend">
+                  <li>
+                    <i class="legend-dot legend-dot--success"></i><span>Đã xác nhận</span
+                    ><strong>68%</strong>
+                  </li>
+                  <li>
+                    <i class="legend-dot legend-dot--primary"></i><span>Đang xử lý</span
+                    ><strong>14%</strong>
+                  </li>
+                  <li>
+                    <i class="legend-dot legend-dot--error"></i><span>Đã hủy</span
+                    ><strong>8%</strong>
+                  </li>
+                  <li>
+                    <i class="legend-dot legend-dot--muted"></i><span>Chưa thanh toán</span
+                    ><strong>10%</strong>
+                  </li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="panel system-panel">
+              <header class="panel-heading">
+                <div>
+                  <h2>Chức năng quản trị</h2>
+                  <p>Lối tắt đến các khu vực</p>
+                </div>
+              </header>
+
+              <nav class="quick-links" aria-label="Lối tắt quản trị">
+                <a href="#movies"
+                  ><span class="quick-link__icon">▤</span><span>Quản lý phim</span><b>›</b></a
+                >
+                <a href="#cinemas"
+                  ><span class="quick-link__icon">▣</span><span>Quản lý rạp</span><b>›</b></a
+                >
+                <a href="#rooms"
+                  ><span class="quick-link__icon">▦</span><span>Phòng và ghế</span><b>›</b></a
+                >
+                <a href="#showtimes"
+                  ><span class="quick-link__icon">◷</span><span>Lịch chiếu</span><b>›</b></a
+                >
+                <a href="#users"
+                  ><span class="quick-link__icon">♙</span><span>Người dùng</span><b>›</b></a
+                >
+              </nav>
+            </article>
+          </section>
+
+          <section class="data-grid" aria-label="Dữ liệu gần đây">
+            <article class="panel table-panel">
+              <header class="panel-heading">
+                <div>
+                  <h2>Suất chiếu sắp tới</h2>
+                  <p>Các suất chiếu gần nhất</p>
+                </div>
+                <a class="text-link" href="#showtimes">Xem tất cả ›</a>
+              </header>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Phim</th>
+                      <th>Rạp / Phòng</th>
+                      <th>Giờ chiếu</th>
+                      <th>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="movie-thumb">01</span>ĐÊM CUỐI</td>
+                      <td>Nguyễn Du / P03</td>
+                      <td>14:10</td>
+                      <td><span class="status-pill status-pill--success">Đang mở</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="movie-thumb">02</span>BÌNH MINH ĐỎ</td>
+                      <td>Landmark 81 / P02</td>
+                      <td>15:20</td>
+                      <td><span class="status-pill status-pill--success">Đang mở</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="movie-thumb">03</span>HÀNH TINH LẠ</td>
+                      <td>Nguyễn Du / P01</td>
+                      <td>17:00</td>
+                      <td><span class="status-pill status-pill--warning">Sắp chiếu</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="movie-thumb">04</span>VÙNG ĐẤT CÂM LẶNG</td>
+                      <td>Nguyễn Du / P04</td>
+                      <td>19:30</td>
+                      <td><span class="status-pill status-pill--success">Đang mở</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+            <article class="panel table-panel">
+              <header class="panel-heading">
+                <div>
+                  <h2>Booking gần đây</h2>
+                  <p>Hoạt động đặt vé mới nhất</p>
+                </div>
+                <a class="text-link" href="#bookings">Xem tất cả ›</a>
+              </header>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Mã booking</th>
+                      <th>Khách hàng</th>
+                      <th>Số vé</th>
+                      <th>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>BK-0142</td>
+                      <td>Nguyễn Văn B</td>
+                      <td>2</td>
+                      <td><span class="status-pill status-pill--success">Xác nhận</span></td>
+                    </tr>
+                    <tr>
+                      <td>BK-0141</td>
+                      <td>Trần Thị H</td>
+                      <td>4</td>
+                      <td><span class="status-pill status-pill--success">Xác nhận</span></td>
+                    </tr>
+                    <tr>
+                      <td>BK-0140</td>
+                      <td>Lê Minh K</td>
+                      <td>3</td>
+                      <td><span class="status-pill status-pill--warning">Đang xử lý</span></td>
+                    </tr>
+                    <tr>
+                      <td>BK-0139</td>
+                      <td>Phạm Anh T</td>
+                      <td>1</td>
+                      <td><span class="status-pill status-pill--error">Đã hủy</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

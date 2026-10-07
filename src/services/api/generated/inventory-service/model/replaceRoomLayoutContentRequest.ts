@@ -8,6 +8,12 @@
 import type { RoomLayoutElementInput } from './roomLayoutElementInput';
 import type { RoomLayoutSeatInput } from './roomLayoutSeatInput';
 
+/**
+ * Geometry uses logical layout units.
+ * x and y identify the unrotated top-left corner.
+ * Rotation is around the rectangle center.
+ * Positive rotationDegrees rotate clockwise in screen coordinates.
+ */
 export interface ReplaceRoomLayoutContentRequest {
   expectedVersion: number;
   seats: RoomLayoutSeatInput[];

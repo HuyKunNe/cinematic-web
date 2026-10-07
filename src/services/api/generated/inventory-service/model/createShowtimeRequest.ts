@@ -13,4 +13,6 @@ export interface CreateShowtimeRequest {
   endsAt: string;
   /** @minimum 0.01 */
   basePrice: number;
+  /** Optional published layout belonging to roomId. When omitted, the existing active-seat generation is used. */
+  roomLayoutId?: string;
 }

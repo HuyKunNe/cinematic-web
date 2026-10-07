@@ -31,6 +31,7 @@ export * from './getByShowtimeIdParams';
 export * from './getByTimeRangeParams';
 export * from './getRoomLayoutsByRoomParams';
 export * from './holdShowSeatRequest';
+export * from './publishRoomLayoutRequest';
 export * from './replaceRoomLayoutContentRequest';
 export * from './roomLayoutElementInput';
 export * from './roomLayoutElementInputKind';

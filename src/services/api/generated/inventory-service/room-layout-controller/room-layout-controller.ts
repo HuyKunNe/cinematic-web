@@ -8,6 +8,7 @@
 import type {
   CreateRoomLayoutRequest,
   GetRoomLayoutsByRoomParams,
+  PublishRoomLayoutRequest,
   ReplaceRoomLayoutContentRequest,
   RoomLayoutResponse
 } from '../model';
@@ -81,6 +82,26 @@ export const createRoomLayoutDraft = (
       );
     }
   /**
+ * Requires inventory:manage.
+ * expectedVersion must match the current version field.
+ * Requires at least one seat and one SCREEN.
+ * Validates rotated geometry inside the canvas.
+ * Rejects seat-seat and seat-element overlaps.
+ * Publishes this layout version without binding it to showtimes.
+ * @summary Publish a validated room layout
+ */
+export const publishRoomLayout = (
+    layoutId: string,
+    publishRoomLayoutRequest: PublishRoomLayoutRequest,
+ ) => {
+      return apiRequest<RoomLayoutResponse>(
+      {url: `/api/v1/room-layouts/${layoutId}/publish`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: publishRoomLayoutRequest
+    },
+      );
+    }
+  /**
  * @summary Get room layout metadata
  */
 export const getRoomLayoutById = (
@@ -95,4 +116,5 @@ export const getRoomLayoutById = (
 export type ReplaceRoomLayoutContentResult = NonNullable<Awaited<ReturnType<typeof replaceRoomLayoutContent>>>
 export type GetRoomLayoutsByRoomResult = NonNullable<Awaited<ReturnType<typeof getRoomLayoutsByRoom>>>
 export type CreateRoomLayoutDraftResult = NonNullable<Awaited<ReturnType<typeof createRoomLayoutDraft>>>
+export type PublishRoomLayoutResult = NonNullable<Awaited<ReturnType<typeof publishRoomLayout>>>
 export type GetRoomLayoutByIdResult = NonNullable<Awaited<ReturnType<typeof getRoomLayoutById>>>

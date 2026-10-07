@@ -45,7 +45,21 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const create = (
+  /**
+ * Requires showtime:manage.
+ *
+ * roomLayoutId is optional.
+ * When provided, it must identify a PUBLISHED layout of roomId.
+ * Seats are generated from that layout after validating its snapshots.
+ * Active seats start AVAILABLE; inactive seats start UNAVAILABLE.
+ *
+ * When omitted, existing active-seat generation is retained.
+ * Seat prices are calculated from basePrice using SeatPricingPolicy.
+ *
+ * The layout cannot be changed after creation.
+ * @summary Create a showtime and generate its seats
+ */
+export const create = (
     createShowtimeRequest: CreateShowtimeRequest,
  ) => {
       return apiRequest<ShowtimeResponse>(

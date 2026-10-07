@@ -19,4 +19,6 @@ export interface ShowtimeResponse {
   status?: ShowtimeResponseStatus;
   createdAt?: string;
   updatedAt?: string;
+  /** Published layout pinned when the showtime was created. */
+  roomLayoutId?: string;
 }
