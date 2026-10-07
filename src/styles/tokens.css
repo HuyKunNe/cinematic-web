@@ -155,6 +155,11 @@
   --skeleton-title-height: 1.5rem;
   --skeleton-avatar-size: 3rem;
 
+  /* Autocomplete */
+  --app-autocomplete-height: var(--control-height-md);
+  --app-autocomplete-list-height: 18rem;
+  --app-autocomplete-layer: calc(var(--z-modal) + 1);
+
   /* Border */
   --border-width-thin: 0.0625rem;
   --border-width-strong: 0.125rem;

@@ -447,7 +447,7 @@
 .admin-dashboard__scope {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--admin-dashboard-filter-gap);
   min-width: 0;
   padding: var(--space-4);
@@ -457,38 +457,16 @@
 }
 
 .admin-dashboard__scope-field {
-  display: grid;
+  --app-autocomplete-height: var(--admin-dashboard-filter-height);
+
   flex: 1 1 var(--admin-dashboard-filter-min-width);
-  gap: var(--space-2);
   min-width: min(100%, var(--admin-dashboard-filter-min-width));
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-}
-
-.admin-dashboard__scope-field select,
-.admin-dashboard__panel-select {
-  width: 100%;
-  min-width: 0;
-  min-height: var(--admin-dashboard-filter-height);
-  padding-inline: var(--space-3);
-  border: var(--border-width-thin) solid var(--color-border-strong);
-  border-radius: var(--admin-dashboard-filter-radius);
-  background: var(--color-background);
-  color: var(--color-text-primary);
-  color-scheme: dark;
-  font: inherit;
-  cursor: pointer;
-}
-
-.admin-dashboard__scope-field option,
-.admin-dashboard__panel-select option {
-  background: var(--color-background);
-  color: var(--color-text-primary);
 }
 
 .admin-dashboard__scope-button {
   flex: 0 0 auto;
   min-height: var(--admin-dashboard-filter-height);
+  margin-top: calc(var(--font-size-xs) * var(--line-height-base) + var(--space-2));
   padding-inline: var(--space-4);
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--admin-dashboard-filter-radius);
@@ -503,30 +481,16 @@
     border-color var(--duration-fast) var(--easing-standard);
 }
 
-.admin-dashboard__scope-button.is-primary {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: var(--color-background);
-}
-
 .admin-dashboard__scope-button:hover:not(:disabled) {
   border-color: var(--color-primary);
 }
 
-.admin-dashboard__scope-button.is-primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.admin-dashboard__scope-button:disabled,
-.admin-dashboard__scope-field select:disabled,
-.admin-dashboard__panel-select:disabled {
+.admin-dashboard__scope-button:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
-.admin-dashboard__scope-button:focus-visible,
-.admin-dashboard__scope-field select:focus-visible,
-.admin-dashboard__panel-select:focus-visible {
+.admin-dashboard__scope-button:focus-visible {
   outline: var(--focus-ring-width) solid var(--color-focus);
   outline-offset: var(--space-1);
 }
@@ -559,8 +523,33 @@
 }
 
 .admin-dashboard__panel-select {
+  width: 100%;
+  min-width: 0;
   min-height: var(--admin-dashboard-panel-filter-height);
+  padding-inline: var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border-strong);
+  border-radius: var(--admin-dashboard-filter-radius);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  color-scheme: dark;
+  font: inherit;
   font-size: var(--admin-dashboard-tiny-size);
+  cursor: pointer;
+}
+
+.admin-dashboard__panel-select option {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.admin-dashboard__panel-select:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.admin-dashboard__panel-select:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
 }
 
 @variant admin-compact {
@@ -596,10 +585,6 @@
     flex-wrap: wrap;
   }
 
-  .admin-dashboard__scope {
-    align-items: stretch;
-  }
-
   .admin-dashboard__scope-field {
     flex-basis: 100%;
     min-width: 0;
@@ -607,5 +592,6 @@
 
   .admin-dashboard__scope-button {
     width: 100%;
+    margin-top: 0;
   }
 }

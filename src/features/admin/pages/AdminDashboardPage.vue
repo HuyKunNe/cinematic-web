@@ -20,6 +20,7 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
 import type { ApiError } from '@/services/http/api-error'
 import { useAdminDashboardQueries } from '../api/admin-dashboard-queries'
+import AppAutocomplete from '@/components/ui/AppAutocomplete.vue'
 
 const auth = useAuthStore()
 const now = useNow({
@@ -42,8 +43,6 @@ function vietnamDay(date: Date) {
 
 const today = computed(() => vietnamDay(now.value))
 const selectedDate = ref(vietnamDay(now.value))
-const draftCinemaId = ref('')
-const draftMovieId = ref('')
 const appliedScope = ref({ cinemaId: '', movieId: '' })
 const dashboard = useAdminDashboardQueries(selectedDate, now, appliedScope)
 
@@ -59,22 +58,7 @@ const scopeSummary = computed(() => {
   return [movie, cinema].filter(Boolean).join(' · ') || 'Toàn hệ thống'
 })
 
-const hasDraftChanges = computed(
-  () =>
-    draftCinemaId.value !== appliedScope.value.cinemaId ||
-    draftMovieId.value !== appliedScope.value.movieId,
-)
-
-function applyScope() {
-  appliedScope.value = {
-    cinemaId: draftCinemaId.value,
-    movieId: draftMovieId.value,
-  }
-}
-
 function resetScope() {
-  draftCinemaId.value = ''
-  draftMovieId.value = ''
   appliedScope.value = { cinemaId: '', movieId: '' }
 }
 
@@ -232,67 +216,43 @@ function changeDate(event: Event) {
         </button>
       </div>
     </header>
-    <form
+    <div
       v-if="dashboard.canManageShowtimes.value"
       class="admin-dashboard__scope"
+      role="group"
       aria-label="Lọc dữ liệu dashboard"
-      @submit.prevent="applyScope"
-      @reset.prevent="resetScope"
     >
-      <label class="admin-dashboard__scope-field" for="dashboard-cinema">
-        <span>Rạp</span>
-        <select
-          id="dashboard-cinema"
-          v-model="draftCinemaId"
-          :disabled="
-            dashboard.activeCinemas.isPending.value || dashboard.activeCinemas.isError.value
-          "
-        >
-          <option value="">
-            {{ dashboard.activeCinemas.isPending.value ? 'Đang tải rạp…' : 'Tất cả rạp' }}
-          </option>
-          <option
-            v-for="item in dashboard.cinemaOptions.value"
-            :key="item.value"
-            :value="item.value"
-          >
-            {{ item.label }}
-          </option>
-        </select>
-      </label>
+      <AppAutocomplete
+        id="dashboard-cinema"
+        v-model="appliedScope.cinemaId"
+        class="admin-dashboard__scope-field"
+        label="Rạp"
+        all-label="Tất cả rạp"
+        :options="dashboard.cinemaOptions.value"
+        :loading="dashboard.activeCinemas.isFetching.value"
+        :disabled="dashboard.activeCinemas.isError.value && !dashboard.activeCinemas.data.value"
+      />
 
-      <label class="admin-dashboard__scope-field" for="dashboard-movie">
-        <span>Phim</span>
-        <select
-          id="dashboard-movie"
-          v-model="draftMovieId"
-          :disabled="dashboard.movieCatalog.isPending.value || dashboard.movieCatalog.isError.value"
-        >
-          <option value="">
-            {{ dashboard.movieCatalog.isPending.value ? 'Đang tải phim…' : 'Tất cả phim' }}
-          </option>
-          <option
-            v-for="item in dashboard.movieOptions.value"
-            :key="item.value"
-            :value="item.value"
-          >
-            {{ item.label }}
-          </option>
-        </select>
-      </label>
-
-      <button class="admin-dashboard__scope-button" type="reset">Xóa lọc</button>
+      <AppAutocomplete
+        id="dashboard-movie"
+        v-model="appliedScope.movieId"
+        class="admin-dashboard__scope-field"
+        label="Phim"
+        all-label="Tất cả phim"
+        :options="dashboard.movieOptions.value"
+        :loading="dashboard.movieCatalog.isFetching.value"
+        :disabled="dashboard.movieCatalog.isError.value && !dashboard.movieCatalog.data.value"
+      />
       <button
-        class="admin-dashboard__scope-button is-primary"
-        type="submit"
-        :disabled="!hasDraftChanges"
+        class="admin-dashboard__scope-button"
+        type="button"
+        :disabled="!appliedScope.cinemaId && !appliedScope.movieId"
+        @click="resetScope"
       >
-        Áp dụng
+        Xóa lọc
       </button>
-
       <p class="admin-dashboard__scope-description" aria-live="polite">
-        Phạm vi đã áp dụng: {{ scopeSummary }}
-        <span v-if="hasDraftChanges"> · Có thay đổi chưa áp dụng</span>
+        Phạm vi: {{ scopeSummary }}
       </p>
       <p class="admin-dashboard__scope-description">
         Bộ lọc áp dụng cho lịch chiếu. Chỉ số phim/rạp hiển thị toàn hệ thống. Danh sách chọn gồm
@@ -330,7 +290,7 @@ function changeDate(event: Event) {
           Thử lại
         </button>
       </div>
-    </form>
+    </div>
     <div v-if="metrics.length" class="admin-dashboard__metrics" aria-label="Số liệu tổng quan">
       <article
         v-for="metric in metrics"
@@ -453,7 +413,7 @@ function changeDate(event: Event) {
         <header class="admin-dashboard__panel-heading">
           <div>
             <h2>Suất chiếu sắp tới</h2>
-            <p>Các suất chiếu còn lại trong ngày · {{ scopeSummary }}</p><p>Các suất chiếu còn lại trong ngày đã chọn</p>
+            <p>Các suất chiếu còn lại trong ngày · {{ scopeSummary }}</p>
           </div>
           <RouterLink
             class="admin-dashboard__text-link"
