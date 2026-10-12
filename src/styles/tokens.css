@@ -549,7 +549,8 @@
   --admin-search-dialog-width: 34rem;
   --admin-search-results-height: 24rem;
   --admin-dashboard-gap: var(--space-4);
-  --admin-dashboard-card-padding: 1.125rem;
+  --admin-dashboard-card-padding: var(--space-5);
+  --admin-dashboard-filter-radius: var(--admin-reference-radius-sm);
   --admin-dashboard-card-radius: var(--radius-lg);
   --admin-dashboard-heading-size: clamp(1.75rem, 3vw, 2.25rem);
   --admin-dashboard-metric-size: clamp(1.25rem, 2vw, 1.75rem);
@@ -569,15 +570,15 @@
   --admin-dashboard-filter-height: 2.625rem;
   --admin-dashboard-filter-min-width: 11.875rem;
   --admin-dashboard-filter-gap: var(--space-3);
-  --admin-dashboard-filter-radius: var(--radius-md);
   --admin-dashboard-panel-filter-height: var(--space-9);
   --admin-dashboard-table-width: 35rem;
   --admin-dashboard-table-row-height: var(--space-13);
   --admin-dashboard-thumb-width: var(--space-7);
   --admin-dashboard-thumb-height: var(--space-9);
   --admin-dashboard-dot-size: var(--space-2);
-  --admin-dashboard-eyebrow-tracking: 0.12em;
-
+  --admin-dashboard-eyebrow-tracking: var(--admin-reference-heading-tracking);
+  --admin-dashboard-metric-gap: 0.875rem;
+  
   /* Admin management reference */
   --admin-reference-background-soft: #091722;
   --admin-reference-border-strong: #415766;

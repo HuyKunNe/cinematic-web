@@ -1,106 +1,75 @@
 # Cinematic Web
 
-Frontend application for the Cinema Booking System.
+Frontend cho hệ thống đặt vé xem phim Cinematic.
 
-## Links
+## Repositories
 
-- Frontend repository: https://github.com/HuyKunNe/cinematic-web
-- Backend repository: https://github.com/HuyKunNe/cinema-system
-- Figma: https://www.figma.com/design/u8UwhKxDdk5qvK4WezjJnQ/Cinema-Web-UI-Cinematic-Dark?node-id=3-2
+- Frontend: https://github.com/HuyKunNe/cinematic-web
+- Backend: https://github.com/HuyKunNe/cinema-system
 
-## Status
+## Trạng thái
 
-The frontend is being rebuilt from a new repository.
+Đọc [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md) và đối chiếu với code hiện tại để biết tiến độ đã xác minh. Không mặc định các đề xuất trong tài liệu đã được áp dụng.
 
-Current phase:
+## Công nghệ
 
-```text
-F0 — Project foundation and documentation
-```
+Dự án dùng Vue 3, TypeScript, Vite, Vue Router, Pinia, TanStack Vue Query, Axios, Orval, oidc-client-ts, Tailwind CSS, Reka UI, VueUse, VeeValidate và Zod.
 
-See [CURRENT_STATUS.md](docs/CURRENT_STATUS.md) for the latest verified status.
+`package.json` và lock file là nguồn chuẩn cho phiên bản dependency và các script có thể chạy.
 
-## Technology
+## Kiến trúc
 
-- Vue 3
-- TypeScript
-- Vite
-- Vue Router
-- Pinia
-- TanStack Vue Query
-- Axios
-- Orval
-- oidc-client-ts
-- Tailwind CSS
-- Reka UI
-- VueUse
-- VeeValidate
-- Zod
-- Vitest
-- Vue Test Utils
-- MSW
+Ứng dụng tổ chức theo hướng phụ thuộc:
 
-Exact versions must be read from `package.json` and the lock file after project initialization.
+`app → features → shared infrastructure`
 
-## Architecture
+- `app` quản lý khởi tạo ứng dụng và providers.
+- `features` chứa các chức năng nghiệp vụ, API composables, query keys và mapper.
+- Hạ tầng dùng chung nằm trong các thư mục như `components/`, `config/`, `services/`, `styles/` và `utils/`.
 
-The application follows this dependency direction:
+Xem [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-```text
-app → modules → shared
-```
+## Thiết kế
 
-See [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Figma hiện không được dùng làm nguồn triển khai. Khi xây dựng giao diện, dùng các HTML/CSS tham khảo trong [`docs/design/reference/html-convert/`](docs/design/reference/html-convert/).
 
-## Design
+Mở [`index.html`](docs/design/reference/html-convert/index.html) để xem danh mục màn hình. Đọc README trong thư mục tham khảo để biết quy tắc CSS, responsive và những phần dữ liệu chỉ mang tính minh họa.
 
-Figma is the source of truth for:
+Các giá trị giao diện nên được biểu diễn bằng CSS variables và tái sử dụng token hiện có.
 
-- Layout
-- Dimensions
-- Responsive behavior
-- Typography
-- Colors
-- Spacing
-- Assets
-- Component states
+## API và xác thực
 
-Design values must be represented by CSS variables instead of hardcoded classes.
+API client được sinh bằng Orval từ hợp đồng OpenAPI đã kiểm tra. Không chỉnh sửa file generated thủ công và không tự suy đoán endpoint hoặc DTO.
 
-See [DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md).
+Frontend sử dụng OAuth 2.0 / OpenID Connect Authorization Code với PKCE. Không đưa client secret vào frontend và không gửi username/password trực tiếp từ Vue.
 
-## API generation
+Xem [docs/API_INTEGRATION.md](docs/API_INTEGRATION.md).
 
-API clients are generated from backend OpenAPI contracts using Orval.
+## Scripts hiện có
 
-Generated code must not be edited manually.
+Các script dưới đây được khai báo trong `package.json`:
 
-See [API_INTEGRATION.md](docs/API_INTEGRATION.md).
+- `npm run dev`
+- `npm run build`
+- `npm run build-only`
+- `npm run preview`
+- `npm run type-check`
+- `npm run api`
+- `npm run format`
 
-## Authentication
+Kiểm tra `package.json` trước khi dùng script. Một số lệnh có thể sinh hoặc sửa file.
 
-The frontend uses OAuth 2.0 / OpenID Connect Authorization Code with PKCE.
+## Quy trình làm việc
 
-The frontend must not contain a client secret or submit user credentials directly.
+1. Đọc `AGENTS.md` và `docs/CURRENT_STATUS.md`.
+2. Đối chiếu tài liệu với code mới nhất.
+3. Kiểm tra HTML/CSS tham khảo và hợp đồng backend liên quan.
+4. Đề xuất một phạm vi nhỏ cùng danh sách file và code block để người dùng tự áp dụng.
+5. Đưa các bước kiểm tra thủ công và commit message sau mỗi round.
 
-## Planned commands
+Repository được giữ ở chế độ chỉ đọc trong workflow này. Không sửa file, commit hoặc push thay người dùng.
 
-The following commands become available after project initialization:
-
-```bash
-npm install
-npm run dev
-npm run api:generate
-npm run api:watch
-npm run test:unit
-npm run type-check
-npm run lint
-npm run build
-```
-
-Do not assume every command exists until it is added to `package.json`.
-
-## Documentation
+## Tài liệu
 
 - [AI context](docs/AI_CONTEXT.md)
 - [Architecture](docs/ARCHITECTURE.md)
@@ -109,16 +78,3 @@ Do not assume every command exists until it is added to `package.json`.
 - [Current status](docs/CURRENT_STATUS.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Agent instructions](AGENTS.md)
-
-## Contribution workflow
-
-1. Read `AGENTS.md`.
-2. Read `docs/CURRENT_STATUS.md`.
-3. Select one roadmap item.
-4. Audit Figma and existing code.
-5. Propose the affected files.
-6. Obtain approval.
-7. Implement one scoped item.
-8. Verify manually or run requested checks.
-9. Update project documentation.
-10. Commit only after user review.

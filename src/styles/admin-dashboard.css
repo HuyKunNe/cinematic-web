@@ -105,7 +105,7 @@
 .admin-dashboard__metric {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--admin-dashboard-metric-gap);
   min-height: var(--admin-dashboard-metric-height);
 }
 
@@ -447,26 +447,26 @@
 .admin-dashboard__scope {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: var(--admin-dashboard-filter-gap);
   min-width: 0;
   padding: var(--space-4);
   border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--admin-dashboard-card-radius);
+  border-radius: var(--radius-md);
   background: var(--color-surface);
 }
 
 .admin-dashboard__scope-field {
   --app-autocomplete-height: var(--admin-dashboard-filter-height);
 
-  flex: 1 1 var(--admin-dashboard-filter-min-width);
+  flex: 0 1 var(--admin-dashboard-filter-min-width);
   min-width: min(100%, var(--admin-dashboard-filter-min-width));
 }
 
 .admin-dashboard__scope-button {
   flex: 0 0 auto;
   min-height: var(--admin-dashboard-filter-height);
-  margin-top: calc(var(--font-size-xs) * var(--line-height-base) + var(--space-2));
+  margin-top: 0;
   padding-inline: var(--space-4);
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--admin-dashboard-filter-radius);
@@ -584,6 +584,15 @@
   .admin-dashboard__scope-field {
     flex-basis: 100%;
     min-width: 0;
+  }
+
+  .admin-dashboard__scope-field .app-autocomplete__anchor,
+  .admin-dashboard__scope-field .app-autocomplete__trigger {
+    border-radius: var(--admin-dashboard-filter-radius);
+  }
+
+  .admin-dashboard__scope-field .app-autocomplete__input {
+    font-size: var(--font-size-xs);
   }
 
   .admin-dashboard__scope-button {
