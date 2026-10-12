@@ -645,6 +645,59 @@
   border-color: var(--color-primary);
 }
 
+/* Movies-specific geometry from admin-movies.css reference.
+   Keep before responsive variants so mobile rules remain effective. */
+
+.admin-movies__heading h1 {
+  font-family: var(--font-family-base);
+  font-size: var(--admin-movies-heading-size);
+  line-height: var(--admin-movies-heading-line-height);
+}
+
+.admin-layout.is-management
+  .admin-layout__main
+  :is(.admin-movies__heading-actions, .admin-movies__filters)
+  .app-button {
+  border-radius: var(--admin-movies-control-radius);
+  font-weight: var(--admin-movies-button-weight);
+  white-space: nowrap;
+}
+
+.admin-movies__filters {
+  padding: var(--admin-movies-content-padding);
+  border-radius: var(--admin-movies-toolbar-radius);
+}
+
+.admin-layout.is-management .admin-layout__main .admin-movies__filters .app-select__native {
+  border-radius: var(--admin-movies-control-radius);
+  background: var(--color-background);
+  font-size: var(--font-size-xs);
+}
+
+.admin-movies__panel {
+  padding: var(--admin-movies-content-padding);
+  border-radius: var(--admin-movies-panel-radius);
+}
+
+.admin-movies__list-heading {
+  margin-bottom: var(--space-4);
+  padding: 0;
+}
+
+.admin-movies__list-heading > .admin-movies__muted {
+  font-size: var(--font-size-xs);
+}
+
+.admin-movies__panel > .admin-movies__feedback {
+  margin: 0 0 var(--space-4);
+  padding: 0;
+}
+
+.admin-movies__pagination {
+  margin-top: var(--space-4);
+  padding: var(--space-4) 0 0;
+}
+
 /* Central variants are declared in main.css. */
 @variant admin-filters-compact {
   :is(.admin-cinemas__filters, .admin-rooms__filters, .admin-reference__filters),

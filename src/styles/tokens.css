@@ -541,6 +541,15 @@
   --admin-genre-table-min-width: 30rem;
   --admin-genre-description-min-height: 5rem;
 
+  /* Admin Movies list — static reference */
+  --admin-movies-heading-size: clamp(1.75rem, 3vw, 2.25rem);
+  --admin-movies-heading-line-height: 1.15;
+  --admin-movies-control-radius: 0.625rem;
+  --admin-movies-toolbar-radius: var(--radius-lg);
+  --admin-movies-panel-radius: var(--admin-movies-control-radius);
+  --admin-movies-content-padding: var(--space-5);
+  --admin-movies-button-weight: 650;
+
   /* Admin dashboard reference */
   --admin-reference-control-height: var(--admin-header-control-height);
   --admin-sidebar-padding-inline: var(--admin-sidebar-nav-padding);
