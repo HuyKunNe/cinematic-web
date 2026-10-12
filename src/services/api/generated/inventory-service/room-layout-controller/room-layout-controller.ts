@@ -10,6 +10,7 @@ import type {
   GetRoomLayoutsByRoomParams,
   PublishRoomLayoutRequest,
   ReplaceRoomLayoutContentRequest,
+  RoomLayoutContentResponse,
   RoomLayoutResponse
 } from '../model';
 
@@ -35,7 +36,7 @@ export const getRoomLayoutContent = (
  * Requires inventory:manage.
  * Replaces all seats and elements in a DRAFT layout.
  * Empty arrays clear the corresponding content.
- * expectedVersion must match the current layout version field.
+ * expectedVersion must match layout.version, not layout.layoutVersion.
  * This operation does not publish or bind the layout to showtimes.
  * @summary Replace draft room layout content
  */
@@ -43,7 +44,7 @@ export const replaceRoomLayoutContent = (
     layoutId: string,
     replaceRoomLayoutContentRequest: ReplaceRoomLayoutContentRequest,
  ) => {
-      return apiRequest<unknown>(
+      return apiRequest<RoomLayoutContentResponse>(
       {url: `/api/v1/room-layouts/${layoutId}/content`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: replaceRoomLayoutContentRequest
@@ -58,7 +59,7 @@ export const replaceRoomLayoutContent = (
 export const getRoomLayoutsByRoom = (
     params: GetRoomLayoutsByRoomParams,
  ) => {
-      return apiRequest<unknown>(
+      return apiRequest<RoomLayoutResponse[]>(
       {url: `/api/v1/room-layouts`, method: 'GET',
         params
     },
@@ -107,7 +108,7 @@ export const publishRoomLayout = (
 export const getRoomLayoutById = (
     layoutId: string,
  ) => {
-      return apiRequest<unknown>(
+      return apiRequest<RoomLayoutResponse>(
       {url: `/api/v1/room-layouts/${layoutId}`, method: 'GET'
     },
       );

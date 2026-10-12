@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chọn ghế | CINEMATIC</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./cinematic-cinema-pages.css" />
+    <link rel="stylesheet" href="./seat-selection.css" />
+  </head>
+
+  <body class="booking-page">
+    <header class="site-header booking-header">
+      <div class="container booking-header__inner">
+        <a class="brand" href="./cinematic-home-desktop.html" aria-label="CINEMATIC - Trang chủ">
+          CINEMATIC
+        </a>
+
+        <nav class="booking-steps" aria-label="Tiến trình đặt vé">
+          <ol>
+            <li class="is-complete"><span>1</span><strong>Chọn suất</strong></li>
+            <li class="is-active" aria-current="step"><span>2</span><strong>Chọn ghế</strong></li>
+            <li><span>3</span><strong>Thanh toán</strong></li>
+          </ol>
+        </nav>
+
+        <a class="booking-help" href="#support">Cần hỗ trợ?</a>
+      </div>
+    </header>
+
+    <main class="container booking-main">
+      <nav class="booking-breadcrumbs" aria-label="Breadcrumb">
+        <a href="./cinematic-home-desktop.html">Trang chủ</a>
+        <span aria-hidden="true">/</span>
+        <a href="./cinematic-movies.html">Phim</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Chọn ghế</span>
+      </nav>
+
+      <section class="booking-title">
+        <div>
+          <p class="eyebrow">BƯỚC 02 · CHỌN VỊ TRÍ</p>
+          <h1>Chọn ghế của bạn</h1>
+          <p>Chọn tối đa 8 ghế cho một giao dịch.</p>
+        </div>
+        <a class="booking-back-link" href="./cinematic-movie-detail.html">← Đổi suất chiếu</a>
+      </section>
+
+      <section class="booking-session" aria-label="Thông tin suất chiếu">
+        <div class="booking-session__movie-art" aria-hidden="true">VT</div>
+        <div class="booking-session__details">
+          <strong>Vùng Tối Thức Tỉnh</strong>
+          <span>CINEMATIC Quận 1 · Phòng 03 · 2D phụ đề</span>
+          <span>Thứ Bảy, 03/10 · 19:30</span>
+        </div>
+        <div class="booking-countdown" role="timer" aria-label="Thời gian giữ ghế còn lại">
+          <span>Thời gian giữ ghế</span>
+          <strong>04:58</strong>
+        </div>
+      </section>
+
+      <div class="booking-layout">
+        <section class="seat-selection-panel" aria-labelledby="seat-map-title">
+          <div class="seat-panel-heading">
+            <div>
+              <h2 id="seat-map-title">Sơ đồ ghế</h2>
+              <p>Chạm vào ghế trống để chọn hoặc bỏ chọn.</p>
+            </div>
+            <span class="seat-panel-heading__format">Phòng 03 · 2D</span>
+          </div>
+
+          <div class="seat-legend" aria-label="Chú thích sơ đồ">
+            <span><i class="seat-legend__marker seat-legend__marker--available"></i>Còn trống</span>
+            <span><i class="seat-legend__marker seat-legend__marker--selected"></i>Đang chọn</span>
+            <span><i class="seat-legend__marker seat-legend__marker--booked"></i>Đã đặt</span>
+            <span><i class="seat-legend__marker seat-legend__marker--vip"></i>Ghế VIP</span>
+          </div>
+
+          <div class="seat-map-scroll" tabindex="0" aria-label="Sơ đồ ghế, có thể cuộn ngang">
+            <div class="seat-map">
+              <div class="seat-screen"><span>MÀN HÌNH</span></div>
+
+              <div class="seat-row">
+                <span class="seat-row__label">A</span>
+                <div class="seat-row__grid">
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế A01, còn trống"
+                  >
+                    01
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế A02, còn trống"
+                  >
+                    02
+                  </button>
+                  <button
+                    class="seat seat--booked"
+                    type="button"
+                    disabled
+                    aria-label="Ghế A03, đã đặt"
+                  >
+                    03
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế A04, còn trống"
+                  >
+                    04
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế A05, còn trống"
+                  >
+                    05
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế A06, còn trống"
+                  >
+                    06
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế A07, còn trống"
+                  >
+                    07
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế A08, còn trống"
+                  >
+                    08
+                  </button>
+                </div>
+              </div>
+
+              <div class="seat-row">
+                <span class="seat-row__label">B</span>
+                <div class="seat-row__grid">
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế B01, còn trống"
+                  >
+                    01
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế B02, còn trống"
+                  >
+                    02
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế B03, còn trống"
+                  >
+                    03
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế B04, còn trống"
+                  >
+                    04
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế B05, còn trống"
+                  >
+                    05
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế B06, còn trống"
+                  >
+                    06
+                  </button>
+                  <button
+                    class="seat seat--booked"
+                    type="button"
+                    disabled
+                    aria-label="Ghế B07, đã đặt"
+                  >
+                    07
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế B08, còn trống"
+                  >
+                    08
+                  </button>
+                </div>
+              </div>
+
+              <div class="seat-row">
+                <span class="seat-row__label">C</span>
+                <div class="seat-row__grid">
+                  <button
+                    class="seat seat--booked"
+                    type="button"
+                    disabled
+                    aria-label="Ghế C01, đã đặt"
+                  >
+                    01
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế C02, còn trống"
+                  >
+                    02
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế C03, còn trống"
+                  >
+                    03
+                  </button>
+                  <button
+                    class="seat seat--selected"
+                    type="button"
+                    aria-pressed="true"
+                    aria-label="Ghế C04, đang chọn"
+                  >
+                    04
+                  </button>
+                  <button
+                    class="seat seat--selected"
+                    type="button"
+                    aria-pressed="true"
+                    aria-label="Ghế C05, đang chọn"
+                  >
+                    05
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế C06, còn trống"
+                  >
+                    06
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế C07, còn trống"
+                  >
+                    07
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế C08, còn trống"
+                  >
+                    08
+                  </button>
+                </div>
+              </div>
+
+              <div class="seat-row">
+                <span class="seat-row__label">D</span>
+                <div class="seat-row__grid">
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế D01, còn trống"
+                  >
+                    01
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế D02, còn trống"
+                  >
+                    02
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế D03, còn trống"
+                  >
+                    03
+                  </button>
+                  <button
+                    class="seat seat--booked"
+                    type="button"
+                    disabled
+                    aria-label="Ghế D04, đã đặt"
+                  >
+                    04
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế D05, còn trống"
+                  >
+                    05
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế D06, còn trống"
+                  >
+                    06
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế D07, còn trống"
+                  >
+                    07
+                  </button>
+                  <button
+                    class="seat seat--available"
+                    type="button"
+                    aria-label="Ghế D08, còn trống"
+                  >
+                    08
+                  </button>
+                </div>
+              </div>
+
+              <div class="seat-row seat-row--vip">
+                <span class="seat-row__label">E</span>
+                <div class="seat-row__grid">
+                  <button class="seat seat--vip" type="button" aria-label="Ghế E01, VIP, còn trống">
+                    01
+                  </button>
+                  <button class="seat seat--vip" type="button" aria-label="Ghế E02, VIP, còn trống">
+                    02
+                  </button>
+                  <button class="seat seat--vip" type="button" aria-label="Ghế E03, VIP, còn trống">
+                    03
+                  </button>
+                  <button class="seat seat--vip" type="button" aria-label="Ghế E04, VIP, còn trống">
+                    04
+                  </button>
+                  <button class="seat seat--vip" type="button" aria-label="Ghế E05, VIP, còn trống">
+                    05
+                  </button>
+                  <button class="seat seat--vip" type="button" aria-label="Ghế E06, VIP, còn trống">
+                    06
+                  </button>
+                  <button class="seat seat--vip" type="button" aria-label="Ghế E07, VIP, còn trống">
+                    07
+                  </button>
+                  <button class="seat seat--vip" type="button" aria-label="Ghế E08, VIP, còn trống">
+                    08
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="seat-map-note">Giá ghế có thể thay đổi theo vị trí và loại ghế.</p>
+        </section>
+
+        <aside class="booking-summary" aria-labelledby="booking-summary-title">
+          <div class="booking-summary__heading">
+            <div>
+              <p class="eyebrow">ĐƠN ĐẶT VÉ</p>
+              <h2 id="booking-summary-title">Thông tin vé</h2>
+            </div>
+            <span class="booking-summary__count">02 ghế</span>
+          </div>
+
+          <div class="booking-summary__movie">
+            <div class="booking-summary__art" aria-hidden="true">VT</div>
+            <div>
+              <strong>Vùng Tối Thức Tỉnh</strong>
+              <span>2D phụ đề · 132 phút</span>
+            </div>
+          </div>
+
+          <dl class="booking-summary__details">
+            <div>
+              <dt>Rạp</dt>
+              <dd>CINEMATIC Quận 1</dd>
+            </div>
+            <div>
+              <dt>Suất chiếu</dt>
+              <dd>03/10 · 19:30</dd>
+            </div>
+            <div>
+              <dt>Phòng</dt>
+              <dd>Phòng 03</dd>
+            </div>
+          </dl>
+
+          <div class="booking-summary__seats">
+            <span>Ghế đã chọn</span>
+            <div><strong>C04</strong><strong>C05</strong></div>
+          </div>
+
+          <dl class="booking-price">
+            <div>
+              <dt>Ghế thường × 2</dt>
+              <dd>220.000₫</dd>
+            </div>
+            <div class="booking-price__total">
+              <dt>Tạm tính</dt>
+              <dd>220.000₫</dd>
+            </div>
+          </dl>
+
+          <p class="booking-summary__note">
+            Ghế được giữ trong thời gian đếm ngược. Hoàn tất thanh toán trước khi hết giờ.
+          </p>
+
+          <a class="booking-continue" href="./checkout.html">
+            Tiếp tục thanh toán
+            <span aria-hidden="true">→</span>
+          </a>
+        </aside>
+      </div>
+    </main>
+
+    <div class="mobile-booking-bar">
+      <div><span>Tổng cộng</span><strong>220.000₫</strong></div>
+      <a href="./checkout.html">Tiếp tục</a>
+    </div>
+  </body>
+</html>
