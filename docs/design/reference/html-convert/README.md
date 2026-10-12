@@ -1,20 +1,22 @@
 ## Screens
 
-| Screen           | Desktop / responsive reference | Notes                        |
-| ---------------- | ------------------------------ | ---------------------------- |
-| Home             | `cinematic-home-desktop.html`  | Desktop                      |
-| Home mobile      | `cinematic-home-mobile.html`   | Mobile                       |
-| Movie detail     | `movie-detail.html`            | Responsive                   |
-| Seat selection   | `seat-selection.html`          | Responsive                   |
-| Checkout         | `checkout.html`                | Responsive                   |
-| My tickets       | `my-tickets.html`              | Responsive                   |
-| Admin dashboard  | `admin-dashboard.html`         | Dashboard prototype          |
-| Admin cinemas    | `admin-cinemas.html`           | Cinema list                  |
-| Admin rooms      | `admin-rooms.html`             | Room list; seat map deferred |
-| Admin showtimes  | `admin-showtimes.html`         | Schedule list and filters    |
-| Admin bookings   | `admin-bookings.html`          | Booking list; sample data    |
-| Admin promotions | `admin-promotions.html`        | Promotion list               |
-| Admin users      | `admin-users.html`             | User list                    |
+| Screen                | Desktop / responsive reference | Notes                            |
+| --------------------- | ------------------------------ | -------------------------------- |
+| Home                  | `cinematic-home-desktop.html`  | Desktop                          |
+| Home mobile           | `cinematic-home-mobile.html`   | Mobile                           |
+| Movie detail          | `movie-detail.html`            | Responsive                       |
+| Seat selection        | `seat-selection.html`          | Responsive                       |
+| Checkout              | `checkout.html`                | Responsive                       |
+| My tickets            | `my-tickets.html`              | Responsive                       |
+| Admin dashboard       | `admin-dashboard.html`         | Dashboard prototype              |
+| Admin cinemas         | `admin-cinemas.html`           | Cinema list                      |
+| Admin rooms           | `admin-rooms.html`             | Room list; seat map deferred     |
+| Admin showtimes       | `admin-showtimes.html`         | Schedule list and filters        |
+| Admin bookings        | `admin-bookings.html`          | Booking list; sample data        |
+| Admin promotions      | `admin-promotions.html`        | Promotion list                   |
+| Admin users           | `admin-users.html`             | User list                        |
+| Admin seat map        | `admin-room-seats.html`        | Bố cục và phân loại ghế minh họa |
+| Admin showtime editor | `admin-showtime-form.html`     | Tạo suất chiếu                   |
 
 Admin prototypes are visual references. Their sample rows are illustrative; controls are not connected to production APIs.
 

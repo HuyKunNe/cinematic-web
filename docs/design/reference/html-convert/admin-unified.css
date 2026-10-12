@@ -1,0 +1,515 @@
+:root {
+  --admin-bg: #06111a;
+  --admin-surface: #0b1823;
+  --admin-surface-raised: #10202d;
+  --admin-surface-hover: #142938;
+  --admin-accent: #f5be63;
+  --admin-accent-hover: #ffd27f;
+  --admin-text: #f7f5f0;
+  --admin-text-muted: #a8b4bd;
+  --admin-text-subtle: #74838d;
+  --admin-border: #2d4250;
+  --admin-success: #67c995;
+  --admin-warning: #f0b84d;
+  --admin-danger: #f17878;
+  --admin-focus: #ffd27f;
+
+  --admin-sidebar-width: 17rem;
+  --admin-header-height: 4.5rem;
+  --admin-content-width: 92rem;
+  --admin-page-gutter: clamp(1rem, 2vw, 2rem);
+  --admin-control-height: 2.75rem;
+  --admin-nav-height: 2.75rem;
+  --admin-card-padding: 1.25rem;
+  --admin-card-radius: 1rem;
+  --admin-control-radius: 0.75rem;
+  --admin-border-width: 1px;
+  --admin-shadow-panel: 0 1rem 3rem rgb(0 0 0 / 20%);
+  --admin-transition: 160ms ease;
+
+  --admin-space-1: 0.25rem;
+  --admin-space-2: 0.5rem;
+  --admin-space-3: 0.75rem;
+  --admin-space-4: 1rem;
+  --admin-space-5: 1.25rem;
+  --admin-space-6: 1.5rem;
+  --admin-space-8: 2rem;
+
+  /* Alias cho các stylesheet prototype đang dùng */
+  --color-background: var(--admin-bg);
+  --color-background-soft: var(--admin-surface);
+  --color-surface: var(--admin-surface);
+  --color-surface-raised: var(--admin-surface-raised);
+  --color-surface-hover: var(--admin-surface-hover);
+  --color-primary: var(--admin-accent);
+  --color-primary-hover: var(--admin-accent-hover);
+  --color-accent: var(--admin-accent);
+  --color-success: var(--admin-success);
+  --color-warning: var(--admin-warning);
+  --color-error: var(--admin-danger);
+  --color-danger: var(--admin-danger);
+  --color-text-primary: var(--admin-text);
+  --color-text-secondary: var(--admin-text-muted);
+  --color-text-muted: var(--admin-text-subtle);
+  --color-text-tertiary: var(--admin-text-subtle);
+  --color-border: var(--admin-border);
+  --color-border-strong: var(--admin-border);
+  --admin-topbar-height: var(--admin-header-height);
+  --admin-content-max-width: var(--admin-content-width);
+  --admin-content-gutter: var(--admin-page-gutter);
+  --admin-content-width: var(--admin-content-width);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body.admin-body,
+body.admin-page {
+  min-width: 20rem;
+  min-height: 100vh;
+  margin: 0;
+  color: var(--admin-text);
+  background: var(--admin-bg);
+  font-family: Inter, 'Segoe UI', sans-serif;
+}
+
+button,
+input,
+select {
+  color: inherit;
+  font: inherit;
+}
+
+button,
+select {
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: var(--admin-border-width) solid var(--admin-focus);
+  outline-offset: var(--admin-space-1);
+}
+
+body.admin-body .admin-shell,
+body.admin-page {
+  display: grid;
+  grid-template-columns: var(--admin-sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  width: var(--admin-sidebar-width);
+  height: 100vh;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-5) var(--admin-space-3);
+  border-right: var(--admin-border-width) solid var(--admin-border);
+  background: var(--admin-surface);
+}
+
+.admin-brand {
+  display: flex;
+  min-height: var(--admin-header-height);
+  align-items: center;
+  gap: var(--admin-space-3);
+  padding-inline: var(--admin-space-2);
+  color: var(--admin-text);
+  text-decoration: none;
+}
+
+.admin-brand__mark {
+  display: grid;
+  width: var(--admin-control-height);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: var(--admin-control-radius);
+  color: var(--admin-bg);
+  background: var(--admin-accent);
+  font-weight: 800;
+}
+
+.admin-brand__copy,
+.admin-brand__text {
+  display: grid;
+  gap: var(--admin-space-1);
+  color: var(--admin-accent);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.admin-brand__copy small,
+.admin-brand__text small {
+  color: var(--admin-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.admin-nav {
+  display: grid;
+  align-content: start;
+  gap: var(--admin-space-1);
+  min-height: 0;
+  overflow: auto;
+}
+
+.admin-nav__label,
+.admin-sidebar__label {
+  margin: var(--admin-space-4) var(--admin-space-3) var(--admin-space-1);
+  color: var(--admin-text-subtle);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-nav__link,
+.admin-nav__item {
+  display: flex;
+  min-height: var(--admin-nav-height);
+  align-items: center;
+  gap: var(--admin-space-3);
+  padding-inline: var(--admin-space-3);
+  border: var(--admin-border-width) solid transparent;
+  border-radius: var(--admin-control-radius);
+  color: var(--admin-text-muted);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition:
+    color var(--admin-transition),
+    background var(--admin-transition),
+    border-color var(--admin-transition);
+}
+
+.admin-nav__link > span,
+.admin-nav__item > span {
+  display: inline-grid;
+  width: var(--admin-space-6);
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.admin-nav__link:hover,
+.admin-nav__item:hover,
+.admin-nav__link.is-active,
+.admin-nav__item.is-active {
+  border-color: var(--admin-border);
+  color: var(--admin-accent);
+  background: var(--admin-surface-raised);
+}
+
+.admin-sidebar__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+  margin-top: auto;
+  padding: var(--admin-space-4) var(--admin-space-2) 0;
+  border-top: var(--admin-border-width) solid var(--admin-border);
+  color: var(--admin-text-muted);
+  font-size: 0.75rem;
+}
+
+.status-dot {
+  width: var(--admin-space-2);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--admin-success);
+}
+
+.admin-main {
+  min-width: 0;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  min-height: var(--admin-header-height);
+  align-items: center;
+  gap: var(--admin-space-4);
+  padding-inline: var(--admin-page-gutter);
+  border-bottom: var(--admin-border-width) solid var(--admin-border);
+  background: var(--admin-surface);
+}
+
+.admin-content {
+  width: min(100%, var(--admin-content-width));
+  margin-inline: auto;
+  padding: var(--admin-space-6) var(--admin-page-gutter) var(--admin-space-8);
+}
+
+.admin-search,
+.filter-panel,
+.movies-toolbar,
+.showtime-filters,
+.booking-filters,
+.promotion-filters,
+.user-filters,
+.dashboard-scope-bar,
+.panel,
+.table-panel,
+.movies-list {
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--admin-card-radius);
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow-panel);
+}
+
+.filter-panel,
+.movies-toolbar,
+.showtime-filters,
+.booking-filters,
+.promotion-filters,
+.user-filters,
+.dashboard-scope-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-4);
+}
+
+.panel,
+.table-panel,
+.movies-list {
+  padding: var(--admin-card-padding);
+}
+
+.dashboard-heading,
+.movies-heading,
+.page-heading,
+.panel-heading,
+.movies-list__heading,
+.cinema-list__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+}
+
+.dashboard-heading,
+.movies-heading,
+.page-heading {
+  margin-bottom: var(--admin-space-5);
+}
+
+.dashboard-heading h1,
+.movies-heading h1,
+.page-heading h1 {
+  margin: 0;
+  color: var(--admin-text);
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  line-height: 1.2;
+}
+
+.dashboard-subtitle,
+.movies-heading__description,
+.page-heading__description {
+  color: var(--admin-text-muted);
+}
+
+.metric-grid,
+.movies-stats,
+.room-stats,
+.booking-stats,
+.promotion-stats,
+.user-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--admin-space-4);
+}
+
+.metric-card,
+.movie-stat,
+.room-stat,
+.booking-stat,
+.promotion-stat,
+.user-stat {
+  min-width: 0;
+  padding: var(--admin-card-padding);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--admin-card-radius);
+  background: var(--admin-surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: var(--admin-space-3) var(--admin-space-4);
+  border-bottom: var(--admin-border-width) solid var(--admin-border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--admin-text-subtle);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+td {
+  color: var(--admin-text-muted);
+}
+
+tbody tr:hover {
+  background: var(--admin-surface-raised);
+}
+
+input,
+select {
+  min-height: var(--admin-control-height);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--admin-control-radius);
+  background: var(--admin-bg);
+}
+
+.action-button,
+.movies-button,
+.icon-button,
+.date-filter,
+.admin-account,
+.row-action {
+  min-height: var(--admin-control-height);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--admin-control-radius);
+  color: var(--admin-text);
+  background: var(--admin-surface-raised);
+}
+
+.action-button--primary,
+.movies-button--primary {
+  border-color: var(--admin-accent);
+  color: var(--admin-bg);
+  background: var(--admin-accent);
+  font-weight: 700;
+}
+
+.status-pill,
+.movie-status,
+.payment-state,
+.role-chip,
+.age-rating,
+.discount-tag {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  gap: var(--admin-space-1);
+  padding-inline: var(--admin-space-2);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: 999px;
+  color: var(--admin-text-muted);
+  background: var(--admin-surface-raised);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.table-scroll,
+.table-scroll-wrapper,
+.movies-table-scroll,
+.movies-mobile-list {
+  max-width: 100%;
+  overflow: auto;
+}
+
+.pagination,
+.table-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+  padding-top: var(--admin-space-4);
+}
+
+@media (max-width: 70rem) {
+  :root {
+    --admin-sidebar-width: 14rem;
+  }
+}
+
+@media (max-width: 48rem) {
+  body.admin-body .admin-shell,
+  body.admin-page {
+    display: block;
+  }
+
+  .admin-sidebar {
+    position: sticky;
+    width: 100%;
+    height: auto;
+    padding: var(--admin-space-3);
+  }
+
+  .admin-brand {
+    min-height: var(--admin-control-height);
+  }
+
+  .admin-sidebar__label,
+  .admin-nav__label,
+  .admin-sidebar__footer {
+    display: none;
+  }
+
+  .admin-nav {
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .admin-nav__link,
+  .admin-nav__item {
+    flex: 0 0 auto;
+  }
+
+  .admin-topbar {
+    min-height: var(--admin-control-height);
+  }
+
+  .dashboard-heading,
+  .movies-heading,
+  .page-heading,
+  .panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filter-panel,
+  .movies-toolbar,
+  .showtime-filters,
+  .booking-filters,
+  .promotion-filters,
+  .user-filters,
+  .dashboard-scope-bar {
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
