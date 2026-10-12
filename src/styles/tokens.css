@@ -507,7 +507,19 @@
   --admin-header-control-height: var(--control-height-md);
   --admin-header-control-border: var(--admin-reference-border-strong);
   --admin-sidebar-brand-size: var(--control-height-md);
-  --admin-sidebar-brand-inset: var(--space-4);
+  --admin-sidebar-brand-inset: var(--space-5);
+  --admin-sidebar-brand-inset-collapsed: calc(
+    (
+        var(--admin-sidebar-width-collapsed) - var(--admin-sidebar-brand-size) -
+          var(--border-width-thin)
+      ) /
+      2
+  );
+  --admin-sidebar-font-family: var(--font-family-base);
+  --admin-sidebar-font-size: var(--font-size-sm);
+  --admin-sidebar-brand-tracking: normal;
+  --admin-sidebar-group-tracking: normal;
+  --admin-sidebar-footer-padding: var(--space-4);
   --admin-sidebar-nav-padding: var(--space-3);
   --admin-user-avatar-size: var(--control-height-md);
   --admin-shell-section-gap: var(--space-8);

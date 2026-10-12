@@ -398,6 +398,9 @@ html:has(.admin-layout) {
   overflow: hidden;
   padding: 0;
   background: var(--color-surface);
+  font-family: var(--admin-sidebar-font-family);
+  font-size: var(--admin-sidebar-font-size);
+  line-height: var(--line-height-base);
 }
 
 .admin-sidebar__top {
@@ -410,6 +413,10 @@ html:has(.admin-layout) {
   overflow: hidden;
   padding-inline: var(--admin-sidebar-brand-inset);
   border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar__top {
+  padding-inline: var(--admin-sidebar-brand-inset-collapsed);
 }
 
 .admin-sidebar__brand {
@@ -431,8 +438,8 @@ html:has(.admin-layout) {
   height: var(--admin-sidebar-brand-size);
   border-radius: var(--radius-md);
   background: var(--color-primary);
-  color: var(--color-on-primary);
-  font-family: var(--font-family-display);
+  color: var(--color-background);
+  font-family: var(--admin-sidebar-font-family);
   font-weight: var(--font-weight-display);
 }
 
@@ -444,9 +451,11 @@ html:has(.admin-layout) {
   white-space: nowrap;
 }
 
-.admin-sidebar__brand-copy strong {
-  font-size: var(--font-size-sm);
-  letter-spacing: var(--letter-spacing-wide);
+.admin-sidebar__brand-copy > strong {
+  color: var(--color-primary);
+  font-size: var(--admin-sidebar-font-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--admin-sidebar-brand-tracking);
 }
 
 .admin-sidebar__brand-copy > span {
@@ -467,21 +476,19 @@ html:has(.admin-layout) {
 }
 
 .admin-sidebar__group {
-  display: grid;
-  gap: var(--space-1);
-  min-width: 0;
+  display: contents;
 }
 
 .admin-sidebar__group-label {
   min-height: calc(var(--admin-sidebar-label-size) * var(--line-height-base));
-  margin: var(--space-4) 0 var(--space-1);
+  margin: var(--space-4) var(--space-3) var(--space-1);
   overflow: hidden;
-  padding-inline: var(--space-3);
+  padding: 0;
   color: var(--color-text-muted);
   font-size: var(--admin-sidebar-label-size);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-regular);
   line-height: var(--line-height-base);
-  letter-spacing: var(--letter-spacing-wide);
+  letter-spacing: var(--admin-sidebar-group-tracking);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -517,12 +524,12 @@ html:has(.admin-layout) {
   border-color: var(--color-primary);
   background: var(--color-surface-raised);
   color: var(--color-primary);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-regular);
 }
 
 .admin-sidebar__icon {
   flex: 0 0 auto;
-  width: var(--icon-size-md);
+  width: var(--space-6);
   height: var(--icon-size-md);
 }
 
@@ -534,20 +541,18 @@ html:has(.admin-layout) {
 
 .admin-sidebar__footer {
   display: grid;
-  gap: var(--space-3);
   min-width: 0;
-  padding: var(--space-4) var(--admin-sidebar-nav-padding);
+  padding: var(--admin-sidebar-footer-padding);
   border-top: var(--border-width-thin) solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
 }
 
 .admin-sidebar__access {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
   min-height: calc(var(--font-size-xs) * var(--line-height-base));
   margin: 0;
   overflow: hidden;
-  padding-inline: var(--space-3);
+  padding: 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   line-height: var(--line-height-base);

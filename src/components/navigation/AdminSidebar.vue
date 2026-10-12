@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import {
-  ArrowUpRight,
   Building2,
   CalendarClock,
   DoorOpen,
@@ -40,10 +39,6 @@ const groups = computed(() =>
     ...group,
     items: visibleItems.value.filter((item) => item.group === group.id),
   })).filter((group) => group.items.length > 0),
-)
-
-const moduleCount = computed(
-  () => visibleItems.value.filter((item) => item.routeName !== ROUTE_NAMES.ADMIN).length,
 )
 
 const icons: Record<AdminNavigationIcon, typeof Film> = {
@@ -84,7 +79,7 @@ function isActive(routeName: string) {
 
         <span class="admin-sidebar__brand-copy">
           <strong>CINEMATIC</strong>
-          <span>Quản trị</span>
+          <span>QUẢN TRỊ</span>
         </span>
       </RouterLink>
 
@@ -115,21 +110,7 @@ function isActive(routeName: string) {
     </nav>
 
     <footer class="admin-sidebar__footer">
-      <p class="admin-sidebar__access" :aria-hidden="collapsed">
-        <span class="admin-sidebar__status-dot" aria-hidden="true" />
-        <span :title="`${moduleCount} chức năng được cấp quyền`"> Không gian quản trị </span>
-      </p>
-
-      <RouterLink
-        class="admin-sidebar__link admin-sidebar__customer-link"
-        :to="{ name: ROUTE_NAMES.HOME }"
-        aria-label="Về trang khách hàng"
-        :title="collapsed ? 'Về trang khách hàng' : undefined"
-        @click="emit('navigate')"
-      >
-        <ArrowUpRight class="admin-sidebar__icon" aria-hidden="true" />
-        <span class="admin-sidebar__label">Trang khách hàng</span>
-      </RouterLink>
+      <p class="admin-sidebar__access" :aria-hidden="collapsed">Không gian quản trị</p>
     </footer>
   </div>
 </template>
