@@ -19,14 +19,18 @@ import {
   adminRoomTypeOptions,
   normalizeAdminRoomSearch,
 } from '../schemas/admin-room.schema'
+import { useRoute, useRouter } from 'vue-router'
+import { ROUTE_NAMES } from '@/router/route-constants'
 
 const auth = useAuthStore()
+const route = useRoute()
+const router = useRouter()
 const canManage = computed(
   () =>
     auth.isAuthenticated && auth.isAdmin && auth.hasPermission(APP_PERMISSIONS.INVENTORY_MANAGE),
 )
 
-const cinemaId = ref('')
+const cinemaId = ref(typeof route.query.cinemaId === 'string' ? route.query.cinemaId : '')
 const search = ref('')
 const roomType = ref('')
 const page = ref(1)
@@ -128,6 +132,17 @@ const seatManager = ref<{
   cinemaName: string
   returnFocusId: string
 } | null>(null)
+
+function openLayout(room: RoomResponse) {
+  const cinema = selectedCinema.value
+  if (!canManage.value || !cinema || !room.id || roomActivity.isPending.value) return
+
+  void router.push({
+    name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
+    params: { roomId: room.id },
+    query: { cinemaId: cinema.value },
+  })
+}
 
 function openSeats(room: RoomResponse) {
   const cinema = selectedCinema.value
@@ -400,6 +415,15 @@ const emptyMessage = computed(() => {
                 </td>
                 <td>
                   <div class="admin-rooms__actions">
+                    <AppButton
+                      variant="secondary"
+                      size="sm"
+                      :disabled="!canManage || !room.id || roomActivity.isPending.value"
+                      :aria-label="`Thiết kế sơ đồ ${room.name || 'phòng'}`"
+                      @click="openLayout(room)"
+                    >
+                      Sơ đồ
+                    </AppButton>
                     <AppButton
                       :id="`admin-room-edit-${room.id}`"
                       class="admin-rooms__row-action"

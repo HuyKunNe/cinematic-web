@@ -27,7 +27,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 export const getRoomLayoutContent = (
     layoutId: string,
  ) => {
-      return apiRequest<unknown>(
+      return apiRequest<RoomLayoutContentResponse>(
       {url: `/api/v1/room-layouts/${layoutId}/content`, method: 'GET'
     },
       );
