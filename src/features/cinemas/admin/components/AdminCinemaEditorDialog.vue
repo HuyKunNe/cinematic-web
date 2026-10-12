@@ -160,6 +160,7 @@ const busy = computed(() => isSubmitting.value || mutation.isPending.value)
 
 async function focusDialog() {
   await nextTick()
+
   document.getElementById('admin-cinema-close')?.focus()
 }
 
