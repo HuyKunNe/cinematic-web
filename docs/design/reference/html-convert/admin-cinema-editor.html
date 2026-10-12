@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thêm rạp | CINEMATIC Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-unified.css" />
+    <link rel="stylesheet" href="./admin-operations-editor.css" />
+  </head>
+
+  <body class="admin-page">
+    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+      <a class="admin-brand" href="./admin-dashboard.html">
+        <span class="admin-brand__mark" aria-hidden="true">C</span>
+        <span class="admin-brand__copy"><strong>CINEMATIC</strong><small>QUẢN TRỊ</small></span>
+      </a>
+
+      <nav class="admin-nav" aria-label="Menu quản trị">
+        <p class="admin-nav__label">Điều hành</p>
+        <a class="admin-nav__link" href="./admin-dashboard.html"
+          ><span aria-hidden="true">⌂</span>Tổng quan</a
+        >
+        <p class="admin-nav__label">Nội dung</p>
+        <a class="admin-nav__link" href="./admin-movies.html"
+          ><span aria-hidden="true">▤</span>Phim</a
+        >
+        <p class="admin-nav__label">Vận hành</p>
+        <a class="admin-nav__link is-active" href="./admin-cinemas.html" aria-current="page"
+          ><span aria-hidden="true">▣</span>Rạp</a
+        >
+        <a class="admin-nav__link" href="./admin-rooms.html"
+          ><span aria-hidden="true">▦</span>Phòng</a
+        >
+        <a class="admin-nav__link" href="./admin-room-seats.html"
+          ><span aria-hidden="true">▥</span>Sơ đồ ghế</a
+        >
+        <a class="admin-nav__link" href="./admin-showtimes.html"
+          ><span aria-hidden="true">◷</span>Suất chiếu</a
+        >
+        <p class="admin-nav__label">Giao dịch</p>
+        <a class="admin-nav__link" href="./admin-bookings.html"
+          ><span aria-hidden="true">▧</span>Đặt vé</a
+        >
+        <a class="admin-nav__link" href="./admin-promotions.html"
+          ><span aria-hidden="true">◇</span>Khuyến mãi</a
+        >
+        <p class="admin-nav__label">Hệ thống</p>
+        <a class="admin-nav__link" href="./admin-users.html"
+          ><span aria-hidden="true">♙</span>Người dùng</a
+        >
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Không gian quản trị</span>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <label class="admin-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Tìm kiếm..." aria-label="Tìm trong quản trị" />
+        </label>
+        <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
+          <span class="admin-account__avatar">QA</span>
+          <span class="admin-account__name">Quản trị viên</span>
+        </button>
+      </header>
+
+      <main class="admin-content">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./admin-cinemas.html">Rạp</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Thêm rạp</span>
+        </nav>
+
+        <section class="page-heading">
+          <div>
+            <p class="eyebrow">Hệ thống rạp</p>
+            <h1>Thêm rạp</h1>
+            <p class="page-heading__description">Nhập thông tin địa điểm và trạng thái vận hành.</p>
+          </div>
+        </section>
+
+        <form class="entity-editor">
+          <section class="panel entity-editor__main" aria-labelledby="cinema-editor-title">
+            <header class="panel-heading">
+              <div>
+                <h2 id="cinema-editor-title">Thông tin rạp</h2>
+                <p>Các trường có dấu * là bắt buộc.</p>
+              </div>
+            </header>
+
+            <div class="entity-form-grid">
+              <label class="entity-field entity-field--wide">
+                <span>Tên rạp <b aria-hidden="true">*</b></span>
+                <input type="text" placeholder="Nhập tên rạp" required aria-required="true" />
+              </label>
+
+              <label class="entity-field">
+                <span>Thành phố / khu vực <b aria-hidden="true">*</b></span>
+                <select required aria-required="true">
+                  <option value="">Chọn thành phố hoặc khu vực</option>
+                </select>
+              </label>
+
+              <label class="entity-field">
+                <span>Trạng thái</span>
+                <select>
+                  <option value="">Chọn trạng thái</option>
+                  <option value="ACTIVE">Đang hoạt động</option>
+                  <option value="INACTIVE">Tạm ngưng</option>
+                </select>
+              </label>
+
+              <label class="entity-field entity-field--wide">
+                <span>Địa chỉ <b aria-hidden="true">*</b></span>
+                <textarea
+                  rows="3"
+                  placeholder="Nhập địa chỉ rạp"
+                  required
+                  aria-required="true"
+                ></textarea>
+              </label>
+            </div>
+
+            <footer class="entity-actions">
+              <a class="action-button action-button--secondary" href="./admin-cinemas.html">Hủy</a>
+              <button class="action-button action-button--primary" type="submit">Lưu rạp</button>
+            </footer>
+          </section>
+
+          <aside class="panel entity-preview" aria-labelledby="cinema-preview-title">
+            <p class="eyebrow">Xem trước</p>
+            <h2 id="cinema-preview-title">Thông tin địa điểm</h2>
+            <dl>
+              <div>
+                <dt>Tên rạp</dt>
+                <dd>Chưa nhập tên</dd>
+              </div>
+              <div>
+                <dt>Khu vực</dt>
+                <dd>Chưa chọn</dd>
+              </div>
+              <div>
+                <dt>Địa chỉ</dt>
+                <dd>Chưa nhập địa chỉ</dd>
+              </div>
+              <div>
+                <dt>Trạng thái</dt>
+                <dd>Chưa chọn</dd>
+              </div>
+            </dl>
+          </aside>
+        </form>
+      </main>
+    </div>
+  </body>
+</html>

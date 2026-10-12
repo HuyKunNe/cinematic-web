@@ -17,6 +17,8 @@
 | Admin users           | `admin-users.html`             | User list                        |
 | Admin seat map        | `admin-room-seats.html`        | Bố cục và phân loại ghế minh họa |
 | Admin showtime editor | `admin-showtime-form.html`     | Tạo suất chiếu                   |
+| Admin cinema editor   | `admin-cinema-editor.html`     | Thêm / sửa rạp                   |
+| Admin room editor     | `admin-room-editor.html`       | Thêm / sửa phòng                 |
 
 Admin prototypes are visual references. Their sample rows are illustrative; controls are not connected to production APIs.
 
