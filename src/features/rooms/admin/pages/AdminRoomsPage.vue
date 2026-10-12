@@ -7,6 +7,7 @@ import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
 import type { RoomResponse } from '@/services/api/generated/inventory-service/model'
 import AdminRoomEditorDialog from '../components/AdminRoomEditorDialog.vue'
+import AdminRoomSeatsDialog from '../components/AdminRoomSeatsDialog.vue'
 import { useAdminRoomCatalogQuery, useAdminRoomCinemaQuery } from '../api/admin-room-queries'
 import {
   adminRoomErrorMessage,
@@ -103,7 +104,24 @@ type EditorState = {
 }
 
 const editor = ref<EditorState | null>(null)
+const seatManager = ref<{
+  roomId: string
+  roomName: string
+  cinemaName: string
+  returnFocusId: string
+} | null>(null)
 
+function openSeats(room: RoomResponse) {
+  const cinema = selectedCinema.value
+  if (!canManage.value || !cinema || !room.id || room.active !== true) return
+
+  seatManager.value = {
+    roomId: room.id,
+    roomName: room.name || 'Phòng chiếu',
+    cinemaName: cinema.label,
+    returnFocusId: `admin-room-seats-${room.id}`,
+  }
+}
 function openEditor(roomId: string | null = null) {
   const cinema = selectedCinema.value
   if (!canManage.value || !cinema) return
@@ -308,7 +326,6 @@ const emptyMessage = computed(() => {
               <tr v-for="(room, index) in rows" :key="room.id ?? index">
                 <td class="admin-rooms__name">
                   <strong>{{ room.name || 'Chưa có tên phòng' }}</strong>
-                  <small>{{ room.id || 'Chưa có ID' }}</small>
                 </td>
                 <td>{{ selectedCinema?.label }}</td>
                 <td>
@@ -327,17 +344,29 @@ const emptyMessage = computed(() => {
                   </span>
                 </td>
                 <td>
-                  <AppButton
-                    :id="`admin-room-edit-${room.id}`"
-                    class="admin-rooms__row-action"
-                    variant="ghost"
-                    size="sm"
-                    :disabled="!room.id"
-                    :aria-label="`Sửa ${room.name || 'phòng'}`"
-                    @click="room.id && openEditor(room.id)"
-                  >
-                    <Pencil aria-hidden="true" />
-                  </AppButton>
+                  <div class="admin-rooms__actions">
+                    <AppButton
+                      :id="`admin-room-edit-${room.id}`"
+                      class="admin-rooms__row-action"
+                      variant="ghost"
+                      size="sm"
+                      :disabled="!room.id"
+                      :aria-label="`Sửa ${room.name || 'phòng'}`"
+                      @click="room.id && openEditor(room.id)"
+                    >
+                      <Pencil aria-hidden="true" />
+                    </AppButton>
+                    <AppButton
+                      :id="`admin-room-seats-${room.id}`"
+                      variant="secondary"
+                      size="sm"
+                      :disabled="!canManage || !room.id || room.active !== true"
+                      :aria-label="`Quản lý ghế của ${room.name || 'phòng'}`"
+                      @click="openSeats(room)"
+                    >
+                      Ghế
+                    </AppButton>
+                  </div>
                 </td>
               </tr>
               <tr v-if="!rows.length">
@@ -381,6 +410,12 @@ const emptyMessage = computed(() => {
       v-bind="editor"
       @close="editor = null"
       @saved="saved"
+    />
+    <AdminRoomSeatsDialog
+      v-if="seatManager"
+      :key="seatManager.roomId"
+      v-bind="seatManager"
+      @close="seatManager = null"
     />
   </section>
 </template>

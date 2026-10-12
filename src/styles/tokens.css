@@ -621,6 +621,7 @@
   --admin-room-code-size: 0.6875rem;
   --admin-room-empty-height: 12rem;
   --admin-room-dialog-width: 32rem;
+--admin-room-seats-dialog-width: var(--admin-movie-dialog-width);
 
   /* Movie detail */
   --detail-page-gutter: clamp(1.25rem, 4vw, 3.5rem);
