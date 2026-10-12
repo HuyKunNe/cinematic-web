@@ -8,7 +8,11 @@ import { useAuthStore } from '@/stores/auth.store'
 import type { RoomResponse } from '@/services/api/generated/inventory-service/model'
 import AdminRoomEditorDialog from '../components/AdminRoomEditorDialog.vue'
 import AdminRoomSeatsDialog from '../components/AdminRoomSeatsDialog.vue'
-import { useAdminRoomCatalogQuery, useAdminRoomCinemaQuery } from '../api/admin-room-queries'
+import {
+  useAdminRoomCatalogQuery,
+  useAdminRoomCinemaQuery,
+  useSetAdminRoomActivityMutation,
+} from '../api/admin-room-queries'
 import {
   adminRoomErrorMessage,
   adminRoomTypeLabel,
@@ -28,6 +32,7 @@ const roomType = ref('')
 const page = ref(1)
 const pageSize = 10
 const successMessage = ref('')
+const activityError = ref('')
 
 const cinemas = useAdminRoomCinemaQuery(canManage)
 const cinemaOptions = computed(() =>
@@ -51,6 +56,7 @@ const selectedCinema = computed(() =>
 )
 
 const rooms = useAdminRoomCatalogQuery(() => selectedCinema.value?.value ?? '', canManage)
+const roomActivity = useSetAdminRoomActivityMutation()
 const activeRoomCount = computed(
   () => (rooms.data.value ?? []).filter((room) => room.active === true).length,
 )
@@ -90,6 +96,7 @@ watch([cinemaId, search, roomType], () => {
 
 watch(cinemaId, () => {
   successMessage.value = ''
+  activityError.value = ''
 })
 
 watch(totalPages, (count) => {
@@ -124,7 +131,7 @@ const seatManager = ref<{
 
 function openSeats(room: RoomResponse) {
   const cinema = selectedCinema.value
-  if (!canManage.value || !cinema || !room.id) return
+  if (!canManage.value || !cinema || !room.id || roomActivity.isPending.value) return
 
   seatManager.value = {
     roomId: room.id,
@@ -136,7 +143,8 @@ function openSeats(room: RoomResponse) {
 }
 function openEditor(roomId: string | null = null) {
   const cinema = selectedCinema.value
-  if (!canManage.value || !cinema) return
+  if (!canManage.value || !cinema || roomActivity.isPending.value) return
+  if (!roomId && cinema.active !== true) return
 
   successMessage.value = ''
   editor.value = {
@@ -144,6 +152,37 @@ function openEditor(roomId: string | null = null) {
     cinemaName: cinema.label,
     roomId,
     returnFocusId: roomId ? `admin-room-edit-${roomId}` : 'admin-room-create',
+  }
+}
+
+async function changeRoomActivity(room: RoomResponse) {
+  const cinema = selectedCinema.value
+
+  if (
+    !canManage.value ||
+    !cinema ||
+    !room.id ||
+    typeof room.active !== 'boolean' ||
+    roomActivity.isPending.value ||
+    editor.value ||
+    seatManager.value
+  )
+    return
+
+  const active = !room.active
+  activityError.value = ''
+  successMessage.value = ''
+
+  try {
+    const updated = await roomActivity.mutateAsync({
+      cinemaId: cinema.value,
+      roomId: room.id,
+      active,
+    })
+
+    successMessage.value = `Đã ${active ? 'kích hoạt' : 'tạm ngưng'} phòng ${updated.name || room.name || ''}.`
+  } catch (error) {
+    activityError.value = adminRoomErrorMessage(error, 'Không thể cập nhật trạng thái phòng.')
   }
 }
 
@@ -183,7 +222,7 @@ const emptyMessage = computed(() => {
       </div>
       <AppButton
         id="admin-room-create"
-        :disabled="!canManage || selectedCinema?.active !== true"
+        :disabled="!canManage || selectedCinema?.active !== true || roomActivity.isPending.value"
         @click="openEditor()"
       >
         <Plus aria-hidden="true" />
@@ -217,7 +256,9 @@ const emptyMessage = computed(() => {
           <small>Theo tên và loại phòng</small>
         </article>
       </section>
-
+      <p v-if="activityError" class="admin-rooms__error" role="alert">
+        {{ activityError }}
+      </p>
       <section class="admin-rooms__filters" aria-label="Tìm và lọc phòng">
         <label class="admin-rooms__field">
           <span>Tìm phòng</span>
@@ -238,6 +279,7 @@ const emptyMessage = computed(() => {
           content-class="admin-reference-autocomplete"
           :options="cinemaOptions"
           :loading="cinemas.isFetching.value"
+          :disabled="roomActivity.isPending.value"
         />
 
         <label class="admin-rooms__field">
@@ -363,7 +405,7 @@ const emptyMessage = computed(() => {
                       class="admin-rooms__row-action"
                       variant="ghost"
                       size="sm"
-                      :disabled="!room.id"
+                      :disabled="!canManage || !room.id || roomActivity.isPending.value"
                       :aria-label="`Sửa ${room.name || 'phòng'}`"
                       @click="room.id && openEditor(room.id)"
                     >
@@ -373,11 +415,29 @@ const emptyMessage = computed(() => {
                       :id="`admin-room-seats-${room.id}`"
                       variant="secondary"
                       size="sm"
-                      :disabled="!canManage || !room.id"
+                      :disabled="!canManage || !room.id || roomActivity.isPending.value"
                       :aria-label="`Quản lý ghế của ${room.name || 'phòng'}`"
                       @click="openSeats(room)"
                     >
                       Ghế
+                    </AppButton>
+                    <AppButton
+                      variant="secondary"
+                      size="sm"
+                      :disabled="
+                        !canManage ||
+                        !room.id ||
+                        typeof room.active !== 'boolean' ||
+                        roomActivity.isPending.value
+                      "
+                      :loading="
+                        roomActivity.isPending.value &&
+                        roomActivity.variables.value?.roomId === room.id
+                      "
+                      :aria-label="`${room.active ? 'Tạm ngưng' : 'Kích hoạt'} ${room.name || 'phòng'}`"
+                      @click="changeRoomActivity(room)"
+                    >
+                      {{ room.active ? 'Tạm ngưng' : 'Kích hoạt' }}
                     </AppButton>
                   </div>
                 </td>

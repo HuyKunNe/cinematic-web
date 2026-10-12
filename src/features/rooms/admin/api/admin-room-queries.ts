@@ -12,6 +12,7 @@ import type {
   CreateRoomRequest,
   RoomResponse,
 } from '@/services/api/generated/inventory-service/model'
+import { adminRoomSchema } from '../schemas/admin-room.schema'
 
 export const adminRoomKeys = {
   cinemas: ['cinemas', 'admin', 'rooms', 'management', 'all'] as const,
@@ -100,6 +101,49 @@ export function useSaveAdminRoomMutation() {
       void queryClient.invalidateQueries({
         predicate: ({ queryKey }) =>
           ['rooms', 'showtimes', 'home', 'booking'].includes(String(queryKey[0])),
+      })
+    },
+  })
+}
+type SetRoomActivityVariables = {
+  cinemaId: string
+  roomId: string
+  active: boolean
+}
+
+export function useSetAdminRoomActivityMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation<RoomResponse, unknown, SetRoomActivityVariables>({
+    mutationFn: async ({ cinemaId, roomId, active }) => {
+      const current = await getById2(roomId)
+      const metadata = adminRoomSchema.safeParse(current)
+
+      if (
+        current.id !== roomId ||
+        current.cinemaId !== cinemaId ||
+        typeof current.active !== 'boolean' ||
+        !metadata.success
+      ) {
+        throw new Error('Thông tin phòng không hợp lệ. Hãy tải lại danh sách.')
+      }
+
+      if (current.active === active) return current
+
+      return update2(roomId, {
+        ...metadata.data,
+        active,
+      })
+    },
+    retry: false,
+    onSuccess: (room) => {
+      if (room.id) {
+        queryClient.setQueryData(adminRoomKeys.detail(room.id), room)
+      }
+
+      return queryClient.invalidateQueries({
+        predicate: ({ queryKey }) =>
+          ['rooms', 'seats', 'showtimes', 'home', 'booking'].includes(String(queryKey[0])),
       })
     },
   })

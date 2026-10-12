@@ -27,7 +27,6 @@ const catalog = useAdminCinemaCatalogQuery(canManage)
 const search = ref('')
 const city = ref('')
 const activeFilter = ref('all')
-const status = ref<'all' | 'active' | 'paused'>('all')
 const page = ref(1)
 const pageSize = 10
 const successMessage = ref('')
@@ -60,8 +59,6 @@ const filtered = computed(() => {
   const keyword = normalize(search.value)
 
   return (catalog.data.value ?? []).filter((cinema) => {
-    if (status.value === 'active' && cinema.active !== true) return false
-    if (status.value === 'paused' && cinema.active !== false) return false
 
     return (
       (!city.value || cinema.city?.trim() === city.value) &&

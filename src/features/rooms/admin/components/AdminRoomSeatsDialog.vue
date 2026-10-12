@@ -13,7 +13,12 @@ import {
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
-import { useAdminRoomSeatsQuery, useCreateAdminSeatRangeMutation } from '../api/admin-seat-queries'
+import {
+  useAdminRoomSeatsQuery,
+  useCreateAdminSeatRangeMutation,
+  useSetAdminSeatActivityMutation,
+} from '../api/admin-seat-queries'
+import type { SeatResponse } from '@/services/api/generated/inventory-service/model'
 import {
   adminSeatRangeSchema,
   adminSeatTypeOptions,
@@ -40,6 +45,9 @@ const canManage = computed(
 
 const seats = useAdminRoomSeatsQuery(() => props.roomId, canManage)
 const mutation = useCreateAdminSeatRangeMutation()
+const activity = useSetAdminSeatActivityMutation()
+const activityError = ref('')
+const activityMessage = ref('')
 const formElement = ref<HTMLFormElement | null>(null)
 const requestError = ref('')
 const successMessage = ref('')
@@ -69,7 +77,9 @@ const {
   validateOnMount: false,
 })
 
-const busy = computed(() => isSubmitting.value || mutation.isPending.value)
+const busy = computed(
+  () => isSubmitting.value || mutation.isPending.value || activity.isPending.value,
+)
 
 const canCreate = computed(
   () =>
@@ -145,6 +155,26 @@ function seatTypeLabel(value?: string) {
   return adminSeatTypeOptions.find((item) => item.value === value)?.label ?? value ?? '—'
 }
 
+async function changeSeatActivity(seat: SeatResponse) {
+  if (!canManage.value || busy.value || !seat.id || typeof seat.active !== 'boolean') return
+
+  const active = !seat.active
+  activityError.value = ''
+  activityMessage.value = ''
+
+  try {
+    const updated = await activity.mutateAsync({
+      roomId: props.roomId,
+      seatId: seat.id,
+      active,
+    })
+
+    activityMessage.value = `Đã ${active ? 'kích hoạt' : 'tạm ngưng'} ghế ${updated.seatNumber || seat.seatNumber || ''}.`
+  } catch (error) {
+    activityError.value = adminRoomErrorMessage(error, 'Không thể cập nhật trạng thái ghế.')
+  }
+}
+
 function close() {
   if (!busy.value) emit('close')
 }
@@ -178,7 +208,13 @@ async function focusError() {
 }
 
 const save = handleSubmit(async (validatedValues) => {
-  if (!props.roomActive || !canManage.value || mutation.isPending.value || !seats.isSuccess.value)
+  if (
+    !props.roomActive ||
+    !canManage.value ||
+    mutation.isPending.value ||
+    activity.isPending.value ||
+    !seats.isSuccess.value
+  )
     return
 
   try {
@@ -227,7 +263,8 @@ const save = handleSubmit(async (validatedValues) => {
 function submit(event: Event) {
   event.preventDefault()
   if (!canCreate.value) return
-
+  activityError.value = ''
+  activityMessage.value = ''
   requestError.value = ''
   serverErrors.value = {}
   successMessage.value = ''
@@ -370,12 +407,25 @@ function submit(event: Event) {
         <p v-else-if="canManage && !roomActive" class="admin-rooms__muted" role="status">
           Phòng đang tạm ngưng. Bạn có thể xem danh sách ghế, nhưng chưa thể tạo dãy ghế mới.
         </p>
-        <section class="admin-room-seats__list" aria-labelledby="admin-room-seats-list-title">
+        <section
+          v-if="canManage"
+          class="admin-room-seats__list"
+          aria-labelledby="admin-room-seats-list-title"
+        >
           <h2 id="admin-room-seats-list-title" class="admin-room-seats__heading">
-            Ghế đang hoạt động
+            Danh sách ghế
             <template v-if="seats.data.value"> · {{ rows.length }}</template>
           </h2>
-
+          <p class="admin-rooms__muted">
+            Trạng thái tại đây áp dụng cho danh mục ghế của phòng. Ghế của từng suất chiếu được quản
+            lý riêng.
+          </p>
+          <p v-if="activityMessage" class="admin-rooms__success" role="status">
+            {{ activityMessage }}
+          </p>
+          <p v-if="activityError" class="admin-rooms__error" role="alert">
+            {{ activityError }}
+          </p>
           <div v-if="seats.isError.value" class="admin-rooms__feedback">
             <p class="admin-rooms__error" role="alert">
               {{ adminRoomErrorMessage(seats.error.value, 'Không thể tải danh sách ghế.') }}
@@ -406,13 +456,15 @@ function submit(event: Event) {
           >
             <table class="admin-rooms__table admin-room-seats__table">
               <caption class="admin-visually-hidden">
-                Ghế đang hoạt động của phòng
+                Ghế của phòng
               </caption>
               <thead>
                 <tr>
                   <th scope="col">Ghế</th>
                   <th scope="col">Hàng</th>
                   <th scope="col">Loại ghế</th>
+                  <th scope="col">Trạng thái</th>
+                  <th scope="col">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -420,9 +472,37 @@ function submit(event: Event) {
                   <td>{{ seat.seatNumber ?? '—' }}</td>
                   <td>{{ seat.rowLabel ?? '—' }}</td>
                   <td>{{ seatTypeLabel(seat.seatType) }}</td>
+                  <td>
+                    <span
+                      class="admin-rooms__status"
+                      :class="{ 'is-active': seat.active === true }"
+                    >
+                      {{
+                        seat.active === true
+                          ? 'Đang hoạt động'
+                          : seat.active === false
+                            ? 'Tạm ngưng'
+                            : 'Chưa xác định'
+                      }}
+                    </span>
+                  </td>
+                  <td>
+                    <AppButton
+                      variant="secondary"
+                      size="sm"
+                      :disabled="busy || !canManage || !seat.id || typeof seat.active !== 'boolean'"
+                      :loading="
+                        activity.isPending.value && activity.variables.value?.seatId === seat.id
+                      "
+                      :aria-label="`${seat.active ? 'Tạm ngưng' : 'Kích hoạt'} ghế ${seat.seatNumber || ''}`"
+                      @click="changeSeatActivity(seat)"
+                    >
+                      {{ seat.active ? 'Tạm ngưng' : 'Kích hoạt' }}
+                    </AppButton>
+                  </td>
                 </tr>
                 <tr v-if="seats.isSuccess.value && !rows.length">
-                  <td colspan="3">Phòng chưa có ghế đang hoạt động.</td>
+                  <td colspan="5">Phòng chưa có ghế.</td>
                 </tr>
               </tbody>
             </table>
