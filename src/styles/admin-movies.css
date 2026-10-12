@@ -5,7 +5,7 @@
   color: var(--color-text-primary);
 }
 
-.admin-movies p,
+:where(.admin-movies) p,
 .admin-movie-dialog p {
   margin: 0;
   overflow-wrap: anywhere;
@@ -31,7 +31,7 @@
   line-height: var(--line-height-heading);
 }
 
-.admin-movies__heading > div,
+.admin-movies__heading > div:first-child,
 .admin-movie-dialog__heading > div {
   display: grid;
   gap: var(--space-2);
@@ -287,10 +287,7 @@
 }
 
 .admin-genre-manager {
-  width: min(
-    var(--admin-genre-dialog-width),
-    calc(100% - var(--admin-movie-dialog-edge) * 2)
-  );
+  width: min(var(--admin-genre-dialog-width), calc(100% - var(--admin-movie-dialog-edge) * 2));
 }
 
 .admin-genre-manager__editor,

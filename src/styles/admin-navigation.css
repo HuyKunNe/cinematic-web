@@ -1,5 +1,9 @@
 /* Shell */
 
+html:has(.admin-layout) {
+  scrollbar-gutter: stable;
+}
+
 .admin-layout {
   display: grid;
   grid-template-columns: var(--admin-shell-sidebar-size) minmax(0, 1fr);
