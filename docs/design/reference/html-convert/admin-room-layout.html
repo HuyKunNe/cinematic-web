@@ -4,70 +4,96 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thiết kế layout phòng | CINEMA Admin</title>
-    <link rel="stylesheet" href="./cinema-reference.css" />
-    <link rel="stylesheet" href="./admin-cinemas.css" />
-    <link rel="stylesheet" href="./admin-rooms.css" />
+        <link rel="stylesheet" href="./reference-tokens.css" />
+    <link rel="stylesheet" href="./reference-base.css" />
+    <link rel="stylesheet" href="./admin-unified.css" />
+    <link rel="stylesheet" href="./admin-components.css" />
     <link rel="stylesheet" href="./admin-room-layout.css" />
+    <link rel="stylesheet" href="./reference-responsive.css" />
   </head>
 
-  <body class="admin-page">
-    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
-      <a class="admin-brand" href="./admin-dashboard.html" aria-label="CINEMA Admin">
-        <span class="admin-brand__mark" aria-hidden="true">C</span>
-        <span class="admin-brand__text">CINEMA <small>ADMIN</small></span>
+  <body class="reference-page admin-page" data-reference="admin-room-layout">
+    <div class="admin-shell">
+    
+<aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+  <a class="admin-brand" href="./admin-dashboard.html">
+    <span class="admin-brand__mark" aria-hidden="true">C</span>
+    <span class="admin-brand__copy"><strong>CINEMATIC</strong><small>QUẢN TRỊ</small></span>
+  </a>
+  <nav class="admin-nav" aria-label="Menu quản trị">
+    
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Điều hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-dashboard.html">
+        <span aria-hidden="true">⌂</span>Tổng quan
+      </a>
+    </div>
+
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Nội dung</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-movies.html">
+        <span aria-hidden="true">▤</span>Phim
       </a>
 
-      <p class="admin-sidebar__label">Quản trị</p>
-      <nav class="admin-nav" aria-label="Menu quản trị">
-        <a class="admin-nav__link" href="./admin-dashboard.html"
-          ><span aria-hidden="true">⌂</span>Tổng quan</a
-        >
-        <a class="admin-nav__link" href="./admin-movies.html"
-          ><span aria-hidden="true">▤</span>Phim</a
-        >
-        <a class="admin-nav__link" href="./admin-cinemas.html"
-          ><span aria-hidden="true">▣</span>Rạp chiếu</a
-        >
-        <a class="admin-nav__link is-active" href="./admin-rooms.html" aria-current="page">
-          <span aria-hidden="true">▦</span>Phòng chiếu
-        </a>
-        <a class="admin-nav__link" href="./admin-showtimes.html"
-          ><span aria-hidden="true">◷</span>Suất chiếu</a
-        >
-        <a class="admin-nav__link" href="./admin-bookings.html"
-          ><span aria-hidden="true">▧</span>Đặt vé</a
-        >
-        <a class="admin-nav__link" href="./admin-promotions.html"
-          ><span aria-hidden="true">◇</span>Khuyến mãi</a
-        >
-        <a class="admin-nav__link" href="./admin-users.html"
-          ><span aria-hidden="true">♙</span>Người dùng</a
-        >
-      </nav>
+      <a class="admin-nav__link"
+         href="./admin-promotions.html">
+        <span aria-hidden="true">◇</span>Khuyến mãi
+      </a>
+    </div>
 
-      <div class="admin-sidebar__footer">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span>Hệ thống đang hoạt động</span>
-      </div>
-    </aside>
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Vận hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-cinemas.html">
+        <span aria-hidden="true">▣</span>Rạp
+      </a>
+
+      <a class="admin-nav__link is-active"
+         href="./admin-rooms.html" aria-current="page">
+        <span aria-hidden="true">▦</span>Phòng và ghế
+      </a>
+
+      <a class="admin-nav__link"
+         href="./admin-showtimes.html">
+        <span aria-hidden="true">◷</span>Lịch chiếu
+      </a>
+
+      <a class="admin-nav__link"
+         href="./admin-bookings.html">
+        <span aria-hidden="true">▧</span>Đặt vé
+      </a>
+    </div>
+
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Hệ thống</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-users.html">
+        <span aria-hidden="true">♙</span>Người dùng
+      </a>
+    </div>
+  </nav>
+  <footer class="admin-sidebar__footer">Không gian quản trị</footer>
+</aside>
 
     <div class="admin-main">
-      <header class="admin-topbar">
-        <button class="icon-button admin-menu-button" type="button" aria-label="Mở menu">☰</button>
-        <label class="admin-search">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" placeholder="Tìm kiếm trong quản trị..." />
-          <kbd>⌘ K</kbd>
-        </label>
-        <button class="icon-button admin-notifications" type="button" aria-label="Thông báo">
-          ♧<span class="notification-count" aria-hidden="true">2</span>
-        </button>
-        <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
-          <span class="admin-avatar" aria-hidden="true">AD</span>
-          <span class="admin-account__name">Quản trị viên</span>
-          <span aria-hidden="true">⌄</span>
-        </button>
-      </header>
+      
+<header class="admin-topbar">
+  <label class="admin-search">
+    <span aria-hidden="true">⌕</span>
+    <input type="search" placeholder="Tìm kiếm trong quản trị…" aria-label="Tìm kiếm trong quản trị" />
+    <kbd>⌘ K</kbd>
+  </label>
+  <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
+    <span class="admin-account__avatar" aria-hidden="true">QT</span>
+    <span class="admin-account__name">Quản trị viên</span>
+  </button>
+</header>
 
       <main class="admin-content room-layout-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -82,7 +108,7 @@
           <div>
             <p class="eyebrow">CINEMA HỒ GƯƠM · PHÒNG 01</p>
             <h1>Thiết kế layout ghế</h1>
-            <p>Thiết lập vị trí, loại ghế và trạng thái trước khi đưa layout vào sử dụng.</p>
+            <p>Thiết lập vị trí, kích thước và góc xoay trước khi xuất bản sơ đồ.</p>
           </div>
 
           <div class="layout-heading__actions">
@@ -103,20 +129,12 @@
         </aside>
 
         <section class="layout-toolbar panel" aria-label="Công cụ thiết kế">
-          <div class="layout-tools" role="group" aria-label="Loại ghế để đặt">
-            <button class="layout-tool is-active" type="button" aria-pressed="true">
-              <span class="layout-tool__swatch layout-tool__swatch--standard"></span>
-              Ghế thường
-            </button>
-            <button class="layout-tool" type="button" aria-pressed="false">
-              <span class="layout-tool__swatch layout-tool__swatch--vip"></span>
-              Ghế VIP
-            </button>
-            <button class="layout-tool" type="button" aria-pressed="false">
-              <span class="layout-tool__swatch layout-tool__swatch--blocked"></span>
-              Ngưng phục vụ
-            </button>
-          </div>
+          <div class="layout-tools" role="group" aria-label="Công cụ đặt đối tượng">
+        <button class="layout-tool" type="button">Xếp ghế theo hàng</button>
+        <button class="layout-tool" type="button">+ Màn hình</button>
+        <button class="layout-tool" type="button">+ Lối đi</button>
+        <button class="layout-tool" type="button">+ Lối ra</button>
+      </div>
 
           <div class="layout-toolbar__actions">
             <button class="layout-icon-button" type="button" aria-label="Hoàn tác">↶</button>
@@ -143,24 +161,7 @@
                 ><i class="layout-legend__swatch layout-legend__swatch--standard"></i>Thường</span
               >
               <span><i class="layout-legend__swatch layout-legend__swatch--vip"></i>VIP</span>
-              <span
-                ><i class="layout-legend__swatch layout-legend__swatch--blocked"></i>Ngưng phục
-                vụ</span
-              >
-              <span
-                ><i class="layout-legend__swatch layout-legend__swatch--selected"></i>Đang
-                chọn</span
-              >
-            </div>
-
-            <div
-              class="layout-canvas-scroll"
-              tabindex="0"
-              aria-label="Sơ đồ ghế, có thể cuộn ngang"
-            >
-              <div class="layout-canvas">
-                <div class="layout-screen">
-                  <span>MÀN HÌNH</span>
+              
                 </div>
 
                 <div class="layout-seat-row">
@@ -402,7 +403,7 @@
                       7
                     </button>
                     <button
-                      class="layout-seat layout-seat--blocked"
+                      class="layout-seat layout-seat--standard"
                       type="button"
                       aria-label="Ghế D8, ngưng phục vụ"
                     >
@@ -553,21 +554,32 @@
                 <span class="layout-seat-type-badge">Ghế thường</span>
               </div>
 
-              <label class="layout-field">
-                <span>Loại ghế</span>
-                <select>
-                  <option selected>Ghế thường</option>
-                  <option>Ghế VIP</option>
-                </select>
-              </label>
+              
+<p class="reference-note">
+  Loại ghế và trạng thái được chỉnh trong
+  <a href="./admin-room-seats.html">Quản lý ghế</a>.
+</p>
 
               <label class="layout-field">
-                <span>Trạng thái</span>
-                <select>
-                  <option selected>Đang phục vụ</option>
-                  <option>Ngưng phục vụ</option>
-                </select>
-              </label>
+  <span>Vị trí X</span>
+  <input name="x" type="number" step="0.001" placeholder="Vị trí X" required />
+</label>
+<label class="layout-field">
+  <span>Vị trí Y</span>
+  <input name="y" type="number" step="0.001" placeholder="Vị trí Y" required />
+</label>
+<label class="layout-field">
+  <span>Chiều rộng</span>
+  <input name="width" type="number" step="0.001" placeholder="Chiều rộng" required />
+</label>
+<label class="layout-field">
+  <span>Chiều cao</span>
+  <input name="height" type="number" step="0.001" placeholder="Chiều cao" required />
+</label>
+<label class="layout-field">
+  <span>Góc xoay (độ)</span>
+  <input name="rotationDegrees" type="number" step="0.001" placeholder="Góc xoay (độ)" required />
+</label>
 
               <div class="layout-seat-info">
                 <span>Hàng <strong>C</strong></span>
@@ -578,7 +590,7 @@
                 class="action-button action-button--secondary layout-inspector__button"
                 type="button"
               >
-                Áp dụng cho ghế đã chọn
+                Áp dụng vị trí
               </button>
             </section>
 
@@ -611,7 +623,9 @@
             </section>
           </aside>
         </div>
-      </main>
+      <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+</main>
     </div>
+      </div>
   </body>
 </html>

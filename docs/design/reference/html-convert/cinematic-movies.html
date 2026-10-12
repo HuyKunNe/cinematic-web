@@ -10,19 +10,22 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
+        <link rel="stylesheet" href="./reference-tokens.css" />
+    <link rel="stylesheet" href="./reference-base.css" />
     <link rel="stylesheet" href="./cinematic-movies.css" />
+    <link rel="stylesheet" href="./reference-responsive.css" />
   </head>
 
-  <body>
+  <body class="reference-page customer-page" data-reference="cinematic-movies">
     <header class="site-header">
       <div class="container header-inner">
-        <a class="brand" href="#" aria-label="Cinematic - Trang chủ">CINEMATIC</a>
+        <a class="brand" href="./cinematic-home-desktop.html" aria-label="Cinematic - Trang chủ">CINEMATIC</a>
 
         <nav class="desktop-nav" aria-label="Điều hướng chính">
-          <a href="#">Lịch chiếu</a>
-          <a class="active" href="#">Phim</a>
-          <a href="#">Rạp</a>
-          <a href="#">Ưu đãi</a>
+          <a href="./cinematic-movie-detail.html#showtimes">Lịch chiếu</a>
+          <a class="active" href="./cinematic-movies.html">Phim</a>
+          <a href="./cinematic-cinemas.html">Rạp</a>
+          <a href="./cinematic-home-desktop.html#promotions">Ưu đãi</a>
         </nav>
 
         <div class="header-actions">
@@ -31,7 +34,7 @@
             <span>●</span> TP. Hồ Chí Minh <span>⌄</span>
           </button>
           <button class="account-button" type="button">● &nbsp; Tài khoản &nbsp;⌄</button>
-          <a class="button button-primary button-small" href="#">Đặt vé</a>
+          <a class="button button-primary button-small" href="./cinematic-movie-detail.html#showtimes">Đặt vé</a>
         </div>
       </div>
     </header>
@@ -45,7 +48,7 @@
         </div>
       </section>
 
-      <section class="container quick-booking" aria-labelledby="quick-booking-title">
+      <section id="quick-booking" class="container quick-booking" aria-labelledby="quick-booking-title">
         <h2 id="quick-booking-title">Đặt vé nhanh</h2>
 
         <label class="booking-step">
@@ -80,7 +83,7 @@
       </section>
 
       <section class="container movie-browser" aria-label="Danh sách phim">
-        <div class="movie-toolbar">
+        
           <div class="movie-toolbar">
             <div class="movie-tabs" role="group" aria-label="Trạng thái phim">
               <button class="movie-tab active" type="button" aria-pressed="true">
@@ -122,7 +125,7 @@
               </select>
             </label>
           </div>
-        </div>
+        
 
         <div class="results-row">
           <p><strong>12 phim</strong> đang chiếu tại CINEMATIC</p>
@@ -148,7 +151,7 @@
               <span>2D</span>
             </div>
 
-            <a class="button button-primary movie-cta" href="#">Đặt vé</a>
+            <a class="button button-primary movie-cta" href="./cinematic-movie-detail.html#showtimes">Đặt vé</a>
           </article>
 
           <article class="movie-card">
@@ -167,7 +170,7 @@
               <span>Phụ đề</span>
               <span>2D</span>
             </div>
-            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+            <a class="button button-primary movie-cta" href="./cinematic-movie-detail.html#showtimes">Chọn suất chiếu</a>
           </article>
 
           <article class="movie-card">
@@ -186,7 +189,7 @@
               <span>Phụ đề</span>
               <span>2D</span>
             </div>
-            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+            <a class="button button-primary movie-cta" href="./cinematic-movie-detail.html#showtimes">Chọn suất chiếu</a>
           </article>
 
           <article class="movie-card">
@@ -205,7 +208,7 @@
               <span>Phụ đề</span>
               <span>2D</span>
             </div>
-            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+            <a class="button button-primary movie-cta" href="./cinematic-movie-detail.html#showtimes">Chọn suất chiếu</a>
           </article>
 
           <article class="movie-card">
@@ -224,7 +227,7 @@
               <span>Phụ đề</span>
               <span>2D</span>
             </div>
-            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+            <a class="button button-primary movie-cta" href="./cinematic-movie-detail.html#showtimes">Chọn suất chiếu</a>
           </article>
 
           <article class="movie-card">
@@ -243,7 +246,7 @@
               <span>Phụ đề</span>
               <span>2D</span>
             </div>
-            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+            <a class="button button-primary movie-cta" href="./cinematic-movie-detail.html#showtimes">Chọn suất chiếu</a>
           </article>
 
           <article class="movie-card">
@@ -262,7 +265,7 @@
               <span>Phụ đề</span>
               <span>2D</span>
             </div>
-            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+            <a class="button button-primary movie-cta" href="./cinematic-movie-detail.html#showtimes">Chọn suất chiếu</a>
           </article>
 
           <article class="movie-card">
@@ -281,7 +284,7 @@
               <span>Phụ đề</span>
               <span>2D</span>
             </div>
-            <a class="button button-primary movie-cta" href="#">Chọn suất chiếu</a>
+            <a class="button button-primary movie-cta" href="./cinematic-movie-detail.html#showtimes">Chọn suất chiếu</a>
           </article>
         </div>
 
@@ -289,13 +292,14 @@
           Xem thêm phim <span aria-hidden="true">↓</span>
         </button>
       </section>
-    </main>
+    <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+</main>
 
     <nav class="bottom-nav" aria-label="Điều hướng di động">
-      <a href="#"><span>⌂</span><b>Trang chủ</b></a>
-      <a class="active" href="#"><span>▣</span><b>Phim</b></a>
-      <a href="#"><span>▤</span><b>Vé của tôi</b></a>
-      <a href="#"><span>♙</span><b>Tài khoản</b></a>
+      <a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu"><span>⌂</span><b>Trang chủ</b></a>
+      <a class="active reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu"><span>▣</span><b>Phim</b></a>
+      <a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu"><span>▤</span><b>Vé của tôi</b></a>
+      <a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu"><span>♙</span><b>Tài khoản</b></a>
     </nav>
   </body>
 </html>

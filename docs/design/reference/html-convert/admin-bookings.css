@@ -1,4 +1,5 @@
-:root {
+/* Page content only. Shell, tokens and responsive have separate owners. */
+:where([data-reference="admin-bookings"]) {
   --booking-table-min-width: 72rem;
   --booking-stat-min-height: 7rem;
   --booking-code-size: 0.6875rem;
@@ -8,14 +9,14 @@
   --booking-font-md: 0.8125rem;
 }
 
-.booking-stats {
+:where([data-reference="admin-bookings"]) .booking-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
 
-.booking-stat {
+:where([data-reference="admin-bookings"]) .booking-stat {
   display: grid;
   min-height: var(--booking-stat-min-height);
   align-content: center;
@@ -23,25 +24,25 @@
   padding: var(--space-4);
 }
 
-.booking-stat > span,
-.booking-stat > small {
+:where([data-reference="admin-bookings"]) .booking-stat > span,
+:where([data-reference="admin-bookings"]) .booking-stat > small {
   color: var(--color-text-secondary);
   font-size: var(--booking-font-sm);
 }
 
-.booking-stat > strong {
+:where([data-reference="admin-bookings"]) .booking-stat > strong {
   font-size: 1.5rem;
 }
 
-.booking-stat__positive {
+:where([data-reference="admin-bookings"]) .booking-stat__positive {
   color: var(--color-success) !important;
 }
 
-.booking-stat__pending {
+:where([data-reference="admin-bookings"]) .booking-stat__pending {
   color: var(--color-warning) !important;
 }
 
-.booking-filters {
+:where([data-reference="admin-bookings"]) .booking-filters {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
   gap: var(--space-3);
@@ -52,8 +53,8 @@
   background: var(--color-surface);
 }
 
-.booking-filters .filter-field input,
-.booking-filters .filter-field select {
+:where([data-reference="admin-bookings"]) .booking-filters .filter-field input,
+:where([data-reference="admin-bookings"]) .booking-filters .filter-field select {
   width: 100%;
   min-height: var(--admin-control-height);
   padding-inline: var(--space-3);
@@ -63,20 +64,20 @@
   background: var(--color-background-soft);
 }
 
-.booking-table {
+:where([data-reference="admin-bookings"]) .booking-table {
   width: 100%;
   min-width: var(--booking-table-min-width);
   border-collapse: collapse;
   text-align: left;
 }
 
-.booking-table th,
-.booking-table td {
+:where([data-reference="admin-bookings"]) .booking-table th,
+:where([data-reference="admin-bookings"]) .booking-table td {
   padding: var(--space-4);
   border-top: var(--border-width) solid var(--color-border);
 }
 
-.booking-table th {
+:where([data-reference="admin-bookings"]) .booking-table th {
   color: var(--color-text-tertiary);
   background: var(--color-background-soft);
   font-size: var(--booking-code-size);
@@ -85,66 +86,54 @@
   text-transform: uppercase;
 }
 
-.booking-table td {
+:where([data-reference="admin-bookings"]) .booking-table td {
   color: var(--color-text-secondary);
   font-size: var(--booking-font-sm);
 }
 
-.booking-table td small {
+:where([data-reference="admin-bookings"]) .booking-table td small {
   display: block;
   margin-top: var(--space-1);
   color: var(--color-text-tertiary);
   font-size: var(--booking-code-size);
 }
 
-.booking-code {
+:where([data-reference="admin-bookings"]) .booking-code {
   color: var(--color-primary);
   white-space: nowrap;
 }
 
-.booking-customer {
+:where([data-reference="admin-bookings"]) .booking-customer {
   display: inline-block;
   min-width: var(--booking-customer-width);
   color: var(--color-text-primary);
 }
 
-.booking-amount {
+:where([data-reference="admin-bookings"]) .booking-amount {
   color: var(--color-text-primary) !important;
   font-weight: 700;
   white-space: nowrap;
 }
 
-.payment-state {
+:where([data-reference="admin-bookings"]) .payment-state {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
 }
 
-.payment-state--paid {
+:where([data-reference="admin-bookings"]) .payment-state--paid {
   color: var(--color-success);
 }
 
-.payment-state--pending {
+:where([data-reference="admin-bookings"]) .payment-state--pending {
   color: var(--color-warning);
 }
 
-.payment-state--refunded {
+:where([data-reference="admin-bookings"]) .payment-state--refunded {
   color: var(--color-text-secondary);
 }
 
-.status-pill--pending {
-  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
-  color: var(--color-warning);
-  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-}
-
-.status-pill--cancelled {
-  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
-  color: var(--color-danger);
-  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
-}
-
-.booking-detail {
+:where([data-reference="admin-bookings"]) .booking-detail {
   min-height: var(--booking-detail-height);
   padding-inline: var(--space-2);
   border: var(--border-width) solid var(--color-border);
@@ -155,24 +144,7 @@
   white-space: nowrap;
 }
 
-.booking-detail:hover {
+:where([data-reference="admin-bookings"]) .booking-detail:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
-}
-
-@media (max-width: 70rem) {
-  .booking-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .booking-filters {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 48rem) {
-  .booking-stats,
-  .booking-filters {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }

@@ -12,10 +12,13 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
+        <link rel="stylesheet" href="./reference-tokens.css" />
+    <link rel="stylesheet" href="./reference-base.css" />
     <link rel="stylesheet" href="./cinematic-cinema-pages.css" />
+    <link rel="stylesheet" href="./reference-responsive.css" />
   </head>
 
-  <body class="cinema-detail-page">
+  <body class="reference-page customer-page cinema-detail-page" data-reference="cinematic-cinema-detail">
     <header class="site-header">
       <div class="container header-inner">
         <a class="brand" href="./cinematic-home-desktop.html" aria-label="Cinematic - Trang chủ">
@@ -34,7 +37,7 @@
             <span aria-hidden="true">●</span>
             TP. Hồ Chí Minh
           </button>
-          <a class="account-link" href="#account">Tài khoản</a>
+          <a class="account-link reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu">Tài khoản</a>
           <a class="button button-primary" href="#showtimes">Đặt vé</a>
           <button class="mobile-menu-button" type="button" aria-label="Mở menu">☰</button>
         </div>
@@ -171,7 +174,8 @@
           </section>
         </aside>
       </div>
-    </main>
+    <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+</main>
 
     <footer class="site-footer" id="promotions">
       <div class="container footer-inner">

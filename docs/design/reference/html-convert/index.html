@@ -1,108 +1,179 @@
 <!doctype html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CINEMA — HTML/CSS Screen Gallery</title>
-    <link rel="stylesheet" href="./cinema-reference.css" />
-    <link rel="stylesheet" href="./index.css" />
-  </head>
-  <body>
-    <header class="gallery-header">
-      <a class="wordmark" href="#">CINEMA</a><span>HTML / CSS · Responsive screen references</span
-      ><a class="button button-primary" href="../../../../ui-mockups/README.md">Mockup notes ↗</a>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinematic — Design references</title>
+  <link rel="stylesheet" href="./reference-tokens.css" />
+  <link rel="stylesheet" href="./reference-base.css" />
+  <link rel="stylesheet" href="./index.css" />
+</head>
+<body class="reference-gallery">
+  <main class="gallery">
+    <header class="gallery-heading">
+      <p class="gallery-eyebrow">CINEMATIC · DESIGN REFERENCES</p>
+      <h1>Các màn hình tham chiếu</h1>
+      <p>Nội dung minh họa. Home desktop và mobile là hai artboard riêng.</p>
     </header>
-    <main class="gallery page-width">
-      <div class="gallery-heading">
-        <p class="eyebrow">CINEMATIC WEB · SCREEN LIBRARY</p>
-        <h1 class="display-title">Screens &amp; Flows</h1>
-        <p class="muted">
-          Mỗi trang là HTML/CSS độc lập, có layout responsive và có thể mở trực tiếp trên trình
-          duyệt.
-        </p>
+    
+    <section aria-labelledby="gallery-customer">
+      <h2 id="gallery-customer">Customer</h2>
+      <div class="screen-grid">
+        
+        <a class="screen-card" href="./cinematic-cinema-detail.html">
+          <span>Customer</span>
+          <h3>CINEMATIC Quận 1 — Rạp chiếu phim</h3>
+          <p>cinematic-cinema-detail.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./cinematic-cinemas.html">
+          <span>Customer</span>
+          <h3>Hệ thống rạp — CINEMATIC</h3>
+          <p>cinematic-cinemas.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./cinematic-home-desktop.html">
+          <span>Customer</span>
+          <h3>Cinematic — Trang chủ Desktop</h3>
+          <p>cinematic-home-desktop.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./cinematic-home-mobile.html">
+          <span>Customer</span>
+          <h3>Cinematic — Trang chủ Mobile</h3>
+          <p>cinematic-home-mobile.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./cinematic-movie-detail.html">
+          <span>Customer</span>
+          <h3>CINEMATIC — Chi tiết phim</h3>
+          <p>cinematic-movie-detail.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./cinematic-movies.html">
+          <span>Customer</span>
+          <h3>CINEMATIC — Phim đang chiếu</h3>
+          <p>cinematic-movies.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./seat-selection.html">
+          <span>Customer</span>
+          <h3>Chọn ghế | CINEMATIC</h3>
+          <p>seat-selection.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
       </div>
-      <section class="screen-grid" aria-label="Danh sách màn hình">
-        <a class="screen-card" href="cinematic-home-desktop.html"
-          ><img src="../../../../ui-mockups/01-home-desktop.png" alt="Mockup trang chủ desktop" />
-          <div>
-            <span>01 · CUSTOMER</span>
-            <h2>Trang chủ desktop</h2>
-            <p>Home · Quick booking · Movie discovery</p>
-            <b>Mở trang →</b>
-          </div></a
-        >
-        <a class="screen-card" href="cinematic-home-mobile.html"
-          ><img
-            src="../../../../ui-mockups/07-customer-mobile-board.png"
-            alt="Mockup customer mobile board"
-          />
-          <div>
-            <span>01 · CUSTOMER</span>
-            <h2>Trang chủ mobile</h2>
-            <p>Header · Carousels · Bottom navigation</p>
-            <b>Mở trang →</b>
-          </div></a
-        >
-        <a class="screen-card" href="movie-detail.html"
-          ><img
-            src="../../../../ui-mockups/02-movie-detail-desktop.png"
-            alt="Mockup chi tiết phim"
-          />
-          <div>
-            <span>02 · DISCOVERY</span>
-            <h2>Chi tiết phim</h2>
-            <p>Thông tin phim · Lịch chiếu · Rạp</p>
-            <b>Mở trang →</b>
-          </div></a
-        >
-        <a class="screen-card" href="seat-selection.html"
-          ><img src="../../../../ui-mockups/03-seat-selection-desktop.png" alt="Mockup chọn ghế" />
-          <div>
-            <span>03 · BOOKING</span>
-            <h2>Chọn ghế</h2>
-            <p>Seat map · Legend · Booking summary</p>
-            <b>Mở trang →</b>
-          </div></a
-        >
-        <a class="screen-card" href="checkout.html"
-          ><img src="../../../../ui-mockups/04-checkout-desktop.png" alt="Mockup thanh toán" />
-          <div>
-            <span>04 · BOOKING</span>
-            <h2>Thanh toán</h2>
-            <p>Thông tin nhận vé · Payment · Order</p>
-            <b>Mở trang →</b>
-          </div></a
-        >
-        <a class="screen-card" href="my-tickets.html"
-          ><img src="../../../../ui-mockups/05-my-tickets-desktop.png" alt="Mockup vé của tôi" />
-          <div>
-            <span>05 · CUSTOMER</span>
-            <h2>Vé của tôi</h2>
-            <p>Booking history · Ticket detail · QR</p>
-            <b>Mở trang →</b>
-          </div></a
-        >
-        <a class="screen-card" href="admin-dashboard.html"
-          ><img
-            src="../../../../ui-mockups/06-admin-dashboard-desktop.png"
-            alt="Mockup admin dashboard"
-          />
-          <div>
-            <span>06 · ADMIN</span>
-            <h2>Admin Dashboard</h2>
-            <p>KPI · Charts · Service health · Tables</p>
-            <b>Mở trang →</b>
-          </div></a
-        >
-      </section>
-      <aside class="gallery-note">
-        <strong>Ghi chú</strong>
-        <p>
-          Checkout và Admin chưa có mobile artboard riêng trong bộ mockup; các trang này dùng
-          responsive layout được dựng theo cùng design tokens. Ảnh poster/trailer và dữ liệu đang là
-          nội dung demo, chưa nối API.
-        </p>
-      </aside>
-    </main>
-  </body>
+    </section>
+
+    <section aria-labelledby="gallery-admin">
+      <h2 id="gallery-admin">Admin</h2>
+      <div class="screen-grid">
+        
+        <a class="screen-card" href="./admin-bookings.html">
+          <span>Admin</span>
+          <h3>Quản lý đặt vé | CINEMA Admin</h3>
+          <p>admin-bookings.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-cinema-editor.html">
+          <span>Admin</span>
+          <h3>Thêm rạp | CINEMATIC Admin</h3>
+          <p>admin-cinema-editor.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-cinemas.html">
+          <span>Admin</span>
+          <h3>Quản lý rạp | CINEMA Admin</h3>
+          <p>admin-cinemas.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-dashboard.html">
+          <span>Admin</span>
+          <h3>Tổng quan quản trị | CINEMA</h3>
+          <p>admin-dashboard.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-movie-editor.html">
+          <span>Admin</span>
+          <h3>Thêm phim | CINEMATIC Admin</h3>
+          <p>admin-movie-editor.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-movies.html">
+          <span>Admin</span>
+          <h3>Quản lý phim | CINEMATIC Admin</h3>
+          <p>admin-movies.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-promotions.html">
+          <span>Admin</span>
+          <h3>Quản lý khuyến mãi | CINEMA Admin</h3>
+          <p>admin-promotions.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-room-editor.html">
+          <span>Admin</span>
+          <h3>Thêm phòng | CINEMATIC Admin</h3>
+          <p>admin-room-editor.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-room-layout.html">
+          <span>Admin</span>
+          <h3>Thiết kế layout phòng | CINEMA Admin</h3>
+          <p>admin-room-layout.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-room-seats.html">
+          <span>Admin</span>
+          <h3>Sơ đồ ghế | CINEMATIC Admin</h3>
+          <p>admin-room-seats.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-rooms.html">
+          <span>Admin</span>
+          <h3>Quản lý phòng chiếu | CINEMA Admin</h3>
+          <p>admin-rooms.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-showtime-form.html">
+          <span>Admin</span>
+          <h3>Tạo suất chiếu | CINEMATIC Admin</h3>
+          <p>admin-showtime-form.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-showtimes.html">
+          <span>Admin</span>
+          <h3>Quản lý suất chiếu | CINEMA Admin</h3>
+          <p>admin-showtimes.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+
+        <a class="screen-card" href="./admin-users.html">
+          <span>Admin</span>
+          <h3>Quản lý người dùng | CINEMA Admin</h3>
+          <p>admin-users.html</p>
+          <strong>Mở thiết kế →</strong>
+        </a>
+      </div>
+    </section>
+  </main>
+</body>
 </html>

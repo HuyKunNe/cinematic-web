@@ -1,0 +1,309 @@
+/* cinematic-reference-normalization-v1 */
+:where(.admin-page) .breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+}
+
+:where(.admin-page) .breadcrumbs a:hover {
+  color: var(--color-primary);
+}
+
+:where(.admin-page) .page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+:where(.admin-page) .eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-primary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+:where(.admin-page) .page-heading h1 {
+  margin: 0;
+  font-family: var(--font-display, Georgia, serif);
+  font-size: clamp(2rem, 3vw, 2.75rem);
+  line-height: 1.1;
+}
+
+:where(.admin-page) .page-heading__description {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+}
+
+:where(.admin-page) .action-button {
+  display: inline-flex;
+  min-height: var(--admin-control-height);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-4);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+:where(.admin-page) .action-button:hover {
+  transform: translateY(calc(var(--space-1) * -1));
+}
+
+:where(.admin-page) .action-button--primary {
+  border-color: var(--color-primary);
+  color: var(--color-background);
+  background: var(--color-primary);
+}
+
+:where(.admin-page) .action-button--primary:hover {
+  background: var(--color-primary-hover);
+}
+
+:where(.admin-page) .action-button--secondary {
+  color: var(--color-text-primary);
+  background: var(--color-surface-raised);
+}
+
+:where(.admin-page) .action-button--secondary:hover {
+  border-color: var(--color-primary);
+}
+
+:where(.admin-page) .prototype-note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  font-size: 0.75rem;
+}
+
+:where(.admin-page) .prototype-note > span:first-child {
+  color: var(--color-primary);
+}
+
+:where(.admin-page) .filter-panel {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1.5fr) repeat(2, minmax(11rem, 1fr)) auto;
+  align-items: end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+:where(.admin-page) .filter-field {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+:where(.admin-page) .filter-field input,
+:where(.admin-page) .filter-field select {
+  width: 100%;
+  min-height: var(--admin-control-height);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  background: var(--color-background-soft);
+}
+
+:where(.admin-page) .filter-field input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+:where(.admin-page) .panel {
+  overflow: hidden;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+:where(.admin-page) .cinema-list__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+:where(.admin-page) .cinema-list__heading h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+:where(.admin-page) .cinema-list__heading p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+:where(.admin-page) .result-count {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+:where(.admin-page) .table-scroll {
+  overflow-x: auto;
+}
+
+:where(.admin-page) .status-pill {
+  display: inline-flex;
+  min-height: var(--space-6);
+  align-items: center;
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+}
+
+:where(.admin-page) .status-pill--active {
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+}
+
+:where(.admin-page) .status-pill--paused {
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+}
+
+:where(.admin-page) .row-action {
+  width: var(--admin-control-height);
+  height: var(--admin-control-height);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  background: transparent;
+}
+
+:where(.admin-page) .row-action:hover {
+  border-color: var(--color-border);
+  color: var(--color-primary);
+  background: var(--color-surface-raised);
+}
+
+:where(.admin-page) .table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-top: var(--border-width) solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+:where(.admin-page) .pagination {
+  display: flex;
+  gap: var(--space-1);
+}
+
+:where(.admin-page) .pagination button {
+  min-width: var(--space-8);
+  height: var(--space-8);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-background-soft);
+}
+
+:where(.admin-page) .pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+:where(.admin-page) .pagination button.is-current {
+  border-color: var(--color-primary);
+  color: var(--color-background);
+  background: var(--color-primary);
+}
+
+:where(.admin-page) .panel--padded {
+  padding: var(--admin-card-padding);
+}
+
+:where(.admin-page) .panel-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+:where(.admin-page) .panel-heading h2 {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+:where(.admin-page) .panel-heading p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+:where(.admin-page) :is(input, select, textarea) {
+  min-width: 0;
+  min-height: var(--admin-control-height);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-background-soft);
+}
+
+:where(.admin-page) .button {
+  display: inline-flex;
+  min-height: var(--admin-control-height);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-4);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+:where(.admin-page) .button-primary {
+  color: var(--color-background);
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+:where(.admin-page) .status-pill--success {
+  color: var(--color-success);
+}
+
+:where(.admin-page) .status-pill--warning {
+  color: var(--color-warning);
+}
+
+:where(.admin-page) .status-pill--error {
+  color: var(--color-error);
+}
+
+:where(.admin-page) .layout-field input {
+  width: 100%;
+  padding-inline: var(--space-3);
+}

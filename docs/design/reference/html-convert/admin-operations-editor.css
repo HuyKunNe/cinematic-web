@@ -1,42 +1,31 @@
-:root {
+/* Page content only. Shell, tokens and responsive have separate owners. */
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) {
   --entity-editor-gap: 1rem;
   --entity-editor-preview-width: 20rem;
   --entity-form-gap: 1rem;
   --entity-field-gap: 0.5rem;
 }
 
-.breadcrumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--admin-space-2);
-  margin-bottom: var(--admin-space-4);
-  color: var(--admin-text-muted);
-}
-
-.breadcrumbs [aria-current='page'] {
-  color: var(--admin-text);
-}
-
-.entity-editor {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-editor {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(16rem, var(--entity-editor-preview-width));
   align-items: start;
   gap: var(--entity-editor-gap);
 }
 
-.entity-editor__main,
-.entity-preview {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-editor__main,
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-preview {
   min-width: 0;
 }
 
-.entity-form-grid {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--entity-form-gap);
   margin-top: var(--admin-space-5);
 }
 
-.entity-field {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-field {
   display: grid;
   align-content: start;
   gap: var(--entity-field-gap);
@@ -44,13 +33,13 @@
   font-size: 0.8125rem;
 }
 
-.entity-field > span b {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-field > span b {
   color: var(--admin-danger);
 }
 
-.entity-field input,
-.entity-field select,
-.entity-field textarea {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-field input,
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-field select,
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-field textarea {
   width: 100%;
   min-width: 0;
   padding: var(--admin-space-3);
@@ -61,36 +50,36 @@
   font: inherit;
 }
 
-.entity-field textarea {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-field textarea {
   resize: vertical;
   line-height: 1.5;
 }
 
-.entity-field--wide {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-field--wide {
   grid-column: 1 / -1;
 }
 
-.entity-input-suffix {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-input-suffix {
   display: flex;
   align-items: center;
   gap: var(--admin-space-2);
 }
 
-.entity-input-suffix input {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-input-suffix input {
   flex: 1 1 auto;
 }
 
-.entity-input-suffix > span {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-input-suffix > span {
   color: var(--admin-text-subtle);
 }
 
-.entity-preview dl {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-preview dl {
   display: grid;
   gap: var(--admin-space-3);
   margin-block: var(--admin-space-4);
 }
 
-.entity-preview dl > div {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-preview dl > div {
   display: flex;
   justify-content: space-between;
   gap: var(--admin-space-3);
@@ -98,17 +87,17 @@
   border-bottom: var(--admin-border-width) solid var(--admin-border);
 }
 
-.entity-preview dt {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-preview dt {
   color: var(--admin-text-subtle);
 }
 
-.entity-preview dd {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-preview dd {
   margin: 0;
   color: var(--admin-text);
   text-align: right;
 }
 
-.entity-preview > a {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-preview > a {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,7 +106,7 @@
   text-decoration: none;
 }
 
-.entity-actions {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-actions {
   display: flex;
   grid-column: 1 / -1;
   justify-content: flex-end;
@@ -126,31 +115,11 @@
   border-top: var(--admin-border-width) solid var(--admin-border);
 }
 
-.entity-actions a,
-.entity-actions button {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-actions a,
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding-inline: var(--admin-space-4);
   text-decoration: none;
-}
-
-@media (max-width: 48rem) {
-  .entity-editor,
-  .entity-form-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .entity-field--wide {
-    grid-column: auto;
-  }
-
-  .entity-actions {
-    flex-direction: column-reverse;
-  }
-
-  .entity-actions a,
-  .entity-actions button {
-    width: 100%;
-  }
 }

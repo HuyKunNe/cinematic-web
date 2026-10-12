@@ -1,123 +1,27 @@
-:root {
-  --color-primary: #f5be63;
-  --color-primary-strong: #ffc75f;
-  --color-primary-soft: #ffe0a0;
-  --color-background: #06111a;
-  --color-background-deep: #030a10;
-  --color-surface: #0b1823;
-  --color-surface-raised: #10202d;
-  --color-surface-soft: #142532;
-  --color-border: #2d4250;
-  --color-border-soft: rgba(178, 201, 215, 0.18);
-  --color-text: #f7f5f0;
-  --color-text-muted: #a8b4bd;
-  --color-black: #081016;
-  --color-success: #79c99a;
-
-  --font-body: 'Inter', sans-serif;
-  --font-display: 'Montserrat', sans-serif;
-
-  --container-width: 1280px;
+/* Page content only. Shell, tokens and responsive have separate owners. */
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) {
   --page-inset: 56px;
   --page-inset-tablet: 32px;
-  --header-height: 72px;
   --cinema-image-height: 190px;
   --detail-hero-height: 310px;
   --map-panel-height: 230px;
-  --control-height: 46px;
-  --button-height: 46px;
-
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-
-  --font-size-xs: 11px;
-  --font-size-sm: 13px;
-  --font-size-md: 15px;
-  --font-size-lg: 18px;
-  --font-size-xl: 30px;
-  --font-size-display: 42px;
-
-  --line-height-body: 1.6;
-  --line-height-heading: 1.12;
-  --border-width: 1px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-pill: 999px;
-  --shadow-card: 0 18px 48px rgba(0, 0, 0, 0.28);
-  --transition: 180ms ease;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  min-width: 320px;
-  margin: 0;
-  color: var(--color-text);
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) {
   background: radial-gradient(
     circle at 50% 0,
     #102534 0,
     var(--color-background) 34%,
     var(--color-background-deep) 100%
   );
-  font-family: var(--font-body);
-  font-size: var(--font-size-md);
-  line-height: var(--line-height-body);
 }
 
-button,
-input,
-select {
-  color: inherit;
-  font: inherit;
-}
-
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  cursor: pointer;
-}
-
-.container {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .container {
   width: min(calc(100% - var(--page-inset) * 2), var(--container-width));
   margin-inline: auto;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.site-header {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .site-header {
   position: relative;
   z-index: 10;
   height: var(--header-height);
@@ -125,14 +29,14 @@ button {
   background: rgba(3, 12, 19, 0.96);
 }
 
-.header-inner {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .header-inner {
   display: flex;
   height: 100%;
   align-items: center;
   gap: var(--space-8);
 }
 
-.brand {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .brand {
   color: var(--color-primary);
   font-family: var(--font-display);
   font-size: var(--font-size-lg);
@@ -140,32 +44,32 @@ button {
   letter-spacing: 0.04em;
 }
 
-.desktop-nav {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .desktop-nav {
   display: flex;
   gap: var(--space-8);
   margin-left: var(--space-4);
   font-size: var(--font-size-sm);
 }
 
-.desktop-nav a,
-.site-footer a {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .desktop-nav a,
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .site-footer a {
   transition: color var(--transition);
 }
 
-.desktop-nav a:hover,
-.site-footer a:hover {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .desktop-nav a:hover,
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .site-footer a:hover {
   color: var(--color-primary);
 }
 
-.header-actions {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .header-actions {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   margin-left: auto;
 }
 
-.header-location,
-.account-link {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .header-location,
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .account-link {
   min-height: var(--button-height);
   padding-inline: var(--space-4);
   border: var(--border-width) solid var(--color-border);
@@ -174,15 +78,15 @@ button {
   font-size: var(--font-size-sm);
 }
 
-.header-location span {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .header-location span {
   color: var(--color-primary);
 }
 
-.account-link {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .account-link {
   border-color: transparent;
 }
 
-.button {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .button {
   display: inline-flex;
   min-height: var(--button-height);
   align-items: center;
@@ -193,75 +97,74 @@ button {
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   font-weight: 700;
-  transition:
-    transform var(--transition),
+  transition: transform var(--transition),
     filter var(--transition);
 }
 
-.button:hover {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .button:hover {
   transform: translateY(-1px);
   filter: brightness(1.06);
 }
 
-.button-primary {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .button-primary {
   color: var(--color-black);
-  background: linear-gradient(135deg, var(--color-primary-soft), var(--color-primary-strong));
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-hover));
 }
 
-.button-outline {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .button-outline {
   border-color: var(--color-border);
   background: var(--color-surface);
 }
 
-.mobile-menu-button {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .mobile-menu-button {
   display: none;
   border: 0;
   background: transparent;
   font-size: var(--font-size-xl);
 }
 
-.breadcrumbs {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .breadcrumbs {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
 
-.breadcrumbs a:hover {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .breadcrumbs a:hover {
   color: var(--color-primary);
 }
 
-.breadcrumbs span:last-child {
-  color: var(--color-text);
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .breadcrumbs span:last-child {
+  color: var(--color-text-primary);
 }
 
-.page-heading {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .page-heading {
   padding-block: var(--space-10) var(--space-6);
 }
 
-.page-heading h1 {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .page-heading h1 {
   margin: var(--space-3) 0 var(--space-2);
   font-family: var(--font-display);
   font-size: var(--font-size-display);
   line-height: var(--line-height-heading);
 }
 
-.page-heading p {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .page-heading p {
   max-width: 680px;
   margin: 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
-.eyebrow {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .eyebrow {
   color: var(--color-primary);
   font-size: var(--font-size-xs);
   font-weight: 800;
   letter-spacing: 0.16em;
 }
 
-.filter-panel {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .filter-panel {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.7fr) auto;
   align-items: end;
@@ -274,14 +177,14 @@ button {
   box-shadow: var(--shadow-card);
 }
 
-.field-label {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .field-label {
   display: block;
   margin-bottom: var(--space-2);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
 
-.field-control {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .field-control {
   width: 100%;
   min-height: var(--control-height);
   padding-inline: var(--space-4);
@@ -291,34 +194,34 @@ button {
   background: var(--color-surface);
 }
 
-.field-control:focus {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .field-control:focus {
   border-color: var(--color-primary);
 }
 
-.city-tabs {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .city-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
   margin-bottom: var(--space-6);
 }
 
-.city-tab {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .city-tab {
   min-height: var(--button-height);
   padding-inline: var(--space-4);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
-.city-tab[aria-current='true'] {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .city-tab[aria-current='true'] {
   border-color: var(--color-primary);
   background: rgba(245, 190, 99, 0.12);
-  color: var(--color-primary-soft);
+  color: var(--color-primary-light);
 }
 
-.results-heading {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .results-heading {
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -326,41 +229,40 @@ button {
   margin-bottom: var(--space-4);
 }
 
-.results-heading h2 {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .results-heading h2 {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--font-size-lg);
 }
 
-.results-heading p {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .results-heading p {
   margin: var(--space-1) 0 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
 
-.cinema-grid {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-5);
 }
 
-.cinema-card {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-card {
   overflow: hidden;
   border: var(--border-width) solid var(--color-border-soft);
   border-radius: var(--radius-lg);
   background: linear-gradient(145deg, var(--color-surface-raised), var(--color-surface));
   box-shadow: var(--shadow-card);
-  transition:
-    transform var(--transition),
+  transition: transform var(--transition),
     border-color var(--transition);
 }
 
-.cinema-card:hover {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-card:hover {
   transform: translateY(-2px);
   border-color: var(--color-primary);
 }
 
-.cinema-image {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-image {
   display: block;
   width: 100%;
   height: var(--cinema-image-height);
@@ -368,31 +270,31 @@ button {
   background: var(--color-surface-soft);
 }
 
-.cinema-card-content {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-card-content {
   padding: var(--space-5);
 }
 
-.cinema-card h3 {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-card h3 {
   margin: 0 0 var(--space-2);
   font-family: var(--font-display);
   font-size: var(--font-size-lg);
   line-height: var(--line-height-heading);
 }
 
-.cinema-city {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-city {
   color: var(--color-primary);
   font-size: var(--font-size-xs);
   font-weight: 700;
 }
 
-.cinema-address {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-address {
   min-height: calc(var(--font-size-sm) * 3 * var(--line-height-body));
   margin: var(--space-3) 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
-.service-list {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .service-list {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
@@ -401,31 +303,31 @@ button {
   list-style: none;
 }
 
-.service-list li {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .service-list li {
   padding: var(--space-1) var(--space-2);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-pill);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
 
-.card-actions {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .card-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
 }
 
-.card-actions .button {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .card-actions .button {
   flex: 1;
 }
 
-.pagination {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .pagination {
   display: flex;
   justify-content: center;
   padding-block: var(--space-8) var(--space-12);
 }
 
-.detail-hero {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-hero {
   position: relative;
   display: flex;
   min-height: var(--detail-hero-height);
@@ -435,7 +337,7 @@ button {
   background: var(--color-surface);
 }
 
-.detail-hero::before {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-hero::before {
   position: absolute;
   z-index: -2;
   inset: 0;
@@ -444,21 +346,20 @@ button {
   content: '';
 }
 
-.detail-hero::after {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-hero::after {
   position: absolute;
   z-index: -1;
   inset: 0;
-  background:
-    linear-gradient(90deg, rgba(2, 9, 14, 0.96), rgba(2, 9, 14, 0.65) 54%, rgba(2, 9, 14, 0.2)),
+  background: linear-gradient(90deg, rgba(2, 9, 14, 0.96), rgba(2, 9, 14, 0.65) 54%, rgba(2, 9, 14, 0.2)),
     linear-gradient(0deg, var(--color-background), transparent 60%);
   content: '';
 }
 
-.detail-hero-content {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-hero-content {
   padding-block: var(--space-10);
 }
 
-.detail-hero-content h1 {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-hero-content h1 {
   max-width: 760px;
   margin: var(--space-4) 0;
   font-family: var(--font-display);
@@ -466,46 +367,46 @@ button {
   line-height: var(--line-height-heading);
 }
 
-.detail-meta {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-meta {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
-.detail-actions {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-5);
 }
 
-.detail-layout {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.38fr);
   gap: var(--space-6);
   padding-block: var(--space-8) var(--space-16);
 }
 
-.content-card {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .content-card {
   padding: var(--space-6);
   border: var(--border-width) solid var(--color-border-soft);
   border-radius: var(--radius-lg);
   background: rgba(11, 24, 35, 0.88);
 }
 
-.content-card + .content-card {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .content-card + .content-card {
   margin-top: var(--space-5);
 }
 
-.content-card h2 {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .content-card h2 {
   margin: 0 0 var(--space-4);
   font-family: var(--font-display);
   font-size: var(--font-size-lg);
 }
 
-.info-row {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .info-row {
   display: grid;
   grid-template-columns: minmax(120px, 0.35fr) minmax(0, 1fr);
   gap: var(--space-4);
@@ -514,26 +415,26 @@ button {
   font-size: var(--font-size-sm);
 }
 
-.info-row:last-child {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .info-row:last-child {
   border-bottom: 0;
 }
 
-.info-row dt {
-  color: var(--color-text-muted);
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .info-row dt {
+  color: var(--color-text-secondary);
 }
 
-.info-row dd {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .info-row dd {
   margin: 0;
 }
 
-.schedule-dates {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .schedule-dates {
   display: flex;
   gap: var(--space-2);
   overflow-x: auto;
   padding-bottom: var(--space-3);
 }
 
-.date-option {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .date-option {
   min-width: 90px;
   min-height: 68px;
   padding: var(--space-2);
@@ -543,23 +444,23 @@ button {
   text-align: center;
 }
 
-.date-option strong,
-.date-option span {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .date-option strong,
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .date-option span {
   display: block;
 }
 
-.date-option span {
-  color: var(--color-text-muted);
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .date-option span {
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
 
-.date-option[aria-current='date'] {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .date-option[aria-current='date'] {
   border-color: var(--color-primary);
-  color: var(--color-primary-soft);
+  color: var(--color-primary-light);
   background: rgba(245, 190, 99, 0.1);
 }
 
-.movie-schedule {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .movie-schedule {
   display: grid;
   grid-template-columns: minmax(150px, 0.35fr) minmax(0, 1fr);
   gap: var(--space-5);
@@ -567,41 +468,41 @@ button {
   border-top: var(--border-width) solid var(--color-border-soft);
 }
 
-.movie-schedule h3 {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .movie-schedule h3 {
   margin: 0 0 var(--space-2);
   font-size: var(--font-size-md);
 }
 
-.movie-schedule p {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .movie-schedule p {
   margin: 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
 
-.showtime-list {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .showtime-list {
   display: flex;
   flex-wrap: wrap;
   align-content: start;
   gap: var(--space-2);
 }
 
-.showtime {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .showtime {
   min-width: 82px;
   min-height: var(--button-height);
   padding-inline: var(--space-3);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
-  color: var(--color-primary-soft);
+  color: var(--color-primary-light);
   font-weight: 700;
 }
 
-.showtime:hover {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .showtime:hover {
   border-color: var(--color-primary);
   background: rgba(245, 190, 99, 0.1);
 }
 
-.map-panel {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .map-panel {
   position: relative;
   display: grid;
   min-height: var(--map-panel-height);
@@ -609,8 +510,7 @@ button {
   overflow: hidden;
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-md);
-  background:
-    linear-gradient(
+  background: linear-gradient(
       35deg,
       transparent 47%,
       rgba(245, 190, 99, 0.2) 48%,
@@ -633,12 +533,12 @@ button {
     );
 }
 
-.map-pin {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .map-pin {
   display: grid;
   width: 48px;
   height: 48px;
   place-items: center;
-  border: var(--border-width) solid var(--color-primary-soft);
+  border: var(--border-width) solid var(--color-primary-light);
   border-radius: var(--radius-pill);
   color: var(--color-black);
   background: var(--color-primary);
@@ -646,143 +546,43 @@ button {
   font-size: var(--font-size-lg);
 }
 
-.sidebar-note {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .sidebar-note {
   margin: var(--space-4) 0 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
-.site-footer {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .site-footer {
   border-top: var(--border-width) solid var(--color-border-soft);
   background: #040c12;
 }
 
-.footer-inner {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .footer-inner {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: var(--space-8);
   padding-block: var(--space-8);
 }
 
-.footer-inner h2 {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .footer-inner h2 {
   margin: 0 0 var(--space-3);
   font-size: var(--font-size-sm);
 }
 
-.footer-inner p,
-.footer-inner a {
-  color: var(--color-text-muted);
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .footer-inner p,
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .footer-inner a {
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
 
-.footer-links {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .footer-links {
   display: grid;
   gap: var(--space-2);
 }
 
-.footer-bottom {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .footer-bottom {
   padding-block: var(--space-4);
   border-top: var(--border-width) solid var(--color-border-soft);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
-}
-
-@media (max-width: 960px) {
-  .container {
-    width: min(calc(100% - var(--page-inset-tablet) * 2), var(--container-width));
-  }
-
-  .desktop-nav,
-  .account-link {
-    display: none;
-  }
-
-  .mobile-menu-button {
-    display: inline-grid;
-    place-items: center;
-  }
-
-  .cinema-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .detail-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-panel {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .filter-panel .button {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 620px) {
-  :root {
-    --page-inset: 20px;
-    --header-height: 64px;
-    --detail-hero-height: 340px;
-    --font-size-display: 32px;
-    --font-size-xl: 24px;
-  }
-
-  .header-location {
-    display: none;
-  }
-
-  .page-heading {
-    padding-block: var(--space-8) var(--space-5);
-  }
-
-  .filter-panel,
-  .cinema-grid,
-  .footer-inner {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-panel .button {
-    grid-column: auto;
-  }
-
-  .cinema-image {
-    height: 210px;
-  }
-
-  .results-heading {
-    align-items: start;
-    flex-direction: column;
-  }
-
-  .detail-hero-content {
-    padding-block: var(--space-8);
-  }
-
-  .detail-meta {
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .detail-layout {
-    padding-block: var(--space-5) var(--space-10);
-  }
-
-  .content-card {
-    padding: var(--space-4);
-  }
-
-  .movie-schedule {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition: none !important;
-  }
 }

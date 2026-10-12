@@ -4,77 +4,96 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sơ đồ ghế | CINEMATIC Admin</title>
-    <link rel="stylesheet" href="./cinema-reference.css" />
+        <link rel="stylesheet" href="./reference-tokens.css" />
+    <link rel="stylesheet" href="./reference-base.css" />
     <link rel="stylesheet" href="./admin-unified.css" />
+    <link rel="stylesheet" href="./admin-components.css" />
     <link rel="stylesheet" href="./admin-room-seats.css" />
+    <link rel="stylesheet" href="./reference-responsive.css" />
   </head>
 
-  <body class="admin-page">
-    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
-      <a class="admin-brand" href="./admin-dashboard.html">
-        <span class="admin-brand__mark" aria-hidden="true">C</span>
-        <span class="admin-brand__copy">
-          <strong>CINEMATIC</strong>
-          <small>QUẢN TRỊ</small>
-        </span>
+  <body class="reference-page admin-page" data-reference="admin-room-seats">
+    <div class="admin-shell">
+    
+<aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+  <a class="admin-brand" href="./admin-dashboard.html">
+    <span class="admin-brand__mark" aria-hidden="true">C</span>
+    <span class="admin-brand__copy"><strong>CINEMATIC</strong><small>QUẢN TRỊ</small></span>
+  </a>
+  <nav class="admin-nav" aria-label="Menu quản trị">
+    
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Điều hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-dashboard.html">
+        <span aria-hidden="true">⌂</span>Tổng quan
+      </a>
+    </div>
+
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Nội dung</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-movies.html">
+        <span aria-hidden="true">▤</span>Phim
       </a>
 
-      <nav class="admin-nav" aria-label="Menu quản trị">
-        <p class="admin-nav__label">Điều hành</p>
-        <a class="admin-nav__link" href="./admin-dashboard.html"
-          ><span aria-hidden="true">⌂</span>Tổng quan</a
-        >
+      <a class="admin-nav__link"
+         href="./admin-promotions.html">
+        <span aria-hidden="true">◇</span>Khuyến mãi
+      </a>
+    </div>
 
-        <p class="admin-nav__label">Nội dung</p>
-        <a class="admin-nav__link" href="./admin-movies.html"
-          ><span aria-hidden="true">▤</span>Phim</a
-        >
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Vận hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-cinemas.html">
+        <span aria-hidden="true">▣</span>Rạp
+      </a>
 
-        <p class="admin-nav__label">Vận hành</p>
-        <a class="admin-nav__link" href="./admin-cinemas.html"
-          ><span aria-hidden="true">▣</span>Rạp</a
-        >
-        <a class="admin-nav__link" href="./admin-rooms.html"
-          ><span aria-hidden="true">▦</span>Phòng</a
-        >
-        <a class="admin-nav__link is-active" href="./admin-room-seats.html" aria-current="page">
-          <span aria-hidden="true">▥</span>Sơ đồ ghế
-        </a>
-        <a class="admin-nav__link" href="./admin-showtimes.html"
-          ><span aria-hidden="true">◷</span>Suất chiếu</a
-        >
+      <a class="admin-nav__link is-active"
+         href="./admin-rooms.html" aria-current="page">
+        <span aria-hidden="true">▦</span>Phòng và ghế
+      </a>
 
-        <p class="admin-nav__label">Giao dịch</p>
-        <a class="admin-nav__link" href="./admin-bookings.html"
-          ><span aria-hidden="true">▧</span>Đặt vé</a
-        >
-        <a class="admin-nav__link" href="./admin-promotions.html"
-          ><span aria-hidden="true">◇</span>Khuyến mãi</a
-        >
+      <a class="admin-nav__link"
+         href="./admin-showtimes.html">
+        <span aria-hidden="true">◷</span>Lịch chiếu
+      </a>
 
-        <p class="admin-nav__label">Hệ thống</p>
-        <a class="admin-nav__link" href="./admin-users.html"
-          ><span aria-hidden="true">♙</span>Người dùng</a
-        >
-      </nav>
+      <a class="admin-nav__link"
+         href="./admin-bookings.html">
+        <span aria-hidden="true">▧</span>Đặt vé
+      </a>
+    </div>
 
-      <div class="admin-sidebar__footer">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span>Không gian quản trị</span>
-      </div>
-    </aside>
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Hệ thống</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-users.html">
+        <span aria-hidden="true">♙</span>Người dùng
+      </a>
+    </div>
+  </nav>
+  <footer class="admin-sidebar__footer">Không gian quản trị</footer>
+</aside>
 
     <div class="admin-main">
-      <header class="admin-topbar">
-        <label class="admin-search">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" placeholder="Tìm kiếm..." aria-label="Tìm trong quản trị" />
-        </label>
-        <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
-          <span class="admin-account__avatar">QA</span>
-          <span class="admin-account__name">Quản trị viên</span>
-        </button>
-      </header>
+      
+<header class="admin-topbar">
+  <label class="admin-search">
+    <span aria-hidden="true">⌕</span>
+    <input type="search" placeholder="Tìm kiếm trong quản trị…" aria-label="Tìm kiếm trong quản trị" />
+    <kbd>⌘ K</kbd>
+  </label>
+  <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
+    <span class="admin-account__avatar" aria-hidden="true">QT</span>
+    <span class="admin-account__name">Quản trị viên</span>
+  </button>
+</header>
 
       <main class="admin-content">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -88,12 +107,12 @@
         <section class="page-heading">
           <div>
             <p class="eyebrow">Cấu hình phòng chiếu</p>
-            <h1>Sơ đồ ghế</h1>
-            <p class="page-heading__description">Kiểm tra bố cục và trạng thái ghế trong phòng.</p>
+            <h1>Ghế của phòng</h1>
+            <p class="page-heading__description">Quản lý ghế của phòng. Mở thiết kế sơ đồ để đặt vị trí các ghế.</p>
           </div>
-          <button class="action-button action-button--primary" type="button">
+          <a class="action-button action-button--primary" href="./admin-room-layout.html">
             Chỉnh sửa bố cục
-          </button>
+          </a>
         </section>
 
         <section class="seatmap-toolbar" aria-label="Chọn rạp và phòng">
@@ -132,7 +151,7 @@
         </section>
 
         <div class="seatmap-layout">
-          <section class="panel seatmap-panel" aria-labelledby="seatmap-title">
+          <section class="panel seatmap-panel panel--padded" aria-labelledby="seatmap-title">
             <header class="panel-heading">
               <div>
                 <h2 id="seatmap-title">Bố cục ghế</h2>
@@ -150,61 +169,61 @@
             <div class="seatmap-scroll">
               <div class="seatmap-stage"><span>MÀN HÌNH</span></div>
 
-              <div class="seatmap-rows" role="grid" aria-label="Sơ đồ ghế minh họa">
+              <div class="seatmap-rows" role="group" aria-label="Sơ đồ ghế minh họa">
                 <div class="seatmap-row" role="row" aria-label="Hàng A">
                   <span class="seatmap-row__label">A</span>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế A1, ghế thường"
                   >
                     1
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế A2, ghế thường"
                   >
                     2
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế A3, ghế thường"
                   >
                     3
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế A4, ghế thường"
                   >
                     4
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế A5, ghế thường"
                   >
                     5
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế A6, ghế thường"
                   >
                     6
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế A7, ghế thường"
                   >
                     7
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế A8, ghế thường"
                   >
                     8
@@ -215,56 +234,56 @@
                   <span class="seatmap-row__label">B</span>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế B1, ghế thường"
                   >
                     1
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế B2, ghế thường"
                   >
                     2
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế B3, ghế thường"
                   >
                     3
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế B4, ghế thường"
                   >
                     4
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế B5, ghế cao cấp"
                   >
                     5
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế B6, ghế cao cấp"
                   >
                     6
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế B7, ghế cao cấp"
                   >
                     7
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế B8, ghế cao cấp"
                   >
                     8
@@ -275,56 +294,56 @@
                   <span class="seatmap-row__label">C</span>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế C1, ghế thường"
                   >
                     1
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế C2, ghế thường"
                   >
                     2
                   </button>
                   <button
                     class="seatmap-seat is-selected"
-                    role="gridcell"
+                    
                     aria-label="Ghế C3 đang chọn"
                   >
                     3
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế C4, ghế thường"
                   >
                     4
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế C5, ghế cao cấp"
                   >
                     5
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế C6, ghế cao cấp"
                   >
                     6
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế C7, ghế cao cấp"
                   >
                     7
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế C8, ghế cao cấp"
                   >
                     8
@@ -335,56 +354,56 @@
                   <span class="seatmap-row__label">D</span>
                   <button
                     class="seatmap-seat is-blocked"
-                    role="gridcell"
+                    
                     aria-label="Ghế D1 ngừng sử dụng"
                   >
                     1
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế D2, ghế thường"
                   >
                     2
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế D3, ghế thường"
                   >
                     3
                   </button>
                   <button
                     class="seatmap-seat is-standard"
-                    role="gridcell"
+                    
                     aria-label="Ghế D4, ghế thường"
                   >
                     4
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế D5, ghế cao cấp"
                   >
                     5
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế D6, ghế cao cấp"
                   >
                     6
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế D7, ghế cao cấp"
                   >
                     7
                   </button>
                   <button
                     class="seatmap-seat is-premium"
-                    role="gridcell"
+                    
                     aria-label="Ghế D8, ghế cao cấp"
                   >
                     8
@@ -394,7 +413,7 @@
             </div>
           </section>
 
-          <aside class="panel seatmap-details" aria-labelledby="seatmap-details-title">
+          <aside class="panel seatmap-details panel--padded" aria-labelledby="seatmap-details-title">
             <h2 id="seatmap-details-title">Chi tiết phòng</h2>
             <dl>
               <div>
@@ -423,7 +442,9 @@
             </button>
           </aside>
         </div>
-      </main>
+      <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+</main>
     </div>
+      </div>
   </body>
 </html>

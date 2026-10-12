@@ -8,12 +8,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="./reference-tokens.css" />
+    <link rel="stylesheet" href="./reference-base.css" />
     <link rel="stylesheet" href="./cinematic-home-mobile.css" />
+    <link rel="stylesheet" href="./reference-responsive.css" />
   </head>
-  <body>
+  <body class="reference-page customer-page" data-reference="cinematic-home-mobile">
     <div class="mobile-shell">
       <header class="mobile-header">
-        <a class="brand" href="#" aria-label="Cinematic - Trang chủ">CINEMATIC</a>
+        <a class="brand" href="./cinematic-home-desktop.html" aria-label="Cinematic - Trang chủ">CINEMATIC</a>
         <button class="location-button" type="button" aria-label="Chọn thành phố"><span>●</span><b>TP. Hồ Chí Minh</b><span>⌄</span></button>
         <button class="header-icon search-icon" type="button" aria-label="Tìm kiếm">⌕</button>
         <button class="header-icon menu-icon" type="button" aria-label="Mở menu">☰</button>
@@ -47,7 +50,7 @@
         </section>
 
         <section class="content-section" id="showing" aria-labelledby="showing-title">
-          <div class="section-title"><h2 id="showing-title">Phim đang chiếu</h2><a href="#">Xem tất cả &nbsp;→</a></div>
+          <div class="section-title"><h2 id="showing-title">Phim đang chiếu</h2><a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu">Xem tất cả &nbsp;→</a></div>
           <div class="movie-scroller">
             <article class="movie-card">
               <div class="poster poster-space"><button class="play" aria-label="Xem trailer">▶</button><span class="badge poster-badge">ĐANG CHIẾU</span></div>
@@ -65,7 +68,7 @@
         </section>
 
         <section class="content-section upcoming" aria-labelledby="upcoming-title">
-          <div class="section-title"><h2 id="upcoming-title">Sắp chiếu</h2><a href="#">Xem tất cả &nbsp;→</a></div>
+          <div class="section-title"><h2 id="upcoming-title">Sắp chiếu</h2><a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu">Xem tất cả &nbsp;→</a></div>
           <article class="upcoming-card"><div class="upcoming-image"></div><div><h3>Đảo Mộng Mơ</h3><strong>01.11.2024</strong><p>Phiêu lưu · Gia đình</p></div><button aria-label="Xem phim Đảo Mộng Mơ">›</button></article>
         </section>
 
@@ -77,20 +80,21 @@
           <div class="member-card" aria-hidden="true"><strong>CINEMATIC</strong><span>MEMBER</span><small>NGUYỄN MINH ANH<br />CM12345678</small></div>
           <div class="membership-info"><h2 id="member-title">Thành viên CINEMATIC</h2><p>Xem phim nhiều hơn, nhận ưu đãi lớn hơn</p><div class="benefits"><div><b>♔</b><span>Tích điểm<br />mỗi giao dịch</span></div><div><b>▣</b><span>Ưu đãi<br />thành viên</span></div><div><b>✦</b><span>Nhận quà<br />đặc biệt</span></div></div></div>
         </section>
-      </main>
+      <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+</main>
 
       <footer class="mobile-footer">
-        <div class="footer-brand"><a class="brand" href="#">CINEMATIC</a><p>Điện ảnh kết nối cảm xúc</p><div class="socials"><a href="#">f</a><a href="#">◎</a><a href="#">▶</a><a href="#">♪</a></div></div>
-        <div><h2>Khám phá</h2><a href="#">Lịch chiếu</a><a href="#">Phim</a><a href="#">Rạp</a><a href="#">Ưu đãi</a></div>
-        <div><h2>Hỗ trợ</h2><a href="#">Câu hỏi thường gặp</a><a href="#">Liên hệ</a></div>
+        <div class="footer-brand"><a class="brand" href="./cinematic-home-desktop.html">CINEMATIC</a><p>Điện ảnh kết nối cảm xúc</p><div class="socials"><a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu">f</a><a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu">◎</a><a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu">▶</a><a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu">♪</a></div></div>
+        <div><h2>Khám phá</h2><a href="./cinematic-movie-detail.html#showtimes">Lịch chiếu</a><a href="./cinematic-movies.html">Phim</a><a href="./cinematic-cinemas.html">Rạp</a><a href="./cinematic-home-desktop.html#promotions">Ưu đãi</a></div>
+        <div><h2>Hỗ trợ</h2><a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu">Câu hỏi thường gặp</a><a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu">Liên hệ</a></div>
         <small>© 2026 CINEMATIC. Tất cả quyền được bảo lưu.</small>
       </footer>
 
       <nav class="bottom-nav" aria-label="Điều hướng di động">
-        <a class="active" href="#"><span>⌂</span><b>Trang chủ</b></a>
+        <a class="active reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu"><span>⌂</span><b>Trang chủ</b></a>
         <a href="#showing"><span>▣</span><b>Lịch chiếu</b></a>
-        <a href="#"><span>▤</span><b>Vé của tôi</b></a>
-        <a href="#"><span>♙</span><b>Tài khoản</b></a>
+        <a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu"><span>▤</span><b>Vé của tôi</b></a>
+        <a class="reference-disabled" role="link" aria-disabled="true" tabindex="-1" title="Chưa có màn hình tham chiếu"><span>♙</span><b>Tài khoản</b></a>
       </nav>
     </div>
   </body>

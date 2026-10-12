@@ -1,4 +1,5 @@
-:root {
+/* Page content only. Shell, tokens and responsive have separate owners. */
+:where([data-reference="seat-selection"]) {
   --booking-layout-columns: minmax(0, 1fr) minmax(18rem, 22rem);
   --booking-seat-size: 2.5rem;
   --booking-seat-gap: 0.5rem;
@@ -15,16 +16,16 @@
   --booking-page-gap: var(--space-6);
 }
 
-.booking-page {
+:where([data-reference="seat-selection"]) .booking-page {
   min-height: 100vh;
 }
 
-.booking-header {
+:where([data-reference="seat-selection"]) .booking-header {
   position: sticky;
   top: 0;
 }
 
-.booking-header__inner {
+:where([data-reference="seat-selection"]) .booking-header__inner {
   display: flex;
   min-height: var(--header-height);
   align-items: center;
@@ -32,7 +33,7 @@
   gap: var(--space-4);
 }
 
-.booking-steps ol {
+:where([data-reference="seat-selection"]) .booking-steps ol {
   display: flex;
   align-items: center;
   gap: var(--space-5);
@@ -41,15 +42,15 @@
   list-style: none;
 }
 
-.booking-steps li {
+:where([data-reference="seat-selection"]) .booking-steps li {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-steps li > span {
+:where([data-reference="seat-selection"]) .booking-steps li > span {
   display: grid;
   width: var(--space-6);
   height: var(--space-6);
@@ -58,41 +59,41 @@
   border-radius: var(--radius-pill);
 }
 
-.booking-steps li.is-complete,
-.booking-steps li.is-active {
+:where([data-reference="seat-selection"]) .booking-steps li.is-complete,
+:where([data-reference="seat-selection"]) .booking-steps li.is-active {
   color: var(--color-primary);
 }
 
-.booking-steps li.is-complete > span,
-.booking-steps li.is-active > span {
+:where([data-reference="seat-selection"]) .booking-steps li.is-complete > span,
+:where([data-reference="seat-selection"]) .booking-steps li.is-active > span {
   border-color: var(--color-primary);
   background: color-mix(in srgb, var(--color-primary) 14%, transparent);
 }
 
-.booking-help {
-  color: var(--color-text-muted);
+:where([data-reference="seat-selection"]) .booking-help {
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-main {
+:where([data-reference="seat-selection"]) .booking-main {
   padding-block: var(--space-5) var(--space-10);
 }
 
-.booking-breadcrumbs {
+:where([data-reference="seat-selection"]) .booking-breadcrumbs {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-breadcrumbs a:hover,
-.booking-back-link:hover {
+:where([data-reference="seat-selection"]) .booking-breadcrumbs a:hover,
+:where([data-reference="seat-selection"]) .booking-back-link:hover {
   color: var(--color-primary);
 }
 
-.booking-title {
+:where([data-reference="seat-selection"]) .booking-title {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -100,26 +101,26 @@
   margin-block: var(--space-5);
 }
 
-.booking-title h1 {
+:where([data-reference="seat-selection"]) .booking-title h1 {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--font-size-xl);
   line-height: var(--line-height-heading);
 }
 
-.booking-title p:last-child {
+:where([data-reference="seat-selection"]) .booking-title p:last-child {
   margin: var(--space-2) 0 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-back-link {
-  color: var(--color-text-muted);
+:where([data-reference="seat-selection"]) .booking-back-link {
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
   white-space: nowrap;
 }
 
-.booking-session {
+:where([data-reference="seat-selection"]) .booking-session {
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -129,8 +130,8 @@
   background: var(--color-surface);
 }
 
-.booking-session__movie-art,
-.booking-summary__art {
+:where([data-reference="seat-selection"]) .booking-session__movie-art,
+:where([data-reference="seat-selection"]) .booking-summary__art {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
@@ -147,45 +148,45 @@
   font-weight: 800;
 }
 
-.booking-session__movie-art {
+:where([data-reference="seat-selection"]) .booking-session__movie-art {
   width: var(--space-10);
   height: var(--space-12);
 }
 
-.booking-session__details {
+:where([data-reference="seat-selection"]) .booking-session__details {
   display: grid;
   min-width: 0;
   gap: var(--space-1);
 }
 
-.booking-session__details strong {
-  color: var(--color-text);
+:where([data-reference="seat-selection"]) .booking-session__details strong {
+  color: var(--color-text-primary);
   font-size: var(--font-size-md);
 }
 
-.booking-session__details span {
-  color: var(--color-text-muted);
+:where([data-reference="seat-selection"]) .booking-session__details span {
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-countdown {
+:where([data-reference="seat-selection"]) .booking-countdown {
   display: grid;
   gap: var(--space-1);
   margin-left: auto;
   text-align: right;
 }
 
-.booking-countdown span {
-  color: var(--color-text-muted);
+:where([data-reference="seat-selection"]) .booking-countdown span {
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-countdown strong {
+:where([data-reference="seat-selection"]) .booking-countdown strong {
   color: var(--color-primary);
   font-variant-numeric: tabular-nums;
 }
 
-.booking-layout {
+:where([data-reference="seat-selection"]) .booking-layout {
   display: grid;
   grid-template-columns: var(--booking-layout-columns);
   align-items: start;
@@ -193,85 +194,85 @@
   margin-top: var(--space-5);
 }
 
-.seat-selection-panel,
-.booking-summary {
+:where([data-reference="seat-selection"]) .seat-selection-panel,
+:where([data-reference="seat-selection"]) .booking-summary {
   min-width: 0;
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
 }
 
-.seat-selection-panel {
+:where([data-reference="seat-selection"]) .seat-selection-panel {
   padding: var(--space-5);
 }
 
-.seat-panel-heading,
-.booking-summary__heading {
+:where([data-reference="seat-selection"]) .seat-panel-heading,
+:where([data-reference="seat-selection"]) .booking-summary__heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
 }
 
-.seat-panel-heading h2,
-.booking-summary__heading h2 {
+:where([data-reference="seat-selection"]) .seat-panel-heading h2,
+:where([data-reference="seat-selection"]) .booking-summary__heading h2 {
   margin: 0;
   font-size: var(--font-size-lg);
 }
 
-.seat-panel-heading p {
+:where([data-reference="seat-selection"]) .seat-panel-heading p {
   margin: var(--space-1) 0 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.seat-panel-heading__format,
-.booking-summary__count {
-  color: var(--color-text-muted);
+:where([data-reference="seat-selection"]) .seat-panel-heading__format,
+:where([data-reference="seat-selection"]) .booking-summary__count {
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
   white-space: nowrap;
 }
 
-.seat-legend {
+:where([data-reference="seat-selection"]) .seat-legend {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3) var(--space-5);
   margin-block: var(--space-5);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.seat-legend span {
+:where([data-reference="seat-selection"]) .seat-legend span {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.seat-legend__marker {
+:where([data-reference="seat-selection"]) .seat-legend__marker {
   width: var(--space-3);
   height: var(--space-3);
   border: var(--border-width) solid transparent;
   border-radius: var(--radius-xs);
 }
 
-.seat-legend__marker--available {
+:where([data-reference="seat-selection"]) .seat-legend__marker--available {
   border-color: var(--color-border-soft);
   background: var(--color-surface-raised);
 }
 
-.seat-legend__marker--selected {
+:where([data-reference="seat-selection"]) .seat-legend__marker--selected {
   background: var(--booking-selected-seat);
 }
 
-.seat-legend__marker--booked {
+:where([data-reference="seat-selection"]) .seat-legend__marker--booked {
   background: var(--booking-booked-seat);
 }
 
-.seat-legend__marker--vip {
+:where([data-reference="seat-selection"]) .seat-legend__marker--vip {
   background: var(--booking-vip-seat);
 }
 
-.seat-map-scroll {
+:where([data-reference="seat-selection"]) .seat-map-scroll {
   overflow-x: auto;
   padding: var(--space-3) var(--space-2) var(--space-4);
   border: var(--border-width) solid var(--color-border-soft);
@@ -279,7 +280,7 @@
   background: var(--color-background-deep);
 }
 
-.seat-map {
+:where([data-reference="seat-selection"]) .seat-map {
   display: grid;
   width: max-content;
   min-width: var(--booking-map-min-width);
@@ -287,105 +288,104 @@
   margin-inline: auto;
 }
 
-.seat-screen {
+:where([data-reference="seat-selection"]) .seat-screen {
   display: grid;
   min-height: var(--booking-screen-height);
   place-items: center;
   border-top: var(--space-1) solid var(--color-primary);
   border-radius: var(--radius-pill) var(--radius-pill) 0 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
   letter-spacing: 0.14em;
 }
 
-.seat-row {
+:where([data-reference="seat-selection"]) .seat-row {
   display: grid;
   grid-template-columns: var(--booking-row-label-size) minmax(0, 1fr);
   align-items: center;
   gap: var(--space-2);
 }
 
-.seat-row__label {
-  color: var(--color-text-muted);
+:where([data-reference="seat-selection"]) .seat-row__label {
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
   font-weight: 700;
   text-align: center;
 }
 
-.seat-row__grid {
+:where([data-reference="seat-selection"]) .seat-row__grid {
   display: grid;
   grid-template-columns: repeat(8, var(--booking-seat-size));
   gap: var(--booking-seat-gap);
 }
 
-.seat-row__grid .seat:nth-child(5) {
+:where([data-reference="seat-selection"]) .seat-row__grid .seat:nth-child(5) {
   margin-left: var(--space-3);
 }
 
-.seat {
+:where([data-reference="seat-selection"]) .seat {
   width: var(--booking-seat-size);
   height: var(--booking-seat-size);
   padding: 0;
   border: var(--border-width) solid var(--color-border-soft);
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
   font-weight: 600;
-  transition:
-    border-color var(--transition),
+  transition: border-color var(--transition),
     background var(--transition),
     color var(--transition);
 }
 
-.seat--available:hover {
+:where([data-reference="seat-selection"]) .seat--available:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-.seat--selected {
+:where([data-reference="seat-selection"]) .seat--selected {
   border-color: var(--booking-selected-seat);
   background: var(--booking-selected-seat);
   color: var(--color-black);
 }
 
-.seat--booked {
+:where([data-reference="seat-selection"]) .seat--booked {
   border-color: transparent;
   background: var(--booking-booked-seat);
   color: var(--color-background);
   cursor: not-allowed;
 }
 
-.seat--vip:not(.seat--selected) {
+:where([data-reference="seat-selection"]) .seat--vip:not(.seat--selected) {
   border-color: color-mix(in srgb, var(--booking-vip-seat) 65%, transparent);
   color: var(--booking-vip-seat);
 }
 
-.seat--vip:not(.seat--selected):hover {
+:where([data-reference="seat-selection"]) .seat--vip:not(.seat--selected):hover {
   background: color-mix(in srgb, var(--booking-vip-seat) 14%, var(--color-surface));
 }
 
-.seat-map-note {
+:where([data-reference="seat-selection"]) .seat-map-note {
   margin: var(--space-3) 0 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-summary {
+:where([data-reference="seat-selection"]) .booking-summary {
   position: sticky;
   top: var(--booking-summary-sticky-offset);
   padding: var(--space-5);
 }
 
-.booking-summary__heading {
+:where([data-reference="seat-selection"]) .booking-summary__heading {
   margin-bottom: var(--space-4);
 }
 
-.booking-summary__heading .eyebrow {
+:where([data-reference="seat-selection"]) .booking-summary__heading .eyebrow {
   margin: 0 0 var(--space-1);
 }
 
-.booking-summary__movie {
+:where([data-reference="seat-selection"]) .booking-summary__movie {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -393,93 +393,93 @@
   border-block: var(--border-width) solid var(--color-border-soft);
 }
 
-.booking-summary__art {
+:where([data-reference="seat-selection"]) .booking-summary__art {
   width: var(--space-8);
   height: var(--space-10);
   font-size: var(--booking-small-size);
 }
 
-.booking-summary__movie > div:last-child {
+:where([data-reference="seat-selection"]) .booking-summary__movie > div:last-child {
   display: grid;
   min-width: 0;
   gap: var(--space-1);
 }
 
-.booking-summary__movie strong {
+:where([data-reference="seat-selection"]) .booking-summary__movie strong {
   font-size: var(--booking-copy-size);
 }
 
-.booking-summary__movie span {
-  color: var(--color-text-muted);
+:where([data-reference="seat-selection"]) .booking-summary__movie span {
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-summary__details,
-.booking-price {
+:where([data-reference="seat-selection"]) .booking-summary__details,
+:where([data-reference="seat-selection"]) .booking-price {
   display: grid;
   gap: var(--space-3);
   margin: var(--space-4) 0;
 }
 
-.booking-summary__details > div,
-.booking-price > div {
+:where([data-reference="seat-selection"]) .booking-summary__details > div,
+:where([data-reference="seat-selection"]) .booking-price > div {
   display: flex;
   justify-content: space-between;
   gap: var(--space-3);
   font-size: var(--booking-small-size);
 }
 
-.booking-summary__details dt,
-.booking-price dt {
-  color: var(--color-text-muted);
+:where([data-reference="seat-selection"]) .booking-summary__details dt,
+:where([data-reference="seat-selection"]) .booking-price dt {
+  color: var(--color-text-secondary);
 }
 
-.booking-summary__details dd,
-.booking-price dd {
+:where([data-reference="seat-selection"]) .booking-summary__details dd,
+:where([data-reference="seat-selection"]) .booking-price dd {
   margin: 0;
   text-align: right;
 }
 
-.booking-summary__seats {
+:where([data-reference="seat-selection"]) .booking-summary__seats {
   display: grid;
   gap: var(--space-2);
   padding-block: var(--space-3);
   border-block: var(--border-width) solid var(--color-border-soft);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-summary__seats > div {
+:where([data-reference="seat-selection"]) .booking-summary__seats > div {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
 }
 
-.booking-summary__seats strong {
+:where([data-reference="seat-selection"]) .booking-summary__seats strong {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-xs);
   background: color-mix(in srgb, var(--booking-selected-seat) 14%, var(--color-surface));
   color: var(--booking-selected-seat);
 }
 
-.booking-price__total {
+:where([data-reference="seat-selection"]) .booking-price__total {
   padding-top: var(--space-3);
   border-top: var(--border-width) solid var(--color-border-soft);
-  color: var(--color-text);
+  color: var(--color-text-primary);
   font-weight: 700;
 }
 
-.booking-price__total dd {
+:where([data-reference="seat-selection"]) .booking-price__total dd {
   color: var(--color-primary);
 }
 
-.booking-summary__note {
-  color: var(--color-text-muted);
+:where([data-reference="seat-selection"]) .booking-summary__note {
+  color: var(--color-text-secondary);
   font-size: var(--booking-small-size);
 }
 
-.booking-continue,
-.mobile-booking-bar a {
+:where([data-reference="seat-selection"]) .booking-continue,
+:where([data-reference="seat-selection"]) .mobile-booking-bar a {
   display: flex;
   min-height: var(--button-height);
   align-items: center;
@@ -492,102 +492,11 @@
   transition: background var(--transition);
 }
 
-.booking-continue:hover,
-.mobile-booking-bar a:hover {
-  background: var(--color-primary-strong);
+:where([data-reference="seat-selection"]) .booking-continue:hover,
+:where([data-reference="seat-selection"]) .mobile-booking-bar a:hover {
+  background: var(--color-primary-hover);
 }
 
-.mobile-booking-bar {
+:where([data-reference="seat-selection"]) .mobile-booking-bar {
   display: none;
-}
-
-@media (max-width: 64rem) {
-  :root {
-    --booking-layout-columns: minmax(0, 1fr);
-  }
-
-  .booking-summary {
-    position: static;
-  }
-}
-
-@media (max-width: 48rem) {
-  .booking-steps ol {
-    gap: var(--space-2);
-  }
-
-  .booking-steps li strong {
-    display: none;
-  }
-
-  .booking-help {
-    display: none;
-  }
-
-  .booking-title {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .booking-session {
-    align-items: flex-start;
-  }
-
-  .booking-countdown {
-    align-self: center;
-  }
-
-  .seat-selection-panel {
-    padding: var(--space-3);
-  }
-
-  .booking-summary {
-    padding: var(--space-4);
-  }
-
-  .booking-summary__actions,
-  .booking-continue {
-    display: none;
-  }
-
-  .mobile-booking-bar {
-    position: sticky;
-    bottom: 0;
-    z-index: var(--z-header);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--page-inset);
-    border-top: var(--border-width) solid var(--color-border);
-    background: color-mix(in srgb, var(--color-background) 94%, transparent);
-    backdrop-filter: blur(var(--space-4));
-  }
-
-  .mobile-booking-bar > div {
-    display: grid;
-    gap: var(--space-1);
-  }
-
-  .mobile-booking-bar > div span {
-    color: var(--color-text-muted);
-    font-size: var(--booking-small-size);
-  }
-
-  .mobile-booking-bar > div strong {
-    color: var(--color-primary);
-    font-size: var(--booking-copy-size);
-  }
-
-  .mobile-booking-bar a {
-    min-width: var(--space-16);
-    padding-inline: var(--space-4);
-    font-size: var(--booking-small-size);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .seat {
-    transition: none;
-  }
 }

@@ -4,77 +4,96 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tạo suất chiếu | CINEMATIC Admin</title>
-    <link rel="stylesheet" href="./cinema-reference.css" />
+        <link rel="stylesheet" href="./reference-tokens.css" />
+    <link rel="stylesheet" href="./reference-base.css" />
     <link rel="stylesheet" href="./admin-unified.css" />
+    <link rel="stylesheet" href="./admin-components.css" />
     <link rel="stylesheet" href="./admin-showtime-form.css" />
+    <link rel="stylesheet" href="./reference-responsive.css" />
   </head>
 
-  <body class="admin-page">
-    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
-      <a class="admin-brand" href="./admin-dashboard.html">
-        <span class="admin-brand__mark" aria-hidden="true">C</span>
-        <span class="admin-brand__copy">
-          <strong>CINEMATIC</strong>
-          <small>QUẢN TRỊ</small>
-        </span>
+  <body class="reference-page admin-page" data-reference="admin-showtime-form">
+    <div class="admin-shell">
+    
+<aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+  <a class="admin-brand" href="./admin-dashboard.html">
+    <span class="admin-brand__mark" aria-hidden="true">C</span>
+    <span class="admin-brand__copy"><strong>CINEMATIC</strong><small>QUẢN TRỊ</small></span>
+  </a>
+  <nav class="admin-nav" aria-label="Menu quản trị">
+    
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Điều hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-dashboard.html">
+        <span aria-hidden="true">⌂</span>Tổng quan
+      </a>
+    </div>
+
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Nội dung</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-movies.html">
+        <span aria-hidden="true">▤</span>Phim
       </a>
 
-      <nav class="admin-nav" aria-label="Menu quản trị">
-        <p class="admin-nav__label">Điều hành</p>
-        <a class="admin-nav__link" href="./admin-dashboard.html"
-          ><span aria-hidden="true">⌂</span>Tổng quan</a
-        >
+      <a class="admin-nav__link"
+         href="./admin-promotions.html">
+        <span aria-hidden="true">◇</span>Khuyến mãi
+      </a>
+    </div>
 
-        <p class="admin-nav__label">Nội dung</p>
-        <a class="admin-nav__link" href="./admin-movies.html"
-          ><span aria-hidden="true">▤</span>Phim</a
-        >
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Vận hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-cinemas.html">
+        <span aria-hidden="true">▣</span>Rạp
+      </a>
 
-        <p class="admin-nav__label">Vận hành</p>
-        <a class="admin-nav__link" href="./admin-cinemas.html"
-          ><span aria-hidden="true">▣</span>Rạp</a
-        >
-        <a class="admin-nav__link" href="./admin-rooms.html"
-          ><span aria-hidden="true">▦</span>Phòng</a
-        >
-        <a class="admin-nav__link" href="./admin-room-seats.html"
-          ><span aria-hidden="true">▥</span>Sơ đồ ghế</a
-        >
-        <a class="admin-nav__link is-active" href="./admin-showtimes.html" aria-current="page">
-          <span aria-hidden="true">◷</span>Suất chiếu
-        </a>
+      <a class="admin-nav__link"
+         href="./admin-rooms.html">
+        <span aria-hidden="true">▦</span>Phòng và ghế
+      </a>
 
-        <p class="admin-nav__label">Giao dịch</p>
-        <a class="admin-nav__link" href="./admin-bookings.html"
-          ><span aria-hidden="true">▧</span>Đặt vé</a
-        >
-        <a class="admin-nav__link" href="./admin-promotions.html"
-          ><span aria-hidden="true">◇</span>Khuyến mãi</a
-        >
+      <a class="admin-nav__link is-active"
+         href="./admin-showtimes.html" aria-current="page">
+        <span aria-hidden="true">◷</span>Lịch chiếu
+      </a>
 
-        <p class="admin-nav__label">Hệ thống</p>
-        <a class="admin-nav__link" href="./admin-users.html"
-          ><span aria-hidden="true">♙</span>Người dùng</a
-        >
-      </nav>
+      <a class="admin-nav__link"
+         href="./admin-bookings.html">
+        <span aria-hidden="true">▧</span>Đặt vé
+      </a>
+    </div>
 
-      <div class="admin-sidebar__footer">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span>Không gian quản trị</span>
-      </div>
-    </aside>
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Hệ thống</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-users.html">
+        <span aria-hidden="true">♙</span>Người dùng
+      </a>
+    </div>
+  </nav>
+  <footer class="admin-sidebar__footer">Không gian quản trị</footer>
+</aside>
 
     <div class="admin-main">
-      <header class="admin-topbar">
-        <label class="admin-search">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" placeholder="Tìm kiếm..." aria-label="Tìm trong quản trị" />
-        </label>
-        <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
-          <span class="admin-account__avatar">QA</span>
-          <span class="admin-account__name">Quản trị viên</span>
-        </button>
-      </header>
+      
+<header class="admin-topbar">
+  <label class="admin-search">
+    <span aria-hidden="true">⌕</span>
+    <input type="search" placeholder="Tìm kiếm trong quản trị…" aria-label="Tìm kiếm trong quản trị" />
+    <kbd>⌘ K</kbd>
+  </label>
+  <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
+    <span class="admin-account__avatar" aria-hidden="true">QT</span>
+    <span class="admin-account__name">Quản trị viên</span>
+  </button>
+</header>
 
       <main class="admin-content">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -92,7 +111,7 @@
         </section>
 
         <form class="showtime-form">
-          <section class="panel showtime-form__fields" aria-labelledby="showtime-form-title">
+          <section class="panel showtime-form__fields panel--padded" aria-labelledby="showtime-form-title">
             <header class="panel-heading">
               <div>
                 <h2 id="showtime-form-title">Thông tin suất chiếu</h2>
@@ -139,26 +158,31 @@
               </label>
 
               <label class="showtime-form__field">
-                <span>Giờ kết thúc dự kiến</span>
-                <input type="text" value="Tự động tính" readonly />
-              </label>
+  <span>Ngày giờ kết thúc <b aria-hidden="true">*</b></span>
+  <input name="endsAt" type="datetime-local" required />
+</label><label class="showtime-form__field">
+  <span>Giá cơ bản (VND) <b aria-hidden="true">*</b></span>
+  <input name="basePrice" type="number" min="0.01" step="0.01" placeholder="Nhập giá cơ bản" required />
+</label><label class="showtime-form__field showtime-form__field--wide">
+  <span>Sơ đồ phòng đã xuất bản</span>
+  <select name="roomLayoutId"><option value="">Chọn sơ đồ đã xuất bản của phòng</option></select><small>Chọn sơ đồ để suất chiếu sử dụng bố cục ghế tương ứng.</small>
+</label>
             </div>
 
             <div class="showtime-form__notice" role="status">
-              Hệ thống cần kiểm tra trùng lịch của phòng trước khi lưu suất chiếu.
+              Thời gian được nhập theo giờ Việt Nam. Kiểm tra giờ kết thúc, giá cơ bản và lịch của phòng trước khi lưu.
             </div>
 
             <footer class="showtime-form__actions">
               <a class="action-button action-button--secondary" href="./admin-showtimes.html"
-                >Hủy</a
-              >
-              <button class="action-button action-button--primary" type="submit">
+                >Hủy</a>
+              <button class="action-button action-button--primary" type="button">
                 Tạo suất chiếu
               </button>
             </footer>
           </section>
 
-          <aside class="panel showtime-form__preview" aria-labelledby="showtime-preview-title">
+          <aside class="panel showtime-form__preview panel--padded" aria-labelledby="showtime-preview-title">
             <p class="eyebrow">Xem trước</p>
             <h2 id="showtime-preview-title">Thông tin lịch chiếu</h2>
             <dl>
@@ -188,7 +212,9 @@
             </p>
           </aside>
         </form>
-      </main>
+      <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+</main>
     </div>
+      </div>
   </body>
 </html>

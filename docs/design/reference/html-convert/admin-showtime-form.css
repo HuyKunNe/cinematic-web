@@ -1,42 +1,31 @@
-:root {
+/* Page content only. Shell, tokens and responsive have separate owners. */
+:where([data-reference="admin-showtime-form"]) {
   --showtime-form-grid-gap: 1rem;
   --showtime-form-field-gap: 0.5rem;
   --showtime-form-preview-width: 20rem;
   --showtime-form-notice-padding: 0.875rem;
 }
 
-.breadcrumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--admin-space-2);
-  margin-bottom: var(--admin-space-4);
-  color: var(--admin-text-muted);
-}
-
-.breadcrumbs [aria-current='page'] {
-  color: var(--admin-text);
-}
-
-.showtime-form {
+:where([data-reference="admin-showtime-form"]) .showtime-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(16rem, var(--showtime-form-preview-width));
   align-items: start;
   gap: var(--showtime-form-grid-gap);
 }
 
-.showtime-form__fields,
-.showtime-form__preview {
+:where([data-reference="admin-showtime-form"]) .showtime-form__fields,
+:where([data-reference="admin-showtime-form"]) .showtime-form__preview {
   min-width: 0;
 }
 
-.showtime-form__grid {
+:where([data-reference="admin-showtime-form"]) .showtime-form__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--showtime-form-grid-gap);
   margin-top: var(--admin-space-5);
 }
 
-.showtime-form__field {
+:where([data-reference="admin-showtime-form"]) .showtime-form__field {
   display: grid;
   align-content: start;
   gap: var(--showtime-form-field-gap);
@@ -44,31 +33,31 @@
   font-size: 0.8125rem;
 }
 
-.showtime-form__field > span b {
+:where([data-reference="admin-showtime-form"]) .showtime-form__field > span b {
   color: var(--admin-danger);
 }
 
-.showtime-form__field input,
-.showtime-form__field select {
+:where([data-reference="admin-showtime-form"]) .showtime-form__field input,
+:where([data-reference="admin-showtime-form"]) .showtime-form__field select {
   width: 100%;
   padding-inline: var(--admin-space-3);
 }
 
-.showtime-form__field input[readonly] {
+:where([data-reference="admin-showtime-form"]) .showtime-form__field input[readonly] {
   color: var(--admin-text-subtle);
   background: var(--admin-surface-raised);
 }
 
-.showtime-form__field small {
+:where([data-reference="admin-showtime-form"]) .showtime-form__field small {
   color: var(--admin-text-subtle);
   font-size: 0.75rem;
 }
 
-.showtime-form__field--wide {
+:where([data-reference="admin-showtime-form"]) .showtime-form__field--wide {
   grid-column: 1 / -1;
 }
 
-.showtime-form__notice {
+:where([data-reference="admin-showtime-form"]) .showtime-form__notice {
   margin-top: var(--admin-space-5);
   padding: var(--showtime-form-notice-padding);
   border: var(--admin-border-width) solid var(--admin-border);
@@ -78,7 +67,7 @@
   line-height: 1.5;
 }
 
-.showtime-form__actions {
+:where([data-reference="admin-showtime-form"]) .showtime-form__actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -88,8 +77,8 @@
   border-top: var(--admin-border-width) solid var(--admin-border);
 }
 
-.showtime-form__actions a,
-.showtime-form__actions button {
+:where([data-reference="admin-showtime-form"]) .showtime-form__actions a,
+:where([data-reference="admin-showtime-form"]) .showtime-form__actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -97,13 +86,13 @@
   text-decoration: none;
 }
 
-.showtime-form__preview dl {
+:where([data-reference="admin-showtime-form"]) .showtime-form__preview dl {
   display: grid;
   gap: var(--admin-space-3);
   margin-block: var(--admin-space-4);
 }
 
-.showtime-form__preview dl > div {
+:where([data-reference="admin-showtime-form"]) .showtime-form__preview dl > div {
   display: flex;
   justify-content: space-between;
   gap: var(--admin-space-3);
@@ -111,41 +100,18 @@
   border-bottom: var(--admin-border-width) solid var(--admin-border);
 }
 
-.showtime-form__preview dt,
-.showtime-form__preview-note {
+:where([data-reference="admin-showtime-form"]) .showtime-form__preview dt,
+:where([data-reference="admin-showtime-form"]) .showtime-form__preview-note {
   color: var(--admin-text-subtle);
 }
 
-.showtime-form__preview dd {
+:where([data-reference="admin-showtime-form"]) .showtime-form__preview dd {
   margin: 0;
   color: var(--admin-text);
   text-align: right;
 }
 
-.showtime-form__preview-note {
+:where([data-reference="admin-showtime-form"]) .showtime-form__preview-note {
   font-size: 0.75rem;
   line-height: 1.5;
-}
-
-@media (max-width: 48rem) {
-  .showtime-form {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .showtime-form__grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .showtime-form__field--wide {
-    grid-column: auto;
-  }
-
-  .showtime-form__actions {
-    flex-direction: column-reverse;
-  }
-
-  .showtime-form__actions a,
-  .showtime-form__actions button {
-    width: 100%;
-  }
 }

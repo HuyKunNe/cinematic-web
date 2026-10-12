@@ -1,0 +1,1088 @@
+/* Central responsive rules. Load after page styles. */
+/* Admin shell */
+@media (max-width: 64rem) {
+.admin-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.admin-sidebar {
+  position: static;
+  height: auto;
+  border-right: 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.admin-nav {
+  display: flex;
+  overscroll-behavior-inline: contain;
+}
+
+.admin-nav__link {
+  flex: 0 0 auto;
+}
+
+.admin-nav__label,
+.admin-sidebar__footer {
+  display: none;
+}
+}
+
+/* Admin shell */
+@media (max-width: 48rem) {
+.admin-search kbd,
+.admin-account__name {
+  display: none;
+}
+}
+
+/* Admin components */
+@media (max-width: 48rem) {
+:where(.admin-page) .breadcrumbs {
+  flex-wrap: wrap;
+}
+
+:where(.admin-page) .panel-heading {
+  align-items: flex-start;
+  flex-direction: column;
+}
+}
+
+@media (max-width: 70rem) {
+:where(.admin-page) .filter-panel {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+}
+
+@media (max-width: 70rem) {
+:where(.admin-page) .filter-field--search {
+  grid-column: 1 / -1;
+}
+}
+
+@media (max-width: 48rem) {
+:where(.admin-page) .breadcrumbs {
+  margin-bottom: var(--space-4);
+}
+}
+
+@media (max-width: 48rem) {
+:where(.admin-page) .page-heading {
+  align-items: flex-start;
+  flex-direction: column;
+}
+}
+
+@media (max-width: 48rem) {
+:where(.admin-page) .page-heading .action-button {
+  width: 100%;
+}
+}
+
+@media (max-width: 48rem) {
+:where(.admin-page) .filter-panel {
+  grid-template-columns: minmax(0, 1fr);
+}
+}
+
+@media (max-width: 48rem) {
+:where(.admin-page) .filter-field--search {
+  grid-column: auto;
+}
+}
+
+@media (max-width: 48rem) {
+:where(.admin-page) .cinema-list__heading {
+  align-items: flex-start;
+  flex-direction: column;
+}
+}
+
+@media (max-width: 48rem) {
+:where(.admin-page) .table-footer {
+  align-items: flex-start;
+  flex-direction: column;
+}
+}
+
+/* admin-bookings.css */
+@media (max-width: 70rem) {
+:where([data-reference="admin-bookings"]) .booking-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:where([data-reference="admin-bookings"]) .booking-filters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+}
+
+/* admin-bookings.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-bookings"]) .booking-stats,
+:where([data-reference="admin-bookings"]) .booking-filters {
+  grid-template-columns: minmax(0, 1fr);
+}
+}
+
+/* admin-dashboard.css */
+@media (max-width: 75rem) {
+:where([data-reference="admin-dashboard"]) .analytics-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:where([data-reference="admin-dashboard"]) .revenue-panel {
+  grid-column: 1 / -1;
+}
+}
+
+/* admin-dashboard.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-dashboard"]) .dashboard-heading {
+  align-items: flex-start;
+}
+
+:where([data-reference="admin-dashboard"]) .date-filter {
+  flex: 0 0 auto;
+}
+
+:where([data-reference="admin-dashboard"]) .metric-grid,
+:where([data-reference="admin-dashboard"]) .analytics-grid,
+:where([data-reference="admin-dashboard"]) .data-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-dashboard"]) .revenue-panel {
+  grid-column: auto;
+}
+
+:where([data-reference="admin-dashboard"]) .booking-summary {
+  justify-content: flex-start;
+}
+}
+
+/* admin-dashboard.css */
+@media (max-width: 760px) {
+:where([data-reference="admin-dashboard"]) .dashboard-scope-bar {
+  align-items: stretch;
+}
+
+:where([data-reference="admin-dashboard"]) .scope-field,
+:where([data-reference="admin-dashboard"]) .scope-apply {
+  width: 100%;
+}
+}
+
+/* admin-movie-editor.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-movie-editor"]) .movie-editor {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-movie-editor"]) .movie-editor__grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-movie-editor"]) .movie-editor__field--wide {
+  grid-column: auto;
+}
+
+:where([data-reference="admin-movie-editor"]) .movie-editor__actions {
+  flex-direction: column-reverse;
+}
+
+:where([data-reference="admin-movie-editor"]) .movie-editor__actions a,
+:where([data-reference="admin-movie-editor"]) .movie-editor__actions button {
+  width: 100%;
+}
+}
+
+/* admin-movies.css */
+@media (max-width: 75rem) {
+:where([data-reference="admin-movies"]) {
+  --admin-movies-stat-grid: repeat(2, minmax(0, 1fr));
+  --admin-movies-toolbar-grid: repeat(2, minmax(0, 1fr));
+}
+}
+
+/* admin-movies.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-movies"]) .movies-heading {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+:where([data-reference="admin-movies"]) .movies-toolbar {
+  grid-template-columns: var(--admin-movies-mobile-card-grid);
+}
+
+:where([data-reference="admin-movies"]) .movies-button--secondary {
+  width: 100%;
+}
+
+:where([data-reference="admin-movies"]) .movies-table-scroll {
+  display: none;
+}
+
+:where([data-reference="admin-movies"]) .movies-mobile-list {
+  display: grid;
+}
+
+:where([data-reference="admin-movies"]) .movies-pagination {
+  align-items: flex-start;
+  flex-direction: column;
+}
+}
+
+/* admin-movies.css */
+@media (max-width: 30rem) {
+:where([data-reference="admin-movies"]) {
+  --admin-movies-stat-grid: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-movies"]) .movies-stats {
+  grid-template-columns: var(--admin-movies-stat-grid);
+}
+}
+
+/* admin-movies.css */
+@media (prefers-reduced-motion: reduce) {
+:where([data-reference="admin-movies"]) .movies-button {
+  transition: none;
+}
+}
+
+/* admin-operations-editor.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-editor,
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-form-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-field--wide {
+  grid-column: auto;
+}
+
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-actions {
+  flex-direction: column-reverse;
+}
+
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-actions a,
+:where([data-reference="admin-cinema-editor"], [data-reference="admin-room-editor"]) .entity-actions button {
+  width: 100%;
+}
+}
+
+/* admin-promotions.css */
+@media (max-width: 70rem) {
+:where([data-reference="admin-promotions"]) .promotion-filters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:where([data-reference="admin-promotions"]) .promotion-filters .filter-field:first-child {
+  grid-column: 1 / -1;
+}
+
+:where([data-reference="admin-promotions"]) .promotion-stats {
+  gap: var(--space-2);
+}
+}
+
+/* admin-promotions.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-promotions"]) .promotion-stats,
+:where([data-reference="admin-promotions"]) .promotion-filters {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-promotions"]) .promotion-filters .filter-field:first-child {
+  grid-column: auto;
+}
+}
+
+/* admin-room-layout.css */
+@media (max-width: 64rem) {
+:where([data-reference="admin-room-layout"]) {
+  --room-layout-workspace-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-room-layout"]) .layout-inspector {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+}
+
+/* admin-room-layout.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-room-layout"]) .layout-heading {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+:where([data-reference="admin-room-layout"]) .layout-heading__actions {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+:where([data-reference="admin-room-layout"]) .layout-draft-notice {
+  flex-wrap: wrap;
+}
+
+:where([data-reference="admin-room-layout"]) .layout-draft-notice__meta {
+  width: 100%;
+  margin-left: calc(var(--space-2) + var(--space-2));
+}
+
+:where([data-reference="admin-room-layout"]) .layout-toolbar {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+:where([data-reference="admin-room-layout"]) .layout-inspector {
+  grid-template-columns: minmax(0, 1fr);
+}
+}
+
+/* admin-room-seats.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-room-seats"]) {
+  --seatmap-seat-size: 2.25rem;
+}
+
+:where([data-reference="admin-room-seats"]) .seatmap-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-room-seats"]) .seatmap-preview-note {
+  width: 100%;
+  margin-left: 0;
+}
+}
+
+/* admin-rooms.css */
+@media (max-width: 70rem) {
+:where([data-reference="admin-rooms"]) .room-stats {
+  gap: var(--space-3);
+}
+}
+
+/* admin-rooms.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-rooms"]) .room-stats {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+:where([data-reference="admin-rooms"]) .room-stat {
+  min-height: auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+:where([data-reference="admin-rooms"]) .room-stat__label {
+  grid-column: 1;
+}
+
+:where([data-reference="admin-rooms"]) .room-stat > strong {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+:where([data-reference="admin-rooms"]) .room-stat__hint {
+  grid-column: 1;
+}
+}
+
+/* admin-showtime-form.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-showtime-form"]) .showtime-form {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-showtime-form"]) .showtime-form__grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-showtime-form"]) .showtime-form__field--wide {
+  grid-column: auto;
+}
+
+:where([data-reference="admin-showtime-form"]) .showtime-form__actions {
+  flex-direction: column-reverse;
+}
+
+:where([data-reference="admin-showtime-form"]) .showtime-form__actions a,
+:where([data-reference="admin-showtime-form"]) .showtime-form__actions button {
+  width: 100%;
+}
+}
+
+/* admin-showtimes.css */
+@media (max-width: 70rem) {
+:where([data-reference="admin-showtimes"]) .showtime-filters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+}
+
+/* admin-showtimes.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-showtimes"]) .showtime-datebar {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+:where([data-reference="admin-showtimes"]) .showtime-datebar__controls {
+  width: 100%;
+}
+
+:where([data-reference="admin-showtimes"]) .showtime-datebar__controls input {
+  min-width: 0;
+  flex: 1;
+}
+
+:where([data-reference="admin-showtimes"]) .showtime-filters {
+  grid-template-columns: minmax(0, 1fr);
+}
+}
+
+/* admin-users.css */
+@media (max-width: 70rem) {
+:where([data-reference="admin-users"]) .user-stats {
+  gap: var(--space-2);
+}
+}
+
+/* admin-users.css */
+@media (max-width: 48rem) {
+:where([data-reference="admin-users"]) .user-stats,
+:where([data-reference="admin-users"]) .user-filters {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="admin-users"]) .filter-hint {
+  grid-column: auto;
+}
+}
+
+/* cinematic-cinema-pages.css */
+@media (max-width: 960px) {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .container {
+  width: min(calc(100% - var(--page-inset-tablet) * 2), var(--container-width));
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .desktop-nav,
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .account-link {
+  display: none;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .mobile-menu-button {
+  display: inline-grid;
+  place-items: center;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-layout {
+  grid-template-columns: 1fr;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .filter-panel {
+  grid-template-columns: 1fr 1fr;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .filter-panel .button {
+  grid-column: 1 / -1;
+}
+}
+
+/* cinematic-cinema-pages.css */
+@media (max-width: 620px) {
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) {
+  --page-inset: 20px;
+  --detail-hero-height: 340px;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .header-location {
+  display: none;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .page-heading {
+  padding-block: var(--space-8) var(--space-5);
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .filter-panel,
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-grid,
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .footer-inner {
+  grid-template-columns: 1fr;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .filter-panel .button {
+  grid-column: auto;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .cinema-image {
+  height: 210px;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .results-heading {
+  align-items: start;
+  flex-direction: column;
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-hero-content {
+  padding-block: var(--space-8);
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-meta {
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .detail-layout {
+  padding-block: var(--space-5) var(--space-10);
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .content-card {
+  padding: var(--space-4);
+}
+
+:where([data-reference="cinematic-cinemas"], [data-reference="cinematic-cinema-detail"], [data-reference="seat-selection"]) .movie-schedule {
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+}
+
+/* cinematic-home-desktop.css */
+@media (max-width: 1180px) {
+:where([data-reference="cinematic-home-desktop"]) .container {
+  width: min(calc(100% - 64px), var(--container-width));
+}
+
+:where([data-reference="cinematic-home-desktop"]) .desktop-nav {
+  gap: 20px;
+  margin-left: 0;
+}
+
+:where([data-reference="cinematic-home-desktop"]) .account-button {
+  display: none;
+}
+
+:where([data-reference="cinematic-home-desktop"]) .quick-booking {
+  grid-template-columns: repeat(4, 1fr) 148px;
+}
+
+:where([data-reference="cinematic-home-desktop"]) .step-chevron {
+  display: none;
+}
+
+:where([data-reference="cinematic-home-desktop"]) .upcoming-grid {
+  grid-template-columns: 1fr 1fr;
+}
+}
+
+/* cinematic-home-mobile.css */
+@media (max-width: 370px) {
+:where([data-reference="cinematic-home-mobile"]) {
+  --page-gutter: 14px;
+}
+
+:where([data-reference="cinematic-home-mobile"]) .mobile-header {
+  grid-template-columns: 1fr 34px 34px;
+}
+
+:where([data-reference="cinematic-home-mobile"]) .location-button {
+  display: none;
+}
+
+:where([data-reference="cinematic-home-mobile"]) .hero-actions {
+  grid-template-columns: 1fr;
+}
+
+:where([data-reference="cinematic-home-mobile"]) .hero {
+  min-height: 500px;
+}
+
+:where([data-reference="cinematic-home-mobile"]) .booking-row {
+  grid-template-columns: 44px 76px 1fr;
+}
+
+:where([data-reference="cinematic-home-mobile"]) .membership {
+  grid-template-columns: 1fr;
+}
+
+:where([data-reference="cinematic-home-mobile"]) .member-card {
+  width: 70%;
+}
+}
+
+/* cinematic-movie-detail.css */
+@media (max-width: 760px) {
+:where([data-reference="cinematic-movie-detail"]) {
+  --poster-width: 190px;
+  --page-gutter: 20px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .header-inner {
+  gap: var(--space-3);
+}
+
+:where([data-reference="cinematic-movie-detail"]) .brand {
+  font-size: 19px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .desktop-nav,
+:where([data-reference="cinematic-movie-detail"]) .account-button,
+:where([data-reference="cinematic-movie-detail"]) .header-actions .button {
+  display: none;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .header-actions {
+  gap: var(--space-2);
+}
+
+:where([data-reference="cinematic-movie-detail"]) .location-button {
+  max-width: 145px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-overview {
+  grid-template-columns: var(--poster-width) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-title-row h1 {
+  font-size: 27px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .credit-list div {
+  grid-template-columns: 1fr;
+  gap: var(--space-1);
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-actions {
+  flex-direction: column;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-actions .button {
+  width: 100%;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .showtime-group {
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+}
+
+/* cinematic-movie-detail.css */
+@media (max-width: 520px) {
+:where([data-reference="cinematic-movie-detail"]) {
+  --poster-width: 120px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .breadcrumb {
+  padding-block: var(--space-4);
+  font-size: 11px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-overview {
+  gap: var(--space-4);
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-title-row h1 {
+  font-size: 21px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-subtitle {
+  font-size: 12px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-facts {
+  gap: var(--space-1);
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-facts span {
+  padding: var(--space-1) var(--space-2);
+  font-size: 10px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .rating-note {
+  display: grid;
+  font-size: 11px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .movie-actions {
+  margin-top: var(--space-4);
+}
+
+:where([data-reference="cinematic-movie-detail"]) .section-heading h2 {
+  font-size: 21px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .showtimes-heading {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .location-select,
+:where([data-reference="cinematic-movie-detail"]) .location-select select {
+  width: 100%;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .cinema-showtimes {
+  padding: var(--space-4);
+}
+
+:where([data-reference="cinematic-movie-detail"]) .bottom-nav {
+  position: fixed;
+  z-index: 20;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--color-border);
+  background: rgba(4, 13, 20, 0.98);
+}
+
+:where([data-reference="cinematic-movie-detail"]) .bottom-nav a {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-1);
+}
+
+:where([data-reference="cinematic-movie-detail"]) .bottom-nav span {
+  font-size: 22px;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .bottom-nav b {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+:where([data-reference="cinematic-movie-detail"]) .bottom-nav .active {
+  color: var(--color-primary);
+}
+}
+
+/* cinematic-movies.css */
+@media (max-width: 900px) {
+:where([data-reference="cinematic-movies"]) .desktop-nav {
+  gap: 18px;
+  margin-left: 0;
+}
+
+:where([data-reference="cinematic-movies"]) .account-button {
+  display: none;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+}
+
+/* cinematic-movies.css */
+@media (max-width: 640px) {
+:where([data-reference="cinematic-movies"]) {
+  --page-gutter: 20px;
+}
+
+:where([data-reference="cinematic-movies"]) .header-inner {
+  gap: 12px;
+}
+
+:where([data-reference="cinematic-movies"]) .brand {
+  font-size: 19px;
+}
+
+:where([data-reference="cinematic-movies"]) .desktop-nav,
+:where([data-reference="cinematic-movies"]) .account-button,
+:where([data-reference="cinematic-movies"]) .header-actions .button {
+  display: none;
+}
+
+:where([data-reference="cinematic-movies"]) .header-actions {
+  gap: 8px;
+}
+
+:where([data-reference="cinematic-movies"]) .location-button {
+  max-width: 150px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+:where([data-reference="cinematic-movies"]) .page-intro {
+  padding-block: 34px 22px;
+}
+
+:where([data-reference="cinematic-movies"]) .page-intro h1 {
+  font-size: 38px;
+}
+
+:where([data-reference="cinematic-movies"]) .intro-copy {
+  max-width: 30rem;
+  line-height: 1.5;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-browser {
+  padding: 14px;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-toolbar {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 14px;
+}
+
+:where([data-reference="cinematic-movies"]) .tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+:where([data-reference="cinematic-movies"]) .filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+:where([data-reference="cinematic-movies"]) .filter-control select {
+  width: 100%;
+  min-width: 0;
+  padding-inline: 8px;
+  font-size: 12px;
+}
+
+:where([data-reference="cinematic-movies"]) .results-row {
+  align-items: flex-start;
+}
+
+:where([data-reference="cinematic-movies"]) .location-filter {
+  padding-inline: 10px;
+  font-size: 11px;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 12px;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-card h2 {
+  font-size: 14px;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-card > p {
+  min-height: 2.4em;
+  font-size: 11px;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-meta {
+  flex-wrap: wrap;
+  gap: 7px;
+  font-size: 10px;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-meta span + span {
+  padding-left: 7px;
+}
+
+:where([data-reference="cinematic-movies"]) .poster-status {
+  top: 7px;
+  left: 7px;
+  font-size: 9px;
+}
+
+:where([data-reference="cinematic-movies"]) .poster-age {
+  top: 7px;
+  right: 48px;
+  min-width: 28px;
+  min-height: 23px;
+  font-size: 10px;
+}
+
+:where([data-reference="cinematic-movies"]) .play-button {
+  top: 6px;
+  right: 6px;
+  width: 34px;
+  height: 34px;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-cta {
+  min-height: 38px;
+  padding-inline: 6px;
+  font-size: 11px;
+}
+
+:where([data-reference="cinematic-movies"]) .bottom-nav {
+  position: fixed;
+  z-index: 30;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--color-border);
+  background: rgba(4, 13, 20, 0.98);
+}
+
+:where([data-reference="cinematic-movies"]) .bottom-nav a {
+  position: relative;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 5px;
+  color: var(--color-text-primary);
+}
+
+:where([data-reference="cinematic-movies"]) .bottom-nav a span {
+  font-size: 22px;
+}
+
+:where([data-reference="cinematic-movies"]) .bottom-nav a b {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+:where([data-reference="cinematic-movies"]) .bottom-nav .active {
+  color: var(--color-primary);
+}
+
+:where([data-reference="cinematic-movies"]) .bottom-nav .active::before {
+  position: absolute;
+  top: 0;
+  right: 16px;
+  left: 16px;
+  height: 2px;
+  content: '';
+  background: var(--color-primary);
+}
+}
+
+/* cinematic-movies.css */
+@media (max-width: 640px) {
+:where([data-reference="cinematic-movies"]) .quick-booking {
+  grid-template-columns: 1fr;
+  margin-block: var(--space-6);
+  padding: var(--space-4);
+}
+
+:where([data-reference="cinematic-movies"]) .quick-booking h2 {
+  grid-column: auto;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-toolbar {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+:where([data-reference="cinematic-movies"]) .movie-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+}
+
+/* seat-selection.css */
+@media (max-width: 64rem) {
+:where([data-reference="seat-selection"]) {
+  --booking-layout-columns: minmax(0, 1fr);
+}
+
+:where([data-reference="seat-selection"]) .booking-summary {
+  position: static;
+}
+}
+
+/* seat-selection.css */
+@media (max-width: 48rem) {
+:where([data-reference="seat-selection"]) .booking-steps ol {
+  gap: var(--space-2);
+}
+
+:where([data-reference="seat-selection"]) .booking-steps li strong {
+  display: none;
+}
+
+:where([data-reference="seat-selection"]) .booking-help {
+  display: none;
+}
+
+:where([data-reference="seat-selection"]) .booking-title {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+:where([data-reference="seat-selection"]) .booking-session {
+  align-items: flex-start;
+}
+
+:where([data-reference="seat-selection"]) .booking-countdown {
+  align-self: center;
+}
+
+:where([data-reference="seat-selection"]) .seat-selection-panel {
+  padding: var(--space-3);
+}
+
+:where([data-reference="seat-selection"]) .booking-summary {
+  padding: var(--space-4);
+}
+
+:where([data-reference="seat-selection"]) .booking-summary__actions,
+:where([data-reference="seat-selection"]) .booking-continue {
+  display: none;
+}
+
+:where([data-reference="seat-selection"]) .mobile-booking-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--page-inset);
+  border-top: var(--border-width) solid var(--color-border);
+  background: color-mix(in srgb, var(--color-background) 94%, transparent);
+  backdrop-filter: blur(var(--space-4));
+}
+
+:where([data-reference="seat-selection"]) .mobile-booking-bar > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+:where([data-reference="seat-selection"]) .mobile-booking-bar > div span {
+  color: var(--color-text-secondary);
+  font-size: var(--booking-small-size);
+}
+
+:where([data-reference="seat-selection"]) .mobile-booking-bar > div strong {
+  color: var(--color-primary);
+  font-size: var(--booking-copy-size);
+}
+
+:where([data-reference="seat-selection"]) .mobile-booking-bar a {
+  min-width: var(--space-16);
+  padding-inline: var(--space-4);
+  font-size: var(--booking-small-size);
+}
+}
+
+/* seat-selection.css */
+@media (prefers-reduced-motion: reduce) {
+:where([data-reference="seat-selection"]) .seat {
+  transition: none;
+}
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -1,4 +1,5 @@
-:root {
+/* Page content only. Shell, tokens and responsive have separate owners. */
+:where([data-reference="admin-users"]) {
   --user-table-min-width: 64rem;
   --user-stat-min-height: 6.5rem;
   --user-avatar-size: 2.5rem;
@@ -7,14 +8,14 @@
   --user-font-sm: 0.75rem;
 }
 
-.user-stats {
+:where([data-reference="admin-users"]) .user-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
 
-.user-stat {
+:where([data-reference="admin-users"]) .user-stat {
   display: grid;
   min-height: var(--user-stat-min-height);
   align-content: center;
@@ -22,17 +23,17 @@
   padding: var(--space-4);
 }
 
-.user-stat > span,
-.user-stat > small {
+:where([data-reference="admin-users"]) .user-stat > span,
+:where([data-reference="admin-users"]) .user-stat > small {
   color: var(--color-text-secondary);
   font-size: var(--user-font-sm);
 }
 
-.user-stat > strong {
+:where([data-reference="admin-users"]) .user-stat > strong {
   font-size: 1.5rem;
 }
 
-.user-filters {
+:where([data-reference="admin-users"]) .user-filters {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
   align-items: end;
@@ -44,8 +45,8 @@
   background: var(--color-surface);
 }
 
-.user-filters .filter-field input,
-.user-filters .filter-field select {
+:where([data-reference="admin-users"]) .user-filters .filter-field input,
+:where([data-reference="admin-users"]) .user-filters .filter-field select {
   width: 100%;
   min-height: var(--admin-control-height);
   padding-inline: var(--space-3);
@@ -55,26 +56,26 @@
   background: var(--color-background-soft);
 }
 
-.filter-hint {
+:where([data-reference="admin-users"]) .filter-hint {
   grid-column: 1 / -1;
   color: var(--color-text-tertiary);
   font-size: var(--user-email-size);
 }
 
-.user-table {
+:where([data-reference="admin-users"]) .user-table {
   width: 100%;
   min-width: var(--user-table-min-width);
   border-collapse: collapse;
   text-align: left;
 }
 
-.user-table th,
-.user-table td {
+:where([data-reference="admin-users"]) .user-table th,
+:where([data-reference="admin-users"]) .user-table td {
   padding: var(--space-4);
   border-top: var(--border-width) solid var(--color-border);
 }
 
-.user-table th {
+:where([data-reference="admin-users"]) .user-table th {
   color: var(--color-text-tertiary);
   background: var(--color-background-soft);
   font-size: var(--user-email-size);
@@ -83,33 +84,33 @@
   text-transform: uppercase;
 }
 
-.user-table td {
+:where([data-reference="admin-users"]) .user-table td {
   color: var(--color-text-secondary);
   font-size: var(--user-font-sm);
   white-space: nowrap;
 }
 
-.user-identity {
+:where([data-reference="admin-users"]) .user-identity {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
 
-.user-identity > span:last-child {
+:where([data-reference="admin-users"]) .user-identity > span:last-child {
   display: grid;
   gap: var(--space-1);
 }
 
-.user-identity strong {
+:where([data-reference="admin-users"]) .user-identity strong {
   color: var(--color-text-primary);
 }
 
-.user-identity small {
+:where([data-reference="admin-users"]) .user-identity small {
   color: var(--color-text-tertiary);
   font-size: var(--user-email-size);
 }
 
-.user-avatar {
+:where([data-reference="admin-users"]) .user-avatar {
   display: grid;
   width: var(--user-avatar-size);
   height: var(--user-avatar-size);
@@ -122,7 +123,7 @@
   font-weight: 700;
 }
 
-.role-chip {
+:where([data-reference="admin-users"]) .role-chip {
   display: inline-flex;
   min-height: var(--space-6);
   align-items: center;
@@ -134,25 +135,19 @@
   font-size: var(--user-email-size);
 }
 
-.role-chip--admin {
+:where([data-reference="admin-users"]) .role-chip--admin {
   border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
   color: var(--color-primary);
   background: var(--color-primary-soft);
 }
 
-.role-chip--staff {
+:where([data-reference="admin-users"]) .role-chip--staff {
   border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
   color: var(--color-success);
   background: color-mix(in srgb, var(--color-success) 10%, transparent);
 }
 
-.status-pill--locked {
-  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
-  color: var(--color-danger);
-  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
-}
-
-.user-detail {
+:where([data-reference="admin-users"]) .user-detail {
   min-height: var(--user-detail-height);
   padding-inline: var(--space-2);
   border: var(--border-width) solid var(--color-border);
@@ -162,24 +157,7 @@
   font-size: var(--user-email-size);
 }
 
-.user-detail:hover {
+:where([data-reference="admin-users"]) .user-detail:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
-}
-
-@media (max-width: 70rem) {
-  .user-stats {
-    gap: var(--space-2);
-  }
-}
-
-@media (max-width: 48rem) {
-  .user-stats,
-  .user-filters {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .filter-hint {
-    grid-column: auto;
-  }
 }

@@ -4,77 +4,96 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thêm phim | CINEMATIC Admin</title>
-    <link rel="stylesheet" href="./cinema-reference.css" />
+        <link rel="stylesheet" href="./reference-tokens.css" />
+    <link rel="stylesheet" href="./reference-base.css" />
     <link rel="stylesheet" href="./admin-unified.css" />
+    <link rel="stylesheet" href="./admin-components.css" />
     <link rel="stylesheet" href="./admin-movie-editor.css" />
+    <link rel="stylesheet" href="./reference-responsive.css" />
   </head>
 
-  <body class="admin-page">
-    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
-      <a class="admin-brand" href="./admin-dashboard.html">
-        <span class="admin-brand__mark" aria-hidden="true">C</span>
-        <span class="admin-brand__copy">
-          <strong>CINEMATIC</strong>
-          <small>QUẢN TRỊ</small>
-        </span>
+  <body class="reference-page admin-page" data-reference="admin-movie-editor">
+    <div class="admin-shell">
+    
+<aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+  <a class="admin-brand" href="./admin-dashboard.html">
+    <span class="admin-brand__mark" aria-hidden="true">C</span>
+    <span class="admin-brand__copy"><strong>CINEMATIC</strong><small>QUẢN TRỊ</small></span>
+  </a>
+  <nav class="admin-nav" aria-label="Menu quản trị">
+    
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Điều hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-dashboard.html">
+        <span aria-hidden="true">⌂</span>Tổng quan
+      </a>
+    </div>
+
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Nội dung</p>
+      
+      <a class="admin-nav__link is-active"
+         href="./admin-movies.html" aria-current="page">
+        <span aria-hidden="true">▤</span>Phim
       </a>
 
-      <nav class="admin-nav" aria-label="Menu quản trị">
-        <p class="admin-nav__label">Điều hành</p>
-        <a class="admin-nav__link" href="./admin-dashboard.html"
-          ><span aria-hidden="true">⌂</span>Tổng quan</a
-        >
+      <a class="admin-nav__link"
+         href="./admin-promotions.html">
+        <span aria-hidden="true">◇</span>Khuyến mãi
+      </a>
+    </div>
 
-        <p class="admin-nav__label">Nội dung</p>
-        <a class="admin-nav__link is-active" href="./admin-movies.html" aria-current="page">
-          <span aria-hidden="true">▤</span>Phim
-        </a>
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Vận hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-cinemas.html">
+        <span aria-hidden="true">▣</span>Rạp
+      </a>
 
-        <p class="admin-nav__label">Vận hành</p>
-        <a class="admin-nav__link" href="./admin-cinemas.html"
-          ><span aria-hidden="true">▣</span>Rạp</a
-        >
-        <a class="admin-nav__link" href="./admin-rooms.html"
-          ><span aria-hidden="true">▦</span>Phòng</a
-        >
-        <a class="admin-nav__link" href="./admin-room-seats.html"
-          ><span aria-hidden="true">▥</span>Sơ đồ ghế</a
-        >
-        <a class="admin-nav__link" href="./admin-showtimes.html"
-          ><span aria-hidden="true">◷</span>Suất chiếu</a
-        >
+      <a class="admin-nav__link"
+         href="./admin-rooms.html">
+        <span aria-hidden="true">▦</span>Phòng và ghế
+      </a>
 
-        <p class="admin-nav__label">Giao dịch</p>
-        <a class="admin-nav__link" href="./admin-bookings.html"
-          ><span aria-hidden="true">▧</span>Đặt vé</a
-        >
-        <a class="admin-nav__link" href="./admin-promotions.html"
-          ><span aria-hidden="true">◇</span>Khuyến mãi</a
-        >
+      <a class="admin-nav__link"
+         href="./admin-showtimes.html">
+        <span aria-hidden="true">◷</span>Lịch chiếu
+      </a>
 
-        <p class="admin-nav__label">Hệ thống</p>
-        <a class="admin-nav__link" href="./admin-users.html"
-          ><span aria-hidden="true">♙</span>Người dùng</a
-        >
-      </nav>
+      <a class="admin-nav__link"
+         href="./admin-bookings.html">
+        <span aria-hidden="true">▧</span>Đặt vé
+      </a>
+    </div>
 
-      <div class="admin-sidebar__footer">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span>Không gian quản trị</span>
-      </div>
-    </aside>
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Hệ thống</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-users.html">
+        <span aria-hidden="true">♙</span>Người dùng
+      </a>
+    </div>
+  </nav>
+  <footer class="admin-sidebar__footer">Không gian quản trị</footer>
+</aside>
 
     <div class="admin-main">
-      <header class="admin-topbar">
-        <label class="admin-search">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" placeholder="Tìm kiếm..." aria-label="Tìm trong quản trị" />
-        </label>
-        <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
-          <span class="admin-account__avatar">QA</span>
-          <span class="admin-account__name">Quản trị viên</span>
-        </button>
-      </header>
+      
+<header class="admin-topbar">
+  <label class="admin-search">
+    <span aria-hidden="true">⌕</span>
+    <input type="search" placeholder="Tìm kiếm trong quản trị…" aria-label="Tìm kiếm trong quản trị" />
+    <kbd>⌘ K</kbd>
+  </label>
+  <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
+    <span class="admin-account__avatar" aria-hidden="true">QT</span>
+    <span class="admin-account__name">Quản trị viên</span>
+  </button>
+</header>
 
       <main class="admin-content">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -93,7 +112,7 @@
 
         <form class="movie-editor">
           <div class="movie-editor__main">
-            <section class="panel movie-editor__section" aria-labelledby="movie-info-title">
+            <section class="panel movie-editor__section panel--padded" aria-labelledby="movie-info-title">
               <header class="panel-heading">
                 <div>
                   <h2 id="movie-info-title">Thông tin phim</h2>
@@ -107,29 +126,20 @@
                   <input type="text" placeholder="Nhập tên phim" required aria-required="true" />
                 </label>
 
-                <label class="movie-editor__field movie-editor__field--wide">
-                  <span>Tên phim gốc</span>
-                  <input type="text" placeholder="Nhập tên phim gốc nếu có" />
-                </label>
+                
 
                 <label class="movie-editor__field">
-                  <span>Phân loại độ tuổi <b aria-hidden="true">*</b></span>
-                  <select required aria-required="true">
-                    <option value="">Chọn phân loại</option>
-                    <option value="P">P — Phổ biến</option>
-                    <option value="C13">C13</option>
-                    <option value="C16">C16</option>
-                    <option value="C18">C18</option>
-                  </select>
-                </label>
+  <span>Phân loại độ tuổi</span>
+  <input type="text" placeholder="Chưa có dữ liệu phân loại" readonly />
+</label><label class="movie-editor__field movie-editor__field--wide">
+  <span>Thể loại <b aria-hidden="true">*</b></span>
+  <select name="genreIds" multiple required aria-label="Chọn thể loại phim"><option value="" disabled>Chọn ít nhất một thể loại</option></select>
+</label>
 
                 <label class="movie-editor__field">
-                  <span>Thời lượng</span>
-                  <div class="movie-editor__input-suffix">
-                    <input type="number" min="1" placeholder="Nhập thời lượng" />
-                    <span>phút</span>
-                  </div>
-                </label>
+  <span>Thời lượng (phút) <b aria-hidden="true">*</b></span>
+  <input name="durationMinutes" type="number" min="1" step="1" placeholder="Nhập thời lượng" required />
+</label>
 
                 <label class="movie-editor__field">
                   <span>Ngày khởi chiếu</span>
@@ -137,14 +147,15 @@
                 </label>
 
                 <label class="movie-editor__field">
-                  <span>Trạng thái</span>
-                  <select>
-                    <option value="">Chọn trạng thái</option>
-                    <option value="COMING_SOON">Sắp chiếu</option>
-                    <option value="NOW_SHOWING">Đang chiếu</option>
-                    <option value="ENDED">Ngừng chiếu</option>
-                  </select>
-                </label>
+  <span>Trạng thái <b aria-hidden="true">*</b></span>
+  <select name="status" required>
+        <option value="">Chọn trạng thái</option>
+        <option value="UPCOMING">Sắp chiếu</option>
+        <option value="NOW_SHOWING">Đang chiếu</option>
+        <option value="ENDED">Đã kết thúc</option>
+        <option value="INACTIVE">Ngừng hiển thị</option>
+      </select>
+</label>
 
                 <label class="movie-editor__field movie-editor__field--wide">
                   <span>Mô tả</span>
@@ -153,7 +164,7 @@
               </div>
             </section>
 
-            <section class="panel movie-editor__section" aria-labelledby="movie-media-title">
+            <section class="panel movie-editor__section panel--padded" aria-labelledby="movie-media-title">
               <header class="panel-heading">
                 <div>
                   <h2 id="movie-media-title">Hình ảnh và trailer</h2>
@@ -175,7 +186,7 @@
             </section>
           </div>
 
-          <aside class="panel movie-editor__preview" aria-labelledby="movie-preview-title">
+          <aside class="panel movie-editor__preview panel--padded" aria-labelledby="movie-preview-title">
             <p class="eyebrow">Xem trước</p>
             <h2 id="movie-preview-title">Thẻ phim</h2>
 
@@ -190,18 +201,17 @@
               <span>Thời lượng chưa có</span>
             </div>
 
-            <label class="movie-editor__field">
-              <span>Ghi chú nội bộ</span>
-              <textarea rows="3" placeholder="Thông tin chỉ dành cho quản trị"></textarea>
-            </label>
+            
           </aside>
 
           <footer class="movie-editor__actions">
             <a class="action-button action-button--secondary" href="./admin-movies.html">Hủy</a>
-            <button class="action-button action-button--primary" type="submit">Lưu phim</button>
+            <button class="action-button action-button--primary" type="button">Lưu phim</button>
           </footer>
         </form>
-      </main>
+      <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+</main>
     </div>
+      </div>
   </body>
 </html>

@@ -4,70 +4,96 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thêm phòng | CINEMATIC Admin</title>
-    <link rel="stylesheet" href="./cinema-reference.css" />
+        <link rel="stylesheet" href="./reference-tokens.css" />
+    <link rel="stylesheet" href="./reference-base.css" />
     <link rel="stylesheet" href="./admin-unified.css" />
+    <link rel="stylesheet" href="./admin-components.css" />
     <link rel="stylesheet" href="./admin-operations-editor.css" />
+    <link rel="stylesheet" href="./reference-responsive.css" />
   </head>
 
-  <body class="admin-page">
-    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
-      <a class="admin-brand" href="./admin-dashboard.html">
-        <span class="admin-brand__mark" aria-hidden="true">C</span>
-        <span class="admin-brand__copy"><strong>CINEMATIC</strong><small>QUẢN TRỊ</small></span>
+  <body class="reference-page admin-page" data-reference="admin-room-editor">
+    <div class="admin-shell">
+    
+<aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+  <a class="admin-brand" href="./admin-dashboard.html">
+    <span class="admin-brand__mark" aria-hidden="true">C</span>
+    <span class="admin-brand__copy"><strong>CINEMATIC</strong><small>QUẢN TRỊ</small></span>
+  </a>
+  <nav class="admin-nav" aria-label="Menu quản trị">
+    
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Điều hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-dashboard.html">
+        <span aria-hidden="true">⌂</span>Tổng quan
+      </a>
+    </div>
+
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Nội dung</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-movies.html">
+        <span aria-hidden="true">▤</span>Phim
       </a>
 
-      <nav class="admin-nav" aria-label="Menu quản trị">
-        <p class="admin-nav__label">Điều hành</p>
-        <a class="admin-nav__link" href="./admin-dashboard.html"
-          ><span aria-hidden="true">⌂</span>Tổng quan</a
-        >
-        <p class="admin-nav__label">Nội dung</p>
-        <a class="admin-nav__link" href="./admin-movies.html"
-          ><span aria-hidden="true">▤</span>Phim</a
-        >
-        <p class="admin-nav__label">Vận hành</p>
-        <a class="admin-nav__link" href="./admin-cinemas.html"
-          ><span aria-hidden="true">▣</span>Rạp</a
-        >
-        <a class="admin-nav__link is-active" href="./admin-rooms.html" aria-current="page"
-          ><span aria-hidden="true">▦</span>Phòng</a
-        >
-        <a class="admin-nav__link" href="./admin-room-seats.html"
-          ><span aria-hidden="true">▥</span>Sơ đồ ghế</a
-        >
-        <a class="admin-nav__link" href="./admin-showtimes.html"
-          ><span aria-hidden="true">◷</span>Suất chiếu</a
-        >
-        <p class="admin-nav__label">Giao dịch</p>
-        <a class="admin-nav__link" href="./admin-bookings.html"
-          ><span aria-hidden="true">▧</span>Đặt vé</a
-        >
-        <a class="admin-nav__link" href="./admin-promotions.html"
-          ><span aria-hidden="true">◇</span>Khuyến mãi</a
-        >
-        <p class="admin-nav__label">Hệ thống</p>
-        <a class="admin-nav__link" href="./admin-users.html"
-          ><span aria-hidden="true">♙</span>Người dùng</a
-        >
-      </nav>
+      <a class="admin-nav__link"
+         href="./admin-promotions.html">
+        <span aria-hidden="true">◇</span>Khuyến mãi
+      </a>
+    </div>
 
-      <div class="admin-sidebar__footer">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span>Không gian quản trị</span>
-      </div>
-    </aside>
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Vận hành</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-cinemas.html">
+        <span aria-hidden="true">▣</span>Rạp
+      </a>
+
+      <a class="admin-nav__link is-active"
+         href="./admin-rooms.html" aria-current="page">
+        <span aria-hidden="true">▦</span>Phòng và ghế
+      </a>
+
+      <a class="admin-nav__link"
+         href="./admin-showtimes.html">
+        <span aria-hidden="true">◷</span>Lịch chiếu
+      </a>
+
+      <a class="admin-nav__link"
+         href="./admin-bookings.html">
+        <span aria-hidden="true">▧</span>Đặt vé
+      </a>
+    </div>
+
+    <div class="admin-nav__group">
+      <p class="admin-nav__label">Hệ thống</p>
+      
+      <a class="admin-nav__link"
+         href="./admin-users.html">
+        <span aria-hidden="true">♙</span>Người dùng
+      </a>
+    </div>
+  </nav>
+  <footer class="admin-sidebar__footer">Không gian quản trị</footer>
+</aside>
 
     <div class="admin-main">
-      <header class="admin-topbar">
-        <label class="admin-search">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" placeholder="Tìm kiếm..." aria-label="Tìm trong quản trị" />
-        </label>
-        <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
-          <span class="admin-account__avatar">QA</span>
-          <span class="admin-account__name">Quản trị viên</span>
-        </button>
-      </header>
+      
+<header class="admin-topbar">
+  <label class="admin-search">
+    <span aria-hidden="true">⌕</span>
+    <input type="search" placeholder="Tìm kiếm trong quản trị…" aria-label="Tìm kiếm trong quản trị" />
+    <kbd>⌘ K</kbd>
+  </label>
+  <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
+    <span class="admin-account__avatar" aria-hidden="true">QT</span>
+    <span class="admin-account__name">Quản trị viên</span>
+  </button>
+</header>
 
       <main class="admin-content">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -80,12 +106,12 @@
           <div>
             <p class="eyebrow">Cấu hình vận hành</p>
             <h1>Thêm phòng chiếu</h1>
-            <p class="page-heading__description">Chọn rạp và khai báo sức chứa, định dạng phòng.</p>
+            <p class="page-heading__description">Chọn rạp, nhập tên và loại phòng. Quản lý ghế sau khi tạo phòng.</p>
           </div>
         </section>
 
         <form class="entity-editor">
-          <section class="panel entity-editor__main" aria-labelledby="room-editor-title">
+          <section class="panel entity-editor__main panel--padded" aria-labelledby="room-editor-title">
             <header class="panel-heading">
               <div>
                 <h2 id="room-editor-title">Thông tin phòng</h2>
@@ -107,44 +133,29 @@
               </label>
 
               <label class="entity-field">
-                <span>Định dạng <b aria-hidden="true">*</b></span>
-                <select required aria-required="true">
-                  <option value="">Chọn định dạng</option>
-                </select>
-              </label>
+  <span>Loại phòng <b aria-hidden="true">*</b></span>
+  <select name="roomType" required>
+        <option value="">Chọn loại phòng</option>
+        <option value="STANDARD">Tiêu chuẩn</option>
+        <option value="IMAX">IMAX</option>
+        <option value="FOUR_DX">4DX</option>
+        <option value="SCREEN_X">ScreenX</option>
+        <option value="VIP">VIP</option>
+      </select>
+</label>
 
-              <label class="entity-field">
-                <span>Sức chứa <b aria-hidden="true">*</b></span>
-                <div class="entity-input-suffix">
-                  <input
-                    type="number"
-                    min="1"
-                    placeholder="Nhập sức chứa"
-                    required
-                    aria-required="true"
-                  />
-                  <span>ghế</span>
-                </div>
-              </label>
+              
 
-              <label class="entity-field entity-field--wide">
-                <span>Trạng thái</span>
-                <select>
-                  <option value="">Chọn trạng thái</option>
-                  <option value="ACTIVE">Đang hoạt động</option>
-                  <option value="MAINTENANCE">Bảo trì</option>
-                  <option value="INACTIVE">Tạm ngưng</option>
-                </select>
-              </label>
+              
             </div>
 
             <footer class="entity-actions">
               <a class="action-button action-button--secondary" href="./admin-rooms.html">Hủy</a>
-              <button class="action-button action-button--primary" type="submit">Lưu phòng</button>
+              <button class="action-button action-button--primary" type="button">Lưu phòng</button>
             </footer>
           </section>
 
-          <aside class="panel entity-preview" aria-labelledby="room-preview-title">
+          <aside class="panel entity-preview panel--padded" aria-labelledby="room-preview-title">
             <p class="eyebrow">Xem trước</p>
             <h2 id="room-preview-title">Thông tin phòng</h2>
             <dl>
@@ -161,16 +172,18 @@
                 <dd>Chưa chọn</dd>
               </div>
               <div>
-                <dt>Sức chứa</dt>
+                <dt>Ghế của phòng</dt>
                 <dd>Chưa nhập</dd>
               </div>
             </dl>
             <a class="action-button action-button--secondary" href="./admin-room-seats.html">
-              Tiếp tục đến sơ đồ ghế
+              Xem thiết kế quản lý ghế
             </a>
           </aside>
         </form>
-      </main>
+      <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+</main>
     </div>
+      </div>
   </body>
 </html>
