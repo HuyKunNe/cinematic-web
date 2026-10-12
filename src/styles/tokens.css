@@ -99,10 +99,10 @@
   --header-height-mobile: 4.5rem;
   --mobile-nav-height: 4.875rem;
   --admin-sidebar-width: 17rem;
-  --admin-header-height: 4.25rem;
+  --admin-header-height: var(--header-height);
   --admin-sidebar-width-collapsed: 5rem;
   --admin-drawer-width: min(19rem, calc(100vw - var(--space-8)));
-  --admin-content-width: 88rem;
+  --admin-content-width: 90rem;
   --admin-user-menu-width: 13rem;
 
   /* Controls */
@@ -501,6 +501,15 @@
   --admin-shell-sidebar-size: var(--admin-sidebar-width);
   --admin-user-label-max-width: 10rem;
   --admin-shell-gutter: clamp(var(--space-4), 2vw, var(--space-8));
+  --admin-shell-padding-top: var(--space-6);
+  --admin-shell-padding-bottom: var(--space-8);
+  --admin-header-gap: var(--space-3);
+  --admin-header-control-height: var(--control-height-md);
+  --admin-header-control-border: var(--admin-reference-border-strong);
+  --admin-sidebar-brand-size: var(--control-height-md);
+  --admin-sidebar-brand-inset: var(--space-4);
+  --admin-sidebar-nav-padding: var(--space-3);
+  --admin-user-avatar-size: var(--control-height-md);
   --admin-shell-section-gap: var(--space-8);
   --admin-metric-min-width: 14rem;
   --admin-module-min-width: 18rem;
@@ -521,9 +530,9 @@
   --admin-genre-description-min-height: 5rem;
 
   /* Admin dashboard reference */
-  --admin-reference-control-height: var(--space-10);
-  --admin-sidebar-padding-inline: 0.875rem;
-  --admin-sidebar-label-size: 0.6875rem;
+  --admin-reference-control-height: var(--admin-header-control-height);
+  --admin-sidebar-padding-inline: var(--admin-sidebar-nav-padding);
+  --admin-sidebar-label-size: var(--font-size-xs);
   --admin-search-width: 28rem;
   --admin-search-dialog-width: 34rem;
   --admin-search-results-height: 24rem;
@@ -566,10 +575,10 @@
   --admin-reference-topbar-background: rgb(6 17 26 / 92%);
   --admin-reference-topbar-blur: 1rem;
 
-  --admin-reference-sidebar-width: 16rem;
-  --admin-reference-header-height: 4.5rem;
-  --admin-reference-content-width: 90rem;
-  --admin-reference-search-width: 32rem;
+  --admin-reference-sidebar-width: var(--admin-sidebar-width);
+  --admin-reference-header-height: var(--admin-header-height);
+  --admin-reference-content-width: var(--admin-content-width);
+  --admin-reference-search-width: var(--admin-search-width);
   --admin-reference-heading-size: clamp(2rem, 3vw, 2.75rem);
   --admin-reference-heading-tracking: 0.14em;
   --admin-reference-table-tracking: 0.08em;
@@ -621,7 +630,7 @@
   --admin-room-code-size: 0.6875rem;
   --admin-room-empty-height: 12rem;
   --admin-room-dialog-width: 32rem;
---admin-room-seats-dialog-width: var(--admin-movie-dialog-width);
+  --admin-room-seats-dialog-width: var(--admin-movie-dialog-width);
 
   /* Movie detail */
   --detail-page-gutter: clamp(1.25rem, 4vw, 3.5rem);

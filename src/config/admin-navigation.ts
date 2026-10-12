@@ -39,22 +39,6 @@ export const ADMIN_NAVIGATION_GROUPS: readonly {
 
 export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
   {
-    label: 'Đặt vé',
-    description: 'Tra cứu giao dịch đặt vé và thanh toán.',
-    routeName: ROUTE_NAMES.ADMIN_BOOKINGS,
-    icon: 'bookings',
-    group: 'operations',
-    roles: ADMIN_ROLES,
-  },
-  {
-    label: 'Khuyến mãi',
-    description: 'Các chương trình ưu đãi và chiến dịch.',
-    routeName: ROUTE_NAMES.ADMIN_PROMOTIONS,
-    icon: 'promotions',
-    group: 'content',
-    roles: ADMIN_ROLES,
-  },
-  {
     label: 'Tổng quan',
     description: 'Theo dõi dữ liệu và truy cập các chức năng quản trị.',
     routeName: ROUTE_NAMES.ADMIN,
@@ -72,6 +56,14 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
     permission: APP_PERMISSIONS.MOVIE_MANAGE,
   },
   {
+    label: 'Khuyến mãi',
+    description: 'Các chương trình ưu đãi và chiến dịch.',
+    routeName: ROUTE_NAMES.ADMIN_PROMOTIONS,
+    icon: 'promotions',
+    group: 'content',
+    roles: ADMIN_ROLES,
+  },
+  {
     label: 'Rạp',
     description: 'Thông tin rạp, thành phố và trạng thái hoạt động.',
     routeName: ROUTE_NAMES.ADMIN_CINEMAS,
@@ -82,7 +74,7 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
   },
   {
     label: 'Phòng và ghế',
-    description: 'Phòng chiếu và danh sách ghế của từng phòng.',
+    description: 'Phòng chiếu, ghế của phòng và thiết kế sơ đồ.',
     routeName: ROUTE_NAMES.ADMIN_ROOMS,
     icon: 'rooms',
     group: 'operations',
@@ -97,6 +89,14 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
     group: 'operations',
     roles: ADMIN_ROLES,
     permission: APP_PERMISSIONS.SHOWTIME_MANAGE,
+  },
+  {
+    label: 'Đặt vé',
+    description: 'Tra cứu giao dịch đặt vé và thanh toán.',
+    routeName: ROUTE_NAMES.ADMIN_BOOKINGS,
+    icon: 'bookings',
+    group: 'operations',
+    roles: ADMIN_ROLES,
   },
   {
     label: 'Người dùng',

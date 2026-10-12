@@ -14,11 +14,6 @@
   --radius-md: var(--admin-reference-radius-md);
 }
 
-.admin-layout.is-management .admin-layout__main .admin-breadcrumbs__list {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
-}
-
 /* Existing management pages and pages awaiting integration. */
 :is(.admin-movies, .admin-cinemas, .admin-rooms, .admin-reference) {
   display: grid;

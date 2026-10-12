@@ -35,7 +35,7 @@
 
 .admin-layout__main {
   min-width: 0;
-  padding: var(--space-7) var(--admin-shell-gutter) var(--space-10);
+  padding: 0;
 }
 
 .admin-layout__container {
@@ -44,6 +44,8 @@
   width: min(100%, var(--admin-content-width));
   min-width: 0;
   margin-inline: auto;
+  padding: var(--admin-shell-padding-top) var(--admin-shell-gutter)
+    var(--admin-shell-padding-bottom);
 }
 
 .admin-layout__error {
@@ -82,10 +84,10 @@
   z-index: var(--z-header);
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--admin-header-gap);
   min-width: 0;
   min-height: var(--admin-header-height);
-  padding: var(--space-2) var(--admin-shell-gutter);
+  padding: 0 var(--admin-shell-gutter);
   border-bottom: var(--border-width-thin) solid var(--color-border);
   background: var(--color-surface);
 }
@@ -95,8 +97,8 @@
   display: inline-grid;
   flex: 0 0 auto;
   place-items: center;
-  width: var(--admin-reference-control-height);
-  height: var(--admin-reference-control-height);
+  width: var(--admin-header-control-height);
+  height: var(--admin-header-control-height);
   padding: 0;
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-md);
@@ -120,13 +122,13 @@
 .admin-header__search {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   width: min(100%, var(--admin-search-width));
   min-width: 0;
-  min-height: var(--admin-reference-control-height);
-  margin-left: auto;
-  padding: var(--space-2) var(--space-3);
-  border: var(--border-width-thin) solid var(--color-border);
+  min-height: var(--admin-header-control-height);
+  margin-inline-start: auto;
+  padding: 0 var(--space-3);
+  border: var(--border-width-thin) solid var(--admin-header-control-border);
   border-radius: var(--radius-md);
   background: var(--color-background);
   color: var(--color-text-muted);
@@ -153,7 +155,8 @@
 
 .admin-header__search kbd {
   flex: 0 0 auto;
-  font-size: var(--admin-dashboard-tiny-size);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
 }
 
 .admin-header__search:hover {
@@ -262,13 +265,17 @@
   flex: 0 0 auto;
   align-items: center;
   gap: var(--space-2);
-  min-height: var(--admin-reference-control-height);
-  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
-  border: var(--border-width-thin) solid var(--color-border);
+  min-height: var(--admin-header-control-height);
+  padding: 0;
+  border: 0;
   border-radius: var(--radius-md);
-  background: var(--color-surface-raised);
+  background: transparent;
   color: var(--color-text-primary);
   cursor: pointer;
+}
+
+.admin-user-menu__trigger:hover:not(:disabled) {
+  color: var(--color-primary);
 }
 
 .admin-user-menu__trigger:disabled {
@@ -280,11 +287,12 @@
   display: inline-grid;
   flex: 0 0 auto;
   place-items: center;
-  width: var(--space-8);
-  height: var(--space-8);
+  width: var(--admin-user-avatar-size);
+  height: var(--admin-user-avatar-size);
+  border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-pill);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--color-surface-raised);
+  color: var(--color-primary);
 }
 
 .admin-user-menu__avatar svg {
@@ -378,30 +386,31 @@
 /* Sidebar */
 
 .admin-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0;
   min-width: 0;
   height: 100%;
   overflow: hidden;
-  padding: var(--space-5) var(--admin-sidebar-padding-inline);
+  padding: 0;
   background: var(--color-surface);
 }
 
 .admin-sidebar__top {
   display: flex;
-  flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
   min-width: 0;
-  min-height: var(--control-height-lg);
+  min-height: var(--admin-header-height);
   overflow: hidden;
-  padding-inline: var(--space-1);
+  padding-inline: var(--admin-sidebar-brand-inset);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
 }
 
 .admin-sidebar__brand {
   display: inline-flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: var(--space-3);
   min-width: 0;
@@ -414,9 +423,9 @@
   display: inline-grid;
   flex: 0 0 auto;
   place-items: center;
-  width: var(--space-10);
-  height: var(--space-10);
-  border-radius: var(--space-3);
+  width: var(--admin-sidebar-brand-size);
+  height: var(--admin-sidebar-brand-size);
+  border-radius: var(--radius-md);
   background: var(--color-primary);
   color: var(--color-on-primary);
   font-family: var(--font-family-display);
@@ -443,13 +452,13 @@
 
 .admin-sidebar__nav {
   display: grid;
-  flex: 1 1 auto;
   align-content: start;
-  gap: var(--space-5);
+  gap: var(--space-1);
   min-width: 0;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  padding: var(--admin-sidebar-nav-padding);
   scrollbar-width: thin;
 }
 
@@ -461,7 +470,7 @@
 
 .admin-sidebar__group-label {
   min-height: calc(var(--admin-sidebar-label-size) * var(--line-height-base));
-  margin: 0 0 var(--space-1);
+  margin: var(--space-4) 0 var(--space-1);
   overflow: hidden;
   padding-inline: var(--space-3);
   color: var(--color-text-muted);
@@ -480,7 +489,7 @@
   min-width: 0;
   height: var(--control-height-md);
   overflow: hidden;
-  padding: var(--space-2) var(--space-3);
+  padding: 0 var(--space-3);
   border: var(--border-width-thin) solid transparent;
   border-radius: var(--radius-md);
   background: transparent;
@@ -521,10 +530,9 @@
 
 .admin-sidebar__footer {
   display: grid;
-  flex: 0 0 auto;
   gap: var(--space-3);
   min-width: 0;
-  padding-top: var(--space-4);
+  padding: var(--space-4) var(--admin-sidebar-nav-padding);
   border-top: var(--border-width-thin) solid var(--color-border);
 }
 
@@ -619,7 +627,11 @@
 }
 
 .admin-drawer .admin-sidebar {
-  padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
+  padding: 0;
+}
+
+.admin-drawer .admin-sidebar__footer {
+  padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
 }
 
 .admin-layout.is-drawer .admin-header {
@@ -639,8 +651,8 @@
 
 .admin-layout.is-drawer .admin-user-menu__trigger {
   justify-content: center;
-  width: var(--admin-reference-control-height);
-  height: var(--admin-reference-control-height);
+  width: var(--admin-header-control-height);
+  height: var(--admin-header-control-height);
   padding: 0;
 }
 
@@ -689,8 +701,8 @@
   gap: var(--space-2);
   margin: 0;
   padding: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
   list-style: none;
 }
 
