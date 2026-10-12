@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thiết kế layout phòng | CINEMA Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-cinemas.css" />
+    <link rel="stylesheet" href="./admin-rooms.css" />
+    <link rel="stylesheet" href="./admin-room-layout.css" />
+  </head>
+
+  <body class="admin-page">
+    <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+      <a class="admin-brand" href="./admin-dashboard.html" aria-label="CINEMA Admin">
+        <span class="admin-brand__mark" aria-hidden="true">C</span>
+        <span class="admin-brand__text">CINEMA <small>ADMIN</small></span>
+      </a>
+
+      <p class="admin-sidebar__label">Quản trị</p>
+      <nav class="admin-nav" aria-label="Menu quản trị">
+        <a class="admin-nav__link" href="./admin-dashboard.html"
+          ><span aria-hidden="true">⌂</span>Tổng quan</a
+        >
+        <a class="admin-nav__link" href="./admin-movies.html"
+          ><span aria-hidden="true">▤</span>Phim</a
+        >
+        <a class="admin-nav__link" href="./admin-cinemas.html"
+          ><span aria-hidden="true">▣</span>Rạp chiếu</a
+        >
+        <a class="admin-nav__link is-active" href="./admin-rooms.html" aria-current="page">
+          <span aria-hidden="true">▦</span>Phòng chiếu
+        </a>
+        <a class="admin-nav__link" href="./admin-showtimes.html"
+          ><span aria-hidden="true">◷</span>Suất chiếu</a
+        >
+        <a class="admin-nav__link" href="./admin-bookings.html"
+          ><span aria-hidden="true">▧</span>Đặt vé</a
+        >
+        <a class="admin-nav__link" href="./admin-promotions.html"
+          ><span aria-hidden="true">◇</span>Khuyến mãi</a
+        >
+        <a class="admin-nav__link" href="./admin-users.html"
+          ><span aria-hidden="true">♙</span>Người dùng</a
+        >
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Hệ thống đang hoạt động</span>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="icon-button admin-menu-button" type="button" aria-label="Mở menu">☰</button>
+        <label class="admin-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Tìm kiếm trong quản trị..." />
+          <kbd>⌘ K</kbd>
+        </label>
+        <button class="icon-button admin-notifications" type="button" aria-label="Thông báo">
+          ♧<span class="notification-count" aria-hidden="true">2</span>
+        </button>
+        <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
+          <span class="admin-avatar" aria-hidden="true">AD</span>
+          <span class="admin-account__name">Quản trị viên</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+      </header>
+
+      <main class="admin-content room-layout-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="./admin-dashboard.html">Quản trị</a>
+          <span aria-hidden="true">/</span>
+          <a href="./admin-rooms.html">Phòng chiếu</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Thiết kế layout</span>
+        </nav>
+
+        <section class="layout-heading">
+          <div>
+            <p class="eyebrow">CINEMA HỒ GƯƠM · PHÒNG 01</p>
+            <h1>Thiết kế layout ghế</h1>
+            <p>Thiết lập vị trí, loại ghế và trạng thái trước khi đưa layout vào sử dụng.</p>
+          </div>
+
+          <div class="layout-heading__actions">
+            <a class="action-button action-button--secondary" href="./admin-rooms.html">
+              Quay lại phòng
+            </a>
+            <button class="action-button action-button--secondary" type="button">Lưu nháp</button>
+            <button class="action-button action-button--primary" type="button">
+              Xuất bản layout
+            </button>
+          </div>
+        </section>
+
+        <aside class="layout-draft-notice" role="status">
+          <span class="layout-draft-notice__dot" aria-hidden="true"></span>
+          <span><strong>Bản nháp</strong> · Có thay đổi chưa xuất bản</span>
+          <span class="layout-draft-notice__meta">Cập nhật lần cuối: hôm nay, 09:42</span>
+        </aside>
+
+        <section class="layout-toolbar panel" aria-label="Công cụ thiết kế">
+          <div class="layout-tools" role="group" aria-label="Loại ghế để đặt">
+            <button class="layout-tool is-active" type="button" aria-pressed="true">
+              <span class="layout-tool__swatch layout-tool__swatch--standard"></span>
+              Ghế thường
+            </button>
+            <button class="layout-tool" type="button" aria-pressed="false">
+              <span class="layout-tool__swatch layout-tool__swatch--vip"></span>
+              Ghế VIP
+            </button>
+            <button class="layout-tool" type="button" aria-pressed="false">
+              <span class="layout-tool__swatch layout-tool__swatch--blocked"></span>
+              Ngưng phục vụ
+            </button>
+          </div>
+
+          <div class="layout-toolbar__actions">
+            <button class="layout-icon-button" type="button" aria-label="Hoàn tác">↶</button>
+            <button class="layout-icon-button" type="button" aria-label="Làm lại">↷</button>
+            <span class="layout-toolbar__divider" aria-hidden="true"></span>
+            <button class="layout-icon-button" type="button" aria-label="Thu nhỏ sơ đồ">−</button>
+            <span class="layout-zoom">100%</span>
+            <button class="layout-icon-button" type="button" aria-label="Phóng to sơ đồ">＋</button>
+          </div>
+        </section>
+
+        <div class="layout-workspace">
+          <section class="layout-canvas-panel panel" aria-labelledby="layout-canvas-title">
+            <div class="layout-canvas-heading">
+              <div>
+                <h2 id="layout-canvas-title">Sơ đồ phòng</h2>
+                <p>Chọn một ghế để xem và chỉnh sửa thuộc tính.</p>
+              </div>
+              <span class="layout-seat-count">48 ghế</span>
+            </div>
+
+            <div class="layout-legend" aria-label="Chú thích">
+              <span
+                ><i class="layout-legend__swatch layout-legend__swatch--standard"></i>Thường</span
+              >
+              <span><i class="layout-legend__swatch layout-legend__swatch--vip"></i>VIP</span>
+              <span
+                ><i class="layout-legend__swatch layout-legend__swatch--blocked"></i>Ngưng phục
+                vụ</span
+              >
+              <span
+                ><i class="layout-legend__swatch layout-legend__swatch--selected"></i>Đang
+                chọn</span
+              >
+            </div>
+
+            <div
+              class="layout-canvas-scroll"
+              tabindex="0"
+              aria-label="Sơ đồ ghế, có thể cuộn ngang"
+            >
+              <div class="layout-canvas">
+                <div class="layout-screen">
+                  <span>MÀN HÌNH</span>
+                </div>
+
+                <div class="layout-seat-row">
+                  <span class="layout-row-label">A</span>
+                  <div class="layout-seat-grid">
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế A1"
+                    >
+                      1
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế A2"
+                    >
+                      2
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế A3"
+                    >
+                      3
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế A4"
+                    >
+                      4
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế A5"
+                    >
+                      5
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế A6"
+                    >
+                      6
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế A7"
+                    >
+                      7
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế A8"
+                    >
+                      8
+                    </button>
+                  </div>
+                </div>
+
+                <div class="layout-seat-row">
+                  <span class="layout-row-label">B</span>
+                  <div class="layout-seat-grid">
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế B1"
+                    >
+                      1
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế B2"
+                    >
+                      2
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế B3"
+                    >
+                      3
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế B4"
+                    >
+                      4
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế B5"
+                    >
+                      5
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế B6"
+                    >
+                      6
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế B7"
+                    >
+                      7
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế B8"
+                    >
+                      8
+                    </button>
+                  </div>
+                </div>
+
+                <div class="layout-seat-row">
+                  <span class="layout-row-label">C</span>
+                  <div class="layout-seat-grid">
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế C1"
+                    >
+                      1
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế C2"
+                    >
+                      2
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế C3"
+                    >
+                      3
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard is-selected"
+                      type="button"
+                      aria-label="Ghế C4, đang chọn"
+                    >
+                      4
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế C5"
+                    >
+                      5
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế C6"
+                    >
+                      6
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế C7"
+                    >
+                      7
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế C8"
+                    >
+                      8
+                    </button>
+                  </div>
+                </div>
+
+                <div class="layout-seat-row">
+                  <span class="layout-row-label">D</span>
+                  <div class="layout-seat-grid">
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế D1"
+                    >
+                      1
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế D2"
+                    >
+                      2
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế D3"
+                    >
+                      3
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế D4"
+                    >
+                      4
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế D5"
+                    >
+                      5
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế D6"
+                    >
+                      6
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--standard"
+                      type="button"
+                      aria-label="Ghế D7"
+                    >
+                      7
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--blocked"
+                      type="button"
+                      aria-label="Ghế D8, ngưng phục vụ"
+                    >
+                      8
+                    </button>
+                  </div>
+                </div>
+
+                <div class="layout-seat-row">
+                  <span class="layout-row-label">E</span>
+                  <div class="layout-seat-grid">
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế E1, VIP"
+                    >
+                      1
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế E2, VIP"
+                    >
+                      2
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế E3, VIP"
+                    >
+                      3
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế E4, VIP"
+                    >
+                      4
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế E5, VIP"
+                    >
+                      5
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế E6, VIP"
+                    >
+                      6
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế E7, VIP"
+                    >
+                      7
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế E8, VIP"
+                    >
+                      8
+                    </button>
+                  </div>
+                </div>
+
+                <div class="layout-seat-row">
+                  <span class="layout-row-label">F</span>
+                  <div class="layout-seat-grid">
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế F1, VIP"
+                    >
+                      1
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế F2, VIP"
+                    >
+                      2
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế F3, VIP"
+                    >
+                      3
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế F4, VIP"
+                    >
+                      4
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế F5, VIP"
+                    >
+                      5
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế F6, VIP"
+                    >
+                      6
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế F7, VIP"
+                    >
+                      7
+                    </button>
+                    <button
+                      class="layout-seat layout-seat--vip"
+                      type="button"
+                      aria-label="Ghế F8, VIP"
+                    >
+                      8
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="layout-canvas-footer">
+              <span>48 ghế · 32 thường · 16 VIP · 1 ghế ngưng phục vụ</span>
+              <span>Kéo ngang để xem toàn bộ sơ đồ trên màn hình nhỏ</span>
+            </div>
+          </section>
+
+          <aside class="layout-inspector">
+            <section class="layout-inspector-panel panel" aria-labelledby="selected-seat-title">
+              <div class="layout-canvas-heading">
+                <div>
+                  <p class="layout-inspector__eyebrow">GHẾ ĐANG CHỌN</p>
+                  <h2 id="selected-seat-title">C04</h2>
+                </div>
+                <span class="layout-seat-type-badge">Ghế thường</span>
+              </div>
+
+              <label class="layout-field">
+                <span>Loại ghế</span>
+                <select>
+                  <option selected>Ghế thường</option>
+                  <option>Ghế VIP</option>
+                </select>
+              </label>
+
+              <label class="layout-field">
+                <span>Trạng thái</span>
+                <select>
+                  <option selected>Đang phục vụ</option>
+                  <option>Ngưng phục vụ</option>
+                </select>
+              </label>
+
+              <div class="layout-seat-info">
+                <span>Hàng <strong>C</strong></span>
+                <span>Số ghế <strong>04</strong></span>
+              </div>
+
+              <button
+                class="action-button action-button--secondary layout-inspector__button"
+                type="button"
+              >
+                Áp dụng cho ghế đã chọn
+              </button>
+            </section>
+
+            <section class="layout-inspector-panel panel" aria-labelledby="layout-summary-title">
+              <div class="layout-canvas-heading">
+                <div>
+                  <h2 id="layout-summary-title">Thông tin layout</h2>
+                  <p>Kiểm tra trước khi xuất bản.</p>
+                </div>
+              </div>
+
+              <dl class="layout-summary">
+                <div>
+                  <dt>Số hàng</dt>
+                  <dd>6</dd>
+                </div>
+                <div>
+                  <dt>Số ghế mỗi hàng</dt>
+                  <dd>8</dd>
+                </div>
+                <div>
+                  <dt>Tổng sức chứa</dt>
+                  <dd>48 ghế</dd>
+                </div>
+                <div>
+                  <dt>Thay đổi chưa lưu</dt>
+                  <dd class="layout-summary__pending">1 mục</dd>
+                </div>
+              </dl>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
