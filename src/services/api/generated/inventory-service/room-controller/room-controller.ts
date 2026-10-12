@@ -9,6 +9,7 @@ import type {
   Create2Params,
   CreateRoomRequest,
   GetActiveRoomsParams,
+  GetManagedRoomsParams,
   RoomResponse,
   UpdateRoomRequest
 } from '../model';
@@ -57,7 +58,21 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
+  /**
+ * Omit active to include both active and inactive rooms.
+ * @summary List rooms for inventory management
+ */
+export const getManagedRooms = (
+    params: GetManagedRoomsParams,
+ ) => {
+      return apiRequest<RoomResponse[]>(
+      {url: `/api/v1/rooms/management`, method: 'GET',
+        params
+    },
+      );
+    }
   export type GetById2Result = NonNullable<Awaited<ReturnType<typeof getById2>>>
 export type Update2Result = NonNullable<Awaited<ReturnType<typeof update2>>>
 export type GetActiveRoomsResult = NonNullable<Awaited<ReturnType<typeof getActiveRooms>>>
 export type Create2Result = NonNullable<Awaited<ReturnType<typeof create2>>>
+export type GetManagedRoomsResult = NonNullable<Awaited<ReturnType<typeof getManagedRooms>>>

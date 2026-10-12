@@ -9,6 +9,7 @@ import type {
   CinemaResponse,
   CreateCinemaRequest,
   GetActiveCinemasParams,
+  GetManagedCinemasParams,
   UpdateCinemaRequest
 } from '../model';
 
@@ -54,7 +55,21 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
+  /**
+ * Omit active to include both active and inactive cinemas.
+ * @summary List cinemas for inventory management
+ */
+export const getManagedCinemas = (
+    params?: GetManagedCinemasParams,
+ ) => {
+      return apiRequest<CinemaResponse[]>(
+      {url: `/api/v1/cinemas/management`, method: 'GET',
+        params
+    },
+      );
+    }
   export type GetById3Result = NonNullable<Awaited<ReturnType<typeof getById3>>>
 export type Update3Result = NonNullable<Awaited<ReturnType<typeof update3>>>
 export type GetActiveCinemasResult = NonNullable<Awaited<ReturnType<typeof getActiveCinemas>>>
 export type Create3Result = NonNullable<Awaited<ReturnType<typeof create3>>>
+export type GetManagedCinemasResult = NonNullable<Awaited<ReturnType<typeof getManagedCinemas>>>

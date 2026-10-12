@@ -11,6 +11,7 @@ import type {
   CreateSeatRangeRequest,
   CreateSeatRequest,
   GetActiveSeatsParams,
+  GetManagedSeatsParams,
   SeatResponse,
   UpdateSeatRequest
 } from '../model';
@@ -71,8 +72,22 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
+  /**
+ * Omit active to include both active and inactive seats.
+ * @summary List seats for inventory management
+ */
+export const getManagedSeats = (
+    params: GetManagedSeatsParams,
+ ) => {
+      return apiRequest<SeatResponse[]>(
+      {url: `/api/v1/seats/management`, method: 'GET',
+        params
+    },
+      );
+    }
   export type GetById1Result = NonNullable<Awaited<ReturnType<typeof getById1>>>
 export type Update1Result = NonNullable<Awaited<ReturnType<typeof update1>>>
 export type GetActiveSeatsResult = NonNullable<Awaited<ReturnType<typeof getActiveSeats>>>
 export type Create1Result = NonNullable<Awaited<ReturnType<typeof create1>>>
 export type CreateRangeResult = NonNullable<Awaited<ReturnType<typeof createRange>>>
+export type GetManagedSeatsResult = NonNullable<Awaited<ReturnType<typeof getManagedSeats>>>
