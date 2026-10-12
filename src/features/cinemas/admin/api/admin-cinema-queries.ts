@@ -14,7 +14,7 @@ import type {
 import type { ApiError } from '@/services/http/api-error'
 
 export const adminCinemaKeys = {
-  catalog: ['cinemas', 'admin', 'catalog', 'management'] as const,
+  catalog: ['cinemas', 'admin', 'catalog', 'management', 'all'] as const,
   detail: (id: string) => ['cinemas', 'admin', 'detail', id] as const,
 }
 

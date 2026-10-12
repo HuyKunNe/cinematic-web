@@ -1,9 +1,9 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { getActiveCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
+import { getManagedCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import {
   create2,
-  getActiveRooms,
+  getManagedRooms,
   getById2,
   update2,
 } from '@/services/api/generated/inventory-service/room-controller/room-controller'
@@ -14,15 +14,16 @@ import type {
 } from '@/services/api/generated/inventory-service/model'
 
 export const adminRoomKeys = {
-  cinemas: ['cinemas', 'admin', 'rooms', 'active'] as const,
-  catalog: (cinemaId: string) => ['rooms', 'admin', 'catalog', cinemaId] as const,
+  cinemas: ['cinemas', 'admin', 'rooms', 'management', 'all'] as const,
+  catalog: (cinemaId: string) =>
+    ['rooms', 'admin', 'catalog', cinemaId, 'management', 'all'] as const,
   detail: (roomId: string) => ['rooms', 'admin', 'detail', roomId] as const,
 }
 
 export function useAdminRoomCinemaQuery(enabled: MaybeRefOrGetter<boolean>) {
   return useQuery<CinemaResponse[], unknown>({
     queryKey: adminRoomKeys.cinemas,
-    queryFn: () => getActiveCinemas(),
+    queryFn: () => getManagedCinemas(),
     enabled: computed(() => toValue(enabled)),
     staleTime: 30_000,
     retry: false,
@@ -41,7 +42,7 @@ export function useAdminRoomCatalogQuery(
     ReturnType<typeof adminRoomKeys.catalog>
   >({
     queryKey: computed(() => adminRoomKeys.catalog(toValue(cinemaId))),
-    queryFn: ({ queryKey }) => getActiveRooms({ cinemaId: queryKey[3] }),
+    queryFn: ({ queryKey }) => getManagedRooms({ cinemaId: queryKey[3] }),
     enabled: computed(() => toValue(enabled) && Boolean(toValue(cinemaId))),
     staleTime: 30_000,
     retry: false,

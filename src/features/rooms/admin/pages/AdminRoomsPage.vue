@@ -33,7 +33,15 @@ const cinemas = useAdminRoomCinemaQuery(canManage)
 const cinemaOptions = computed(() =>
   (cinemas.data.value ?? [])
     .flatMap((cinema) =>
-      cinema.id && cinema.name?.trim() ? [{ value: cinema.id, label: cinema.name.trim() }] : [],
+      cinema.id && cinema.name?.trim()
+        ? [
+            {
+              value: cinema.id,
+              label: cinema.name.trim() + (cinema.active === false ? ' · Tạm ngưng' : ''),
+              active: cinema.active,
+            },
+          ]
+        : [],
     )
     .sort((a, b) => a.label.localeCompare(b.label, 'vi')),
 )
@@ -43,7 +51,9 @@ const selectedCinema = computed(() =>
 )
 
 const rooms = useAdminRoomCatalogQuery(() => selectedCinema.value?.value ?? '', canManage)
-
+const activeRoomCount = computed(
+  () => (rooms.data.value ?? []).filter((room) => room.active === true).length,
+)
 const filtered = computed(() => {
   const words = normalizeAdminRoomSearch(search.value).split(/\s+/).filter(Boolean)
 
@@ -107,17 +117,19 @@ const editor = ref<EditorState | null>(null)
 const seatManager = ref<{
   roomId: string
   roomName: string
+  roomActive: boolean
   cinemaName: string
   returnFocusId: string
 } | null>(null)
 
 function openSeats(room: RoomResponse) {
   const cinema = selectedCinema.value
-  if (!canManage.value || !cinema || !room.id || room.active !== true) return
+  if (!canManage.value || !cinema || !room.id) return
 
   seatManager.value = {
     roomId: room.id,
     roomName: room.name || 'Phòng chiếu',
+    roomActive: room.active === true,
     cinemaName: cinema.label,
     returnFocusId: `admin-room-seats-${room.id}`,
   }
@@ -157,7 +169,7 @@ const emptyMessage = computed(() => {
   if (rooms.isFetching.value && !hasData.value) return 'Đang tải danh sách phòng…'
   if (rooms.isError.value && !hasData.value) return 'Chưa tải được danh sách phòng.'
   if (search.value || roomType.value) return 'Không có phòng phù hợp với bộ lọc.'
-  return 'Rạp chưa có phòng đang hoạt động.'
+  return 'Rạp chưa có phòng.'
 })
 </script>
 
@@ -171,7 +183,7 @@ const emptyMessage = computed(() => {
       </div>
       <AppButton
         id="admin-room-create"
-        :disabled="!canManage || !selectedCinema"
+        :disabled="!canManage || selectedCinema?.active !== true"
         @click="openEditor()"
       >
         <Plus aria-hidden="true" />
@@ -191,13 +203,13 @@ const emptyMessage = computed(() => {
       <section class="admin-rooms__stats" aria-label="Thống kê phòng của rạp đã chọn">
         <article class="admin-rooms__stat">
           <span>Phòng hoạt động</span>
-          <strong>{{ hasData ? rooms.data.value?.length : '—' }}</strong>
+          <strong>{{ hasData ? activeRoomCount : '—' }}</strong>
           <small>Trong rạp đã chọn</small>
         </article>
         <article class="admin-rooms__stat">
           <span>Loại phòng</span>
           <strong>{{ hasData ? distinctTypes : '—' }}</strong>
-          <small>Trong danh sách đang hoạt động</small>
+          <small>Trong rạp đã chọn</small>
         </article>
         <article class="admin-rooms__stat">
           <span>Kết quả lọc</span>
@@ -259,9 +271,11 @@ const emptyMessage = computed(() => {
         class="admin-rooms__muted"
         role="status"
       >
-        Chưa có rạp đang hoạt động để quản lý phòng.
+        Chưa có rạp để quản lý phòng.
       </p>
-
+      <p v-if="selectedCinema?.active === false" class="admin-rooms__muted" role="status">
+        Rạp đang tạm ngưng. Bạn có thể xem và sửa thông tin phòng, nhưng chưa thể thêm phòng mới.
+      </p>
       <section
         class="admin-rooms__panel"
         aria-labelledby="admin-room-list-title"
@@ -273,7 +287,7 @@ const emptyMessage = computed(() => {
             <p class="admin-rooms__muted">
               {{
                 selectedCinema
-                  ? `Phòng đang hoạt động tại ${selectedCinema.label}.`
+                  ? `Danh sách phòng tại ${selectedCinema.label}.`
                   : 'Chọn một rạp để tải danh sách.'
               }}
             </p>
@@ -302,7 +316,6 @@ const emptyMessage = computed(() => {
         >
           {{ hasData ? 'Đang cập nhật danh sách…' : 'Đang tải danh sách phòng…' }}
         </p>
-
         <div
           class="admin-rooms__table-scroll"
           role="region"
@@ -311,7 +324,7 @@ const emptyMessage = computed(() => {
         >
           <table class="admin-rooms__table">
             <caption class="admin-visually-hidden">
-              Phòng đang hoạt động của rạp đã chọn
+              Phòng của rạp đã chọn
             </caption>
             <thead>
               <tr>
@@ -360,7 +373,7 @@ const emptyMessage = computed(() => {
                       :id="`admin-room-seats-${room.id}`"
                       variant="secondary"
                       size="sm"
-                      :disabled="!canManage || !room.id || room.active !== true"
+                      :disabled="!canManage || !room.id"
                       :aria-label="`Quản lý ghế của ${room.name || 'phòng'}`"
                       @click="openSeats(room)"
                     >

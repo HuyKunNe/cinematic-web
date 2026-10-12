@@ -2,7 +2,7 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
   createRange,
-  getActiveSeats,
+  getManagedSeats,
 } from '@/services/api/generated/inventory-service/seat-controller/seat-controller'
 import type {
   CreateSeatRangeRequest,
@@ -10,7 +10,7 @@ import type {
 } from '@/services/api/generated/inventory-service/model'
 
 export const adminSeatKeys = {
-  list: (roomId: string) => ['seats', 'admin', 'room', roomId] as const,
+  list: (roomId: string) => ['seats', 'admin', 'room', roomId, 'management', 'all'] as const,
 }
 
 export function useAdminRoomSeatsQuery(
@@ -19,7 +19,7 @@ export function useAdminRoomSeatsQuery(
 ) {
   return useQuery<SeatResponse[], unknown, SeatResponse[], ReturnType<typeof adminSeatKeys.list>>({
     queryKey: computed(() => adminSeatKeys.list(toValue(roomId))),
-    queryFn: ({ queryKey }) => getActiveSeats({ roomId: queryKey[3] }),
+    queryFn: ({ queryKey }) => getManagedSeats({ roomId: queryKey[3] }),
     enabled: computed(() => toValue(enabled) && Boolean(toValue(roomId))),
     staleTime: 0,
     retry: false,

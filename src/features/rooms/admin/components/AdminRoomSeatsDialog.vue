@@ -25,6 +25,7 @@ import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-roo
 const props = defineProps<{
   roomId: string
   roomName: string
+  roomActive: boolean
   cinemaName: string
   returnFocusId: string
 }>()
@@ -71,7 +72,12 @@ const {
 const busy = computed(() => isSubmitting.value || mutation.isPending.value)
 
 const canCreate = computed(
-  () => canManage.value && !busy.value && seats.isSuccess.value && !seats.isFetching.value,
+  () =>
+    props.roomActive &&
+    canManage.value &&
+    !busy.value &&
+    seats.isSuccess.value &&
+    !seats.isFetching.value,
 )
 
 const visibleErrors = computed(() => {
@@ -172,7 +178,8 @@ async function focusError() {
 }
 
 const save = handleSubmit(async (validatedValues) => {
-  if (!canManage.value || mutation.isPending.value || !seats.isSuccess.value) return
+  if (!props.roomActive || !canManage.value || mutation.isPending.value || !seats.isSuccess.value)
+    return
 
   try {
     const created = await mutation.mutateAsync({
@@ -251,7 +258,7 @@ function submit(event: Event) {
           <div>
             <DialogTitle class="admin-room-dialog__title"> Ghế của {{ roomName }} </DialogTitle>
             <DialogDescription class="admin-rooms__muted">
-              {{ cinemaName }} · Ghế đang hoạt động
+              {{ cinemaName }} · Danh sách ghế
             </DialogDescription>
           </div>
 
@@ -270,7 +277,13 @@ function submit(event: Event) {
           Tài khoản không còn quyền quản lý ghế.
         </p>
 
-        <form ref="formElement" class="admin-room-form" novalidate @submit="submit">
+        <form
+          v-if="canManage && roomActive"
+          ref="formElement"
+          class="admin-room-form"
+          novalidate
+          @submit="submit"
+        >
           <h2 class="admin-room-seats__heading">Thêm dãy ghế</h2>
 
           <fieldset
@@ -354,7 +367,9 @@ function submit(event: Event) {
             </AppButton>
           </footer>
         </form>
-
+        <p v-else-if="canManage && !roomActive" class="admin-rooms__muted" role="status">
+          Phòng đang tạm ngưng. Bạn có thể xem danh sách ghế, nhưng chưa thể tạo dãy ghế mới.
+        </p>
         <section class="admin-room-seats__list" aria-labelledby="admin-room-seats-list-title">
           <h2 id="admin-room-seats-list-title" class="admin-room-seats__heading">
             Ghế đang hoạt động
