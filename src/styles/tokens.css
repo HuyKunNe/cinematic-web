@@ -554,7 +554,13 @@
   --admin-dashboard-card-radius: var(--radius-lg);
   --admin-dashboard-heading-size: clamp(1.75rem, 3vw, 2.25rem);
   --admin-dashboard-metric-size: clamp(1.25rem, 2vw, 1.75rem);
-  --admin-dashboard-panel-title-size: 0.9375rem;
+  --admin-dashboard-panel-title-size: var(--font-size-md);
+  --admin-dashboard-panel-radius: var(--radius-md);
+  --admin-dashboard-panel-shadow: var(--admin-reference-panel-shadow);
+  --admin-dashboard-quick-link-height: var(--space-10);
+  --admin-dashboard-quick-link-gap: 0.625rem;
+  --admin-dashboard-table-header-height: var(--space-10);
+  --admin-dashboard-table-cell-padding: 0.625rem;
   --admin-dashboard-link-size: 0.8125rem;
   --admin-dashboard-tiny-size: 0.6875rem;
   --admin-dashboard-icon-box: var(--space-11);
@@ -578,7 +584,7 @@
   --admin-dashboard-dot-size: var(--space-2);
   --admin-dashboard-eyebrow-tracking: var(--admin-reference-heading-tracking);
   --admin-dashboard-metric-gap: 0.875rem;
-  
+
   /* Admin management reference */
   --admin-reference-background-soft: #091722;
   --admin-reference-border-strong: #415766;
