@@ -52,7 +52,7 @@
 
 .admin-cinemas__filters {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr)) auto;
   align-items: end;
   gap: var(--space-3);
   padding: var(--space-4);

@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý phim | CINEMATIC Admin</title>
+    <link rel="stylesheet" href="./cinema-reference.css" />
+    <link rel="stylesheet" href="./admin-dashboard.css" />
+    <link rel="stylesheet" href="./admin-movies.css" />
+  </head>
+
+  <body class="admin-body">
+    <div class="admin-shell">
+      <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+        <a class="admin-brand" href="./admin-dashboard.html">
+          <span class="admin-brand__mark" aria-hidden="true">C</span>
+          <span class="admin-brand__copy">
+            <strong>CINEMATIC</strong>
+            <small>Quản trị</small>
+          </span>
+        </a>
+
+        <nav class="admin-nav" aria-label="Menu quản trị">
+          <p class="admin-nav__label">Điều hành</p>
+          <a class="admin-nav__item" href="./admin-dashboard.html">
+            <span aria-hidden="true">⌂</span>Tổng quan
+          </a>
+
+          <p class="admin-nav__label">Nội dung</p>
+          <a class="admin-nav__item is-active" href="./admin-movies.html" aria-current="page">
+            <span aria-hidden="true">▤</span>Phim
+          </a>
+          <a class="admin-nav__item" href="./admin-promotions.html">
+            <span aria-hidden="true">◇</span>Khuyến mãi
+          </a>
+
+          <p class="admin-nav__label">Vận hành</p>
+          <a class="admin-nav__item" href="./admin-cinemas.html">
+            <span aria-hidden="true">▣</span>Rạp
+          </a>
+          <a class="admin-nav__item" href="./admin-rooms.html">
+            <span aria-hidden="true">▦</span>Phòng chiếu
+          </a>
+          <a class="admin-nav__item" href="./admin-showtimes.html">
+            <span aria-hidden="true">◷</span>Suất chiếu
+          </a>
+          <a class="admin-nav__item" href="./admin-bookings.html">
+            <span aria-hidden="true">▧</span>Đặt vé
+          </a>
+
+          <p class="admin-nav__label">Hệ thống</p>
+          <a class="admin-nav__item" href="./admin-users.html">
+            <span aria-hidden="true">♙</span>Người dùng
+          </a>
+        </nav>
+
+        <div class="admin-sidebar__footer">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>Không gian quản trị</span>
+        </div>
+      </aside>
+
+      <div class="admin-main">
+        <header class="admin-topbar">
+          <button class="icon-button mobile-menu" type="button" aria-label="Mở menu">☰</button>
+
+          <label class="admin-search">
+            <span aria-hidden="true">⌕</span>
+            <input
+              type="search"
+              placeholder="Tìm kiếm trong quản trị..."
+              aria-label="Tìm kiếm trong quản trị"
+            />
+            <kbd>⌘ K</kbd>
+          </label>
+
+          <button class="icon-button notification-button" type="button" aria-label="Thông báo">
+            ♧
+            <span class="notification-badge" aria-hidden="true">2</span>
+          </button>
+
+          <button class="admin-account" type="button" aria-label="Tài khoản quản trị viên">
+            <span class="admin-account__avatar">AD</span>
+            <span class="admin-account__name">Quản trị viên</span>
+            <span aria-hidden="true">⌄</span>
+          </button>
+        </header>
+
+        <main class="admin-content movies-page">
+          <nav class="movies-breadcrumbs" aria-label="Breadcrumb">
+            <a href="./admin-dashboard.html">Quản trị</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Phim</span>
+          </nav>
+
+          <section class="movies-heading">
+            <div>
+              <p class="eyebrow">Danh mục nội dung</p>
+              <h1>Quản lý phim</h1>
+              <p class="movies-heading__description">
+                Quản lý thông tin, phân loại độ tuổi và trạng thái phát hành.
+              </p>
+            </div>
+
+            <button class="movies-button movies-button--primary" type="button">
+              <span aria-hidden="true">＋</span>
+              Thêm phim
+            </button>
+          </section>
+
+          <aside class="movies-note">
+            <span aria-hidden="true">ⓘ</span>
+            <span>Giao diện minh họa — dữ liệu và thao tác chưa kết nối API.</span>
+          </aside>
+
+          <section class="movies-stats" aria-label="Tổng quan danh sách phim">
+            <article class="movie-stat">
+              <span class="movie-stat__label">Tổng số phim</span>
+              <strong>128</strong>
+              <span class="movie-stat__hint">Trong danh mục</span>
+            </article>
+
+            <article class="movie-stat">
+              <span class="movie-stat__label">Đang chiếu</span>
+              <strong>32</strong>
+              <span class="movie-stat__hint">Đang mở bán vé</span>
+            </article>
+
+            <article class="movie-stat">
+              <span class="movie-stat__label">Sắp chiếu</span>
+              <strong>08</strong>
+              <span class="movie-stat__hint">Đã lên lịch phát hành</span>
+            </article>
+
+            <article class="movie-stat">
+              <span class="movie-stat__label">Tạm ẩn</span>
+              <strong>05</strong>
+              <span class="movie-stat__hint">Chưa hiển thị với khách</span>
+            </article>
+          </section>
+
+          <section class="movies-toolbar" aria-label="Tìm kiếm và lọc phim">
+            <label class="movies-field movies-field--search">
+              <span>Tìm phim</span>
+              <input type="search" placeholder="Nhập tên phim..." />
+            </label>
+
+            <label class="movies-field">
+              <span>Trạng thái</span>
+              <select>
+                <option value="">Tất cả trạng thái</option>
+                <option>Đang chiếu</option>
+                <option>Sắp chiếu</option>
+                <option>Tạm ẩn</option>
+              </select>
+            </label>
+
+            <label class="movies-field">
+              <span>Thể loại</span>
+              <select>
+                <option value="">Tất cả thể loại</option>
+                <option>Hành động</option>
+                <option>Gia đình</option>
+                <option>Kinh dị</option>
+                <option>Tâm lý</option>
+              </select>
+            </label>
+
+            <label class="movies-field">
+              <span>Độ tuổi</span>
+              <select>
+                <option value="">Tất cả phân loại</option>
+                <option>P</option>
+                <option>K</option>
+                <option>T13</option>
+                <option>T16</option>
+                <option>T18</option>
+              </select>
+            </label>
+
+            <button class="movies-button movies-button--secondary" type="button">Đặt lại</button>
+          </section>
+
+          <section class="movies-list panel" aria-labelledby="movies-list-title">
+            <div class="movies-list__heading">
+              <div>
+                <h2 id="movies-list-title">Danh sách phim</h2>
+                <p>Thông tin phim và tình trạng phát hành</p>
+              </div>
+              <span class="movies-result-count">128 phim</span>
+            </div>
+
+            <div class="movies-table-scroll">
+              <table class="movies-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Phim</th>
+                    <th scope="col">Độ tuổi</th>
+                    <th scope="col">Thể loại · Thời lượng</th>
+                    <th scope="col">Ngày phát hành</th>
+                    <th scope="col">Trạng thái</th>
+                    <th scope="col"><span class="sr-only">Thao tác</span></th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="movie-title-cell">
+                        <span class="movie-poster movie-poster--one" aria-hidden="true">QT</span>
+                        <span>
+                          <strong>Quý Tử</strong>
+                          <small>Phim Việt Nam</small>
+                        </span>
+                      </div>
+                    </td>
+                    <td><span class="age-rating age-rating--16">T16</span></td>
+                    <td>Gia đình · 112 phút</td>
+                    <td>08.10.2026</td>
+                    <td><span class="movie-status movie-status--showing">Đang chiếu</span></td>
+                    <td>
+                      <button
+                        class="movie-row-action"
+                        type="button"
+                        aria-label="Mở thao tác phim Quý Tử"
+                      >
+                        •••
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <div class="movie-title-cell">
+                        <span class="movie-poster movie-poster--two" aria-hidden="true">ĐA</span>
+                        <span>
+                          <strong>Đèn Âm Hồn</strong>
+                          <small>Phim Việt Nam</small>
+                        </span>
+                      </div>
+                    </td>
+                    <td><span class="age-rating age-rating--18">T18</span></td>
+                    <td>Kinh dị · 105 phút</td>
+                    <td>12.10.2026</td>
+                    <td><span class="movie-status movie-status--coming">Sắp chiếu</span></td>
+                    <td>
+                      <button
+                        class="movie-row-action"
+                        type="button"
+                        aria-label="Mở thao tác phim Đèn Âm Hồn"
+                      >
+                        •••
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <div class="movie-title-cell">
+                        <span class="movie-poster movie-poster--three" aria-hidden="true">LM</span>
+                        <span>
+                          <strong>Lật Mặt</strong>
+                          <small>Phim Việt Nam</small>
+                        </span>
+                      </div>
+                    </td>
+                    <td><span class="age-rating age-rating--13">T13</span></td>
+                    <td>Hành động · 124 phút</td>
+                    <td>15.10.2026</td>
+                    <td><span class="movie-status movie-status--showing">Đang chiếu</span></td>
+                    <td>
+                      <button
+                        class="movie-row-action"
+                        type="button"
+                        aria-label="Mở thao tác phim Lật Mặt"
+                      >
+                        •••
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <div class="movie-title-cell">
+                        <span class="movie-poster movie-poster--four" aria-hidden="true">TT</span>
+                        <span>
+                          <strong>Thành Phố Trên Mây</strong>
+                          <small>Phim quốc tế</small>
+                        </span>
+                      </div>
+                    </td>
+                    <td><span class="age-rating age-rating--p">P</span></td>
+                    <td>Phiêu lưu · 118 phút</td>
+                    <td>21.10.2026</td>
+                    <td><span class="movie-status movie-status--hidden">Tạm ẩn</span></td>
+                    <td>
+                      <button
+                        class="movie-row-action"
+                        type="button"
+                        aria-label="Mở thao tác phim Thành Phố Trên Mây"
+                      >
+                        •••
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="movies-mobile-list" aria-label="Danh sách phim dạng thẻ">
+              <article class="movie-mobile-card">
+                <span class="movie-poster movie-poster--one" aria-hidden="true">QT</span>
+                <div class="movie-mobile-card__content">
+                  <div class="movie-mobile-card__title">
+                    <strong>Quý Tử</strong>
+                    <span class="movie-status movie-status--showing">Đang chiếu</span>
+                  </div>
+                  <span>Phim Việt Nam · Gia đình · 112 phút</span>
+                  <div class="movie-mobile-card__meta">
+                    <span class="age-rating age-rating--16">T16</span>
+                    <span>Phát hành: 08.10.2026</span>
+                  </div>
+                </div>
+                <button class="movie-row-action" type="button" aria-label="Mở thao tác phim Quý Tử">
+                  •••
+                </button>
+              </article>
+
+              <article class="movie-mobile-card">
+                <span class="movie-poster movie-poster--two" aria-hidden="true">ĐA</span>
+                <div class="movie-mobile-card__content">
+                  <div class="movie-mobile-card__title">
+                    <strong>Đèn Âm Hồn</strong>
+                    <span class="movie-status movie-status--coming">Sắp chiếu</span>
+                  </div>
+                  <span>Phim Việt Nam · Kinh dị · 105 phút</span>
+                  <div class="movie-mobile-card__meta">
+                    <span class="age-rating age-rating--18">T18</span>
+                    <span>Phát hành: 12.10.2026</span>
+                  </div>
+                </div>
+                <button
+                  class="movie-row-action"
+                  type="button"
+                  aria-label="Mở thao tác phim Đèn Âm Hồn"
+                >
+                  •••
+                </button>
+              </article>
+
+              <article class="movie-mobile-card">
+                <span class="movie-poster movie-poster--three" aria-hidden="true">LM</span>
+                <div class="movie-mobile-card__content">
+                  <div class="movie-mobile-card__title">
+                    <strong>Lật Mặt</strong>
+                    <span class="movie-status movie-status--showing">Đang chiếu</span>
+                  </div>
+                  <span>Phim Việt Nam · Hành động · 124 phút</span>
+                  <div class="movie-mobile-card__meta">
+                    <span class="age-rating age-rating--13">T13</span>
+                    <span>Phát hành: 15.10.2026</span>
+                  </div>
+                </div>
+                <button
+                  class="movie-row-action"
+                  type="button"
+                  aria-label="Mở thao tác phim Lật Mặt"
+                >
+                  •••
+                </button>
+              </article>
+            </div>
+
+            <footer class="movies-pagination">
+              <span>Hiển thị 1–4 trong 128 phim</span>
+              <div>
+                <button type="button" aria-label="Trang trước" disabled>‹</button>
+                <button class="is-current" type="button" aria-current="page">1</button>
+                <button type="button">2</button>
+                <button type="button">3</button>
+                <span aria-hidden="true">…</span>
+                <button type="button" aria-label="Trang tiếp theo">›</button>
+              </div>
+            </footer>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

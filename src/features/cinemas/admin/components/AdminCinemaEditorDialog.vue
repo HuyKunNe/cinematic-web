@@ -50,6 +50,7 @@ const detail = useAdminCinemaDetailQuery(() => props.cinemaId ?? '', canManage)
 const cityCatalog = useAdminCinemaCatalogQuery(canManage)
 const mutation = useSaveAdminCinemaMutation()
 const ready = ref(props.cinemaId === null)
+const active = ref(true)
 const requestError = ref('')
 const serverErrors = ref<Partial<Record<AdminCinemaField, string>>>({})
 const formElement = ref<HTMLFormElement | null>(null)
@@ -151,7 +152,7 @@ const visibleErrors = computed(() => {
   return result
 })
 
-watch([name, address, city], () => {
+watch([name, address, city, active], () => {
   requestError.value = ''
   serverErrors.value = {}
 })
@@ -179,6 +180,7 @@ watch(
     }
 
     resetForm({ values: createAdminCinemaValues(cinema) })
+    active.value = cinema.active
     touchedFields.value = {}
     interactionStarted.value = false
     serverErrors.value = {}
@@ -233,13 +235,25 @@ const save = handleSubmit(async (validatedValues) => {
   let cinema: CinemaResponse
 
   try {
-    cinema = await mutation.mutateAsync({
-      cinemaId: props.cinemaId,
-      input: {
-        ...toAdminCinemaRequest(validatedValues),
-        city: canonicalCity(validatedValues.city),
-      },
-    })
+    const input = {
+      ...toAdminCinemaRequest(validatedValues),
+      city: canonicalCity(validatedValues.city),
+    }
+
+    if (props.cinemaId === null) {
+      cinema = await mutation.mutateAsync({
+        cinemaId: null,
+        input,
+      })
+    } else {
+      cinema = await mutation.mutateAsync({
+        cinemaId: props.cinemaId,
+        input: {
+          ...input,
+          active: active.value,
+        },
+      })
+    }
   } catch (error) {
     if (isAdminCinemaApiError(error)) {
       for (const item of error.fieldErrors) {
@@ -289,7 +303,11 @@ function submit(event: Event) {
               {{ cinemaId ? 'Sửa thông tin rạp' : 'Thêm rạp' }}
             </DialogTitle>
             <DialogDescription class="admin-cinemas__muted">
-              Tên rạp, địa chỉ và thành phố.
+              {{
+                cinemaId
+                  ? 'Cập nhật thông tin và trạng thái hoạt động của rạp.'
+                  : 'Nhập tên rạp, địa chỉ và thành phố.'
+              }}
             </DialogDescription>
           </div>
 
@@ -381,6 +399,27 @@ function submit(event: Event) {
                 {{ visibleErrors[field.name] }}
               </p>
             </div>
+            <div v-if="cinemaId" class="admin-cinemas__field">
+              <label for="admin-cinema-active">Trạng thái hoạt động</label>
+
+              <select
+                id="admin-cinema-active"
+                v-model="active"
+                class="admin-cinemas__input"
+                aria-describedby="admin-cinema-active-help"
+              >
+                <option :value="true">Đang hoạt động</option>
+                <option :value="false">Tạm ngưng</option>
+              </select>
+
+              <p id="admin-cinema-active-help" class="admin-cinemas__muted">
+                {{
+                  active
+                    ? 'Rạp đang hoạt động. Điều kiện đặt vé vẫn phụ thuộc phòng và suất chiếu.'
+                    : 'Rạp tạm ngưng sẽ không nhận giữ ghế mới. Trạng thái các phòng không tự thay đổi.'
+                }}
+              </p>
+            </div>
           </fieldset>
           <div v-if="cityCatalog.isError.value" class="admin-movies__feedback">
             <p class="admin-cinemas__muted">
@@ -399,7 +438,7 @@ function submit(event: Event) {
           <p class="admin-cinemas__muted">
             {{
               cinemaId
-                ? 'Lưu thông tin sẽ giữ nguyên trạng thái hoạt động của rạp.'
+                ? 'Lưu thay đổi sẽ cập nhật thông tin và trạng thái bạn chọn.'
                 : 'Rạp mới được tạo ở trạng thái đang hoạt động.'
             }}
           </p>

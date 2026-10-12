@@ -26,6 +26,7 @@ const canManage = computed(
 const catalog = useAdminCinemaCatalogQuery(canManage)
 const search = ref('')
 const city = ref('')
+const status = ref<'all' | 'active' | 'paused'>('all')
 const page = ref(1)
 const pageSize = 10
 const successMessage = ref('')
@@ -57,11 +58,15 @@ const cities = computed(() =>
 const filtered = computed(() => {
   const keyword = normalize(search.value)
 
-  return (catalog.data.value ?? []).filter(
-    (cinema) =>
+  return (catalog.data.value ?? []).filter((cinema) => {
+    if (status.value === 'active' && cinema.active !== true) return false
+    if (status.value === 'paused' && cinema.active !== false) return false
+
+    return (
       (!city.value || cinema.city?.trim() === city.value) &&
-      normalize(`${cinema.name ?? ''} ${cinema.address ?? ''}`).includes(keyword),
-  )
+      normalize(`${cinema.name ?? ''} ${cinema.address ?? ''}`).includes(keyword)
+    )
+  })
 })
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)))
@@ -80,7 +85,7 @@ const firstResult = computed(() => (filtered.value.length ? (page.value - 1) * p
 const lastResult = computed(() => Math.min(page.value * pageSize, filtered.value.length))
 
 watch(
-  [search, city],
+  [search, city, status],
   () => {
     page.value = 1
   },
@@ -102,6 +107,7 @@ watch(cities, (values) => {
 function resetFilters() {
   search.value = ''
   city.value = ''
+  status.value = 'all'
   page.value = 1
 }
 
@@ -158,7 +164,7 @@ function statusLabel(active?: boolean) {
         <p class="admin-cinemas__eyebrow">Hệ thống rạp</p>
         <h1 id="admin-cinemas-title" tabindex="-1">Quản lý rạp chiếu</h1>
         <p class="admin-cinemas__description">
-          Theo dõi danh sách và cập nhật thông tin các rạp đang hoạt động.
+          Theo dõi danh sách, thông tin và trạng thái hoạt động của các rạp.
         </p>
       </div>
 
@@ -197,14 +203,12 @@ function statusLabel(active?: boolean) {
           :options="cities.map((item) => ({ value: item, label: item }))"
         />
 
-        <label class="admin-cinemas__field">
+        <label class="admin-cinemas__field" for="admin-cinema-status-filter">
           <span>Trạng thái</span>
-          <select
-            class="admin-cinemas__input"
-            disabled
-            aria-label="Danh sách chỉ gồm rạp đang hoạt động"
-          >
-            <option>Đang hoạt động</option>
+          <select id="admin-cinema-status-filter" v-model="status" class="admin-cinemas__input">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="paused">Tạm ngưng</option>
           </select>
         </label>
 
@@ -219,7 +223,7 @@ function statusLabel(active?: boolean) {
         <header class="admin-cinemas__list-heading">
           <div>
             <h2 id="admin-cinema-list-title">Danh sách rạp</h2>
-            <p>Hiển thị các rạp đang hoạt động</p>
+            <p>Thông tin rạp và trạng thái hiện tại</p>
           </div>
           <span v-if="catalog.data.value" class="admin-cinemas__muted">
             {{ filtered.length }} kết quả
@@ -255,7 +259,7 @@ function statusLabel(active?: boolean) {
         >
           <table class="admin-cinemas__table">
             <caption class="admin-visually-hidden">
-              Danh sách rạp đang hoạt động
+              Danh sách rạp theo bộ lọc quản trị
             </caption>
             <thead>
               <tr>
@@ -333,9 +337,9 @@ function statusLabel(active?: boolean) {
                       ? 'Đang tải danh sách…'
                       : catalog.isError.value && !catalog.data.value
                         ? 'Chưa tải được danh sách rạp.'
-                        : search || city
+                        : search || city || status !== 'all'
                           ? 'Không có rạp phù hợp với bộ lọc.'
-                          : 'Chưa có rạp đang hoạt động.'
+                          : 'Chưa có rạp.'
                   }}
                 </td>
               </tr>
