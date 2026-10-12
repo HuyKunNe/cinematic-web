@@ -385,21 +385,21 @@ function submit(event: Event) {
                   :maxlength="field.maxLength"
                   :required="field.required"
                   :inputmode="field.name === 'durationMinutes' ? 'numeric' : undefined"
-                  :aria-invalid="Boolean(errors[field.name])"
+                  :aria-invalid="Boolean(visibleErrors[field.name])"
                   :aria-describedby="
-                    errors[field.name] ? `admin-movie-${field.name}-error` : undefined
+                    visibleErrors[field.name] ? `admin-movie-${field.name}-error` : undefined
                   "
                   @input="updateInput(field.name, $event)"
                   @blur="blurField(field.name)"
                 />
 
                 <p
-                  v-if="errors[field.name]"
+                  v-if="visibleErrors[field.name]"
                   :id="`admin-movie-${field.name}-error`"
                   class="admin-movies__error"
                   role="alert"
                 >
-                  {{ errors[field.name] }}
+                  {{ visibleErrors[field.name] }}
                 </p>
               </div>
 
@@ -408,7 +408,7 @@ function submit(event: Event) {
                 label="Trạng thái"
                 :model-value="values.status ?? ''"
                 :options="movieStatusOptions"
-                :error="errors.status"
+                :error="visibleErrors.status"
                 :disabled="busy || !canManage"
                 required
                 @update:model-value="changeStatus"
@@ -423,27 +423,29 @@ function submit(event: Event) {
                 class="admin-movie-form__input admin-movie-form__textarea"
                 :value="values.description ?? ''"
                 maxlength="5000"
-                :aria-invalid="Boolean(errors.description)"
-                :aria-describedby="errors.description ? 'admin-movie-description-error' : undefined"
+                :aria-invalid="Boolean(visibleErrors.description)"
+                :aria-describedby="
+                  visibleErrors.description ? 'admin-movie-description-error' : undefined
+                "
                 @input="updateDescription"
                 @blur="blurField('description')"
               />
 
               <p
-                v-if="errors.description"
+                v-if="visibleErrors.description"
                 id="admin-movie-description-error"
                 class="admin-movies__error"
                 role="alert"
               >
-                {{ errors.description }}
+                {{ visibleErrors.description }}
               </p>
             </div>
 
             <fieldset
               class="admin-movie-form__genres"
               tabindex="-1"
-              :aria-invalid="Boolean(errors.genreIds)"
-              :aria-describedby="errors.genreIds ? 'admin-movie-genres-error' : undefined"
+              :aria-invalid="Boolean(visibleErrors.genreIds)"
+              :aria-describedby="visibleErrors.genreIds ? 'admin-movie-genres-error' : undefined"
             >
               <legend>
                 Thể loại
@@ -462,12 +464,12 @@ function submit(event: Event) {
               </div>
 
               <p
-                v-if="errors.genreIds"
+                v-if="visibleErrors.genreIds"
                 id="admin-movie-genres-error"
                 class="admin-movies__error"
                 role="alert"
               >
-                {{ errors.genreIds }}
+                {{ visibleErrors.genreIds }}
               </p>
             </fieldset>
           </fieldset>

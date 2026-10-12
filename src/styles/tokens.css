@@ -603,6 +603,8 @@
   --admin-cinema-heading-tracking: 0.14em;
   --admin-cinema-table-min-width: 50rem;
   --admin-cinema-dialog-width: 36rem;
+  --admin-cinema-dialog-layer: calc(var(--z-modal) + 1);
+  --admin-cinema-city-dropdown-layer: calc(var(--admin-cinema-dialog-layer) + 1);
   --admin-cinema-menu-width: 12rem;
   --admin-cinema-avatar-size: var(--space-10);
   --admin-cinema-empty-height: 12rem;
