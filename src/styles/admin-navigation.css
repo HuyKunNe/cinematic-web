@@ -94,6 +94,11 @@ html:has(.admin-layout) {
   padding: 0 var(--admin-shell-gutter);
   border-bottom: var(--border-width-thin) solid var(--color-border);
   background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-base);
 }
 
 .admin-header__menu-button,
@@ -275,6 +280,7 @@ html:has(.admin-layout) {
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--color-text-primary);
+  font: inherit;
   cursor: pointer;
 }
 
@@ -297,11 +303,9 @@ html:has(.admin-layout) {
   border-radius: var(--radius-pill);
   background: var(--color-surface-raised);
   color: var(--color-primary);
-}
-
-.admin-user-menu__avatar svg {
-  width: var(--icon-size-sm);
-  height: var(--icon-size-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-base);
 }
 
 .admin-user-menu__label {
@@ -312,13 +316,6 @@ html:has(.admin-layout) {
   font-size: var(--font-size-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.admin-user-menu__chevron {
-  flex: 0 0 auto;
-  width: var(--icon-size-sm);
-  height: var(--icon-size-sm);
-  color: var(--color-text-secondary);
 }
 
 .admin-user-menu__panel {
@@ -648,7 +645,6 @@ html:has(.admin-layout) {
 }
 
 .admin-layout.is-drawer .admin-user-menu__label,
-.admin-layout.is-drawer .admin-user-menu__chevron,
 .admin-layout.is-drawer .admin-header__search kbd {
   display: none;
 }

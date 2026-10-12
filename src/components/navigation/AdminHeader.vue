@@ -3,14 +3,12 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useEventListener } from '@vueuse/core'
 import {
-  ChevronDown,
   ChevronRight,
   LogOut,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
-  UserRound,
   X,
 } from 'lucide-vue-next'
 import {
@@ -51,6 +49,11 @@ const route = useRoute()
 const accountMenuOpen = ref(false)
 const searchOpen = ref(false)
 const searchText = ref('')
+const accountAvatarLabel = computed(() => {
+  if (props.accountLabel === 'Quản trị viên') return 'QT'
+  if (props.accountLabel === 'Nhân viên') return 'NV'
+  return 'TK'
+})
 
 function normalize(value: string) {
   return value
@@ -196,10 +199,9 @@ function requestLogout() {
           :disabled="logoutPending"
         >
           <span class="admin-user-menu__avatar" aria-hidden="true">
-            <UserRound />
+            {{ accountAvatarLabel }}
           </span>
-          <span class="admin-user-menu__label">{{ username || accountLabel }}</span>
-          <ChevronDown class="admin-user-menu__chevron" aria-hidden="true" />
+          <span class="admin-user-menu__label">{{ accountLabel }}</span>
         </button>
       </DropdownMenuTrigger>
 
