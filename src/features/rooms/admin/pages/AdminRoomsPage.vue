@@ -465,14 +465,7 @@ function statusLabel(active?: boolean) {
           aria-label="Danh sách phòng chiếu"
           tabindex="0"
         >
-          <table class="admin-rooms__table is-room-catalog">
-            <colgroup>
-              <col class="admin-rooms__column-name" />
-              <col class="admin-rooms__column-cinema" />
-              <col class="admin-rooms__column-type" />
-              <col class="admin-rooms__column-status" />
-              <col class="admin-rooms__column-actions" />
-            </colgroup>
+          <table class="admin-rooms__table">
             <caption class="admin-visually-hidden">
               Phòng của rạp đã chọn
             </caption>
