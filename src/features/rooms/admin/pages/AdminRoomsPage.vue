@@ -20,7 +20,6 @@ import {
   useSetAdminRoomActivityMutation,
 } from '../api/admin-room-queries'
 import AdminRoomEditorDialog from '../components/AdminRoomEditorDialog.vue'
-import AdminRoomSeatsDialog from '../components/AdminRoomSeatsDialog.vue'
 import {
   adminRoomErrorMessage,
   adminRoomTypeLabel,
@@ -119,8 +118,9 @@ function roomActionId(id?: string) {
 }
 
 function preventRoomMenuFocus(event: Event) {
-  if (editor.value || seatManager.value) event.preventDefault()
+  if (editor.value) event.preventDefault()
 }
+
 const filtered = computed(() => {
   const words = normalizeAdminRoomSearch(search.value).split(/\s+/).filter(Boolean)
 
@@ -183,26 +183,18 @@ type EditorState = {
 }
 
 const editor = ref<EditorState | null>(null)
-const seatManager = ref<{
-  roomId: string
-  roomName: string
-  roomActive: boolean
-  cinemaName: string
-  returnFocusId: string
-} | null>(null)
 
 function openSeats(room: RoomResponse) {
   const cinema = selectedCinema.value
   if (!canManage.value || !cinema || !room.id || roomActivity.isPending.value) return
 
-  seatManager.value = {
-    roomId: room.id,
-    roomName: room.name || 'Phòng chiếu',
-    roomActive: room.active === true,
-    cinemaName: cinema.label,
-    returnFocusId: roomActionId(room.id),
-  }
+  void router.push({
+    name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
+    params: { roomId: room.id },
+    query: { cinemaId: cinema.value },
+  })
 }
+
 function openEditor(roomId: string | null = null) {
   const cinema = selectedCinema.value
   if (!canManage.value || !cinema || roomActivity.isPending.value) return
@@ -226,8 +218,7 @@ async function changeRoomActivity(room: RoomResponse) {
     !room.id ||
     typeof room.active !== 'boolean' ||
     roomActivity.isPending.value ||
-    editor.value ||
-    seatManager.value
+    editor.value
   )
     return
 
@@ -520,7 +511,6 @@ function statusLabel(active?: boolean) {
                         align="end"
                         @close-auto-focus="preventRoomMenuFocus"
                       >
-
                         <DropdownMenuItem
                           class="admin-room-menu__item"
                           @select="room.id && openEditor(room.id)"
@@ -528,7 +518,7 @@ function statusLabel(active?: boolean) {
                           Sửa thông tin
                         </DropdownMenuItem>
                         <DropdownMenuItem class="admin-room-menu__item" @select="openSeats(room)">
-                          Quản lý ghế
+                          Ghế của phòng
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           class="admin-room-menu__item"
@@ -585,12 +575,6 @@ function statusLabel(active?: boolean) {
       v-bind="editor"
       @close="editor = null"
       @saved="saved"
-    />
-    <AdminRoomSeatsDialog
-      v-if="seatManager"
-      :key="seatManager.roomId"
-      v-bind="seatManager"
-      @close="seatManager = null"
     />
   </section>
 </template>

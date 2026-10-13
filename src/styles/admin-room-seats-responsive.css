@@ -1,0 +1,26 @@
+@variant admin-seats-stacked {
+  :where([data-reference='admin-room-seats']) .seatmap-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@variant admin-reference-mobile {
+  :where([data-reference='admin-room-seats']) .seatmap-toolbar,
+  :where([data-reference='admin-room-seats']) .seatmap-create fieldset {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :where([data-reference='admin-room-seats']) .seatmap-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+
+  :where([data-reference='admin-room-seats']) .seatmap-heading,
+  :where([data-reference='admin-room-seats']) .seatmap-actions {
+    align-items: stretch;
+  }
+
+  :where([data-reference='admin-room-seats']) .seatmap-actions > button {
+    width: 100%;
+  }
+}

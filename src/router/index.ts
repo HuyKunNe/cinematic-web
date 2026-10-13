@@ -17,6 +17,7 @@ const loadBookingPage = () => import('../features/booking/pages/BookingPage.vue'
 const loadAdminCinemasPage = () => import('../features/cinemas/admin/pages/AdminCinemasPage.vue')
 const loadAdminRoomsPage = () => import('../features/rooms/admin/pages/AdminRoomsPage.vue')
 const loadAdminReferencePage = () => import('../features/admin/pages/AdminReferencePage.vue')
+const loadAdminRoomSeatsPage = () => import('../features/rooms/admin/pages/AdminRoomSeatsPage.vue')
 const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.HOME,
@@ -200,13 +201,25 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: ROUTE_PATHS.ADMIN_ROOM_SEATS,
+    name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
+    component: loadAdminRoomSeatsPage,
+    meta: {
+      layout: 'admin',
+      title: 'Ghế của phòng',
+      requiresAuth: true,
+      roles: ADMIN_ROLES,
+      permissions: [APP_PERMISSIONS.INVENTORY_MANAGE],
+    },
+  },
+  {
     path: ROUTE_PATHS.ADMIN_ROOM_LAYOUT,
     name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
     component: loadPlaceholder,
     props: true,
     meta: {
       layout: 'admin',
-      title: 'Thiết kế ma trận ghế',
+      title: 'Thiết kế không gian phòng',
       requiresAuth: true,
       roles: ADMIN_ROLES,
       permissions: [APP_PERMISSIONS.INVENTORY_MANAGE],

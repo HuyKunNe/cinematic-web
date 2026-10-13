@@ -98,9 +98,15 @@ physical room geometry.
 - Physical room elements belong to the separate layout editor.
 
 The reference matrix exists.
-The runtime matrix component does not yet exist.
-admin-seat-matrix.css is not imported by main.css.
+S1 provides a standalone page showing the actual seat catalog in a matrix.
+Application and manual verification are pending.
 
+The full position editor and matrix persistence remain incomplete.
+The previous temporary dialog editor proposal is superseded.
+Application and manual verification are pending.
+
+The matrix stylesheet is loaded by AdminSeatMatrix.vue.
+It is not imported globally by main.css.
 SeatResponse does not contain matrix coordinates or column count.
 Do not infer persisted positions from seat numbers.
 
@@ -120,27 +126,65 @@ contracts as unavailable.
 
 R28 Notification remains deferred.
 
-## Active round — Home recovery button
+## Previous round — Home recovery button
+
+Status: IMPLEMENTED IN SOURCE — MANUAL VERIFICATION PENDING
+
+Verified at frontend main:
+331dd1d454aa2cccd3325e36cd4dccda8743ae67
+
+HomePage imports the existing AppButton.
+Manual browser verification has not been confirmed.
+
+## Previous round — Home recovery button
+
+Status: IMPLEMENTED IN SOURCE — MANUAL VERIFICATION PENDING
+
+Verified at frontend main:
+331dd1d454aa2cccd3325e36cd4dccda8743ae67
+
+## Active round — S1 standalone room seats page
 
 Status: IMPLEMENTATION PROVIDED — APPLICATION PENDING
 
-Files:
+The earlier M1 dialog-matrix proposal is superseded.
 
-- src/features/home/pages/HomePage.vue
-- docs/CURRENT_STATUS.md
+Scope:
 
-Objective:
+- Dedicated Admin room-seats route.
+- Room list navigation opens the dedicated page.
+- Existing AdminLayout owns header, sidebar and breadcrumb.
+- Cinema and room selectors support direct URLs and browser navigation.
+- Room/cinema context is loaded from Backend.
+- Managed seats include active and inactive records.
+- Catalog is grouped by row and rendered in matrix form.
+- Seat dimensions are 40px by 30px.
+- Horizontal and vertical gaps are 40px.
+- Row labels remain outside the horizontal scrolling canvas.
+- Seat details and activity updates use actual Backend data.
+- Seat-range creation is moved from the old dialog into a feature form.
+- The old room-seats dialog is removed.
+- Responsive page rules are loaded after page CSS.
 
-- Import the existing AppButton used by the Home error recovery action.
-- Replace outdated status notes with the audited baseline.
+Data boundary:
+The displayed columns are catalog ordering, not persisted coordinates.
+Padding cells at row ends are presentation cells.
+They must not be treated as physical empty positions.
 
-Finding:
-HomePage uses AppButton without importing it.
-main.ts does not register AppButton globally.
-Vite does not configure automatic component imports.
+Persistence gap:
+SeatResponse does not expose matrix dimensions or row/column positions.
+The existing seat update request cannot save matrix positions.
+Room layout content owns physical geometry and elements.
+
+Drag/drop, insertion shifts and independent column creation are not
+implemented in S1. They require an explicit matrix persistence contract.
+Do not mark the full seat editor complete.
+
+Room layout remains a separate placeholder route.
+R28 remains deferred.
 
 Manual verification is pending.
-No tests, lint, type checking or build were run during this audit.
+No tests, lint, type checking or build were run.
 
 ## Documentation follow-up
 

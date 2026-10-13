@@ -16,7 +16,8 @@
 @import './admin-rooms.css';
 @import './admin-reference.css';
 @import './admin-movie-catalog.css';
-
+@import './admin-room-seats.css';
+@import './admin-room-seats-responsive.css';
 
 /* Navigation styles remain imported by their owning layouts. */
 @theme {
@@ -41,3 +42,4 @@
 @custom-variant admin-filters-compact (@media (max-width: 70rem));
 @custom-variant admin-reference-mobile (@media (max-width: 48rem));
 @custom-variant admin-movies-narrow (@media (max-width: 30rem));
+@custom-variant admin-seats-stacked (@media (max-width: 64rem));

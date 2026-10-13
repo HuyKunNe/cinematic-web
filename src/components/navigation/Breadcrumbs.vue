@@ -10,7 +10,8 @@ const labels: Record<string, string> = {
   [ROUTE_NAMES.ADMIN_MOVIES]: 'Phim',
   [ROUTE_NAMES.ADMIN_CINEMAS]: 'Rạp chiếu',
   [ROUTE_NAMES.ADMIN_ROOMS]: 'Phòng chiếu',
-  [ROUTE_NAMES.ADMIN_ROOM_LAYOUT]: 'Thiết kế sơ đồ',
+  [ROUTE_NAMES.ADMIN_ROOM_SEATS]: 'Ghế của phòng',
+  [ROUTE_NAMES.ADMIN_ROOM_LAYOUT]: 'Không gian phòng',
   [ROUTE_NAMES.ADMIN_SHOWTIMES]: 'Suất chiếu',
   [ROUTE_NAMES.ADMIN_SHOWTIME_CREATE]: 'Tạo mới',
   [ROUTE_NAMES.ADMIN_BOOKINGS]: 'Đặt vé',
@@ -25,8 +26,11 @@ const currentTitle = computed(
 )
 
 const parents = computed(() => {
-  if (route.name === ROUTE_NAMES.ADMIN_ROOM_LAYOUT) {
-    return [{ label: 'Phòng chiếu', name: ROUTE_NAMES.ADMIN_ROOMS }]
+  if (route.name === ROUTE_NAMES.ADMIN_ROOM_SEATS || route.name === ROUTE_NAMES.ADMIN_ROOM_LAYOUT) {
+    return [
+      { label: 'Rạp chiếu', name: ROUTE_NAMES.ADMIN_CINEMAS },
+      { label: 'Phòng chiếu', name: ROUTE_NAMES.ADMIN_ROOMS },
+    ]
   }
 
   if (route.name === ROUTE_NAMES.ADMIN_ROOMS) {

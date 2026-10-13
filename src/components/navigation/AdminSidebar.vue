@@ -53,7 +53,10 @@ const icons: Record<AdminNavigationIcon, typeof Film> = {
 }
 
 function isActive(routeName: string) {
-  if (routeName === ROUTE_NAMES.ADMIN_ROOMS && route.name === ROUTE_NAMES.ADMIN_ROOM_LAYOUT) {
+  if (
+    routeName === ROUTE_NAMES.ADMIN_ROOMS &&
+    (route.name === ROUTE_NAMES.ADMIN_ROOM_SEATS || route.name === ROUTE_NAMES.ADMIN_ROOM_LAYOUT)
+  ) {
     return true
   }
   if (

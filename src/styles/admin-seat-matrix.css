@@ -1,0 +1,143 @@
+:where([data-reference='admin-room-seats']).admin-seat-matrix {
+  --matrix-seat-width: 40px;
+  --matrix-seat-height: 30px;
+  --matrix-gap-x: 40px;
+  --matrix-gap-y: 40px;
+  --matrix-cell-width: calc(var(--matrix-seat-width) + var(--matrix-gap-x));
+  --matrix-cell-height: calc(var(--matrix-seat-height) + var(--matrix-gap-y));
+  --matrix-axis-width: var(--space-10);
+  --matrix-heading-height: var(--control-height-sm);
+  --matrix-inactive-border: var(--color-warning);
+
+  display: grid;
+  min-width: 0;
+  gap: var(--space-4);
+  color: var(--color-text-primary);
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__error {
+  margin: 0;
+  color: var(--color-error);
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__viewport {
+  display: grid;
+  grid-template-columns: var(--matrix-axis-width) minmax(0, 1fr);
+  min-width: 0;
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__axis {
+  min-width: 0;
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__axis-heading,
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__row-label {
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__axis-heading {
+  height: var(--matrix-heading-height);
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__row-label {
+  height: var(--matrix-cell-height);
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__scroll {
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__columns,
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__row {
+  display: grid;
+  grid-template-columns: repeat(var(--matrix-columns), var(--matrix-cell-width));
+  width: max-content;
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__columns {
+  height: var(--matrix-heading-height);
+  align-items: center;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__cell {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: var(--matrix-cell-width);
+  height: var(--matrix-cell-height);
+  padding: 0;
+  border: var(--border-width-thin) solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__seat {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: var(--matrix-seat-width);
+  height: var(--matrix-seat-height);
+  border: var(--border-width-thin) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  pointer-events: none;
+}
+
+:where([data-reference='admin-room-seats']) .is-inactive .admin-seat-matrix__seat {
+  border-color: var(--matrix-inactive-border);
+  border-style: dashed;
+}
+
+:where([data-reference='admin-room-seats']) .is-selected .admin-seat-matrix__seat {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__empty {
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__cell:focus-visible,
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__scroll:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: calc(0px - var(--focus-ring-width));
+}
+
+:where([data-reference='admin-room-seats']) .admin-seat-matrix__details {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
