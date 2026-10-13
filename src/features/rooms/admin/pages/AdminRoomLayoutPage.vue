@@ -84,30 +84,6 @@ const showGrid = ref(true)
 const horizontalGap = ref<string | number>('10')
 const verticalGap = ref<string | number>('20')
 
-const autoAlignAnchorKey = ref('')
-
-// Đổi phiên bản thì chọn và căn ghế mốc lại.
-watch(layoutId, () => {
-  autoAlignAnchorKey.value = ''
-})
-
-function realignWithAnchor(next: LayoutState) {
-  const current = layout.value
-  const anchorKey = autoAlignAnchorKey.value
-
-  if (!current || !anchorKey || !next.seats.some((seat) => seat.key === anchorKey)) {
-    return next
-  }
-
-  return alignSeatRows(
-    current,
-    next,
-    anchorKey,
-    readLayoutNumber(horizontalGap.value, 'Khoảng trống giữa ghế'),
-    readLayoutNumber(verticalGap.value, 'Khoảng trống giữa hàng'),
-  )
-}
-
 const working = ref<'' | 'create' | 'save' | 'publish' | 'reload'>('')
 const conflict = ref(false)
 const message = ref('')
@@ -318,37 +294,9 @@ function arrangeChangedSeatRows(
     throw new Error('Không tìm thấy ghế mốc trên sơ đồ.')
   }
 
-  if (!roster.isSuccess.value || roster.isFetching.value) {
-    throw new Error('Danh sách ghế chưa tải xong. Vui lòng thử lại.')
-  }
-
-  // Đưa các ghế hoạt động cùng hàng, chưa đặt trên canvas, vào sơ đồ.
-  const placedIds = new Set(next.seats.map((seat) => seat.seatId))
-
-  for (const seat of physicalSeats.value) {
-    if (seat.active !== true || seat.rowLabel !== anchor.rowLabelSnapshot || placedIds.has(seat.id))
-      continue
-
-    const template =
-      seat.seatType === anchor.seatTypeSnapshot
-        ? anchor.geometry
-        : (next.seats.find((entry) => entry.seatTypeSnapshot === seat.seatType)?.geometry ??
-          initialSeatGeometry(current))
-
-    next.seats.push(
-      placeSeat(seat, {
-        ...template,
-        x: 0,
-        y: 0,
-        rotationDegrees: 0,
-      }),
-    )
-    placedIds.add(seat.id)
-  }
-
+  // Chỉ sắp xếp các ghế đang có trên canvas.
   const rowLabels = new Set([anchor.rowLabelSnapshot])
 
-  // Đổi kích thước một loại ghế thì căn lại các hàng bị ảnh hưởng.
   if (resizedType) {
     for (const seat of next.seats) {
       if (seat.seatTypeSnapshot === resizedType) {
@@ -370,7 +318,6 @@ function arrangeChangedSeatRows(
 
     if (!rowAnchor) continue
 
-    // Chỉ đưa một hàng vào hàm căn: mọi ghế sẽ có cùng Y.
     const aligned = alignSeatRows(current, { seats: row, elements: [] }, rowAnchor.key, gap, 0)
 
     const geometries = new Map(aligned.seats.map((seat) => [seat.key, seat.geometry]))
@@ -532,38 +479,10 @@ function alignRowsFromAnchor() {
     return
   }
 
-  if (!roster.isSuccess.value || roster.isFetching.value) {
-    message.value = 'Danh sách ghế chưa tải xong. Vui lòng thử lại.'
-    return
-  }
-
   try {
-    const next = cloneLayoutState(state.value)
-    const placedIds = new Set(next.seats.map((seat) => seat.seatId))
-
-    for (const seat of physicalSeats.value) {
-      if (seat.active !== true || placedIds.has(seat.id)) continue
-
-      const template =
-        seat.seatType === anchor.seatTypeSnapshot
-          ? anchor.geometry
-          : (next.seats.find((entry) => entry.seatTypeSnapshot === seat.seatType)?.geometry ??
-            initialSeatGeometry(layout.value))
-
-      next.seats.push(
-        placeSeat(seat, {
-          ...template,
-          x: 0,
-          y: 0,
-          rotationDegrees: 0,
-        }),
-      )
-      placedIds.add(seat.id)
-    }
-
     const aligned = alignSeatRows(
       layout.value,
-      next,
+      cloneLayoutState(state.value),
       anchor.key,
       readLayoutNumber(horizontalGap.value, 'Khoảng trống giữa ghế'),
       readLayoutNumber(verticalGap.value, 'Khoảng trống giữa hàng'),
@@ -571,12 +490,11 @@ function alignRowsFromAnchor() {
 
     const changed = layoutSignature(aligned) !== layoutSignature(state.value)
 
-    autoAlignAnchorKey.value = anchor.key
     commit(aligned)
     resetForm()
     message.value = ''
     success.value = changed
-      ? `Đã căn ${aligned.seats.length} ghế theo ${anchor.seatNumberSnapshot}. Chưa lưu nháp.`
+      ? `Đã căn ${aligned.seats.length} ghế đang có trên sơ đồ. Chưa lưu nháp.`
       : 'Các ghế đã nằm đúng vị trí theo ghế mốc.'
   } catch (error) {
     message.value = layoutErrorMessage(error)
@@ -1055,8 +973,8 @@ function displayTime(value: string) {
               <h2>Căn hàng theo ghế mốc</h2>
 
               <p class="layout-muted">
-                Chọn một ghế làm mốc. Các ghế hoạt động chưa có trên sơ đồ sẽ được thêm, rồi các
-                hàng được căn theo vị trí ghế này.
+                Chọn một ghế làm mốc để căn các ghế đang có trên sơ đồ. Ghế đã bỏ chỉ được thêm lại
+                khi bạn chủ động chọn thêm ghế.
               </p>
 
               <div class="layout-geometry-fields">
