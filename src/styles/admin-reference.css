@@ -124,6 +124,10 @@
   border-radius: var(--radius-md);
   background: var(--color-surface);
 }
+/* Cinema-specific columns; responsive variants below override this rule. */
+.admin-cinemas__filters {
+  grid-template-columns: var(--admin-cinema-filter-columns);
+}
 
 .admin-movies__filters {
   grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
