@@ -18,6 +18,7 @@ import { useAdminRoomDetailQuery, useSaveAdminRoomMutation } from '../api/admin-
 import {
   adminRoomErrorMessage,
   adminRoomSchema,
+  adminRoomTypeLabel,
   adminRoomTypeOptions,
   createAdminRoomValues,
   isAdminRoomApiError,
@@ -213,7 +214,7 @@ function submit(event: Event) {
       <DialogOverlay class="admin-room-dialog__overlay" />
 
       <DialogContent
-        class="admin-room-dialog"
+        class="admin-room-dialog is-room-editor"
         @open-auto-focus="onOpenAutoFocus"
         @close-auto-focus="restoreFocus"
         @escape-key-down="preventDuringSave"
@@ -259,56 +260,98 @@ function submit(event: Event) {
         </div>
 
         <form v-if="ready" ref="formElement" class="admin-room-form" novalidate @submit="submit">
-          <fieldset class="admin-room-form__fields" :disabled="busy || !canManage">
-            <div class="admin-rooms__field">
-              <label for="admin-room-name">Tên phòng *</label>
-              <input
-                id="admin-room-name"
-                v-model="name"
-                v-bind="nameAttrs"
-                class="admin-rooms__input"
-                type="text"
-                maxlength="100"
-                autocomplete="off"
-                required
-                :aria-invalid="Boolean(visibleErrors.name)"
-                :aria-describedby="visibleErrors.name ? 'admin-room-name-error' : undefined"
-              />
-              <p
-                v-if="visibleErrors.name"
-                id="admin-room-name-error"
-                class="admin-rooms__error"
-                role="alert"
-              >
-                {{ visibleErrors.name }}
-              </p>
-            </div>
+          <div class="admin-room-form__layout">
+            <fieldset class="admin-room-form__fields" :disabled="busy || !canManage">
+              <div class="admin-rooms__field">
+                <label for="admin-room-cinema-name">Rạp</label>
+                <input
+                  id="admin-room-cinema-name"
+                  class="admin-rooms__input"
+                  type="text"
+                  :value="cinemaName"
+                  readonly
+                />
+              </div>
 
-            <div class="admin-rooms__field">
-              <label for="admin-room-type">Loại phòng *</label>
-              <select
-                id="admin-room-type"
-                v-model="roomType"
-                v-bind="roomTypeAttrs"
-                class="admin-rooms__input"
-                required
-                :aria-invalid="Boolean(visibleErrors.roomType)"
-                :aria-describedby="visibleErrors.roomType ? 'admin-room-type-error' : undefined"
-              >
-                <option v-for="item in adminRoomTypeOptions" :key="item.value" :value="item.value">
-                  {{ item.label }}
-                </option>
-              </select>
-              <p
-                v-if="visibleErrors.roomType"
-                id="admin-room-type-error"
-                class="admin-rooms__error"
-                role="alert"
-              >
-                {{ visibleErrors.roomType }}
+              <div class="admin-rooms__field">
+                <label for="admin-room-name">Tên phòng *</label>
+                <input
+                  id="admin-room-name"
+                  v-model="name"
+                  v-bind="nameAttrs"
+                  class="admin-rooms__input"
+                  type="text"
+                  maxlength="100"
+                  autocomplete="off"
+                  placeholder="Nhập tên phòng"
+                  required
+                  :aria-invalid="Boolean(visibleErrors.name)"
+                  :aria-describedby="visibleErrors.name ? 'admin-room-name-error' : undefined"
+                />
+                <p
+                  v-if="visibleErrors.name"
+                  id="admin-room-name-error"
+                  class="admin-rooms__error"
+                  role="alert"
+                >
+                  {{ visibleErrors.name }}
+                </p>
+              </div>
+
+              <div class="admin-rooms__field">
+                <label for="admin-room-type">Loại phòng *</label>
+                <select
+                  id="admin-room-type"
+                  v-model="roomType"
+                  v-bind="roomTypeAttrs"
+                  class="admin-rooms__input"
+                  required
+                  :aria-invalid="Boolean(visibleErrors.roomType)"
+                  :aria-describedby="visibleErrors.roomType ? 'admin-room-type-error' : undefined"
+                >
+                  <option
+                    v-for="item in adminRoomTypeOptions"
+                    :key="item.value"
+                    :value="item.value"
+                  >
+                    {{ item.label }}
+                  </option>
+                </select>
+                <p
+                  v-if="visibleErrors.roomType"
+                  id="admin-room-type-error"
+                  class="admin-rooms__error"
+                  role="alert"
+                >
+                  {{ visibleErrors.roomType }}
+                </p>
+              </div>
+            </fieldset>
+
+            <aside class="admin-room-preview" aria-labelledby="admin-room-preview-title">
+              <p class="admin-room-preview__eyebrow">Xem trước</p>
+              <h2 id="admin-room-preview-title">Thông tin phòng</h2>
+
+              <dl>
+                <div>
+                  <dt>Rạp</dt>
+                  <dd>{{ cinemaName }}</dd>
+                </div>
+                <div>
+                  <dt>Tên phòng</dt>
+                  <dd>{{ name?.trim() || 'Chưa nhập' }}</dd>
+                </div>
+                <div>
+                  <dt>Định dạng</dt>
+                  <dd>{{ adminRoomTypeLabel(roomType) }}</dd>
+                </div>
+              </dl>
+
+              <p class="admin-room-preview__hint">
+                Quản lý ghế và thiết kế sơ đồ từ danh sách phòng.
               </p>
-            </div>
-          </fieldset>
+            </aside>
+          </div>
 
           <p v-if="roomId" class="admin-rooms__muted">
             Lưu thông tin sẽ giữ nguyên trạng thái hoạt động hiện tại của phòng.
