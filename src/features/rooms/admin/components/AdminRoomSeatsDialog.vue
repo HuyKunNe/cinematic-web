@@ -121,6 +121,10 @@ const rows = computed(() =>
   ),
 )
 
+const totalSeatCount = computed(() =>
+  seats.data.value === undefined ? null : seats.data.value.length,
+)
+
 const preview = computed(() => {
   const parsed = adminSeatRangeSchema.safeParse(values)
   if (!parsed.success) return ''
@@ -310,6 +314,44 @@ function submit(event: Event) {
           </AppButton>
         </header>
 
+        <section
+          v-if="canManage"
+          class="admin-room-seats__summary"
+          aria-label="Thông tin phòng"
+          :aria-busy="seats.isFetching.value"
+        >
+          <article class="admin-room-seats__stat">
+            <span>Rạp</span>
+            <strong>{{ cinemaName }}</strong>
+          </article>
+
+          <article class="admin-room-seats__stat">
+            <span>Phòng</span>
+            <strong>{{ roomName }}</strong>
+          </article>
+
+          <article class="admin-room-seats__stat">
+            <span>Tổng số ghế</span>
+            <strong>{{ totalSeatCount ?? '—' }}</strong>
+            <small v-if="seats.isFetching.value" role="status">Đang cập nhật…</small>
+          </article>
+
+          <article class="admin-room-seats__stat">
+            <span>Trạng thái phòng</span>
+            <strong>
+              <span
+                class="admin-rooms__status"
+                :class="{
+                  'is-active': roomActive,
+                  'is-paused': !roomActive,
+                }"
+              >
+                {{ roomActive ? 'Đang hoạt động' : 'Tạm ngưng' }}
+              </span>
+            </strong>
+          </article>
+        </section>
+
         <p v-if="!canManage" class="admin-rooms__error" role="alert">
           Tài khoản không còn quyền quản lý ghế.
         </p>
@@ -475,7 +517,10 @@ function submit(event: Event) {
                   <td>
                     <span
                       class="admin-rooms__status"
-                      :class="{ 'is-active': seat.active === true }"
+                      :class="{
+                        'is-active': seat.active === true,
+                        'is-paused': seat.active === false,
+                      }"
                     >
                       {{
                         seat.active === true

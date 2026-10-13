@@ -452,6 +452,40 @@
   font-size: var(--font-size-xs);
 }
 
+.admin-room-seats__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.admin-room-seats__stat {
+  display: grid;
+  flex: 1 1 var(--admin-room-seats-summary-min-width);
+  align-content: start;
+  gap: var(--space-2);
+  min-width: min(100%, var(--admin-room-seats-summary-min-width));
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.admin-room-seats__stat > span,
+.admin-room-seats__stat small {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.admin-room-seats__stat strong {
+  min-width: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  overflow-wrap: anywhere;
+}
+
 @variant tablet-down {
   .admin-rooms__filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
