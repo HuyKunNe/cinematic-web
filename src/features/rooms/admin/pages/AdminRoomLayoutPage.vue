@@ -78,6 +78,7 @@ const selectedSeatId = ref('')
 const past = ref<LayoutState[]>([])
 const future = ref<LayoutState[]>([])
 const zoom = ref(1)
+const showGrid = ref(true)
 
 const working = ref<'' | 'create' | 'save' | 'publish' | 'reload'>('')
 const conflict = ref(false)
@@ -648,6 +649,11 @@ function displayTime(value: string) {
 
       <template v-if="layout">
         <aside class="layout-draft-notice" role="status">
+          <span
+            class="layout-draft-notice__dot"
+            :class="{ 'is-published': layout.status !== 'DRAFT' }"
+            aria-hidden="true"
+          />
           <strong>{{ layout.status === 'DRAFT' ? 'Bản nháp' : 'Đã xuất bản' }}</strong>
           <span>
             {{
@@ -667,6 +673,14 @@ function displayTime(value: string) {
 
         <section class="layout-panel layout-toolbar" aria-label="Công cụ thiết kế">
           <div class="layout-tools">
+            <AppButton
+              variant="secondary"
+              size="sm"
+              :aria-pressed="showGrid"
+              @click="showGrid = !showGrid"
+            >
+              {{ showGrid ? 'Ẩn lưới' : 'Hiện lưới' }}
+            </AppButton>
             <AppButton variant="secondary" size="sm" :disabled="!canArrange" @click="arrange">
               Xếp ghế hoạt động theo hàng
             </AppButton>
@@ -683,21 +697,33 @@ function displayTime(value: string) {
           </div>
           <div class="layout-tools">
             <AppButton
+              class="layout-icon-control"
               variant="ghost"
               size="sm"
+              aria-label="Hoàn tác"
+              title="Hoàn tác"
               :disabled="!editable || (!past.length && !formChanged)"
               @click="undo"
-              >Hoàn tác</AppButton
             >
+              <span aria-hidden="true">↶</span>
+            </AppButton>
+
             <AppButton
+              class="layout-icon-control"
               variant="ghost"
               size="sm"
+              aria-label="Làm lại"
+              title="Làm lại"
               :disabled="!editable || !future.length || formChanged"
               @click="redo"
-              >Làm lại</AppButton
             >
+              <span aria-hidden="true">↷</span>
+            </AppButton>
+
+            <span class="layout-toolbar__divider" aria-hidden="true" />
             <AppButton
               variant="ghost"
+              class="layout-icon-control"
               size="sm"
               aria-label="Thu nhỏ sơ đồ"
               :disabled="zoom <= 0.5"
@@ -707,6 +733,7 @@ function displayTime(value: string) {
             <span class="layout-zoom">{{ Math.round(zoom * 100) }}%</span>
             <AppButton
               variant="ghost"
+              class="layout-icon-control"
               size="sm"
               aria-label="Phóng to sơ đồ"
               :disabled="zoom >= 2"
@@ -739,9 +766,13 @@ function displayTime(value: string) {
               :selected-key="selectedKey"
               :zoom="zoom"
               :disabled="!ready || Boolean(working)"
+              :show-grid="showGrid"
               @select="selectItem"
             />
-
+            <p v-if="showGrid" class="layout-grid-help">
+              Gốc (0, 0) ở góc trên trái · X tăng sang phải · Y tăng xuống dưới. Ô nhỏ: 50 đơn vị ·
+              Ô lớn: 250 đơn vị.
+            </p>
             <p v-if="!state.seats.length && !state.elements.length" class="layout-muted">
               Sơ đồ trống. Xếp ghế theo hàng hoặc thêm từng đối tượng.
             </p>

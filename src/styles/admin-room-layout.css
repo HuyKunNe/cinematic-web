@@ -9,12 +9,23 @@
   --room-layout-object-tint: 12%;
   --room-layout-selected-tint: 16%;
   --room-layout-notice-meta-width: auto;
+  --room-layout-heading-line-height: 1.15;
+  --room-layout-panel-radius: 0.625rem;
+  --room-layout-control-radius: 0.375rem;
+  --room-layout-label-size: var(--font-size-xs);
+  --room-layout-action-size: var(--control-height-md);
+  --room-layout-grid-color: var(--color-border);
+  --room-layout-grid-major-color: var(--color-text-muted);
+  --room-layout-grid-opacity: 0.45;
+  --room-layout-grid-major-opacity: 0.65;
 }
 
 .room-layout-page {
   display: grid;
   min-width: 0;
   gap: var(--space-5);
+  --radius-md: var(--room-layout-panel-radius);
+  --radius-sm: var(--room-layout-control-radius);
 }
 
 .room-layout-page .layout-heading,
@@ -30,7 +41,8 @@
 .room-layout-page .layout-heading h1 {
   margin: 0;
   font-size: var(--room-layout-heading-size);
-  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--room-layout-heading-line-height);
 }
 
 .room-layout-page .layout-heading p:last-child,
@@ -91,12 +103,13 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3);
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
   border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--room-layout-control-radius);
   background: var(--color-surface);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
+  font-size: var(--room-layout-label-size);
 }
 
 .room-layout-page .layout-draft-notice strong {
@@ -345,6 +358,82 @@
 
 .room-layout-page .layout-success {
   color: var(--color-success);
+}
+
+.room-layout-page .layout-heading {
+  gap: var(--space-5);
+}
+
+.room-layout-page .layout-toolbar {
+  min-width: 0;
+  padding: var(--space-3);
+}
+
+.room-layout-page .layout-draft-notice__dot {
+  flex: 0 0 auto;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-warning);
+}
+
+.room-layout-page .layout-draft-notice__dot.is-published {
+  background: var(--color-success);
+}
+
+.admin-layout.is-management .admin-layout__main .room-layout-page .layout-toolbar .app-button {
+  min-height: var(--room-layout-action-size);
+  border-radius: var(--room-layout-control-radius);
+  font-size: var(--room-layout-label-size);
+  font-weight: var(--font-weight-regular);
+}
+
+.admin-layout.is-management
+  .admin-layout__main
+  .room-layout-page
+  .layout-toolbar
+  .layout-icon-control {
+  width: var(--room-layout-action-size);
+  padding-inline: 0;
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  font-size: var(--font-size-md);
+}
+
+.room-layout-page .layout-toolbar__divider {
+  flex: 0 0 auto;
+  width: var(--border-width-thin);
+  height: var(--space-6);
+  margin-inline: var(--space-1);
+  background: var(--color-border);
+}
+
+.room-layout-page .layout-zoom {
+  min-width: var(--space-8);
+  text-align: center;
+}
+
+.room-layout-page .layout-grid {
+  pointer-events: none;
+}
+
+.room-layout-page .layout-grid__line {
+  fill: none;
+  stroke: var(--room-layout-grid-color);
+  stroke-width: var(--border-width-thin);
+  stroke-opacity: var(--room-layout-grid-opacity);
+}
+
+.room-layout-page .layout-grid__line.is-major {
+  stroke: var(--room-layout-grid-major-color);
+  stroke-opacity: var(--room-layout-grid-major-opacity);
+}
+
+.room-layout-page .layout-grid-help {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  overflow-wrap: anywhere;
 }
 
 @variant room-layout-compact {

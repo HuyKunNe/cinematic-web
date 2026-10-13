@@ -15,11 +15,18 @@ const props = defineProps<{
   selectedKey: string
   zoom: number
   disabled: boolean
+  showGrid: boolean
 }>()
 
 const emit = defineEmits<{ select: [key: string] }>()
 
 const items = computed(() => [...props.state.elements, ...props.state.seats])
+// Khoảng cách tính bằng đơn vị geometry của sơ đồ, không phải CSS pixel.
+const gridStep = 50
+const majorGridStep = gridStep * 5
+
+const gridId = computed(() => `room-layout-grid-${props.layout.id}`)
+const majorGridId = computed(() => `room-layout-major-grid-${props.layout.id}`)
 
 function transform(item: LayoutItem) {
   const geometry = item.geometry
@@ -51,6 +58,45 @@ function select(key: string) {
         role="group"
         aria-label="Các ghế và đối tượng trong sơ đồ phòng"
       >
+        <defs>
+          <pattern :id="gridId" patternUnits="userSpaceOnUse" :width="gridStep" :height="gridStep">
+            <path
+              class="layout-grid__line"
+              :d="`M ${gridStep} 0 H 0 V ${gridStep}`"
+              vector-effect="non-scaling-stroke"
+            />
+          </pattern>
+
+          <pattern
+            :id="majorGridId"
+            patternUnits="userSpaceOnUse"
+            :width="majorGridStep"
+            :height="majorGridStep"
+          >
+            <path
+              class="layout-grid__line is-major"
+              :d="`M ${majorGridStep} 0 H 0 V ${majorGridStep}`"
+              vector-effect="non-scaling-stroke"
+            />
+          </pattern>
+        </defs>
+
+        <g v-if="showGrid" class="layout-grid" aria-hidden="true">
+          <rect
+            x="0"
+            y="0"
+            :width="layout.canvasWidth"
+            :height="layout.canvasHeight"
+            :fill="`url(#${gridId})`"
+          />
+          <rect
+            x="0"
+            y="0"
+            :width="layout.canvasWidth"
+            :height="layout.canvasHeight"
+            :fill="`url(#${majorGridId})`"
+          />
+        </g>
         <g
           v-for="item in items"
           :key="item.key"
