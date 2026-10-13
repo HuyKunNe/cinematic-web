@@ -452,59 +452,6 @@
   font-size: var(--font-size-xs);
 }
 
-.admin-room-seats__summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-.admin-room-seats__stat {
-  display: grid;
-  flex: 1 1 var(--admin-room-seats-summary-min-width);
-  align-content: start;
-  gap: var(--space-2);
-  min-width: min(100%, var(--admin-room-seats-summary-min-width));
-  padding: var(--space-4);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-}
-
-.admin-room-seats__stat > span,
-.admin-room-seats__stat small {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
-}
-
-.admin-room-seats__stat strong {
-  min-width: 0;
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  overflow-wrap: anywhere;
-}
-
-.admin-room-seats__create,
-.admin-room-seats__list {
-  min-width: 0;
-  padding: var(--space-5);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--admin-reference-panel-shadow);
-}
-
-.admin-room-seats__create > .admin-rooms__muted,
-.admin-room-seats__list > .admin-rooms__muted {
-  margin: 0;
-}
-
-.admin-room-seats__list .admin-rooms__feedback {
-  padding: 0;
-}
-
 @variant tablet-down {
   .admin-rooms__filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -544,49 +491,10 @@
     padding: var(--space-4);
   }
 }
+
 .admin-rooms__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-}
-
-.admin-room-dialog.admin-room-seats-dialog {
-  width: min(var(--admin-room-seats-dialog-width), calc(100% - var(--space-8)));
-}
-
-.admin-room-seats__fields {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.admin-room-seats__heading {
-  margin: 0;
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-}
-
-.admin-room-seats__list {
-  display: grid;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-.admin-rooms__table.admin-room-seats__table {
-  min-width: var(--admin-room-seats-table-min-width);
-  table-layout: auto;
-}
-
-.admin-room-seats__table td {
-  overflow-wrap: normal;
-}
-
-@variant mobile-layout {
-  .admin-room-seats__fields {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  
-  .admin-room-seats__create,
-  .admin-room-seats__list {
-    padding: var(--space-4);
-  }
 }
