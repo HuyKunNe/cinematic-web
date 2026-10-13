@@ -259,30 +259,16 @@ export function alignSeatRows(
   verticalGap: number,
 ): LayoutState {
   const anchor = state.seats.find((seat) => seat.key === anchorKey)
-  if (!anchor) throw new Error('Chọn ghế đầu tiên làm mốc.')
+  if (!anchor) throw new Error('Chọn một ghế làm mốc.')
+
+  validateLayoutState(state)
 
   if (state.seats.some((seat) => seat.geometry.rotationDegrees !== 0)) {
-    throw new Error('Căn hàng hiện chỉ hỗ trợ các ghế có góc xoay bằng 0.')
+    throw new Error('Căn hàng yêu cầu góc xoay của tất cả ghế bằng 0.')
   }
 
-  function seatIndex(seat: LayoutSeat) {
-    const row = seat.rowLabelSnapshot
-    const number = seat.seatNumberSnapshot
-
-    if (!number.startsWith(row)) {
-      throw new Error(`Ghế ${number} không có tên theo dạng ${row}1, ${row}2…`)
-    }
-
-    const suffix = number.slice(row.length)
-    const index = Number(suffix)
-
-    if (!/^\d+$/.test(suffix) || !Number.isInteger(index) || index < 1 || index > 999) {
-      throw new Error(`Không xác định được số thứ tự của ghế ${number}.`)
-    }
-
-    return index
-  }
-
+  const gapX = readLayoutNumber(horizontalGap, 'Khoảng trống giữa ghế')
+  const gapY = readLayoutNumber(verticalGap, 'Khoảng trống giữa hàng')
   const collator = new Intl.Collator('vi', { numeric: true })
   const rows = [...new Set(state.seats.map((seat) => seat.rowLabelSnapshot))].sort(collator.compare)
 
@@ -290,42 +276,50 @@ export function alignSeatRows(
   const occupied = new Set<string>()
 
   for (const seat of state.seats) {
-    const index = seatIndex(seat)
-    const position = JSON.stringify([seat.rowLabelSnapshot, index])
+    const row = seat.rowLabelSnapshot
+    const number = seat.seatNumberSnapshot
+    const suffix = number.startsWith(row) ? number.slice(row.length) : ''
+    const index = Number(suffix)
 
+    if (!/^\d+$/.test(suffix) || !Number.isInteger(index) || index < 1 || index > 999) {
+      throw new Error(`Ghế ${number}: cần tên theo dạng ${row}1, ${row}2… để căn hàng.`)
+    }
+
+    const position = JSON.stringify([row, index])
     if (occupied.has(position)) {
-      throw new Error(`Hàng ${seat.rowLabelSnapshot} có số thứ tự ghế bị trùng.`)
+      throw new Error(`Hàng ${row} có số thứ tự ghế bị trùng.`)
     }
 
     occupied.add(position)
     indices.set(seat.key, index)
   }
 
-  const firstIndex = Math.min(...indices.values())
+  const anchorRowIndex = rows.indexOf(anchor.rowLabelSnapshot)
+  const anchorColumnIndex = indices.get(anchor.key)!
 
-  if (anchor.rowLabelSnapshot !== rows[0] || indices.get(anchor.key) !== firstIndex) {
-    throw new Error('Chọn ghế có số thứ tự nhỏ nhất của hàng đầu tiên làm mốc, ví dụ A1.')
-  }
-
-  // Lấy kích thước ghế mốc cho toàn bộ ghế trên sơ đồ.
-  const { width, height } = anchor.geometry
-  const columnStep = Math.max(...state.seats.map((seat) => seat.geometry.width)) + horizontalGap
-  const rowStep = Math.max(...state.seats.map((seat) => seat.geometry.height)) + verticalGap
+  // Giữ kích thước từng loại; dùng bước đủ lớn để các cột không chồng nhau.
+  const columnStep = Math.max(...state.seats.map((seat) => seat.geometry.width)) + gapX
+  const rowStep = Math.max(...state.seats.map((seat) => seat.geometry.height)) + gapY
 
   const next = cloneLayoutState(state)
 
   for (const seat of next.seats) {
-    const rowIndex = rows.indexOf(seat.rowLabelSnapshot)
-    const columnIndex = indices.get(seat.key)! - firstIndex
+    const rowOffset = rows.indexOf(seat.rowLabelSnapshot) - anchorRowIndex
+    const columnOffset = indices.get(seat.key)! - anchorColumnIndex
 
-    seat.geometry.x = round(anchor.geometry.x + columnIndex * columnStep)
-    seat.geometry.y = round(anchor.geometry.y + rowIndex * rowStep)
+    seat.geometry.x = round(anchor.geometry.x + columnOffset * columnStep)
+    seat.geometry.y = round(anchor.geometry.y + rowOffset * rowStep)
 
     if (
+      seat.geometry.x < 0 ||
+      seat.geometry.y < 0 ||
       seat.geometry.x + seat.geometry.width > layout.canvasWidth ||
       seat.geometry.y + seat.geometry.height > layout.canvasHeight
     ) {
-      throw new Error('Các hàng vượt khung sơ đồ. Giảm khoảng cách hoặc đổi vị trí ghế mốc.')
+      throw new Error(
+        `Ghế ${seat.seatNumberSnapshot} vượt khung sau khi căn. ` +
+          'Di chuyển ghế mốc hoặc giảm kích thước/khoảng cách.',
+      )
     }
   }
 

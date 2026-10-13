@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import type { RoomLayoutResponse } from '@/services/api/generated/inventory-service/model';
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import type {
+  RoomLayoutGeometryInput,
+  RoomLayoutResponse,
+} from '@/services/api/generated/inventory-service/model'
 import {
   isLayoutSeat,
   itemLabel,
@@ -8,7 +11,7 @@ import {
   seatTypeLabel,
   type LayoutItem,
   type LayoutState,
-} from '../models/admin-room-layout';
+} from '../models/admin-room-layout'
 
 const props = defineProps<{
   layout: RoomLayoutResponse
@@ -17,18 +20,23 @@ const props = defineProps<{
   zoom: number
   disabled: boolean
   showGrid: boolean
+  draggable: boolean
+  beginMove: (key: string) => RoomLayoutGeometryInput | null
 }>()
 
-const emit = defineEmits<{ select: [key: string] }>()
+const emit = defineEmits<{
+  select: [key: string]
+  move: [payload: { key: string; x: number; y: number }]
+  error: [message: string]
+}>()
 
+const svg = ref<SVGSVGElement | null>(null)
 const items = computed(() => [...props.state.elements, ...props.state.seats])
-// Khoảng cách tính bằng đơn vị geometry của sơ đồ, không phải CSS pixel.
 const gridStep = ROOM_LAYOUT_GRID_STEP
 const majorGridStep = gridStep * 5
-
 const gridId = computed(() => `room-layout-grid-${props.layout.id}`)
 const majorGridId = computed(() => `room-layout-major-grid-${props.layout.id}`)
-// Giới hạn số nhãn để thước không dày đặc trên sơ đồ lớn.
+
 const rulerStep = computed(() => {
   const longestSide = Math.max(props.layout.canvasWidth, props.layout.canvasHeight)
   return majorGridStep * Math.max(1, Math.ceil(longestSide / (majorGridStep * 8)))
@@ -39,22 +47,155 @@ function coordinateMarks(length: number) {
 
   const step = rulerStep.value
   const marks = Array.from({ length: Math.floor(length / step) + 1 }, (_, index) => index * step)
-
   if (marks.at(-1) !== length) marks.push(length)
   return marks
 }
 
 const xMarks = computed(() => coordinateMarks(props.layout.canvasWidth))
 const yMarks = computed(() => coordinateMarks(props.layout.canvasHeight))
-
 const coordinateFormatter = new Intl.NumberFormat('vi-VN', {
   maximumFractionDigits: 3,
 })
 
+type DragState = {
+  pointerId: number
+  key: string
+  startX: number
+  startY: number
+  geometry: RoomLayoutGeometryInput
+  x: number
+  y: number
+  moved: boolean
+}
+
+const drag = ref<DragState | null>(null)
+
+function canvasPoint(event: PointerEvent) {
+  const matrix = svg.value?.getScreenCTM()
+  if (!matrix) return null
+
+  return new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
+}
+
+function movementBounds(geometry: RoomLayoutGeometryInput) {
+  const angle = (geometry.rotationDegrees * Math.PI) / 180
+  const rotatedWidth =
+    Math.abs(Math.cos(angle)) * geometry.width + Math.abs(Math.sin(angle)) * geometry.height
+  const rotatedHeight =
+    Math.abs(Math.sin(angle)) * geometry.width + Math.abs(Math.cos(angle)) * geometry.height
+
+  const marginX = Math.max(0, (rotatedWidth - geometry.width) / 2)
+  const marginY = Math.max(0, (rotatedHeight - geometry.height) / 2)
+
+  // Làm tròn vào phía trong khung, theo độ chính xác geometry.
+  return {
+    minX: Math.ceil(marginX * 1000) / 1000,
+    minY: Math.ceil(marginY * 1000) / 1000,
+    maxX: Math.floor((props.layout.canvasWidth - geometry.width - marginX) * 1000) / 1000,
+    maxY: Math.floor((props.layout.canvasHeight - geometry.height - marginY) * 1000) / 1000,
+  }
+}
+
+function startDrag(event: PointerEvent, key: string) {
+  if (drag.value || props.disabled || !props.draggable || !event.isPrimary || event.button !== 0)
+    return
+
+  const point = canvasPoint(event)
+  const canvas = svg.value
+  if (!point || !canvas) return
+
+  const geometry = props.beginMove(key)
+  if (!geometry) return
+
+  const bounds = movementBounds(geometry)
+  if (bounds.maxX < bounds.minX || bounds.maxY < bounds.minY) {
+    emit('error', 'Đối tượng quá lớn để kéo trong khung sơ đồ.')
+    return
+  }
+
+  event.preventDefault()
+  canvas.focus()
+  canvas.setPointerCapture(event.pointerId)
+
+  drag.value = {
+    pointerId: event.pointerId,
+    key,
+    startX: point.x,
+    startY: point.y,
+    geometry: { ...geometry },
+    x: geometry.x,
+    y: geometry.y,
+    moved: false,
+  }
+}
+
+function updateDrag(event: PointerEvent) {
+  const current = drag.value
+  if (!current || current.pointerId !== event.pointerId) return
+
+  const point = canvasPoint(event)
+  if (!point) return
+
+  if (!current.moved && point.x === current.startX && point.y === current.startY) return
+
+  current.moved = true
+
+  const bounds = movementBounds(current.geometry)
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
+  const roundCoordinate = (value: number) => Number(value.toFixed(3))
+
+  current.x = roundCoordinate(
+    clamp(current.geometry.x + point.x - current.startX, bounds.minX, bounds.maxX),
+  )
+  current.y = roundCoordinate(
+    clamp(current.geometry.y + point.y - current.startY, bounds.minY, bounds.maxY),
+  )
+}
+
+function cancelDrag() {
+  const current = drag.value
+  drag.value = null
+
+  if (current && svg.value?.hasPointerCapture(current.pointerId)) {
+    svg.value.releasePointerCapture(current.pointerId)
+  }
+}
+
+function finishDrag(event: PointerEvent) {
+  if (drag.value?.pointerId !== event.pointerId) return
+
+  updateDrag(event)
+  const current = drag.value
+  cancelDrag()
+
+  if (
+    current?.moved &&
+    props.draggable &&
+    !props.disabled &&
+    (current.x !== current.geometry.x || current.y !== current.geometry.y)
+  ) {
+    emit('move', {
+      key: current.key,
+      x: current.x,
+      y: current.y,
+    })
+  }
+}
+
+watch(
+  () => [props.layout.id, props.draggable, props.disabled, props.zoom, props.showGrid],
+  cancelDrag,
+)
+onBeforeUnmount(cancelDrag)
+
 function transform(item: LayoutItem) {
-  const geometry = item.geometry
-  return `translate(${geometry.x + geometry.width / 2} ${
-    geometry.y + geometry.height / 2
+  const current = drag.value
+  const geometry = current?.key === item.key ? current.geometry : item.geometry
+  const x = current?.key === item.key ? current.x : geometry.x
+  const y = current?.key === item.key ? current.y : geometry.y
+
+  return `translate(${x + geometry.width / 2} ${
+    y + geometry.height / 2
   }) rotate(${geometry.rotationDegrees})`
 }
 
@@ -104,10 +245,18 @@ function select(key: string) {
       </div>
 
       <svg
+        ref="svg"
         class="layout-canvas__svg"
+        :class="{ 'is-draggable': draggable }"
         :viewBox="`0 0 ${layout.canvasWidth} ${layout.canvasHeight}`"
+        tabindex="0"
         role="group"
-        aria-label="Các ghế và đối tượng trong sơ đồ phòng"
+        aria-label="Sơ đồ phòng. Có thể kéo đối tượng trong bản nháp; Escape để hủy kéo."
+        @pointermove="updateDrag"
+        @pointerup="finishDrag"
+        @pointercancel="cancelDrag"
+        @lostpointercapture="cancelDrag"
+        @keydown.esc.prevent="cancelDrag"
       >
         <defs>
           <pattern :id="gridId" patternUnits="userSpaceOnUse" :width="gridStep" :height="gridStep">
@@ -148,17 +297,25 @@ function select(key: string) {
             :fill="`url(#${majorGridId})`"
           />
         </g>
+
         <g
           v-for="item in items"
           :key="item.key"
           :transform="transform(item)"
           class="layout-object"
-          :class="[`layout-object--${category(item)}`, { 'is-selected': selectedKey === item.key }]"
+          :class="[
+            `layout-object--${category(item)}`,
+            {
+              'is-selected': selectedKey === item.key,
+              'is-dragging': drag?.key === item.key,
+            },
+          ]"
           role="button"
           :tabindex="disabled ? -1 : 0"
           :aria-label="accessibleLabel(item)"
           :aria-pressed="selectedKey === item.key"
           :aria-disabled="disabled"
+          @pointerdown="startDrag($event, item.key)"
           @click="select(item.key)"
           @keydown.enter.prevent="select(item.key)"
           @keydown.space.prevent="select(item.key)"

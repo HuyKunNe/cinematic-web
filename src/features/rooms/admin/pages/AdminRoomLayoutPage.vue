@@ -401,26 +401,97 @@ function removeSelected() {
 }
 
 function alignRowsFromAnchor() {
-  if (!editable.value || !layout.value || !applyProperties()) return
+  success.value = ''
+
+  if (!editable.value || !layout.value) {
+    message.value = 'Chỉ có thể căn hàng trên bản nháp đã tải xong.'
+    return
+  }
+
+  if (!applyProperties()) return
 
   const anchor = selected.value
-  if (!anchor || !isLayoutSeat(anchor)) return
+  if (!anchor || !isLayoutSeat(anchor)) {
+    message.value = 'Chọn một ghế trên sơ đồ làm mốc.'
+    return
+  }
+
+  if (!roster.isSuccess.value || roster.isFetching.value) {
+    message.value = 'Danh sách ghế chưa tải xong. Vui lòng thử lại.'
+    return
+  }
 
   try {
-    const next = alignSeatRows(
+    const next = cloneLayoutState(state.value)
+    const placedIds = new Set(next.seats.map((seat) => seat.seatId))
+
+    for (const seat of physicalSeats.value) {
+      if (seat.active !== true || placedIds.has(seat.id)) continue
+
+      const template =
+        seat.seatType === anchor.seatTypeSnapshot
+          ? anchor.geometry
+          : (next.seats.find((entry) => entry.seatTypeSnapshot === seat.seatType)?.geometry ??
+            initialSeatGeometry(layout.value))
+
+      next.seats.push(
+        placeSeat(seat, {
+          ...template,
+          x: 0,
+          y: 0,
+          rotationDegrees: 0,
+        }),
+      )
+      placedIds.add(seat.id)
+    }
+
+    const aligned = alignSeatRows(
       layout.value,
-      state.value,
+      next,
       anchor.key,
       readLayoutNumber(horizontalGap.value, 'Khoảng trống giữa ghế'),
       readLayoutNumber(verticalGap.value, 'Khoảng trống giữa hàng'),
     )
 
-    commit(next)
+    const changed = layoutSignature(aligned) !== layoutSignature(state.value)
+
+    commit(aligned)
     resetForm()
     message.value = ''
+    success.value = changed
+      ? `Đã căn ${aligned.seats.length} ghế theo ${anchor.seatNumberSnapshot}. Chưa lưu nháp.`
+      : 'Các ghế đã nằm đúng vị trí theo ghế mốc.'
   } catch (error) {
     message.value = layoutErrorMessage(error)
   }
+}
+
+function beginCanvasMove(key: string) {
+  if (!editable.value || !applyProperties()) return null
+
+  const item = [...state.value.seats, ...state.value.elements].find((entry) => entry.key === key)
+  if (!item) return null
+
+  selectedKey.value = key
+  resetForm()
+  message.value = ''
+  success.value = ''
+
+  return { ...item.geometry }
+}
+
+function moveCanvasItem(payload: { key: string; x: number; y: number }) {
+  if (!editable.value || formChanged.value || selectedKey.value !== payload.key) return
+
+  const next = cloneLayoutState(state.value)
+  const item = [...next.seats, ...next.elements].find((entry) => entry.key === payload.key)
+  if (!item) return
+
+  item.geometry.x = payload.x
+  item.geometry.y = payload.y
+
+  commit(next)
+  resetForm()
 }
 
 function arrange() {
@@ -837,7 +908,11 @@ function displayTime(value: string) {
               :zoom="zoom"
               :disabled="!ready || Boolean(working)"
               :show-grid="showGrid"
+              :draggable="editable"
+              :begin-move="beginCanvasMove"
               @select="selectItem"
+              @move="moveCanvasItem"
+              @error="message = $event"
             />
             <p v-if="showGrid" class="layout-grid-help">
               Gốc (0, 0) ở góc trên trái · X tăng sang phải · Y tăng xuống dưới. Ô nhỏ:
@@ -857,8 +932,8 @@ function displayTime(value: string) {
               <h2>Căn hàng theo ghế mốc</h2>
 
               <p class="layout-muted">
-                Chọn ghế đầu tiên của hàng đầu, ví dụ A1. Các hàng còn lại sẽ thẳng cột theo ghế
-                này.
+                Chọn một ghế làm mốc. Các ghế hoạt động chưa có trên sơ đồ sẽ được thêm, rồi các
+                hàng được căn theo vị trí ghế này.
               </p>
 
               <div class="layout-geometry-fields">
