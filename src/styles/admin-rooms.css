@@ -1,7 +1,13 @@
 .admin-rooms {
+  --radius-sm: var(--admin-room-list-control-radius);
+  --radius-md: var(--admin-room-list-panel-radius);
+
   display: grid;
   gap: var(--space-5);
   min-width: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
 }
 
 .admin-rooms__heading,
@@ -75,7 +81,16 @@
 .admin-rooms__stat strong {
   color: var(--color-text-primary);
   font-size: var(--admin-room-stat-value-size);
-  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--admin-room-stat-line-height);
+}
+
+.admin-rooms__stat small.is-active {
+  color: var(--color-success);
+}
+
+.admin-rooms__stat small.is-paused {
+  color: var(--color-warning);
 }
 
 .admin-rooms__filters {

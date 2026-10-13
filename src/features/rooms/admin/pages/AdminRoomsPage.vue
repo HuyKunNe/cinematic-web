@@ -32,7 +32,7 @@ const canManage = computed(
 
 const cinemaId = ref(typeof route.query.cinemaId === 'string' ? route.query.cinemaId : '')
 const search = ref('')
-const roomType = ref('')
+const activeFilter = ref('all')
 const page = ref(1)
 const pageSize = 10
 const successMessage = ref('')
@@ -64,11 +64,19 @@ const roomActivity = useSetAdminRoomActivityMutation()
 const activeRoomCount = computed(
   () => (rooms.data.value ?? []).filter((room) => room.active === true).length,
 )
+const totalRoomCount = computed(() => (rooms.data.value ?? []).length)
+
+const inactiveRoomCount = computed(
+  () => (rooms.data.value ?? []).filter((room) => room.active === false).length,
+)
+
 const filtered = computed(() => {
   const words = normalizeAdminRoomSearch(search.value).split(/\s+/).filter(Boolean)
 
   return (rooms.data.value ?? []).filter((room) => {
-    if (roomType.value && room.roomType !== roomType.value) return false
+    if (activeFilter.value !== 'all' && room.active !== (activeFilter.value === 'active')) {
+      return false
+    }
 
     const text = normalizeAdminRoomSearch(`${room.name ?? ''} ${room.id ?? ''}`)
     return words.every((word) => text.includes(word))
@@ -86,17 +94,16 @@ const rows = computed(() =>
 )
 const firstResult = computed(() => (filtered.value.length ? (page.value - 1) * pageSize + 1 : 0))
 const lastResult = computed(() => Math.min(page.value * pageSize, filtered.value.length))
-const distinctTypes = computed(
-  () =>
-    new Set((rooms.data.value ?? []).flatMap((room) => (room.roomType ? [room.roomType] : [])))
-      .size,
-)
 
 const hasData = computed(() => Boolean(selectedCinema.value) && rooms.data.value !== undefined)
 
-watch([cinemaId, search, roomType], () => {
-  page.value = 1
-})
+watch(
+  [cinemaId, search, activeFilter],
+  () => {
+    page.value = 1
+  },
+  { flush: 'sync' },
+)
 
 watch(cinemaId, () => {
   successMessage.value = ''
@@ -209,22 +216,23 @@ function saved(room: RoomResponse) {
 
 function resetFilters() {
   search.value = ''
-  roomType.value = ''
-}
-
-function statusLabel(active?: boolean) {
-  if (active === true) return 'Đang hoạt động'
-  if (active === false) return 'Tạm ngưng'
-  return 'Chưa xác định'
+  activeFilter.value = 'all'
 }
 
 const emptyMessage = computed(() => {
   if (!selectedCinema.value) return 'Chọn rạp để xem danh sách phòng.'
   if (rooms.isFetching.value && !hasData.value) return 'Đang tải danh sách phòng…'
   if (rooms.isError.value && !hasData.value) return 'Chưa tải được danh sách phòng.'
-  if (search.value || roomType.value) return 'Không có phòng phù hợp với bộ lọc.'
+  if (search.value || activeFilter.value !== 'all') {
+    return 'Không có phòng phù hợp với bộ lọc.'
+  }
   return 'Rạp chưa có phòng.'
 })
+function statusLabel(active?: boolean) {
+  if (active === true) return 'Đang hoạt động'
+  if (active === false) return 'Tạm ngưng'
+  return 'Chưa xác định'
+}
 </script>
 
 <template>
@@ -256,19 +264,21 @@ const emptyMessage = computed(() => {
     <template v-else>
       <section class="admin-rooms__stats" aria-label="Thống kê phòng của rạp đã chọn">
         <article class="admin-rooms__stat">
-          <span>Phòng hoạt động</span>
+          <span>Tổng phòng chiếu</span>
+          <strong>{{ hasData ? totalRoomCount : '—' }}</strong>
+          <small>Trong rạp đã chọn</small>
+        </article>
+
+        <article class="admin-rooms__stat">
+          <span>Đang hoạt động</span>
           <strong>{{ hasData ? activeRoomCount : '—' }}</strong>
-          <small>Trong rạp đã chọn</small>
+          <small class="is-active">● Phòng đang hoạt động</small>
         </article>
+
         <article class="admin-rooms__stat">
-          <span>Loại phòng</span>
-          <strong>{{ hasData ? distinctTypes : '—' }}</strong>
-          <small>Trong rạp đã chọn</small>
-        </article>
-        <article class="admin-rooms__stat">
-          <span>Kết quả lọc</span>
-          <strong>{{ hasData ? filtered.length : '—' }}</strong>
-          <small>Theo tên và loại phòng</small>
+          <span>Tạm ngưng</span>
+          <strong>{{ hasData ? inactiveRoomCount : '—' }}</strong>
+          <small class="is-paused">● Phòng đang tạm ngưng</small>
         </article>
       </section>
       <p v-if="activityError" class="admin-rooms__error" role="alert">
@@ -286,24 +296,35 @@ const emptyMessage = computed(() => {
           />
         </label>
 
-        <AppAutocomplete
-          id="admin-room-cinema"
-          v-model="cinemaId"
-          label="Rạp chiếu"
-          all-label="Chọn rạp"
-          content-class="admin-reference-autocomplete"
-          :options="cinemaOptions"
-          :loading="cinemas.isFetching.value"
-          :disabled="roomActivity.isPending.value"
-        />
-
-        <label class="admin-rooms__field">
-          <span>Loại phòng</span>
-          <select v-model="roomType" class="admin-rooms__input" :disabled="!selectedCinema">
-            <option value="">Tất cả loại phòng</option>
-            <option v-for="item in adminRoomTypeOptions" :key="item.value" :value="item.value">
+        <label class="admin-rooms__field" for="admin-room-cinema">
+          <span>Rạp</span>
+          <select
+            id="admin-room-cinema"
+            v-model="cinemaId"
+            class="admin-rooms__input"
+            :disabled="
+              roomActivity.isPending.value || (cinemas.isError.value && !cinemas.data.value)
+            "
+            :aria-busy="cinemas.isFetching.value"
+          >
+            <option value="">Chọn rạp</option>
+            <option v-for="item in cinemaOptions" :key="item.value" :value="item.value">
               {{ item.label }}
             </option>
+          </select>
+        </label>
+
+        <label class="admin-rooms__field" for="admin-room-status-filter">
+          <span>Trạng thái</span>
+          <select
+            id="admin-room-status-filter"
+            v-model="activeFilter"
+            class="admin-rooms__input"
+            :disabled="!selectedCinema"
+          >
+            <option value="all">Tất cả trạng thái</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="inactive">Tạm ngưng</option>
           </select>
         </label>
 

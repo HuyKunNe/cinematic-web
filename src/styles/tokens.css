@@ -664,7 +664,10 @@
   --admin-room-empty-height: 12rem;
   --admin-room-dialog-width: 32rem;
   --admin-room-seats-dialog-width: var(--admin-movie-dialog-width);
-
+  --admin-room-list-control-radius: 0.375rem;
+  --admin-room-list-panel-radius: 0.625rem;
+  --admin-room-stat-line-height: 1;
+  
   /* Movie detail */
   --detail-page-gutter: clamp(1.25rem, 4vw, 3.5rem);
   --detail-poster-width: 18.75rem;
