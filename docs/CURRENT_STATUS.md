@@ -1,336 +1,151 @@
 # Current Status
 
-## Last updated
-
-2026-09-28
-
-## Repositories
-
-- Frontend: `https://github.com/HuyKunNe/cinematic-web`
-- Backend, read-only: `https://github.com/HuyKunNe/cinema-system`
-
-## Current phase
-
-```text
-F0 — Discovery and architecture review
-```
-
-## Verified frontend state
-
-- Frontend repository is a new Vue/Vite scaffold.
-- Current `src/App.vue` still contains the starter page.
-- Current router has no application routes.
-- Pinia is registered; current counter store is scaffold sample code.
-- Existing package manifest includes Vue Query, Axios, Orval, oidc-client-ts,
-  Pinia, Vue Router, Tailwind CSS, VueUse, Reka UI, VeeValidate and Zod.
-- Existing dependency versions and Vue release channel require review before
-  implementation; do not update dependencies without approval.
-- Repository instructions say do not commit or push before user approval.
-- Repository is read-only for this workflow; proposed document changes are
-  supplied for manual review/application.
-
-## Discovery findings
-
-- Backend API routes and DTOs were inventoried from controllers, request and
-  response records, enums, security configuration, gateway routing and common
-  response/error classes.
-- API Gateway local base URL is `http://localhost:8080`.
-- User Service owns OAuth2/OIDC; frontend authentication uses Authorization
-  Code with PKCE. OIDC issuer/client/redirect settings must be confirmed for
-  the target environment.
-- Gateway CORS allows local `http://localhost:*` by default and defines allowed
-  request/response headers in backend configuration.
-- Backend has dynamic springdoc/Swagger configuration, but no committed static
-  OpenAPI JSON/YAML snapshots were found.
-- Booking create returns `202 Accepted` and is asynchronous.
-- Backend does not currently expose confirmed contracts for promotions,
-  membership/points, movie ratings or featured hero ordering.
-- Permission mismatch exists for `inventory:write`, `payment:refund`,
-  `payment:audit` and `payment:reconcile`; confirm backend grants before
-  implementing those operations.
-- R28 Notification Service is deferred and outside current scope.
-
-## Architecture proposal
-
-Proposed feature-based organization:
-
-```text
-src/
-├── app/
-├── assets/
-├── components/
-├── composables/
-├── config/
-├── features/
-├── layouts/
-├── router/
-├── services/
-├── stores/
-├── styles/
-├── types/
-└── utils/
-```
-
-- Generated API clients: `src/services/api/generated/`
-- DTO-to-UI mappers and feature models: `src/features/<feature>/mappers/` and
-  `src/features/<feature>/models/`
-- Vue Query keys/composables: `src/features/<feature>/api/`
-- Pinia: cross-route client state only; server state remains in Vue Query.
-- Route definitions: owned by feature and composed by `src/router/`.
-- Error normalization: `src/services/http/error-normalizer.ts`.
-- Environment parsing: `src/config/env.ts`.
-
-See the proposed `docs/ARCHITECTURE.md` for the complete boundaries and
-responsibilities.
-
-## Current scope
-
-- Use supplied desktop/mobile images as visual references.
-- Do not use Figma unless explicitly requested.
-- Do not implement Notification/R28.
-- Do not write UI code until the architecture and next milestone are approved.
-- Do not commit or push.
-
-## Pending review
-
-- Approve or revise feature folder structure and boundaries.
-- Confirm where reviewed OpenAPI snapshots will be sourced from and captured.
-- Confirm OIDC issuer, public client ID, redirect URI and frontend origin for
-  the target environment.
-- Resolve backend permission mismatches before enabling affected admin actions.
-- Confirm treatment for homepage hero, promotion and membership sections without
-  current backend data contracts.
-
-## Next step
-
-```text
-F1 — Application foundation, after architecture review
-```
-
-F1 can define tokens/base styles, environment parsing, router/provider setup and
-the shared HTTP/error infrastructure. Do not implement feature UI or R28 until
-the relevant scope is approved.
-
-## Verification status
-
-No tests, lint, type-check or build have been run for this architecture
-proposal.
-
-## F1.3 — Customer navigation shell
-
-Status: PROPOSED FOR REVIEW — NOT APPLIED
-
-- Visual source of truth: `docs/design/reference/html-convert/`.
-- Desktop navigation follows the reference header hierarchy and 1180px compact behavior.
-- Mobile header uses a sticky bar and accessible menu drawer with overlay, Escape handling, focus management, and body scroll restoration.
-- Mobile bottom navigation follows the reference items: Home, Lịch chiếu, Vé của tôi, Tài khoản.
-- Navigation uses centralized route names and auth state from the existing Pinia store.
-- Tokens are reused; existing semantic palette and header/navigation dimensions are aligned to the reference.
-- `AuthLayout`, `AdminLayout`, API integration, HomePage sections, and R28 are outside this milestone.
-- Automated tests were not run, per project instruction.
-- Requested viewport checks for 375×667, 390×844, 768×1024, 1024×768, 1440×900, and 1912×1080: NOT RUN against this proposed implementation.
-- Repository remains read-only; proposed changes were supplied as code blocks.
-
-## F1.4 — Admin application shell
-
-Status: PROPOSED FOR REVIEW — NOT APPLIED
-
-- Admin shell dựa trên design tokens hiện có; không được xem là pixel match với customer references.
-- Menu chỉ liệt kê Movies, Cinemas, Rooms, Showtimes và Users theo các API admin đã xác nhận trong backend inventory.
-- Booking admin bị loại khỏi menu vì backend chỉ có API booking theo người dùng hiện tại.
-- Menu lọc theo role và permission từ auth store, dùng route/authorization constants.
-- Sidebar hỗ trợ desktop, thu gọn tablet và drawer mobile; header có user menu và logout trigger.
-- Logout hiện xóa authorization context phía client và chuyển tới auth placeholder. Cần nối OIDC end-session khi auth feature được triển khai.
-- Responsive CSS đã được rà soát ở mức mã nguồn; browser verification tại 375×667, 390×844, 768×1024, 1024×768, 1440×900 và 1912×1080: NOT RUN.
-- Automated tests không chạy theo yêu cầu.
-- Repository vẫn read-only; thay đổi được cung cấp qua code blocks.
-
-### `docs/CURRENT_STATUS.md` — thêm mục F2.1
-
-```md
-## F2.1 — API integration foundation
-
-Status: PROPOSED FOR REVIEW — NOT APPLIED
-
-- API business base URL dùng API Gateway local `http://localhost:8080` làm default
-  và có thể override bằng `VITE_API_BASE_URL`.
-- Axios client tập trung có auth callbacks, request ID, correlation ID passthrough,
-  error normalization và AbortSignal support.
-- Refresh phụ thuộc vào OIDC client/session callback; backend cho phép refresh
-  token grant nhưng client registration/refresh-token issuance frontend chưa
-  được xác nhận.
-- OpenAPI được cấu hình động; chưa có snapshots trong repository và runtime
-  `/v3/api-docs` chưa được kiểm chứng.
-- Orval config và command `npm run api:generate` được đề xuất; chưa thể generate
-  tới khi snapshots được kiểm tra và đưa vào `openapi/`.
-- Kiểu pagination/error dùng chung và pagination mapper dựa trên backend
-  inventory đã xác nhận.
-- Feature DTOs/query composables chưa được tạo; sẽ lấy từ generated output khi
-  OpenAPI snapshots sẵn sàng.
-- `npm run type-check`: NOT RUN — không có local checkout/dependencies trong
-  workspace hiện tại.
-- `npm run build`: NOT RUN — không có local checkout/dependencies trong
-  workspace hiện tại.
-- Không có automated tests chạy.
-- Repository vẫn read-only; các thay đổi được cung cấp qua code blocks.
-```
-
-## F2.2 — Authentication và frontend login
-
-Status: IMPLEMENTATION PROVIDED — NOT APPLIED
-
-- User Service login HTML được restyle theo dark navy/amber design tokens của FE.
-- Giữ nguyên server form `POST /login`, field `username`/`password`, error query
-  và Thymeleaf CSRF handling.
-- FE login page khởi động Authorization Code + PKCE redirect; credentials vẫn
-  được nhập trên User Service, không gửi qua Vue.
-- Callback, internal return path, Pinia auth state, route guard và session
-  restoration được cung cấp bằng code blocks.
-- OIDC user state dùng sessionStorage; không mặc định ghi access token vào
-  localStorage.
-- Cần client ID/public-client registration, redirect URIs và CORS hợp lệ để
-  chạy end-to-end.
-- Typecheck/build chưa chạy: không có local checkout frontend trong workspace.
-- Không ghi file trực tiếp, không sửa backend security logic, không commit/push.
-
-# Current Status
-
-## Last updated
-
-2026-09-29
-
-## Repository state
-
-- Frontend: `HuyKunNe/cinematic-web`, `main` at `d499d13` before this local work.
-- Backend: `HuyKunNe/cinema-system`, read only.
-- The checkout was clean before F3.1. F3.1 edits are local and uncommitted; nothing was pushed.
-- Auth, customer/admin navigation and API client foundation already existed. The Home route was still a placeholder in this checkout, so F3.1 was implemented here from the reference HTML/CSS.
-
-## F3.1 — Customer Home Page
-
-Status: IMPLEMENTED LOCALLY — AWAITING REVIEW
-
-Visual source: `docs/design/reference/html-convert/cinematic-home-{desktop,mobile}.{html,css}`. Figma and PNG mockups were not used.
+## Last audited
 
-- Home route renders Vue components for hero, quick booking, now showing, upcoming, promotions and membership. The footer is composed within Home, so other customer routes are unchanged.
-- Hero reserves two lines of heading space and atomically swaps title, image and active indicator after artwork is loaded. Failed or timed-out posters use a project-owned fallback asset; if that also fails, the gradient remains. Artwork fallback mapping is separate from the API service.
-- Movie listing is loaded from public `GET /api/v1/movies`, mapped from `MovieResponse` and split by `NOW_SHOWING`/`UPCOMING` status. The home page does not claim backend age ratings, taglines or featured ordering.
-- Quick booking loads public `GET /api/v1/cinemas` and `GET /api/v1/showtimes/by-movie/{movieId}`. It shows future `OPEN_FOR_BOOKING` showtimes for the chosen cinema, then uses the existing booking route. The booking route itself remains a placeholder.
-- Promotion and membership cards are static, clearly labeled illustration. The backend has no confirmed promotion, membership/points or featured artwork contract. Calls to action for unconfirmed offers were intentionally omitted. The sample member name from the HTML was not carried into production UI.
-- On mobile, booking fields stack and movie/upcoming lists scroll horizontally with snap points. Header and bottom navigation remain owned by the customer shell.
-- R28 remains deferred.
-
-## Verification
-
-- `npm run type-check`: passed.
-- `npm run build-only`: passed. The full `build` script also regenerates API clients, so it was not used.
-- Automated tests: skipped as requested. No lint script exists.
-- Interactive viewport inspection at 375×667, 390×844, 768×1024, 1024×768, 1440×900 and 1912×1080: pending. The available cloud browser blocked `http://localhost:5173` with `ERR_BLOCKED_BY_CLIENT`; no screenshots or two-slide browser verification are claimed.
-
-## Remaining differences and follow-up
-
-- Backend posters are used as hero landscape art because there is no separate artwork field. The image may crop differently from the static reference. Local fallback photographs match the reference image sources but are generic, assigned by stable ID hash, not tied to actual films.
-- Movie names, dates, genres and runtimes reflect backend data rather than the reference's fictional samples. Age badges and film-specific taglines are absent from the backend contract.
-- Promotion prices/benefits are visible only as labeled design previews; no live promotion or membership action is exposed.
-- Footer displays the reference's social, store and policy labels without dummy destinations. Existing movie/booking routes beyond Home are still placeholders.
-- Manual browser review should confirm image crop, heading height for one/two-line titles, slide swapping, overflow and fixed mobile navigation at all requested viewports before approval.
+2026-10-13
 
-## F4.1 — Admin Movies: proposed implementation
+## Audited source
 
-Scope:
+- Frontend main:
+  8abf4e3511c66e3d81ff9e25a40dd08a3161e019
+- Backend main:
+  dc6209debcd6b7cf350f1e9d2b2d71a8ad5adfc7
 
-- Replace the Admin Movies placeholder.
-- Use the existing admin layout and movie:manage authorization.
-- Load the paginated catalog with status and genre filters.
-- Create movies and edit core movie information.
-- Fetch fresh movie details when opening the editor.
-- Validate forms with VeeValidate and Zod.
-- Use existing generated Movie Service clients.
-- Invalidate movies, home and booking query caches after saving.
-- Prevent dialog dismissal while a save request is pending.
-- Keep table overflow inside the table region on narrow screens.
+This audit records source-code findings.
+It does not claim browser verification or successful runtime integration.
 
-Application and manual verification are pending.
+Both repositories are read-only for the assistant.
+The user applies and commits proposed changes.
 
-Tests, lint, type checking and build were not run, following AGENTS.md.
+## Technology and architecture
 
-Remaining work:
+- Vue, TypeScript, Vite, Vue Router, Pinia and TanStack Vue Query.
+- Axios, Orval, oidc-client-ts, Tailwind CSS and Reka UI.
+- VeeValidate and Zod for existing form validation.
+- Preserve versions from package.json and package-lock.json.
+- Dependency direction:
+  app → features → shared infrastructure.
+- Vue Query owns server state.
+- Pinia owns cross-route client state.
+- Pages must not call Axios directly.
+- Generated API files must not be edited manually.
 
-- Genre management.
-- Movie metadata and Hero configuration.
-- Cinema, room/seat and showtime management.
-- Resume booking minimap after backend layout/seat-map APIs are implemented.
+Orval currently uses axios-functions.
+Feature composables wrap generated clients with Vue Query.
+The existing generation script is npm run api.
 
-## F4.0 — Admin foundation redesign
+## Visual source
 
-Proposed patch; application and manual verification are pending.
+Use docs/design/reference/html-convert.
 
-Scope:
+Follow its README for CSS ownership:
+tokens, base, admin shell, shared admin components,
+page-scoped content and responsive rules.
 
-- Rebuild AdminLayout, AdminHeader and AdminSidebar.
-- Add grouped, permission-aware navigation and the Overview entry.
-- Support persisted desktop sidebar collapse.
-- Use a Reka UI dialog drawer for tablet, mobile and compact landscape.
-- Close the drawer after navigation and restore navigation focus.
-- Use a Reka UI account dropdown.
-- Connect logout to the existing OIDC signOut flow.
-- Replace the admin home placeholder with AdminDashboardPage.
-- Load movie totals from catalog pagination metadata.
-- Load active cinema count from the existing cinema list API.
-- Show independent loading, error and retry states.
-- Use existing design tokens and introduce no dependencies.
+Static reference data is illustrative.
+Figma is not the implementation source for the current workflow.
 
-API scope:
+## Implemented source code
 
-- GET /api/v1/movies/catalog
-- GET /api/v1/cinemas
-- Cinema count includes active cinemas only.
-- No revenue or booking metrics are introduced.
+Customer:
 
-Architecture:
+- Home and cinema-scoped programme selection.
+- Movie listing and movie detail.
+- Booking start and seat selection as a list grouped by row.
+- OIDC login and callback integration.
 
-- Dashboard server state belongs to features/admin.
-- Existing generated clients remain unchanged.
-- Shared navigation components do not call business APIs.
-- Existing route authorization remains in place.
+Admin:
 
-Tests, lint, type checking and build were not run, following AGENTS.md.
+- Navigation and dashboard.
+- Movie and genre management.
+- Cinema management.
+- Room management.
+- Seat-range creation and seat activity updates.
 
-Next implementation rounds:
+These entries describe existing code, not completed manual verification.
 
-1. Movie and genre management.
-2. Cinema management.
-3. Room and seat management.
-4. Showtime management.
-5. User management.
+## Remaining implementation
 
-Booking minimap remains deferred until backend layout/seat-map APIs are ready.
+- Runtime seat matrix.
+- Physical room layout editor.
+- Admin showtime integration.
+- Admin booking and user integration.
+- Customer cinema and showtime pages.
+- Account and booking history.
+- Completion of booking/payment flows.
 
-## F4.2 — Genre management: proposed patch
+Admin showtimes, bookings, users and promotions currently use
+AdminReferencePage.
 
-Application and manual verification are pending.
+Customer cinemas, showtimes, account and booking history currently
+use placeholders.
 
-Scope:
+ADMIN_ROOM_LAYOUT currently uses a placeholder and has a matrix title.
+The future implementation must distinguish the seat matrix from
+physical room geometry.
 
-- Add the Genre management button to Admin Movies.
-- Create genres and edit genre names/descriptions.
-- Fetch fresh genre details before editing.
-- Reuse the existing genre-list query cache.
-- Validate name length (100) and description length (500).
-- Display duplicate-name and backend field errors.
-- Preserve form input after failed saves.
-- Prevent dismissal and repeated submission while saving.
-- Invalidate movies, home and booking caches after saving.
+## Seat matrix baseline
 
-Existing APIs:
+- Seat width: 40px.
+- Seat height: 30px.
+- Horizontal seat gap: 40px.
+- Vertical row gap: 40px.
+- Empty cells may exist within a row.
+- Additional columns are allowed.
+- Dropping onto an occupied position shifts the target seat and
+  subsequent seats right; it must not overwrite or swap seats.
+- The "Hàng" heading stays outside the canvas.
+- Physical room elements belong to the separate layout editor.
 
-- GET /api/v1/genres
-- GET /api/v1/genres/{id}
-- POST /api/v1/genres
-- PUT /api/v1/genres/{id}
+The reference matrix exists.
+The runtime matrix component does not yet exist.
+admin-seat-matrix.css is not imported by main.css.
 
-No dependencies, generated clients or backend files are changed.
+SeatResponse does not contain matrix coordinates or column count.
+Do not infer persisted positions from seat numbers.
 
-Tests, lint, type checking and build were not run, following AGENTS.md.
+## Backend contract findings
 
-Next: movie metadata and Hero configuration.
+- Movie catalog pagination and filters exist.
+- Movie metadata includes backdropUrl and ageRating.
+- Editorial Hero APIs exist.
+- Inventory management reads include inactive records.
+- Inventory administration requires inventory:manage.
+- Room layout APIs support draft content and publication.
+- Replacing room layout content replaces both seats and elements.
+- expectedVersion refers to layout.version, not layoutVersion.
+
+These findings supersede older documentation that describes these
+contracts as unavailable.
+
+R28 Notification remains deferred.
+
+## Active round — Home recovery button
+
+Status: IMPLEMENTATION PROVIDED — APPLICATION PENDING
+
+Files:
+
+- src/features/home/pages/HomePage.vue
+- docs/CURRENT_STATUS.md
+
+Objective:
+
+- Import the existing AppButton used by the Home error recovery action.
+- Replace outdated status notes with the audited baseline.
+
+Finding:
+HomePage uses AppButton without importing it.
+main.ts does not register AppButton globally.
+Vite does not configure automatic component imports.
+
+Manual verification is pending.
+No tests, lint, type checking or build were run during this audit.
+
+## Documentation follow-up
+
+AI_CONTEXT, DESIGN_SYSTEM, ROADMAP, API_INTEGRATION and parts of
+ARCHITECTURE still contain outdated assumptions.
+
+Reconcile them in a separate documentation round.
+Current user instructions and current source code take precedence.

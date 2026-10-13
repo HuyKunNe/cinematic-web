@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import AppButton from '@/components/ui/AppButton.vue'
 import CustomerFooter from '@/components/navigation/CustomerFooter.vue'
 import { useCinemaLocation } from '@/features/cinemas'
 import HeroBanner from '../components/HeroBanner.vue'
