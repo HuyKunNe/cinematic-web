@@ -643,7 +643,12 @@
   --admin-cinema-dialog-layer: calc(var(--z-modal) + 1);
   --admin-cinema-city-dropdown-layer: calc(var(--admin-cinema-dialog-layer) + 1);
   --admin-cinema-menu-width: 12rem;
-  --admin-cinema-avatar-size: var(--space-10);
+  --admin-cinema-avatar-size: var(--control-height-md);
+
+  /* Cinema list geometry from the static reference */
+  --admin-cinema-list-control-radius: 0.375rem;
+  --admin-cinema-list-panel-radius: 0.625rem;
+  --admin-cinema-filter-columns: minmax(14rem, 1.5fr) repeat(2, minmax(11rem, 1fr)) auto;
   --admin-cinema-empty-height: 12rem;
   --admin-cinema-active-border: color-mix(in srgb, var(--color-success) 40%, transparent);
   --admin-cinema-active-background: color-mix(in srgb, var(--color-success) 10%, transparent);

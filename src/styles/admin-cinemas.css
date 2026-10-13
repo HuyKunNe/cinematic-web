@@ -1,7 +1,13 @@
 .admin-cinemas {
+  --radius-sm: var(--admin-cinema-list-control-radius);
+  --radius-md: var(--admin-cinema-list-panel-radius);
+
   display: grid;
   gap: var(--space-5);
   min-width: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
 }
 
 .admin-cinemas__heading,
@@ -163,7 +169,7 @@
 }
 
 .admin-cinemas__name strong {
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
 }
 
 .admin-cinemas__name small {
@@ -178,13 +184,12 @@
   width: var(--admin-cinema-avatar-size);
   height: var(--admin-cinema-avatar-size);
   border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--admin-cinema-list-control-radius);
   background: var(--color-surface-raised);
   color: var(--color-primary);
   font-size: var(--admin-dashboard-tiny-size);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-display);
 }
-
 .admin-cinemas__avatar svg {
   width: var(--icon-size-md);
   height: var(--icon-size-md);
@@ -220,9 +225,10 @@
   height: var(--control-height-md);
   padding: 0;
   border: var(--border-width-thin) solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--admin-cinema-list-control-radius);
   background: transparent;
   color: var(--color-text-secondary);
+  font: inherit;
   cursor: pointer;
 }
 
@@ -262,7 +268,7 @@
   padding: var(--space-1);
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: var(--color-background);
+  background: var(--admin-reference-background-soft);
   color: var(--color-text-secondary);
   font: inherit;
   cursor: pointer;

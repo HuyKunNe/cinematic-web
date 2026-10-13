@@ -15,7 +15,6 @@ import type { CinemaResponse } from '@/services/api/generated/inventory-service/
 import AdminCinemaEditorDialog from '../components/AdminCinemaEditorDialog.vue'
 import { useAdminCinemaCatalogQuery } from '../api/admin-cinema-queries'
 import { adminCinemaErrorMessage } from '../schemas/admin-cinema.schema'
-import AppAutocomplete from '@/components/ui/AppAutocomplete.vue'
 
 const auth = useAuthStore()
 const canManage = computed(
@@ -59,7 +58,6 @@ const filtered = computed(() => {
   const keyword = normalize(search.value)
 
   return (catalog.data.value ?? []).filter((cinema) => {
-
     return (
       (!city.value || cinema.city?.trim() === city.value) &&
       (activeFilter.value === 'all' || cinema.active === (activeFilter.value === 'active')) &&
@@ -163,7 +161,7 @@ function statusLabel(active?: boolean) {
         <p class="admin-cinemas__eyebrow">Hệ thống rạp</p>
         <h1 id="admin-cinemas-title" tabindex="-1">Quản lý rạp chiếu</h1>
         <p class="admin-cinemas__description">
-          Theo dõi danh sách và cập nhật thông tin các rạp trong hệ thống.
+          Theo dõi danh sách và trạng thái hoạt động của các rạp.
         </p>
       </div>
 
@@ -193,14 +191,15 @@ function statusLabel(active?: boolean) {
           />
         </label>
 
-        <AppAutocomplete
-          id="admin-cinema-city-filter"
-          v-model="city"
-          label="Khu vực"
-          all-label="Tất cả khu vực"
-          content-class="admin-reference-autocomplete"
-          :options="cities.map((item) => ({ value: item, label: item }))"
-        />
+        <label class="admin-cinemas__field" for="admin-cinema-city-filter">
+          <span>Khu vực</span>
+          <select id="admin-cinema-city-filter" v-model="city" class="admin-cinemas__input">
+            <option value="">Tất cả khu vực</option>
+            <option v-for="item in cities" :key="item" :value="item">
+              {{ item }}
+            </option>
+          </select>
+        </label>
 
         <label class="admin-cinemas__field" for="admin-cinema-status-filter">
           <span>Trạng thái</span>
@@ -230,7 +229,7 @@ function statusLabel(active?: boolean) {
             <p>Thông tin rạp và trạng thái hiện tại</p>
           </div>
           <span v-if="catalog.data.value" class="admin-cinemas__muted">
-            {{ filtered.length }} kết quả
+            {{ filtered.length }} rạp
           </span>
         </header>
 
