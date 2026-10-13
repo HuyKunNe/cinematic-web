@@ -117,8 +117,13 @@ export function layoutSignature(state: LayoutState) {
   return JSON.stringify({ seats: request.seats, elements: request.elements })
 }
 
-export function readLayoutNumber(input: string, label: string, positive = false, rotation = false) {
-  const text = input.trim()
+export function readLayoutNumber(
+  input: string | number,
+  label: string,
+  positive = false,
+  rotation = false,
+) {
+  const text = typeof input === 'number' ? String(input) : input.trim()
   const value = Number(text)
   const limit = rotation ? 999_999.999 : 999_999_999.999
 
@@ -137,7 +142,9 @@ export function readLayoutNumber(input: string, label: string, positive = false,
   return value
 }
 
-export function readGeometry(values: Record<GeometryKey, string>): RoomLayoutGeometryInput {
+export function readGeometry(
+  values: Record<GeometryKey, string | number>,
+): RoomLayoutGeometryInput {
   return {
     x: readLayoutNumber(values.x, 'Vị trí X'),
     y: readLayoutNumber(values.y, 'Vị trí Y'),

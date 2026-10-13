@@ -87,10 +87,10 @@ const success = ref('')
 const propertyError = ref('')
 const showCreate = ref(false)
 const showSeats = ref(false)
-const canvasWidth = ref('1000')
-const canvasHeight = ref('600')
+const canvasWidth = ref<string | number>('1000')
+const canvasHeight = ref<string | number>('600')
 
-const form = reactive<Record<GeometryKey, string> & { label: string }>({
+const form = reactive<Record<GeometryKey, string | number> & { label: string }>({
   x: '',
   y: '',
   width: '',
@@ -113,7 +113,7 @@ const formChanged = computed(() => {
   if (!item) return false
 
   return (
-    geometryFields.some(({ key }) => form[key] !== String(item.geometry[key])) ||
+    geometryFields.some(({ key }) => String(form[key]) !== String(item.geometry[key])) ||
     (!isLayoutSeat(item) && form.label !== (item.label ?? ''))
   )
 })

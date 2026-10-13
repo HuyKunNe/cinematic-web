@@ -27,6 +27,28 @@ const majorGridStep = gridStep * 5
 
 const gridId = computed(() => `room-layout-grid-${props.layout.id}`)
 const majorGridId = computed(() => `room-layout-major-grid-${props.layout.id}`)
+// Giới hạn số nhãn để thước không dày đặc trên sơ đồ lớn.
+const rulerStep = computed(() => {
+  const longestSide = Math.max(props.layout.canvasWidth, props.layout.canvasHeight)
+  return majorGridStep * Math.max(1, Math.ceil(longestSide / (majorGridStep * 8)))
+})
+
+function coordinateMarks(length: number) {
+  if (!Number.isFinite(length) || length <= 0) return []
+
+  const step = rulerStep.value
+  const marks = Array.from({ length: Math.floor(length / step) + 1 }, (_, index) => index * step)
+
+  if (marks.at(-1) !== length) marks.push(length)
+  return marks
+}
+
+const xMarks = computed(() => coordinateMarks(props.layout.canvasWidth))
+const yMarks = computed(() => coordinateMarks(props.layout.canvasHeight))
+
+const coordinateFormatter = new Intl.NumberFormat('vi-VN', {
+  maximumFractionDigits: 3,
+})
 
 function transform(item: LayoutItem) {
   const geometry = item.geometry
@@ -51,7 +73,35 @@ function select(key: string) {
 
 <template>
   <div class="layout-canvas-scroll" tabindex="0" aria-label="Sơ đồ phòng, có thể cuộn ngang">
-    <div class="layout-canvas" :style="{ '--room-layout-zoom': zoom }">
+    <div
+      class="layout-canvas"
+      :class="{ 'has-rulers': showGrid }"
+      :style="{ '--room-layout-zoom': zoom }"
+    >
+      <div v-if="showGrid" class="layout-ruler__corner" aria-hidden="true">X/Y</div>
+
+      <div v-if="showGrid" class="layout-ruler is-x" aria-hidden="true">
+        <span
+          v-for="value in xMarks"
+          :key="value"
+          class="layout-ruler__mark"
+          :style="{ left: `${(value / layout.canvasWidth) * 100}%` }"
+        >
+          {{ coordinateFormatter.format(value) }}
+        </span>
+      </div>
+
+      <div v-if="showGrid" class="layout-ruler is-y" aria-hidden="true">
+        <span
+          v-for="value in yMarks"
+          :key="value"
+          class="layout-ruler__mark"
+          :style="{ top: `${(value / layout.canvasHeight) * 100}%` }"
+        >
+          {{ coordinateFormatter.format(value) }}
+        </span>
+      </div>
+
       <svg
         class="layout-canvas__svg"
         :viewBox="`0 0 ${layout.canvasWidth} ${layout.canvasHeight}`"
