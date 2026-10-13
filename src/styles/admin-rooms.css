@@ -314,6 +314,102 @@
   border-top: var(--border-width-thin) solid var(--color-border);
 }
 
+/* Chỉ áp dụng cho bảng catalog, không đổi bảng ghế trong dialog. */
+.admin-rooms__table.is-room-catalog {
+  table-layout: fixed;
+}
+
+.admin-rooms__column-name {
+  width: var(--admin-room-column-name-width);
+}
+
+.admin-rooms__column-type {
+  width: var(--admin-room-column-type-width);
+}
+
+.admin-rooms__column-status {
+  width: var(--admin-room-column-status-width);
+}
+
+.admin-rooms__column-actions {
+  width: var(--admin-room-column-actions-width);
+}
+
+/* Cột rạp nhận chiều rộng còn lại. */
+.admin-rooms__table.is-room-catalog td {
+  overflow-wrap: anywhere;
+}
+
+.admin-rooms__table.is-room-catalog th:last-child,
+.admin-rooms__table.is-room-catalog td:last-child {
+  padding-inline: var(--space-1);
+  text-align: center;
+}
+
+.admin-rooms__menu-trigger {
+  display: inline-grid;
+  place-items: center;
+  width: var(--control-height-md);
+  height: var(--control-height-md);
+  padding: 0;
+  border: var(--border-width-thin) solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.admin-rooms__menu-trigger svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+.admin-rooms__menu-trigger:hover:not(:disabled) {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-primary);
+}
+
+.admin-rooms__menu-trigger:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: wait;
+}
+
+.admin-room-menu {
+  z-index: var(--z-modal);
+  width: var(--admin-room-menu-width);
+  max-width: var(--reka-dropdown-menu-content-available-width);
+  max-height: var(--reka-dropdown-menu-content-available-height);
+  overflow-y: auto;
+  padding: var(--space-2);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-raised);
+}
+
+.admin-room-menu__item {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-height-sm);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.admin-room-menu__item[data-highlighted] {
+  outline: none;
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.admin-room-menu__item[data-disabled] {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
 @variant tablet-down {
   .admin-rooms__filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));

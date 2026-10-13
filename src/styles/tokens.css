@@ -667,7 +667,12 @@
   --admin-room-list-control-radius: 0.375rem;
   --admin-room-list-panel-radius: 0.625rem;
   --admin-room-stat-line-height: 1;
-  
+  --admin-room-column-name-width: 30%;
+  --admin-room-column-type-width: 7rem;
+  --admin-room-column-status-width: 11rem;
+  --admin-room-column-actions-width: 4.5rem;
+  --admin-room-menu-width: 13rem;
+
   /* Movie detail */
   --detail-page-gutter: clamp(1.25rem, 4vw, 3.5rem);
   --detail-poster-width: 18.75rem;

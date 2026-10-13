@@ -1,5 +1,5 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { getManagedCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import {
   create2,
@@ -49,6 +49,52 @@ export function useAdminRoomCatalogQuery(
     retry: false,
     refetchOnWindowFocus: false,
   })
+}
+
+export function useAdminRoomSummaryQuery(
+  cinemaIds: MaybeRefOrGetter<readonly string[]>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  const queries = useQueries({
+    queries: computed(() =>
+      toValue(enabled)
+        ? [...new Set(toValue(cinemaIds))]
+            .filter(Boolean)
+            .sort()
+            .map((cinemaId) => ({
+              queryKey: adminRoomKeys.catalog(cinemaId),
+              queryFn: (): Promise<RoomResponse[]> => getManagedRooms({ cinemaId }),
+              staleTime: 30_000,
+              retry: false,
+              refetchOnWindowFocus: false,
+            }))
+        : [],
+    ),
+  })
+
+  const counts = computed(() => {
+    if (!toValue(enabled) || queries.value.some((query) => query.data === undefined)) {
+      return null
+    }
+
+    const allRooms = queries.value.flatMap((query) => query.data ?? [])
+
+    return {
+      total: allRooms.length,
+      active: allRooms.filter((room) => room.active === true).length,
+      inactive: allRooms.filter((room) => room.active === false).length,
+    }
+  })
+
+  const isFetching = computed(() => queries.value.some((query) => query.isFetching))
+
+  const error = computed(() => queries.value.find((query) => query.isError)?.error ?? null)
+
+  async function refresh() {
+    await Promise.allSettled(queries.value.map((query) => query.refetch()))
+  }
+
+  return { counts, isFetching, error, refresh }
 }
 
 export function useAdminRoomDetailQuery(

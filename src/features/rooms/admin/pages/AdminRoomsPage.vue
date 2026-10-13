@@ -1,26 +1,25 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { Pencil, Plus } from 'lucide-vue-next'
-import AppAutocomplete from '@/components/ui/AppAutocomplete.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
-import { useAuthStore } from '@/stores/auth.store'
+import { ROUTE_NAMES } from '@/router/route-constants'
 import type { RoomResponse } from '@/services/api/generated/inventory-service/model'
-import AdminRoomEditorDialog from '../components/AdminRoomEditorDialog.vue'
-import AdminRoomSeatsDialog from '../components/AdminRoomSeatsDialog.vue'
+import { useAuthStore } from '@/stores/auth.store'
+import { Plus } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   useAdminRoomCatalogQuery,
   useAdminRoomCinemaQuery,
   useSetAdminRoomActivityMutation,
+  useAdminRoomSummaryQuery,
 } from '../api/admin-room-queries'
+import AdminRoomEditorDialog from '../components/AdminRoomEditorDialog.vue'
+import AdminRoomSeatsDialog from '../components/AdminRoomSeatsDialog.vue'
 import {
   adminRoomErrorMessage,
   adminRoomTypeLabel,
-  adminRoomTypeOptions,
   normalizeAdminRoomSearch,
 } from '../schemas/admin-room.schema'
-import { useRoute, useRouter } from 'vue-router'
-import { ROUTE_NAMES } from '@/router/route-constants'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -61,15 +60,61 @@ const selectedCinema = computed(() =>
 
 const rooms = useAdminRoomCatalogQuery(() => selectedCinema.value?.value ?? '', canManage)
 const roomActivity = useSetAdminRoomActivityMutation()
-const activeRoomCount = computed(
-  () => (rooms.data.value ?? []).filter((room) => room.active === true).length,
-)
-const totalRoomCount = computed(() => (rooms.data.value ?? []).length)
-
-const inactiveRoomCount = computed(
-  () => (rooms.data.value ?? []).filter((room) => room.active === false).length,
+const summaryCinemaIds = computed(() =>
+  (cinemas.data.value ?? []).flatMap((cinema) => (cinema.id ? [cinema.id] : [])),
 )
 
+const systemSummary = useAdminRoomSummaryQuery(
+  summaryCinemaIds,
+  () => canManage.value && !selectedCinema.value && cinemas.isSuccess.value,
+)
+
+const statistics = computed(() => {
+  if (!selectedCinema.value) return systemSummary.counts.value
+
+  const data = rooms.data.value
+  if (data === undefined) return null
+
+  return {
+    total: data.length,
+    active: data.filter((room) => room.active === true).length,
+    inactive: data.filter((room) => room.active === false).length,
+  }
+})
+
+const statisticsScope = computed(() => selectedCinema.value?.label ?? 'Toàn hệ thống')
+
+const statisticsLoading = computed(() =>
+  selectedCinema.value
+    ? rooms.isFetching.value
+    : cinemas.isFetching.value || systemSummary.isFetching.value,
+)
+
+const statisticsError = computed(() => {
+  if (selectedCinema.value) {
+    return rooms.isError.value ? rooms.error.value : null
+  }
+  if (cinemas.isError.value) return cinemas.error.value
+  return systemSummary.error.value
+})
+
+function retryStatistics() {
+  if (selectedCinema.value) {
+    void rooms.refetch()
+  } else if (cinemas.isError.value) {
+    void cinemas.refetch()
+  } else {
+    void systemSummary.refresh()
+  }
+}
+
+function roomActionId(id?: string) {
+  return `admin-room-actions-${id ?? 'missing'}`
+}
+
+function preventRoomMenuFocus(event: Event) {
+  if (editor.value || seatManager.value) event.preventDefault()
+}
 const filtered = computed(() => {
   const words = normalizeAdminRoomSearch(search.value).split(/\s+/).filter(Boolean)
 
@@ -160,7 +205,7 @@ function openSeats(room: RoomResponse) {
     roomName: room.name || 'Phòng chiếu',
     roomActive: room.active === true,
     cinemaName: cinema.label,
-    returnFocusId: `admin-room-seats-${room.id}`,
+    returnFocusId: roomActionId(room.id),
   }
 }
 function openEditor(roomId: string | null = null) {
@@ -173,7 +218,7 @@ function openEditor(roomId: string | null = null) {
     cinemaId: cinema.value,
     cinemaName: cinema.label,
     roomId,
-    returnFocusId: roomId ? `admin-room-edit-${roomId}` : 'admin-room-create',
+    returnFocusId: roomId ? roomActionId(roomId) : 'admin-room-create',
   }
 }
 
@@ -262,25 +307,45 @@ function statusLabel(active?: boolean) {
     </p>
 
     <template v-else>
-      <section class="admin-rooms__stats" aria-label="Thống kê phòng của rạp đã chọn">
+      <section
+        class="admin-rooms__stats"
+        aria-label="Thống kê phòng chiếu"
+        :aria-busy="statisticsLoading"
+      >
         <article class="admin-rooms__stat">
           <span>Tổng phòng chiếu</span>
-          <strong>{{ hasData ? totalRoomCount : '—' }}</strong>
-          <small>Trong rạp đã chọn</small>
+          <strong>{{ statistics?.total ?? '—' }}</strong>
+          <small>{{ statisticsScope }}</small>
         </article>
-
         <article class="admin-rooms__stat">
           <span>Đang hoạt động</span>
-          <strong>{{ hasData ? activeRoomCount : '—' }}</strong>
-          <small class="is-active">● Phòng đang hoạt động</small>
+          <strong>{{ statistics?.active ?? '—' }}</strong>
+          <small>{{ statisticsScope }}</small>
         </article>
-
         <article class="admin-rooms__stat">
           <span>Tạm ngưng</span>
-          <strong>{{ hasData ? inactiveRoomCount : '—' }}</strong>
-          <small class="is-paused">● Phòng đang tạm ngưng</small>
+          <strong>{{ statistics?.inactive ?? '—' }}</strong>
+          <small>{{ statisticsScope }}</small>
         </article>
       </section>
+
+      <p v-if="statisticsLoading" class="admin-rooms__muted" role="status">
+        Đang cập nhật thống kê…
+      </p>
+
+      <div v-if="statisticsError" class="admin-rooms__feedback">
+        <p class="admin-rooms__error" role="alert">
+          {{ adminRoomErrorMessage(statisticsError, 'Không thể tải đầy đủ thống kê phòng.') }}
+        </p>
+        <AppButton
+          variant="secondary"
+          size="sm"
+          :disabled="statisticsLoading"
+          @click="retryStatistics"
+        >
+          Thử lại
+        </AppButton>
+      </div>
       <p v-if="activityError" class="admin-rooms__error" role="alert">
         {{ activityError }}
       </p>
@@ -291,7 +356,7 @@ function statusLabel(active?: boolean) {
             v-model="search"
             class="admin-rooms__input"
             type="search"
-            placeholder="Nhập tên hoặc ID phòng"
+            placeholder="Nhập tên phòng"
             :disabled="!selectedCinema"
           />
         </label>
@@ -400,7 +465,14 @@ function statusLabel(active?: boolean) {
           aria-label="Danh sách phòng chiếu"
           tabindex="0"
         >
-          <table class="admin-rooms__table">
+          <table class="admin-rooms__table is-room-catalog">
+            <colgroup>
+              <col class="admin-rooms__column-name" />
+              <col class="admin-rooms__column-cinema" />
+              <col class="admin-rooms__column-type" />
+              <col class="admin-rooms__column-status" />
+              <col class="admin-rooms__column-actions" />
+            </colgroup>
             <caption class="admin-visually-hidden">
               Phòng của rạp đã chọn
             </caption>
@@ -435,56 +507,47 @@ function statusLabel(active?: boolean) {
                   </span>
                 </td>
                 <td>
-                  <div class="admin-rooms__actions">
-                    <AppButton
-                      variant="secondary"
-                      size="sm"
-                      :disabled="!canManage || !room.id || roomActivity.isPending.value"
-                      :aria-label="`Thiết kế sơ đồ ${room.name || 'phòng'}`"
-                      @click="openLayout(room)"
-                    >
-                      Sơ đồ
-                    </AppButton>
-                    <AppButton
-                      :id="`admin-room-edit-${room.id}`"
-                      class="admin-rooms__row-action"
-                      variant="ghost"
-                      size="sm"
-                      :disabled="!canManage || !room.id || roomActivity.isPending.value"
-                      :aria-label="`Sửa ${room.name || 'phòng'}`"
-                      @click="room.id && openEditor(room.id)"
-                    >
-                      <Pencil aria-hidden="true" />
-                    </AppButton>
-                    <AppButton
-                      :id="`admin-room-seats-${room.id}`"
-                      variant="secondary"
-                      size="sm"
-                      :disabled="!canManage || !room.id || roomActivity.isPending.value"
-                      :aria-label="`Quản lý ghế của ${room.name || 'phòng'}`"
-                      @click="openSeats(room)"
-                    >
-                      Ghế
-                    </AppButton>
-                    <AppButton
-                      variant="secondary"
-                      size="sm"
-                      :disabled="
-                        !canManage ||
-                        !room.id ||
-                        typeof room.active !== 'boolean' ||
-                        roomActivity.isPending.value
-                      "
-                      :loading="
-                        roomActivity.isPending.value &&
-                        roomActivity.variables.value?.roomId === room.id
-                      "
-                      :aria-label="`${room.active ? 'Tạm ngưng' : 'Kích hoạt'} ${room.name || 'phòng'}`"
-                      @click="changeRoomActivity(room)"
-                    >
-                      {{ room.active ? 'Tạm ngưng' : 'Kích hoạt' }}
-                    </AppButton>
-                  </div>
+                  <DropdownMenuRoot>
+                    <DropdownMenuTrigger as-child>
+                      <button
+                        :id="roomActionId(room.id)"
+                        class="admin-rooms__menu-trigger"
+                        type="button"
+                        :disabled="!canManage || !room.id || roomActivity.isPending.value"
+                        :aria-label="`Thao tác với ${room.name || 'phòng'}`"
+                      >
+                        <MoreHorizontal aria-hidden="true" />
+                      </button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuPortal>
+                      <DropdownMenuContent
+                        class="admin-room-menu"
+                        align="end"
+                        @close-auto-focus="preventRoomMenuFocus"
+                      >
+                        <DropdownMenuItem class="admin-room-menu__item" @select="openLayout(room)">
+                          Thiết kế sơ đồ
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          class="admin-room-menu__item"
+                          @select="room.id && openEditor(room.id)"
+                        >
+                          Sửa thông tin
+                        </DropdownMenuItem>
+                        <DropdownMenuItem class="admin-room-menu__item" @select="openSeats(room)">
+                          Quản lý ghế
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          class="admin-room-menu__item"
+                          :disabled="typeof room.active !== 'boolean'"
+                          @select="changeRoomActivity(room)"
+                        >
+                          {{ room.active ? 'Tạm ngưng' : 'Kích hoạt' }}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuRoot>
                 </td>
               </tr>
               <tr v-if="!rows.length">
@@ -516,7 +579,9 @@ function statusLabel(active?: boolean) {
               aria-label="Trang tiếp theo"
               :disabled="page === totalPages"
               @click="page++"
-            ></button>
+            >
+              ›
+            </button>
           </nav>
         </footer>
       </section>
