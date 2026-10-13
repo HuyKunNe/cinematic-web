@@ -84,6 +84,30 @@ const showGrid = ref(true)
 const horizontalGap = ref<string | number>('10')
 const verticalGap = ref<string | number>('20')
 
+const autoAlignAnchorKey = ref('')
+
+// Đổi phiên bản thì chọn và căn ghế mốc lại.
+watch(layoutId, () => {
+  autoAlignAnchorKey.value = ''
+})
+
+function realignWithAnchor(next: LayoutState) {
+  const current = layout.value
+  const anchorKey = autoAlignAnchorKey.value
+
+  if (!current || !anchorKey || !next.seats.some((seat) => seat.key === anchorKey)) {
+    return next
+  }
+
+  return alignSeatRows(
+    current,
+    next,
+    anchorKey,
+    readLayoutNumber(horizontalGap.value, 'Khoảng trống giữa ghế'),
+    readLayoutNumber(verticalGap.value, 'Khoảng trống giữa hàng'),
+  )
+}
+
 const working = ref<'' | 'create' | 'save' | 'publish' | 'reload'>('')
 const conflict = ref(false)
 const message = ref('')
@@ -282,6 +306,87 @@ function alignSelectedToGrid() {
   }
 }
 
+function arrangeChangedSeatRows(
+  next: LayoutState,
+  anchorKey: string,
+  resizedType?: string,
+): LayoutState {
+  const current = layout.value
+  const anchor = next.seats.find((seat) => seat.key === anchorKey)
+
+  if (!current || !anchor) {
+    throw new Error('Không tìm thấy ghế mốc trên sơ đồ.')
+  }
+
+  if (!roster.isSuccess.value || roster.isFetching.value) {
+    throw new Error('Danh sách ghế chưa tải xong. Vui lòng thử lại.')
+  }
+
+  // Đưa các ghế hoạt động cùng hàng, chưa đặt trên canvas, vào sơ đồ.
+  const placedIds = new Set(next.seats.map((seat) => seat.seatId))
+
+  for (const seat of physicalSeats.value) {
+    if (seat.active !== true || seat.rowLabel !== anchor.rowLabelSnapshot || placedIds.has(seat.id))
+      continue
+
+    const template =
+      seat.seatType === anchor.seatTypeSnapshot
+        ? anchor.geometry
+        : (next.seats.find((entry) => entry.seatTypeSnapshot === seat.seatType)?.geometry ??
+          initialSeatGeometry(current))
+
+    next.seats.push(
+      placeSeat(seat, {
+        ...template,
+        x: 0,
+        y: 0,
+        rotationDegrees: 0,
+      }),
+    )
+    placedIds.add(seat.id)
+  }
+
+  const rowLabels = new Set([anchor.rowLabelSnapshot])
+
+  // Đổi kích thước một loại ghế thì căn lại các hàng bị ảnh hưởng.
+  if (resizedType) {
+    for (const seat of next.seats) {
+      if (seat.seatTypeSnapshot === resizedType) {
+        rowLabels.add(seat.rowLabelSnapshot)
+      }
+    }
+  }
+
+  const gap = readLayoutNumber(horizontalGap.value, 'Khoảng trống giữa ghế')
+  const collator = new Intl.Collator('vi', { numeric: true })
+  let updated = next
+
+  for (const rowLabel of rowLabels) {
+    const row = updated.seats.filter((seat) => seat.rowLabelSnapshot === rowLabel)
+
+    const rowAnchor =
+      row.find((seat) => seat.key === anchorKey) ??
+      [...row].sort((a, b) => collator.compare(a.seatNumberSnapshot, b.seatNumberSnapshot))[0]
+
+    if (!rowAnchor) continue
+
+    // Chỉ đưa một hàng vào hàm căn: mọi ghế sẽ có cùng Y.
+    const aligned = alignSeatRows(current, { seats: row, elements: [] }, rowAnchor.key, gap, 0)
+
+    const geometries = new Map(aligned.seats.map((seat) => [seat.key, seat.geometry]))
+
+    updated = {
+      ...updated,
+      seats: updated.seats.map((seat) => {
+        const geometry = geometries.get(seat.key)
+        return geometry ? { ...seat, geometry: { ...geometry } } : seat
+      }),
+    }
+  }
+
+  return updated
+}
+
 function applyProperties() {
   const item = selected.value
   if (!item || !formChanged.value) return true
@@ -297,6 +402,8 @@ function applyProperties() {
 
     const dimensionsChanged =
       geometry.width !== item.geometry.width || geometry.height !== item.geometry.height
+
+    const positionChanged = geometry.x !== item.geometry.x || geometry.y !== item.geometry.y
 
     const next = cloneLayoutState(state.value)
     const target = [...next.seats, ...next.elements].find((entry) => entry.key === item.key)
@@ -320,7 +427,16 @@ function applyProperties() {
       target.label = label
     }
 
-    commit(next)
+    const updated =
+      isLayoutSeat(target) && (positionChanged || dimensionsChanged)
+        ? arrangeChangedSeatRows(
+            next,
+            target.key,
+            dimensionsChanged ? target.seatTypeSnapshot : undefined,
+          )
+        : next
+
+    commit(updated)
     resetForm()
     return true
   } catch (error) {
@@ -455,6 +571,7 @@ function alignRowsFromAnchor() {
 
     const changed = layoutSignature(aligned) !== layoutSignature(state.value)
 
+    autoAlignAnchorKey.value = anchor.key
     commit(aligned)
     resetForm()
     message.value = ''
@@ -483,15 +600,21 @@ function beginCanvasMove(key: string) {
 function moveCanvasItem(payload: { key: string; x: number; y: number }) {
   if (!editable.value || formChanged.value || selectedKey.value !== payload.key) return
 
-  const next = cloneLayoutState(state.value)
-  const item = [...next.seats, ...next.elements].find((entry) => entry.key === payload.key)
-  if (!item) return
+  try {
+    const next = cloneLayoutState(state.value)
+    const item = [...next.seats, ...next.elements].find((entry) => entry.key === payload.key)
+    if (!item) return
 
-  item.geometry.x = payload.x
-  item.geometry.y = payload.y
+    item.geometry.x = payload.x
+    item.geometry.y = payload.y
 
-  commit(next)
-  resetForm()
+    const updated = isLayoutSeat(item) ? arrangeChangedSeatRows(next, item.key) : next
+
+    commit(updated)
+    resetForm()
+  } catch (error) {
+    message.value = layoutErrorMessage(error)
+  }
 }
 
 function arrange() {
