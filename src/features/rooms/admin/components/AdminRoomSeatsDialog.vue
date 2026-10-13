@@ -359,7 +359,7 @@ function submit(event: Event) {
         <form
           v-if="canManage && roomActive"
           ref="formElement"
-          class="admin-room-form"
+          class="admin-room-form admin-room-seats__create"
           novalidate
           @submit="submit"
         >

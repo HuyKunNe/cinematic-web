@@ -486,6 +486,25 @@
   overflow-wrap: anywhere;
 }
 
+.admin-room-seats__create,
+.admin-room-seats__list {
+  min-width: 0;
+  padding: var(--space-5);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--admin-reference-panel-shadow);
+}
+
+.admin-room-seats__create > .admin-rooms__muted,
+.admin-room-seats__list > .admin-rooms__muted {
+  margin: 0;
+}
+
+.admin-room-seats__list .admin-rooms__feedback {
+  padding: 0;
+}
+
 @variant tablet-down {
   .admin-rooms__filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -553,15 +572,21 @@
 }
 
 .admin-rooms__table.admin-room-seats__table {
-  min-width: 0;
+  min-width: var(--admin-room-seats-table-min-width);
+  table-layout: auto;
 }
 
 .admin-room-seats__table td {
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
 
 @variant mobile-layout {
   .admin-room-seats__fields {
     grid-template-columns: minmax(0, 1fr);
+  }
+  
+  .admin-room-seats__create,
+  .admin-room-seats__list {
+    padding: var(--space-4);
   }
 }
