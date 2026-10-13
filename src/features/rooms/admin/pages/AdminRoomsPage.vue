@@ -4,14 +4,21 @@ import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { RoomResponse } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
-import { Plus } from 'lucide-vue-next'
+import { MoreHorizontal, Plus } from 'lucide-vue-next'
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+} from 'reka-ui'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   useAdminRoomCatalogQuery,
   useAdminRoomCinemaQuery,
-  useSetAdminRoomActivityMutation,
   useAdminRoomSummaryQuery,
+  useSetAdminRoomActivityMutation,
 } from '../api/admin-room-queries'
 import AdminRoomEditorDialog from '../components/AdminRoomEditorDialog.vue'
 import AdminRoomSeatsDialog from '../components/AdminRoomSeatsDialog.vue'
