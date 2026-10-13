@@ -307,8 +307,8 @@ export function alignSeatRows(
     throw new Error('Chọn ghế có số thứ tự nhỏ nhất của hàng đầu tiên làm mốc, ví dụ A1.')
   }
 
-  // Dùng kích thước lớn nhất để giữ khoảng trống cho cả ghế đôi.
-  // Kích thước riêng của từng ghế vẫn được giữ nguyên.
+  // Lấy kích thước ghế mốc cho toàn bộ ghế trên sơ đồ.
+  const { width, height } = anchor.geometry
   const columnStep = Math.max(...state.seats.map((seat) => seat.geometry.width)) + horizontalGap
   const rowStep = Math.max(...state.seats.map((seat) => seat.geometry.height)) + verticalGap
 

@@ -290,16 +290,35 @@ function applyProperties() {
   try {
     const geometry = readGeometry(form)
     const label = form.label.trim()
+
     if (!isLayoutSeat(item) && label.length > 150) {
       throw new Error('Nhãn đối tượng tối đa 150 ký tự.')
     }
+
+    const dimensionsChanged =
+      geometry.width !== item.geometry.width || geometry.height !== item.geometry.height
 
     const next = cloneLayoutState(state.value)
     const target = [...next.seats, ...next.elements].find((entry) => entry.key === item.key)
     if (!target) return false
 
     target.geometry = geometry
-    if (!isLayoutSeat(target)) target.label = label
+
+    if (isLayoutSeat(target)) {
+      if (dimensionsChanged) {
+        for (const seat of next.seats) {
+          if (seat.seatTypeSnapshot !== target.seatTypeSnapshot) continue
+
+          seat.geometry = {
+            ...seat.geometry,
+            width: geometry.width,
+            height: geometry.height,
+          }
+        }
+      }
+    } else {
+      target.label = label
+    }
 
     commit(next)
     resetForm()
