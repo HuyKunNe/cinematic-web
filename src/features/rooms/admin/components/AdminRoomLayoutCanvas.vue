@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { RoomLayoutResponse } from '@/services/api/generated/inventory-service/model'
+import type { RoomLayoutResponse } from '@/services/api/generated/inventory-service/model';
+import { computed } from 'vue';
 import {
   isLayoutSeat,
   itemLabel,
+  ROOM_LAYOUT_GRID_STEP,
   seatTypeLabel,
   type LayoutItem,
   type LayoutState,
-} from '../models/admin-room-layout'
+} from '../models/admin-room-layout';
 
 const props = defineProps<{
   layout: RoomLayoutResponse
@@ -22,7 +23,7 @@ const emit = defineEmits<{ select: [key: string] }>()
 
 const items = computed(() => [...props.state.elements, ...props.state.seats])
 // Khoảng cách tính bằng đơn vị geometry của sơ đồ, không phải CSS pixel.
-const gridStep = 50
+const gridStep = ROOM_LAYOUT_GRID_STEP
 const majorGridStep = gridStep * 5
 
 const gridId = computed(() => `room-layout-grid-${props.layout.id}`)

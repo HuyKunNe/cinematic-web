@@ -20,6 +20,8 @@ export type GeometryKey = keyof RoomLayoutGeometryInput
 export type PhysicalSeat = SeatResponse &
   Required<Pick<SeatResponse, 'id' | 'roomId' | 'seatNumber' | 'rowLabel' | 'seatType'>>
 
+export const ROOM_LAYOUT_GRID_STEP = 50
+
 export const geometryFields = [
   { key: 'x', label: 'Vị trí X' },
   { key: 'y', label: 'Vị trí Y' },
@@ -247,6 +249,88 @@ export function arrangeActiveSeats(layout: RoomLayoutResponse, seats: PhysicalSe
     ),
     elements: [makeLayoutElement(layout, 'SCREEN')],
   }
+}
+
+export function alignSeatRows(
+  layout: RoomLayoutResponse,
+  state: LayoutState,
+  anchorKey: string,
+  horizontalGap: number,
+  verticalGap: number,
+): LayoutState {
+  const anchor = state.seats.find((seat) => seat.key === anchorKey)
+  if (!anchor) throw new Error('Chọn ghế đầu tiên làm mốc.')
+
+  if (state.seats.some((seat) => seat.geometry.rotationDegrees !== 0)) {
+    throw new Error('Căn hàng hiện chỉ hỗ trợ các ghế có góc xoay bằng 0.')
+  }
+
+  function seatIndex(seat: LayoutSeat) {
+    const row = seat.rowLabelSnapshot
+    const number = seat.seatNumberSnapshot
+
+    if (!number.startsWith(row)) {
+      throw new Error(`Ghế ${number} không có tên theo dạng ${row}1, ${row}2…`)
+    }
+
+    const suffix = number.slice(row.length)
+    const index = Number(suffix)
+
+    if (!/^\d+$/.test(suffix) || !Number.isInteger(index) || index < 1 || index > 999) {
+      throw new Error(`Không xác định được số thứ tự của ghế ${number}.`)
+    }
+
+    return index
+  }
+
+  const collator = new Intl.Collator('vi', { numeric: true })
+  const rows = [...new Set(state.seats.map((seat) => seat.rowLabelSnapshot))].sort(collator.compare)
+
+  const indices = new Map<string, number>()
+  const occupied = new Set<string>()
+
+  for (const seat of state.seats) {
+    const index = seatIndex(seat)
+    const position = JSON.stringify([seat.rowLabelSnapshot, index])
+
+    if (occupied.has(position)) {
+      throw new Error(`Hàng ${seat.rowLabelSnapshot} có số thứ tự ghế bị trùng.`)
+    }
+
+    occupied.add(position)
+    indices.set(seat.key, index)
+  }
+
+  const firstIndex = Math.min(...indices.values())
+
+  if (anchor.rowLabelSnapshot !== rows[0] || indices.get(anchor.key) !== firstIndex) {
+    throw new Error('Chọn ghế có số thứ tự nhỏ nhất của hàng đầu tiên làm mốc, ví dụ A1.')
+  }
+
+  // Dùng kích thước lớn nhất để giữ khoảng trống cho cả ghế đôi.
+  // Kích thước riêng của từng ghế vẫn được giữ nguyên.
+  const columnStep = Math.max(...state.seats.map((seat) => seat.geometry.width)) + horizontalGap
+  const rowStep = Math.max(...state.seats.map((seat) => seat.geometry.height)) + verticalGap
+
+  const next = cloneLayoutState(state)
+
+  for (const seat of next.seats) {
+    const rowIndex = rows.indexOf(seat.rowLabelSnapshot)
+    const columnIndex = indices.get(seat.key)! - firstIndex
+
+    seat.geometry.x = round(anchor.geometry.x + columnIndex * columnStep)
+    seat.geometry.y = round(anchor.geometry.y + rowIndex * rowStep)
+
+    if (
+      seat.geometry.x + seat.geometry.width > layout.canvasWidth ||
+      seat.geometry.y + seat.geometry.height > layout.canvasHeight
+    ) {
+      throw new Error('Các hàng vượt khung sơ đồ. Giảm khoảng cách hoặc đổi vị trí ghế mốc.')
+    }
+  }
+
+  validateLayoutState(next)
+  return next
 }
 
 export function layoutErrorMessage(error: unknown): string {

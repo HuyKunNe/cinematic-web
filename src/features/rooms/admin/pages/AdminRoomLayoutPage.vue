@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
 import AppAutocomplete from '@/components/ui/AppAutocomplete.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
-import { useAuthStore } from '@/stores/auth.store'
 import type {
   RoomLayoutContentResponse,
   RoomLayoutElementInput,
   RoomLayoutResponse,
 } from '@/services/api/generated/inventory-service/model'
-import { useAdminRoomCinemaQuery, useAdminRoomDetailQuery } from '../api/admin-room-queries'
-import { useAdminRoomSeatsQuery } from '../api/admin-seat-queries'
+import { useAuthStore } from '@/stores/auth.store'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
 import {
   useAdminRoomLayoutContentQuery,
   useAdminRoomLayoutMutations,
   useAdminRoomLayoutsQuery,
 } from '../api/admin-room-layout-queries'
+import { useAdminRoomCinemaQuery, useAdminRoomDetailQuery } from '../api/admin-room-queries'
+import { useAdminRoomSeatsQuery } from '../api/admin-seat-queries'
 import AdminRoomLayoutCanvas from '../components/AdminRoomLayoutCanvas.vue'
 import AdminRoomSeatsDialog from '../components/AdminRoomSeatsDialog.vue'
-import { isAdminRoomApiError } from '../schemas/admin-room.schema'
 import {
+  alignSeatRows,
   arrangeActiveSeats,
   cloneLayoutState,
   elementLabels,
@@ -37,12 +37,14 @@ import {
   placeSeat,
   readGeometry,
   readLayoutNumber,
+  ROOM_LAYOUT_GRID_STEP,
   seatTypeLabel,
   toLayoutRequest,
   validateLayoutState,
   type GeometryKey,
   type LayoutState,
 } from '../models/admin-room-layout'
+import { isAdminRoomApiError } from '../schemas/admin-room.schema'
 
 const props = defineProps<{ roomId: string }>()
 const router = useRouter()
@@ -79,6 +81,8 @@ const past = ref<LayoutState[]>([])
 const future = ref<LayoutState[]>([])
 const zoom = ref(1)
 const showGrid = ref(true)
+const horizontalGap = ref<string | number>('10')
+const verticalGap = ref<string | number>('20')
 
 const working = ref<'' | 'create' | 'save' | 'publish' | 'reload'>('')
 const conflict = ref(false)
@@ -254,6 +258,30 @@ function commit(next: LayoutState) {
   message.value = ''
 }
 
+function alignSelectedToGrid() {
+  if (!editable.value || !selected.value) return
+
+  try {
+    const x = readLayoutNumber(form.x, 'Vị trí X')
+    const y = readLayoutNumber(form.y, 'Vị trí Y')
+
+    const alignedX = readLayoutNumber(
+      Math.round(x / ROOM_LAYOUT_GRID_STEP) * ROOM_LAYOUT_GRID_STEP,
+      'Vị trí X',
+    )
+    const alignedY = readLayoutNumber(
+      Math.round(y / ROOM_LAYOUT_GRID_STEP) * ROOM_LAYOUT_GRID_STEP,
+      'Vị trí Y',
+    )
+
+    form.x = String(alignedX)
+    form.y = String(alignedY)
+    propertyError.value = ''
+  } catch (error) {
+    propertyError.value = layoutErrorMessage(error)
+  }
+}
+
 function applyProperties() {
   const item = selected.value
   if (!item || !formChanged.value) return true
@@ -351,6 +379,29 @@ function removeSelected() {
     seats: state.value.seats.filter((item) => item.key !== key),
     elements: state.value.elements.filter((item) => item.key !== key),
   })
+}
+
+function alignRowsFromAnchor() {
+  if (!editable.value || !layout.value || !applyProperties()) return
+
+  const anchor = selected.value
+  if (!anchor || !isLayoutSeat(anchor)) return
+
+  try {
+    const next = alignSeatRows(
+      layout.value,
+      state.value,
+      anchor.key,
+      readLayoutNumber(horizontalGap.value, 'Khoảng trống giữa ghế'),
+      readLayoutNumber(verticalGap.value, 'Khoảng trống giữa hàng'),
+    )
+
+    commit(next)
+    resetForm()
+    message.value = ''
+  } catch (error) {
+    message.value = layoutErrorMessage(error)
+  }
 }
 
 function arrange() {
@@ -770,8 +821,8 @@ function displayTime(value: string) {
               @select="selectItem"
             />
             <p v-if="showGrid" class="layout-grid-help">
-              Gốc (0, 0) ở góc trên trái · X tăng sang phải · Y tăng xuống dưới. Ô nhỏ: 50 đơn vị ·
-              Ô lớn: 250 đơn vị.
+              Gốc (0, 0) ở góc trên trái · X tăng sang phải · Y tăng xuống dưới. Ô nhỏ:
+              {{ ROOM_LAYOUT_GRID_STEP }} đơn vị · Ô lớn: {{ ROOM_LAYOUT_GRID_STEP * 5 }} đơn vị.
             </p>
             <p v-if="!state.seats.length && !state.elements.length" class="layout-muted">
               Sơ đồ trống. Xếp ghế theo hàng hoặc thêm từng đối tượng.
@@ -783,6 +834,46 @@ function displayTime(value: string) {
           </section>
 
           <aside class="layout-inspector" aria-label="Thuộc tính sơ đồ">
+            <section class="layout-panel layout-inspector-panel">
+              <h2>Căn hàng theo ghế mốc</h2>
+
+              <p class="layout-muted">
+                Chọn ghế đầu tiên của hàng đầu, ví dụ A1. Các hàng còn lại sẽ thẳng cột theo ghế
+                này.
+              </p>
+
+              <div class="layout-geometry-fields">
+                <label class="layout-field">
+                  <span>Khoảng trống giữa ghế</span>
+                  <input
+                    v-model="horizontalGap"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    :disabled="!editable"
+                  />
+                </label>
+
+                <label class="layout-field">
+                  <span>Khoảng trống giữa hàng</span>
+                  <input
+                    v-model="verticalGap"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    :disabled="!editable"
+                  />
+                </label>
+              </div>
+
+              <AppButton
+                variant="secondary"
+                :disabled="!editable || !selected || !isLayoutSeat(selected)"
+                @click="alignRowsFromAnchor"
+              >
+                Căn các hàng theo ghế đang chọn
+              </AppButton>
+            </section>
             <section class="layout-panel layout-inspector-panel">
               <AppAutocomplete
                 id="room-layout-object"
@@ -842,13 +933,33 @@ function displayTime(value: string) {
                 </p>
 
                 <div class="layout-tools">
+                  <AppButton
+                    type="button"
+                    variant="secondary"
+                    :disabled="!editable"
+                    @click="alignSelectedToGrid"
+                  >
+                    Căn X/Y theo lưới
+                  </AppButton>
+
                   <AppButton type="submit" :disabled="!editable || !formChanged">
                     Áp dụng vị trí
                   </AppButton>
-                  <AppButton variant="ghost" :disabled="!editable" @click="removeSelected">
+
+                  <AppButton
+                    type="button"
+                    variant="ghost"
+                    :disabled="!editable"
+                    @click="removeSelected"
+                  >
                     Bỏ khỏi sơ đồ
                   </AppButton>
                 </div>
+
+                <p class="layout-muted">
+                  Căn X/Y về bội số gần nhất của {{ ROOM_LAYOUT_GRID_STEP }} đơn vị, sau đó bấm “Áp
+                  dụng vị trí”.
+                </p>
               </form>
               <p v-else class="layout-muted">Chọn một đối tượng trên sơ đồ hoặc trong danh sách.</p>
             </section>
