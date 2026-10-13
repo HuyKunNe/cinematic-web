@@ -502,12 +502,18 @@ function statusLabel(active?: boolean) {
                   </span>
                 </td>
                 <td>
-                  <span class="admin-rooms__status" :class="{ 'is-active': room.active === true }">
+                  <span
+                    class="admin-rooms__status"
+                    :class="{
+                      'is-active': room.active === true,
+                      'is-paused': room.active === false,
+                    }"
+                  >
                     {{ statusLabel(room.active) }}
                   </span>
                 </td>
                 <td>
-                  <DropdownMenuRoot>
+                  <DropdownMenuRoot :modal="false">
                     <DropdownMenuTrigger as-child>
                       <button
                         :id="roomActionId(room.id)"

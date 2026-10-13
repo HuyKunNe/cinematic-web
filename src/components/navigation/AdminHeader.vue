@@ -190,7 +190,7 @@ function requestLogout() {
       </DialogPortal>
     </DialogRoot>
 
-    <DropdownMenuRoot v-model:open="accountMenuOpen">
+    <DropdownMenuRoot v-model:open="accountMenuOpen" :modal="false">
       <DropdownMenuTrigger as-child>
         <button
           class="admin-user-menu__trigger"

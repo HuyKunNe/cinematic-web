@@ -622,6 +622,8 @@
 
   --admin-reference-active-border: color-mix(in srgb, var(--color-success) 40%, transparent);
   --admin-reference-active-background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  --admin-reference-paused-border: color-mix(in srgb, var(--color-warning) 40%, transparent);
+  --admin-reference-paused-background: color-mix(in srgb, var(--color-warning) 10%, transparent);
   --admin-reference-premium-border: color-mix(in srgb, var(--color-primary) 45%, transparent);
 
   --admin-reference-showtime-table-width: 58rem;
