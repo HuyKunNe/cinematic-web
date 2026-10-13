@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
-import { ROUTE_NAMES } from '@/router/route-constants'
 import type { RoomResponse } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
 import { MoreHorizontal, Plus } from 'lucide-vue-next'
@@ -13,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from 'reka-ui'
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import {
   useAdminRoomCatalogQuery,
   useAdminRoomCinemaQuery,
@@ -30,7 +29,6 @@ import {
 
 const auth = useAuthStore()
 const route = useRoute()
-const router = useRouter()
 const canManage = computed(
   () =>
     auth.isAuthenticated && auth.isAdmin && auth.hasPermission(APP_PERMISSIONS.INVENTORY_MANAGE),
@@ -191,17 +189,6 @@ const seatManager = ref<{
   cinemaName: string
   returnFocusId: string
 } | null>(null)
-
-function openLayout(room: RoomResponse) {
-  const cinema = selectedCinema.value
-  if (!canManage.value || !cinema || !room.id || roomActivity.isPending.value) return
-
-  void router.push({
-    name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
-    params: { roomId: room.id },
-    query: { cinemaId: cinema.value },
-  })
-}
 
 function openSeats(room: RoomResponse) {
   const cinema = selectedCinema.value
@@ -532,9 +519,7 @@ function statusLabel(active?: boolean) {
                         align="end"
                         @close-auto-focus="preventRoomMenuFocus"
                       >
-                        <DropdownMenuItem class="admin-room-menu__item" @select="openLayout(room)">
-                          Thiết kế sơ đồ
-                        </DropdownMenuItem>
+
                         <DropdownMenuItem
                           class="admin-room-menu__item"
                           @select="room.id && openEditor(room.id)"

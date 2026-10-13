@@ -17,8 +17,6 @@ const loadBookingPage = () => import('../features/booking/pages/BookingPage.vue'
 const loadAdminCinemasPage = () => import('../features/cinemas/admin/pages/AdminCinemasPage.vue')
 const loadAdminRoomsPage = () => import('../features/rooms/admin/pages/AdminRoomsPage.vue')
 const loadAdminReferencePage = () => import('../features/admin/pages/AdminReferencePage.vue')
-const loadAdminRoomLayoutPage = () =>
-  import('../features/rooms/admin/pages/AdminRoomLayoutPage.vue')
 const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.HOME,
@@ -196,19 +194,6 @@ const routes: RouteRecordRaw[] = [
     meta: {
       layout: 'admin',
       title: 'Quản lý phòng',
-      requiresAuth: true,
-      roles: ADMIN_ROLES,
-      permissions: [APP_PERMISSIONS.INVENTORY_MANAGE],
-    },
-  },
-  {
-    path: ROUTE_PATHS.ADMIN_ROOM_LAYOUT,
-    name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
-    component: loadAdminRoomLayoutPage,
-    props: true,
-    meta: {
-      layout: 'admin',
-      title: 'Thiết kế sơ đồ phòng',
       requiresAuth: true,
       roles: ADMIN_ROLES,
       permissions: [APP_PERMISSIONS.INVENTORY_MANAGE],
