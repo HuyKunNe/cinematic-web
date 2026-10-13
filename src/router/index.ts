@@ -200,6 +200,19 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: ROUTE_PATHS.ADMIN_ROOM_LAYOUT,
+    name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
+    component: loadPlaceholder,
+    props: true,
+    meta: {
+      layout: 'admin',
+      title: 'Thiết kế ma trận ghế',
+      requiresAuth: true,
+      roles: ADMIN_ROLES,
+      permissions: [APP_PERMISSIONS.INVENTORY_MANAGE],
+    },
+  },
+  {
     path: ROUTE_PATHS.ADMIN_SHOWTIMES,
     name: ROUTE_NAMES.ADMIN_SHOWTIMES,
     component: loadAdminReferencePage,

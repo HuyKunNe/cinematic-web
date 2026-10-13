@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sơ đồ ghế | CINEMATIC Admin</title>
-        <link rel="stylesheet" href="./reference-tokens.css" />
+    <link rel="stylesheet" href="./reference-tokens.css" />
     <link rel="stylesheet" href="./reference-base.css" />
     <link rel="stylesheet" href="./admin-unified.css" />
     <link rel="stylesheet" href="./admin-components.css" />
@@ -14,437 +14,664 @@
 
   <body class="reference-page admin-page" data-reference="admin-room-seats">
     <div class="admin-shell">
-    
-<aside class="admin-sidebar" aria-label="Điều hướng quản trị">
-  <a class="admin-brand" href="./admin-dashboard.html">
-    <span class="admin-brand__mark" aria-hidden="true">C</span>
-    <span class="admin-brand__copy"><strong>CINEMATIC</strong><small>QUẢN TRỊ</small></span>
-  </a>
-  <nav class="admin-nav" aria-label="Menu quản trị">
-    
-    <div class="admin-nav__group">
-      <p class="admin-nav__label">Điều hành</p>
-      
-      <a class="admin-nav__link"
-         href="./admin-dashboard.html">
-        <span aria-hidden="true">⌂</span>Tổng quan
-      </a>
-    </div>
+      <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+        <a class="admin-brand" href="./admin-dashboard.html">
+          <span class="admin-brand__mark" aria-hidden="true">C</span>
+          <span class="admin-brand__copy"><strong>CINEMATIC</strong><small>QUẢN TRỊ</small></span>
+        </a>
+        <nav class="admin-nav" aria-label="Menu quản trị">
+          <div class="admin-nav__group">
+            <p class="admin-nav__label">Điều hành</p>
 
-    <div class="admin-nav__group">
-      <p class="admin-nav__label">Nội dung</p>
-      
-      <a class="admin-nav__link"
-         href="./admin-movies.html">
-        <span aria-hidden="true">▤</span>Phim
-      </a>
-
-      <a class="admin-nav__link"
-         href="./admin-promotions.html">
-        <span aria-hidden="true">◇</span>Khuyến mãi
-      </a>
-    </div>
-
-    <div class="admin-nav__group">
-      <p class="admin-nav__label">Vận hành</p>
-      
-      <a class="admin-nav__link"
-         href="./admin-cinemas.html">
-        <span aria-hidden="true">▣</span>Rạp
-      </a>
-
-      <a class="admin-nav__link is-active"
-         href="./admin-rooms.html" aria-current="page">
-        <span aria-hidden="true">▦</span>Phòng và ghế
-      </a>
-
-      <a class="admin-nav__link"
-         href="./admin-showtimes.html">
-        <span aria-hidden="true">◷</span>Lịch chiếu
-      </a>
-
-      <a class="admin-nav__link"
-         href="./admin-bookings.html">
-        <span aria-hidden="true">▧</span>Đặt vé
-      </a>
-    </div>
-
-    <div class="admin-nav__group">
-      <p class="admin-nav__label">Hệ thống</p>
-      
-      <a class="admin-nav__link"
-         href="./admin-users.html">
-        <span aria-hidden="true">♙</span>Người dùng
-      </a>
-    </div>
-  </nav>
-  <footer class="admin-sidebar__footer">Không gian quản trị</footer>
-</aside>
-
-    <div class="admin-main">
-      
-<header class="admin-topbar">
-  <label class="admin-search">
-    <span aria-hidden="true">⌕</span>
-    <input type="search" placeholder="Tìm kiếm trong quản trị…" aria-label="Tìm kiếm trong quản trị" />
-    <kbd>⌘ K</kbd>
-  </label>
-  <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
-    <span class="admin-account__avatar" aria-hidden="true">QT</span>
-    <span class="admin-account__name">Quản trị viên</span>
-  </button>
-</header>
-
-      <main class="admin-content">
-        <nav class="breadcrumbs" aria-label="Breadcrumb">
-          <a href="./admin-cinemas.html">Rạp</a>
-          <span aria-hidden="true">/</span>
-          <a href="./admin-rooms.html">Phòng</a>
-          <span aria-hidden="true">/</span>
-          <span aria-current="page">Sơ đồ ghế</span>
-        </nav>
-
-        <section class="page-heading">
-          <div>
-            <p class="eyebrow">Cấu hình phòng chiếu</p>
-            <h1>Ghế của phòng</h1>
-            <p class="page-heading__description">Quản lý ghế của phòng. Mở thiết kế sơ đồ để đặt vị trí các ghế.</p>
+            <a class="admin-nav__link" href="./admin-dashboard.html">
+              <span aria-hidden="true">⌂</span>Tổng quan
+            </a>
           </div>
-          <a class="action-button action-button--primary" href="./admin-room-layout.html">
-            Chỉnh sửa bố cục
-          </a>
-        </section>
 
-        <section class="seatmap-toolbar" aria-label="Chọn rạp và phòng">
-          <label class="seatmap-field">
-            <span>Rạp</span>
-            <select aria-label="Chọn rạp">
-              <option value="">Chọn rạp</option>
-            </select>
+          <div class="admin-nav__group">
+            <p class="admin-nav__label">Nội dung</p>
+
+            <a class="admin-nav__link" href="./admin-movies.html">
+              <span aria-hidden="true">▤</span>Phim
+            </a>
+
+            <a class="admin-nav__link" href="./admin-promotions.html">
+              <span aria-hidden="true">◇</span>Khuyến mãi
+            </a>
+          </div>
+
+          <div class="admin-nav__group">
+            <p class="admin-nav__label">Vận hành</p>
+
+            <a class="admin-nav__link" href="./admin-cinemas.html">
+              <span aria-hidden="true">▣</span>Rạp
+            </a>
+
+            <a class="admin-nav__link is-active" href="./admin-rooms.html" aria-current="page">
+              <span aria-hidden="true">▦</span>Phòng và ghế
+            </a>
+
+            <a class="admin-nav__link" href="./admin-showtimes.html">
+              <span aria-hidden="true">◷</span>Lịch chiếu
+            </a>
+
+            <a class="admin-nav__link" href="./admin-bookings.html">
+              <span aria-hidden="true">▧</span>Đặt vé
+            </a>
+          </div>
+
+          <div class="admin-nav__group">
+            <p class="admin-nav__label">Hệ thống</p>
+
+            <a class="admin-nav__link" href="./admin-users.html">
+              <span aria-hidden="true">♙</span>Người dùng
+            </a>
+          </div>
+        </nav>
+        <footer class="admin-sidebar__footer">Không gian quản trị</footer>
+      </aside>
+
+      <div class="admin-main">
+        <header class="admin-topbar">
+          <label class="admin-search">
+            <span aria-hidden="true">⌕</span>
+            <input
+              type="search"
+              placeholder="Tìm kiếm trong quản trị…"
+              aria-label="Tìm kiếm trong quản trị"
+            />
+            <kbd>⌘ K</kbd>
           </label>
-          <label class="seatmap-field">
-            <span>Phòng</span>
-            <select aria-label="Chọn phòng">
-              <option value="">Chọn phòng</option>
-            </select>
-          </label>
-          <span class="seatmap-preview-note">Bố cục minh họa</span>
-        </section>
+          <button class="admin-account" type="button" aria-label="Tài khoản quản trị">
+            <span class="admin-account__avatar" aria-hidden="true">QT</span>
+            <span class="admin-account__name">Quản trị viên</span>
+          </button>
+        </header>
 
-        <section class="seatmap-summary" aria-label="Thông tin phòng">
-          <article class="seatmap-stat">
-            <span>Rạp</span>
-            <strong>Chưa chọn rạp</strong>
-          </article>
-          <article class="seatmap-stat">
-            <span>Phòng</span>
-            <strong>Chưa chọn phòng</strong>
-          </article>
-          <article class="seatmap-stat">
-            <span>Tổng số ghế</span>
-            <strong>32</strong>
-          </article>
-          <article class="seatmap-stat">
-            <span>Trạng thái</span>
-            <strong><span class="status-pill status-pill--active">Đang hoạt động</span></strong>
-          </article>
-        </section>
+        <main class="admin-content">
+          <nav class="breadcrumbs" aria-label="Breadcrumb">
+            <a href="./admin-cinemas.html">Rạp</a>
+            <span aria-hidden="true">/</span>
+            <a href="./admin-rooms.html">Phòng</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Sơ đồ ghế</span>
+          </nav>
 
-        <div class="seatmap-layout">
-          <section class="panel seatmap-panel panel--padded" aria-labelledby="seatmap-title">
-            <header class="panel-heading">
-              <div>
-                <h2 id="seatmap-title">Bố cục ghế</h2>
-                <p>Nhấn vào ghế trong prototype để xem phân loại.</p>
-              </div>
-            </header>
-
-            <div class="seatmap-legend" aria-label="Chú giải">
-              <span><i class="seatmap-legend__dot is-standard"></i>Ghế thường</span>
-              <span><i class="seatmap-legend__dot is-premium"></i>Ghế cao cấp</span>
-              <span><i class="seatmap-legend__dot is-selected"></i>Đang chọn</span>
-              <span><i class="seatmap-legend__dot is-blocked"></i>Ngừng sử dụng</span>
+          <section class="page-heading">
+            <div>
+              <p class="eyebrow">Cấu hình phòng chiếu</p>
+              <h1>Ma trận ghế của phòng</h1>
+              <p class="page-heading__description">
+                Sắp xếp ghế theo hàng và cột. Màn hình, lối đi và cửa thoát hiểm được cấu hình
+                riêng.
+              </p>
             </div>
-
-            <div class="seatmap-scroll">
-              <div class="seatmap-stage"><span>MÀN HÌNH</span></div>
-
-              <div class="seatmap-rows" role="group" aria-label="Sơ đồ ghế minh họa">
-                <div class="seatmap-row" role="row" aria-label="Hàng A">
-                  <span class="seatmap-row__label">A</span>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế A1, ghế thường"
-                  >
-                    1
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế A2, ghế thường"
-                  >
-                    2
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế A3, ghế thường"
-                  >
-                    3
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế A4, ghế thường"
-                  >
-                    4
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế A5, ghế thường"
-                  >
-                    5
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế A6, ghế thường"
-                  >
-                    6
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế A7, ghế thường"
-                  >
-                    7
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế A8, ghế thường"
-                  >
-                    8
-                  </button>
-                </div>
-
-                <div class="seatmap-row" role="row" aria-label="Hàng B">
-                  <span class="seatmap-row__label">B</span>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế B1, ghế thường"
-                  >
-                    1
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế B2, ghế thường"
-                  >
-                    2
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế B3, ghế thường"
-                  >
-                    3
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế B4, ghế thường"
-                  >
-                    4
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế B5, ghế cao cấp"
-                  >
-                    5
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế B6, ghế cao cấp"
-                  >
-                    6
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế B7, ghế cao cấp"
-                  >
-                    7
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế B8, ghế cao cấp"
-                  >
-                    8
-                  </button>
-                </div>
-
-                <div class="seatmap-row" role="row" aria-label="Hàng C">
-                  <span class="seatmap-row__label">C</span>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế C1, ghế thường"
-                  >
-                    1
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế C2, ghế thường"
-                  >
-                    2
-                  </button>
-                  <button
-                    class="seatmap-seat is-selected"
-                    
-                    aria-label="Ghế C3 đang chọn"
-                  >
-                    3
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế C4, ghế thường"
-                  >
-                    4
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế C5, ghế cao cấp"
-                  >
-                    5
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế C6, ghế cao cấp"
-                  >
-                    6
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế C7, ghế cao cấp"
-                  >
-                    7
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế C8, ghế cao cấp"
-                  >
-                    8
-                  </button>
-                </div>
-
-                <div class="seatmap-row" role="row" aria-label="Hàng D">
-                  <span class="seatmap-row__label">D</span>
-                  <button
-                    class="seatmap-seat is-blocked"
-                    
-                    aria-label="Ghế D1 ngừng sử dụng"
-                  >
-                    1
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế D2, ghế thường"
-                  >
-                    2
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế D3, ghế thường"
-                  >
-                    3
-                  </button>
-                  <button
-                    class="seatmap-seat is-standard"
-                    
-                    aria-label="Ghế D4, ghế thường"
-                  >
-                    4
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế D5, ghế cao cấp"
-                  >
-                    5
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế D6, ghế cao cấp"
-                  >
-                    6
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế D7, ghế cao cấp"
-                  >
-                    7
-                  </button>
-                  <button
-                    class="seatmap-seat is-premium"
-                    
-                    aria-label="Ghế D8, ghế cao cấp"
-                  >
-                    8
-                  </button>
-                </div>
-              </div>
-            </div>
+            <a class="action-button action-button--primary" href="./admin-room-layout.html">
+              Thiết kế không gian phòng
+            </a>
+          </section>
+          <section class="seatmap-toolbar" aria-label="Chọn rạp và phòng">
+            <label class="seatmap-field">
+              <span>Rạp</span>
+              <select aria-label="Chọn rạp">
+                <option value="">Chọn rạp</option>
+              </select>
+            </label>
+            <label class="seatmap-field">
+              <span>Phòng</span>
+              <select aria-label="Chọn phòng">
+                <option value="">Chọn phòng</option>
+              </select>
+            </label>
+            <span class="seatmap-preview-note">Bố cục minh họa</span>
           </section>
 
-          <aside class="panel seatmap-details panel--padded" aria-labelledby="seatmap-details-title">
-            <h2 id="seatmap-details-title">Chi tiết phòng</h2>
-            <dl>
-              <div>
-                <dt>Định dạng</dt>
-                <dd>Chưa chọn</dd>
+          <section class="seatmap-summary" aria-label="Thông tin phòng">
+            <article class="seatmap-stat">
+              <span>Rạp</span>
+              <strong>Chưa chọn rạp</strong>
+            </article>
+            <article class="seatmap-stat">
+              <span>Phòng</span>
+              <strong>Chưa chọn phòng</strong>
+            </article>
+            <article class="seatmap-stat">
+              <span>Tổng số ghế</span>
+              <strong>31</strong>
+            </article>
+            <article class="seatmap-stat">
+              <span>Trạng thái</span>
+              <strong><span class="status-pill status-pill--active">Đang hoạt động</span></strong>
+            </article>
+          </section>
+
+          <div class="seatmap-layout">
+            <section class="panel seatmap-panel panel--padded" aria-labelledby="seatmap-title">
+              <header class="panel-heading">
+                <div>
+                  <h2 id="seatmap-title">Ma trận ghế</h2>
+                  <p>Chọn ghế để xem thông tin hoặc sắp xếp vị trí trong ma trận.</p>
+                </div>
+              </header>
+
+              <div class="seatmap-actions" role="group" aria-label="Thao tác ma trận">
+                <button class="seatmap-action" type="button">+ Thêm hàng</button>
+                <button class="seatmap-action" type="button">+ Thêm cột</button>
               </div>
-              <div>
-                <dt>Số hàng</dt>
-                <dd>4 hàng</dd>
+
+              <p class="seatmap-instructions" id="seatmap-help">
+                Ô trống được giữ nguyên trong ma trận. Khi thả ghế lên một ghế khác, ghế tại vị trí
+                đó và các ghế phía sau sẽ dịch sang phải.
+              </p>
+
+              <div class="seatmap-legend" aria-label="Chú giải">
+                <span
+                  ><i class="seatmap-legend__dot is-standard" aria-hidden="true"></i>Ghế
+                  thường</span
+                >
+                <span
+                  ><i class="seatmap-legend__dot is-premium" aria-hidden="true"></i>Ghế cao
+                  cấp</span
+                >
+                <span
+                  ><i class="seatmap-legend__dot is-selected" aria-hidden="true"></i>Đang chọn</span
+                >
+                <span
+                  ><i class="seatmap-legend__dot is-blocked" aria-hidden="true"></i>Ngừng sử
+                  dụng</span
+                >
+                <span><i class="seatmap-legend__dot is-empty" aria-hidden="true"></i>Ô trống</span>
               </div>
-              <div>
-                <dt>Ghế thường</dt>
-                <dd>16</dd>
+
+              <div
+                class="seatmap-scroll"
+                role="region"
+                aria-label="Ma trận ghế, có thể cuộn ngang"
+                tabindex="0"
+              >
+                <div class="seatmap-stage"><span>MÀN HÌNH</span></div>
+
+                <table
+                  class="seatmap-matrix"
+                  aria-label="Ma trận ghế hàng A đến D, cột 01 đến 08"
+                  aria-describedby="seatmap-help"
+                >
+                  <thead>
+                    <tr>
+                      <th class="seatmap-row-axis-spacer" aria-hidden="true"></th>
+                      <th scope="col">01</th>
+                      <th scope="col">02</th>
+                      <th scope="col">03</th>
+                      <th scope="col">04</th>
+                      <th scope="col">05</th>
+                      <th scope="col">06</th>
+                      <th scope="col">07</th>
+                      <th scope="col">08</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">A</th>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="A1"
+                          data-row-index="0"
+                          data-column-index="0"
+                          aria-label="Ghế A1, ghế thường"
+                        >
+                          1
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="A2"
+                          data-row-index="0"
+                          data-column-index="1"
+                          aria-label="Ghế A2, ghế thường"
+                        >
+                          2
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="A3"
+                          data-row-index="0"
+                          data-column-index="2"
+                          aria-label="Ghế A3, ghế thường"
+                        >
+                          3
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="A4"
+                          data-row-index="0"
+                          data-column-index="3"
+                          aria-label="Ghế A4, ghế thường"
+                        >
+                          4
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard is-drag-source"
+                          data-seat-id="A5"
+                          data-row-index="0"
+                          data-column-index="4"
+                          aria-label="Ghế A5, trạng thái kéo minh họa"
+                        >
+                          5
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard is-drop-target"
+                          data-seat-id="A6"
+                          data-row-index="0"
+                          data-column-index="5"
+                          aria-label="Ghế A6, vị trí thả minh họa"
+                        >
+                          6
+                        </button>
+                      </td>
+                      <td>
+                        <span
+                          class="seatmap-cell seatmap-cell--empty"
+                          role="img"
+                          aria-label="Ô trống tại hàng A, cột 07"
+                        ></span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="A7"
+                          data-row-index="0"
+                          data-column-index="7"
+                          aria-label="Ghế A7, ghế thường"
+                        >
+                          7
+                        </button>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th scope="row">B</th>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="B1"
+                          data-row-index="1"
+                          data-column-index="0"
+                          aria-label="Ghế B1, ghế thường"
+                        >
+                          1
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="B2"
+                          data-row-index="1"
+                          data-column-index="1"
+                          aria-label="Ghế B2, ghế thường"
+                        >
+                          2
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="B3"
+                          data-row-index="1"
+                          data-column-index="2"
+                          aria-label="Ghế B3, ghế thường"
+                        >
+                          3
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="B4"
+                          data-row-index="1"
+                          data-column-index="3"
+                          aria-label="Ghế B4, ghế thường"
+                        >
+                          4
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="B5"
+                          data-row-index="1"
+                          data-column-index="4"
+                          aria-label="Ghế B5, ghế cao cấp"
+                        >
+                          5
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="B6"
+                          data-row-index="1"
+                          data-column-index="5"
+                          aria-label="Ghế B6, ghế cao cấp"
+                        >
+                          6
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="B7"
+                          data-row-index="1"
+                          data-column-index="6"
+                          aria-label="Ghế B7, ghế cao cấp"
+                        >
+                          7
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="B8"
+                          data-row-index="1"
+                          data-column-index="7"
+                          aria-label="Ghế B8, ghế cao cấp"
+                        >
+                          8
+                        </button>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th scope="row">C</th>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="C1"
+                          data-row-index="2"
+                          data-column-index="0"
+                          aria-label="Ghế C1, ghế thường"
+                        >
+                          1
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="C2"
+                          data-row-index="2"
+                          data-column-index="1"
+                          aria-label="Ghế C2, ghế thường"
+                        >
+                          2
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard is-selected"
+                          data-seat-id="C3"
+                          data-row-index="2"
+                          data-column-index="2"
+                          aria-label="Ghế C3, ghế thường, đang chọn"
+                          aria-pressed="true"
+                        >
+                          3
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="C4"
+                          data-row-index="2"
+                          data-column-index="3"
+                          aria-label="Ghế C4, ghế thường"
+                        >
+                          4
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="C5"
+                          data-row-index="2"
+                          data-column-index="4"
+                          aria-label="Ghế C5, ghế cao cấp"
+                        >
+                          5
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="C6"
+                          data-row-index="2"
+                          data-column-index="5"
+                          aria-label="Ghế C6, ghế cao cấp"
+                        >
+                          6
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="C7"
+                          data-row-index="2"
+                          data-column-index="6"
+                          aria-label="Ghế C7, ghế cao cấp"
+                        >
+                          7
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="C8"
+                          data-row-index="2"
+                          data-column-index="7"
+                          aria-label="Ghế C8, ghế cao cấp"
+                        >
+                          8
+                        </button>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th scope="row">D</th>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-blocked"
+                          data-seat-id="D1"
+                          data-row-index="3"
+                          data-column-index="0"
+                          aria-label="Ghế D1, ngừng sử dụng"
+                        >
+                          1
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="D2"
+                          data-row-index="3"
+                          data-column-index="1"
+                          aria-label="Ghế D2, ghế thường"
+                        >
+                          2
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="D3"
+                          data-row-index="3"
+                          data-column-index="2"
+                          aria-label="Ghế D3, ghế thường"
+                        >
+                          3
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-standard"
+                          data-seat-id="D4"
+                          data-row-index="3"
+                          data-column-index="3"
+                          aria-label="Ghế D4, ghế thường"
+                        >
+                          4
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="D5"
+                          data-row-index="3"
+                          data-column-index="4"
+                          aria-label="Ghế D5, ghế cao cấp"
+                        >
+                          5
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="D6"
+                          data-row-index="3"
+                          data-column-index="5"
+                          aria-label="Ghế D6, ghế cao cấp"
+                        >
+                          6
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="D7"
+                          data-row-index="3"
+                          data-column-index="6"
+                          aria-label="Ghế D7, ghế cao cấp"
+                        >
+                          7
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="seatmap-cell is-premium"
+                          data-seat-id="D8"
+                          data-row-index="3"
+                          data-column-index="7"
+                          aria-label="Ghế D8, ghế cao cấp"
+                        >
+                          8
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <div>
-                <dt>Ghế cao cấp</dt>
-                <dd>15</dd>
-              </div>
-              <div>
-                <dt>Ngừng sử dụng</dt>
-                <dd>1</dd>
-              </div>
-            </dl>
-            <button class="action-button action-button--secondary" type="button">
-              Quản lý hàng ghế
-            </button>
-          </aside>
-        </div>
-      <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
-</main>
-    </div>
+            </section>
+
+            <aside
+              class="panel seatmap-details panel--padded"
+              aria-labelledby="seatmap-details-title"
+            >
+              <header class="panel-heading">
+                <div>
+                  <h2 id="seatmap-details-title">Chi tiết ghế</h2>
+                  <p>Thông tin vị trí đang chọn.</p>
+                </div>
+              </header>
+
+              <dl>
+                <div>
+                  <dt>Mã ghế</dt>
+                  <dd>C3</dd>
+                </div>
+                <div>
+                  <dt>Hàng</dt>
+                  <dd>C</dd>
+                </div>
+                <div>
+                  <dt>Cột</dt>
+                  <dd>03</dd>
+                </div>
+                <div>
+                  <dt>Loại ghế</dt>
+                  <dd>Ghế thường</dd>
+                </div>
+                <div>
+                  <dt>Trạng thái</dt>
+                  <dd>Đang hoạt động</dd>
+                </div>
+              </dl>
+
+              <h3 class="seatmap-details__subtitle">Thống kê ma trận</h3>
+              <dl>
+                <div>
+                  <dt>Tổng số vị trí</dt>
+                  <dd>32</dd>
+                </div>
+                <div>
+                  <dt>Ghế thường</dt>
+                  <dd>18</dd>
+                </div>
+                <div>
+                  <dt>Ghế cao cấp</dt>
+                  <dd>12</dd>
+                </div>
+                <div>
+                  <dt>Ngừng sử dụng</dt>
+                  <dd>1</dd>
+                </div>
+                <div>
+                  <dt>Ô trống</dt>
+                  <dd>1</dd>
+                </div>
+              </dl>
+            </aside>
+          </div>
+          <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+        </main>
       </div>
+    </div>
   </body>
 </html>

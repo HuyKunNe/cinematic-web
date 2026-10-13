@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from 'reka-ui'
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   useAdminRoomCatalogQuery,
   useAdminRoomCinemaQuery,
@@ -26,9 +26,10 @@ import {
   adminRoomTypeLabel,
   normalizeAdminRoomSearch,
 } from '../schemas/admin-room.schema'
-
+import { ROUTE_NAMES } from '@/router/route-constants'
 const auth = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 const canManage = computed(
   () =>
     auth.isAuthenticated && auth.isAdmin && auth.hasPermission(APP_PERMISSIONS.INVENTORY_MANAGE),
