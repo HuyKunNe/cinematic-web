@@ -9,6 +9,7 @@ type SeatPosition = RoomLayoutContentResponse['seats'][number]
 
 export type SeatRowMovePlan = {
   anchorSeatId: string
+  freeAnchor: boolean
   anchor: Geometry
   rowLabels: string[]
   movingIds: string[]
@@ -135,13 +136,14 @@ function validateSeats(
   result: Map<string, Geometry>,
   changedIds: Set<string>,
   origin: { x: number; y: number },
+  freeAnchor = false,
 ) {
   for (const seat of content.seats) {
     const geometry = result.get(seat.seatId)!
 
     if (changedIds.has(seat.seatId)) {
       assertInside(content, geometry)
-      assertOnGrid(geometry, origin)
+      if (!freeAnchor) assertOnGrid(geometry, origin)
     }
   }
 
@@ -154,7 +156,14 @@ function validateSeats(
         continue
       }
 
-      if (overlaps(seatCell(seat, geometry), seatCell(other, result.get(other.seatId)!))) {
+      const otherGeometry = result.get(other.seatId)!
+
+      if (
+        overlaps(
+          freeAnchor ? geometry : seatCell(seat, geometry),
+          freeAnchor ? otherGeometry : seatCell(other, otherGeometry),
+        )
+      ) {
         throw new Error('Các ghế còn chồng ô sau khi dịch. Hãy chọn một vị trí khác.')
       }
     }
@@ -207,6 +216,7 @@ export function createSeatRowMovePlan(
 
   return {
     anchorSeatId,
+    freeAnchor: anchorSeatId === readAdminSeatMatrix(content).anchor.seatId,
     anchor: { ...anchorSeat.geometry },
     movingIds: [...selected],
     movingRows,
@@ -236,8 +246,13 @@ export function moveSeatRows(plan: SeatRowMovePlan, target: Geometry): Map<strin
   const { content, origin } = plan
   const moving = new Set(plan.movingIds)
 
-  const targetX = snap(target.x, origin.x, ADMIN_SEAT_MATRIX_STEP.x)
-  const targetY = snap(target.y, origin.y, ADMIN_SEAT_MATRIX_STEP.y)
+  const targetX = plan.freeAnchor
+    ? Math.round(target.x)
+    : snap(target.x, origin.x, ADMIN_SEAT_MATRIX_STEP.x)
+
+  const targetY = plan.freeAnchor
+    ? Math.round(target.y)
+    : snap(target.y, origin.y, ADMIN_SEAT_MATRIX_STEP.y)
   const dx = targetX - plan.anchor.x
   const dy = targetY - plan.anchor.y
 
@@ -375,6 +390,6 @@ export function moveSeatRows(plan: SeatRowMovePlan, target: Geometry): Map<strin
     }
   }
 
-  validateSeats(content, result, new Set(changed.keys()), origin)
+  validateSeats(content, result, new Set(changed.keys()), origin, plan.freeAnchor)
   return changed
 }

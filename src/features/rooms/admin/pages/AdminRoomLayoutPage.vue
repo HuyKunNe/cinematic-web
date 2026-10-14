@@ -654,8 +654,10 @@ const seatMatrix = computed(() => {
 
   try {
     const { anchor } = readAdminSeatMatrix(content.value)
-    const originX = Math.round(anchor.geometry.x)
-    const originY = Math.round(anchor.geometry.y)
+    const anchorGeometry = seatMovePreview.value.get(anchor.seatId) ?? anchor.geometry
+
+    const originX = Math.round(anchorGeometry.x)
+    const originY = Math.round(anchorGeometry.y)
     const width = content.value.layout.canvasWidth
     const height = content.value.layout.canvasHeight
 
