@@ -766,3 +766,42 @@
   .layout-draft-notice__dot {
   background: var(--color-success);
 }
+:where([data-reference='admin-room-layout']) {
+  --layout-grid-minor-color: color-mix(in srgb, var(--color-border) 28%, transparent);
+  --layout-grid-major-color: color-mix(in srgb, var(--color-border-strong) 55%, transparent);
+  --layout-grid-stroke: 1;
+  --layout-grid-layer: 0;
+  --layout-grid-object-layer: 1;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-canvas {
+  position: relative;
+  isolation: isolate;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-grid {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layout-grid-layer);
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-grid-line {
+  stroke: var(--layout-grid-minor-color);
+  stroke-width: var(--layout-grid-stroke);
+  vector-effect: non-scaling-stroke;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-grid-line.is-major {
+  stroke: var(--layout-grid-major-color);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-canvas .layout-preview-svg {
+  position: relative;
+  z-index: var(--layout-grid-object-layer);
+}

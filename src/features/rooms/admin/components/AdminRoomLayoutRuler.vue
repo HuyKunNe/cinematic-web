@@ -108,6 +108,36 @@ onBeforeUnmount(() => observer?.disconnect())
         </div>
 
         <div ref="canvasHost" class="layout-ruler-canvas">
+          <svg
+            class="layout-ruler-grid"
+            :viewBox="`0 0 ${canvasWidth} ${canvasHeight}`"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <line
+              v-for="tick in xTicks"
+              :key="`grid-x-${tick.value}`"
+              class="layout-ruler-grid-line"
+              :class="{ 'is-major': tick.major }"
+              :x1="tick.value"
+              :x2="tick.value"
+              :y1="0"
+              :y2="canvasHeight"
+            />
+
+            <line
+              v-for="tick in yTicks"
+              :key="`grid-y-${tick.value}`"
+              class="layout-ruler-grid-line"
+              :class="{ 'is-major': tick.major }"
+              :x1="0"
+              :x2="canvasWidth"
+              :y1="tick.value"
+              :y2="tick.value"
+            />
+          </svg>
+
           <slot />
         </div>
       </div>

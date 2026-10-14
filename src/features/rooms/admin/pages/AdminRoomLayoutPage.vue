@@ -481,6 +481,17 @@ function startElementDrag(event: PointerEvent, key: string) {
   }
 }
 
+function formatGeometryValue(
+  geometry: RoomLayoutGeometryResponse,
+  field: keyof RoomLayoutGeometryResponse,
+) {
+  const value = geometry[field]
+
+  return (field === 'x' || field === 'y') && Number.isInteger(value)
+    ? value.toFixed(2)
+    : String(value)
+}
+
 async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
   const baseline = dropBaseline
   if (!baseline) return
@@ -1100,7 +1111,11 @@ watch(objects, (items) => {
               <template v-if="selected">
                 <label v-for="field in geometryFields" :key="field.key" class="layout-field">
                   <span>{{ field.label }}</span>
-                  <input type="text" :value="selected.geometry[field.key]" readonly />
+                  <input
+                    type="text"
+                    :value="formatGeometryValue(selected.geometry, field.key)"
+                    readonly
+                  />
                 </label>
 
                 <div v-if="selected.kind === 'SEAT'" class="layout-seat-info">

@@ -47,10 +47,24 @@ function decimal(integerDigits: number, signed = false) {
     .transform(Number)
 }
 
+const coordinateSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{1,9}(?:\.\d+)?$/, 'Nhập tọa độ không âm, tối đa 9 chữ số phần nguyên.')
+  .transform(Number)
+  .refine(Number.isFinite, 'Tọa độ không hợp lệ.')
+  .transform(Math.round)
+  .refine((value) => value <= 999999999, 'Tọa độ sau làm tròn không được vượt 999999999.')
+
+function initialCoordinate(value: number) {
+  const parsed = coordinateSchema.safeParse(String(value))
+  return parsed.success ? parsed.data.toFixed(2) : String(value)
+}
+
 const schema = z.object({
   label: z.string().trim().max(150, 'Nhãn tối đa 150 ký tự.'),
-  x: decimal(9),
-  y: decimal(9),
+  x: coordinateSchema,
+  y: coordinateSchema,
   width: decimal(9).refine((value) => value > 0, 'Chiều rộng phải lớn hơn 0.'),
   height: decimal(9).refine((value) => value > 0, 'Chiều cao phải lớn hơn 0.'),
   rotationDegrees: decimal(6, true),
@@ -81,8 +95,8 @@ const prefix = useId()
 const form = ref<HTMLFormElement | null>(null)
 const values = reactive({
   label: target?.label ?? '',
-  x: String(target?.geometry.x ?? 0),
-  y: String(target?.geometry.y ?? 0),
+  x: initialCoordinate(target?.geometry.x ?? 0),
+  y: initialCoordinate(target?.geometry.y ?? 0),
   width: target ? String(target.geometry.width) : '',
   height: target ? String(target.geometry.height) : '',
   rotationDegrees: String(target?.geometry.rotationDegrees ?? 0),
@@ -120,22 +134,30 @@ function getGeometry() {
 }
 
 function setPosition(x: number, y: number) {
-  if (
-    !canMove.value ||
-    !Number.isFinite(x) ||
-    !Number.isFinite(y) ||
-    x < 0 ||
-    y < 0 ||
-    x > 999999999.999 ||
-    y > 999999999.999
-  ) {
-    return
-  }
+  if (!canMove.value) return
 
-  values.x = x.toFixed(3)
-  values.y = y.toFixed(3)
+  const parsedX = coordinateSchema.safeParse(String(x))
+  const parsedY = coordinateSchema.safeParse(String(y))
+
+  if (!parsedX.success || !parsedY.success) return
+
+  values.x = parsedX.data.toFixed(2)
+  values.y = parsedY.data.toFixed(2)
   delete errors.value.x
   delete errors.value.y
+}
+
+function normalizeCoordinate(field: Field) {
+  if (field !== 'x' && field !== 'y') return
+
+  const parsed = coordinateSchema.safeParse(values[field])
+
+  if (parsed.success) {
+    values[field] = parsed.data.toFixed(2)
+    delete errors.value[field]
+  } else {
+    errors.value[field] = parsed.error.issues[0]?.message ?? 'Tọa độ không hợp lệ.'
+  }
 }
 
 watch(busy, (value) => emit('busy', value), { flush: 'sync' })
@@ -208,6 +230,8 @@ async function submit() {
   }
 
   const { label, x, y, width, height, rotationDegrees } = parsed.data
+  values.x = x.toFixed(2)
+  values.y = y.toFixed(2)
   const replacement: RoomLayoutElementInput = {
     kind,
     label: label || undefined,
@@ -272,6 +296,7 @@ defineExpose({ submit, canSave, canMove, getGeometry, setPosition })
           :aria-invalid="Boolean(errors[field.key])"
           :aria-describedby="errors[field.key] ? `${prefix}-${field.key}-error` : undefined"
           @input="update(field.key, $event)"
+          @blur="normalizeCoordinate(field.key)"
         />
         <span
           v-if="errors[field.key]"
@@ -285,7 +310,10 @@ defineExpose({ submit, canSave, canMove, getGeometry, setPosition })
     </fieldset>
 
     <p class="layout-muted">Tối đa 3 chữ số thập phân. Góc dương xoay theo chiều kim đồng hồ.</p>
-
+    <p class="layout-muted">
+      X/Y tự làm tròn về số nguyên không âm. Kích thước và góc xoay cho phép tối đa 3 chữ số thập
+      phân.
+    </p>
     <p v-if="requestError" class="layout-error" role="alert" tabindex="-1" data-request-error>
       {{ requestError }}
       Nội dung nhập vẫn được giữ. Đóng form và tải lại nội dung trước khi thử lại.

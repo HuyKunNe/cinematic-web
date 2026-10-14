@@ -20,7 +20,6 @@ type DragSession = {
   moved: boolean
 }
 
-const MAX_COORDINATE = 999999999.999
 const DRAG_THRESHOLD = 4
 
 export function useRoomLayoutElementDrag(canvas: Ref<SVGSVGElement | null>, options: DragOptions) {
@@ -46,8 +45,10 @@ export function useRoomLayoutElementDrag(canvas: Ref<SVGSVGElement | null>, opti
     }
   }
 
+  const MAX_COORDINATE = 999999999
+
   function coordinate(value: number) {
-    return Number(Math.min(MAX_COORDINATE, Math.max(0, value)).toFixed(3))
+    return Math.round(Math.min(MAX_COORDINATE, Math.max(0, value)))
   }
 
   function finish(drop: boolean) {
