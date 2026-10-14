@@ -805,3 +805,12 @@
   position: relative;
   z-index: var(--layout-grid-object-layer);
 }
+:where([data-reference='admin-room-layout']) .layout-seat-matrix-grid {
+  pointer-events: none;
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat-matrix-line {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: var(--border-width);
+}

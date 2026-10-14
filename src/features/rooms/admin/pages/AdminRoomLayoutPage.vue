@@ -9,7 +9,7 @@ import type {
 } from '@/services/api/generated/inventory-service/model'
 import { RoomLayoutElementInputKind } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import {
   useAdminRoomLayoutContentQuery,
@@ -31,7 +31,11 @@ import {
   moveSeatRows,
   type SeatRowMovePlan,
 } from '../mappers/admin-seat-row-move.mapper'
-
+import {
+  ADMIN_SEAT_MATRIX_STEP,
+  buildAdminSeatMatrixRequest,
+  readAdminSeatMatrix,
+} from '../mappers/admin-seat-layout.mapper'
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
@@ -83,6 +87,7 @@ const dropError = ref('')
 const dropMutation = useReplaceAdminRoomLayoutContentMutation()
 const publishMutation = usePublishAdminRoomLayoutMutation()
 const publishError = ref('')
+const matrixPatternId = `seat-matrix-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
 type GeometrySnapshot = Pick<ReplaceRoomLayoutContentRequest, 'seats' | 'elements'>
 
 type MoveHistoryEntry = {
@@ -636,6 +641,95 @@ function startObjectDrag(event: PointerEvent, key: string) {
   }
 }
 
+const seatMatrix = computed(() => {
+  if (!content.value?.seats.length) return { grid: null, error: '' }
+
+  try {
+    const { matrix, anchor } = readAdminSeatMatrix(content.value)
+    const geometry = seatMovePreview.value.get(anchor.seatId) ?? anchor.geometry
+
+    return {
+      grid: {
+        x: Math.round(geometry.x),
+        y: Math.round(geometry.y),
+        columns: matrix.columnCount,
+        rows: matrix.rows.length,
+        width: matrix.columnCount * ADMIN_SEAT_MATRIX_STEP.x,
+        height: matrix.rows.length * ADMIN_SEAT_MATRIX_STEP.y,
+      },
+      error: '',
+    }
+  } catch (error) {
+    return {
+      grid: null,
+      error: adminRoomErrorMessage(error, 'Không thể dựng ma trận theo A1.'),
+    }
+  }
+})
+
+async function alignSeatMatrix() {
+  const currentContent = content.value
+
+  if (!currentContent || !canDirectDrag.value || editorLocked.value) return
+
+  const baseline = toAdminRoomLayoutContentRequest(currentContent)
+  let input: ReplaceRoomLayoutContentRequest
+  let anchorSeatId: string
+
+  dropError.value = ''
+  saveMessage.value = ''
+
+  try {
+    anchorSeatId = readAdminSeatMatrix(currentContent).anchor.seatId
+    input = buildAdminSeatMatrixRequest(currentContent, baseline)
+  } catch (error) {
+    dropError.value = adminRoomErrorMessage(error, 'Không thể căn ma trận theo A1.')
+    return
+  }
+
+  if (snapshotKey(input) === snapshotKey(baseline)) {
+    saveMessage.value = 'Ghế đã nằm đúng ma trận theo A1.'
+    return
+  }
+
+  const requestedRoomId = roomId.value
+  const requestedLayoutId = layoutId.value
+
+  dropBusy.value = true
+  seatMovePreview.value = new Map(input.seats.map((seat) => [seat.seatId, { ...seat.geometry }]))
+
+  try {
+    const saved = await dropMutation.mutateAsync({
+      roomId: requestedRoomId,
+      layoutId: requestedLayoutId,
+      input,
+    })
+
+    if (requestedRoomId !== roomId.value || requestedLayoutId !== layoutId.value) {
+      return
+    }
+
+    if (snapshotKey(toAdminRoomLayoutContentRequest(saved)) !== snapshotKey(input)) {
+      throw new Error('Nội dung trả về không khớp ma trận vừa lưu.')
+    }
+
+    recordMove(baseline, toAdminRoomLayoutContentRequest(saved))
+
+    const anchor = saved.seats.find((seat) => seat.seatId === anchorSeatId)
+    selectedKey.value = anchor ? `seat:${anchor.id}` : ''
+    saveMessage.value = 'Đã căn và lưu toàn bộ ma trận theo A1.'
+  } catch (error) {
+    if (requestedRoomId === roomId.value && requestedLayoutId === layoutId.value) {
+      contentBlocked.value = true
+      dropError.value = adminRoomErrorMessage(error, 'Không thể xác nhận ma trận đã lưu.')
+      ;(' Hãy tải lại nội dung trước khi thao tác tiếp.')
+    }
+  } finally {
+    seatMovePreview.value = new Map()
+    dropBusy.value = false
+  }
+}
+
 function formatGeometryValue(
   geometry: RoomLayoutGeometryResponse,
   field: keyof RoomLayoutGeometryResponse,
@@ -1073,8 +1167,9 @@ watch(objects, (items) => {
       </aside>
 
       <p class="layout-muted">
-        Kéo ghế để dịch và căn ngang cả hàng. Giữ Ctrl, ⌘ hoặc Shift để chọn nhiều ghế, rồi kéo một
-        ghế đã chọn. Thả để tự lưu; nhấn Escape khi đang kéo để hủy.
+        A1 là gốc ma trận. Kéo A1 để dịch toàn bộ ma trận; kéo ghế khác để dịch cả hàng theo bước ô.
+        Ghế đôi chiếm hai ô ngang. Giữ Ctrl, ⌘ hoặc Shift để chọn nhiều ghế. Thả để tự lưu; nhấn
+        Escape khi đang kéo để hủy.
       </p>
 
       <p v-if="multiSeatMode" class="layout-muted" role="status">
@@ -1082,8 +1177,8 @@ watch(objects, (items) => {
       </p>
 
       <p v-if="selectedSeatIds.length" class="layout-muted" role="status">
-        Đã chọn {{ selectedSeatIds.length }} ghế. Khi kéo, toàn bộ {{ selectedSeatRowCount }} hàng
-        chứa các ghế này sẽ cùng di chuyển.
+        Đã chọn {{ selectedSeatIds.length }} ghế. Khi nhóm chọn chứa A1, toàn bộ ma trận sẽ dịch.
+        Các nhóm khác dịch {{ selectedSeatRowCount }} hàng đang chọn.
       </p>
 
       <p v-if="dropBusy" class="layout-muted" role="status">Đang lưu vị trí…</p>
@@ -1133,6 +1228,14 @@ watch(objects, (items) => {
         <div class="layout-tools" role="group" aria-label="Công cụ đặt đối tượng">
           <button class="layout-tool" type="button" @click="backToSeats" :disabled="editorLocked">
             Xếp ghế theo hàng
+          </button>
+          <button
+            class="layout-tool"
+            type="button"
+            :disabled="editorLocked || !canDirectDrag || !seatMatrix.grid"
+            @click="alignSeatMatrix"
+          >
+            Căn ma trận theo A1
           </button>
           <button
             class="layout-tool"
@@ -1257,6 +1360,14 @@ watch(objects, (items) => {
             {{ outsideCount }} đối tượng vượt giới hạn canvas. Geometry được giữ nguyên.
           </p>
 
+          <p v-if="seatMatrix.error" class="layout-warning" role="status">
+            {{ seatMatrix.error }}
+          </p>
+          <p v-if="seatMatrix.grid" class="layout-muted">
+            Ma trận {{ seatMatrix.grid.rows }} hàng × {{ seatMatrix.grid.columns }} ô ngang.
+            Capacity: ghế thường 1 ô, ghế đôi 2 ô.
+          </p>
+
           <AdminRoomLayoutRuler
             v-if="content"
             :canvas-width="content.layout.canvasWidth"
@@ -1275,6 +1386,40 @@ watch(objects, (items) => {
               @pointercancel="drag.cancel"
               @lostpointercapture="drag.cancel"
             >
+              <defs>
+                <pattern
+                  :id="matrixPatternId"
+                  patternUnits="userSpaceOnUse"
+                  :x="seatMatrix.grid?.x ?? 0"
+                  :y="seatMatrix.grid?.y ?? 0"
+                  :width="ADMIN_SEAT_MATRIX_STEP.x"
+                  :height="ADMIN_SEAT_MATRIX_STEP.y"
+                >
+                  <path
+                    class="layout-seat-matrix-line"
+                    :d="`M ${ADMIN_SEAT_MATRIX_STEP.x} 0 H 0 V ${ADMIN_SEAT_MATRIX_STEP.y}`"
+                    vector-effect="non-scaling-stroke"
+                  />
+                </pattern>
+              </defs>
+
+              <g v-if="seatMatrix.grid" class="layout-seat-matrix-grid" aria-hidden="true">
+                <rect
+                  :x="seatMatrix.grid.x"
+                  :y="seatMatrix.grid.y"
+                  :width="seatMatrix.grid.width"
+                  :height="seatMatrix.grid.height"
+                  :fill="`url(#${matrixPatternId})`"
+                />
+                <rect
+                  class="layout-seat-matrix-line"
+                  :x="seatMatrix.grid.x"
+                  :y="seatMatrix.grid.y"
+                  :width="seatMatrix.grid.width"
+                  :height="seatMatrix.grid.height"
+                  vector-effect="non-scaling-stroke"
+                />
+              </g>
               <g
                 v-for="object in objects"
                 :key="object.key"
@@ -1287,7 +1432,6 @@ watch(objects, (items) => {
                   'is-selected': isObjectSelected(object.key),
                   'is-draggable': canDragObject(object.key),
                   'is-dragging': drag.active.value && isMovingObject(object.key),
-
                 }"
                 :transform="rotation(object.geometry)"
                 role="button"

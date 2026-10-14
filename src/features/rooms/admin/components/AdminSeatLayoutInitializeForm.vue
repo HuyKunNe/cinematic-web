@@ -13,6 +13,7 @@ import { toAdminRoomLayoutContentRequest } from '../mappers/admin-room-layout-co
 import {
   ADMIN_SEAT_LAYOUT_GEOMETRY,
   buildAdminSeatLayoutRequest,
+  buildAdminSeatMatrix,
 } from '../mappers/admin-seat-layout.mapper'
 import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
 
@@ -74,6 +75,20 @@ const catalog = computed(() => {
       error: adminRoomErrorMessage(error, 'Danh mục ghế không hợp lệ.'),
     }
   }
+})
+
+const capacityMatrix = computed(() => {
+  const seats = catalog.value.matrix?.seats
+  if (!seats) return null
+
+  return buildAdminSeatMatrix(
+    seats.map((seat) => ({
+      seatId: seat.id,
+      seatNumber: seat.seatNumber,
+      rowLabel: seat.rowLabel,
+      type: seat.seatType!,
+    })),
+  )
 })
 
 const canSave = computed(
@@ -194,9 +209,10 @@ defineExpose({ submit, canSave })
 
     <p v-if="catalog.matrix" class="layout-muted">
       {{ catalog.matrix.seats.length }} ghế · {{ catalog.matrix.rows.length }} hàng ·
-      {{ catalog.matrix.columnCount }} cột. Ghế {{ ADMIN_SEAT_LAYOUT_GEOMETRY.width }} ×
+      {{ capacityMatrix?.columnCount ?? 0 }} ô ngang. Ghế {{ ADMIN_SEAT_LAYOUT_GEOMETRY.width }} ×
       {{ ADMIN_SEAT_LAYOUT_GEOMETRY.height }}, khoảng cách ngang/dọc
-      {{ ADMIN_SEAT_LAYOUT_GEOMETRY.gapX }} đơn vị layout.
+      {{ ADMIN_SEAT_LAYOUT_GEOMETRY.gapX }} đơn vị layout. Ghế đôi chiếm hai ô, rộng 120. X/Y bắt
+      đầu là tọa độ ghế A1.
     </p>
 
     <fieldset class="layout-draft-fields" :disabled="busy || blocked || !enabled">
