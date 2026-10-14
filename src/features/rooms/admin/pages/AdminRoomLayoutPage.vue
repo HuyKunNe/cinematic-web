@@ -67,6 +67,70 @@ const dragPreview = ref<RoomLayoutGeometryResponse | null>(null)
 const dropBusy = ref(false)
 const dropError = ref('')
 const dropMutation = useReplaceAdminRoomLayoutContentMutation()
+type GeometrySnapshot = Pick<ReplaceRoomLayoutContentRequest, 'seats' | 'elements'>
+
+type MoveHistoryEntry = {
+  before: GeometrySnapshot
+  after: GeometrySnapshot
+}
+
+const HISTORY_LIMIT = 20
+const undoMoves = ref<MoveHistoryEntry[]>([])
+const redoMoves = ref<MoveHistoryEntry[]>([])
+const historyAction = ref<'undo' | 'redo' | null>(null)
+const historyBusy = computed(() => historyAction.value !== null)
+const historyMutation = useReplaceAdminRoomLayoutContentMutation()
+
+function snapshot(input: GeometrySnapshot): GeometrySnapshot {
+  return {
+    seats: input.seats.map((seat) => ({
+      seatId: seat.seatId,
+      geometry: { ...seat.geometry },
+    })),
+    elements: input.elements.map((element) => ({
+      kind: element.kind,
+      label: element.label,
+      geometry: { ...element.geometry },
+    })),
+  }
+}
+
+function snapshotKey(input: GeometrySnapshot) {
+  const geometryKey = (geometry: RoomLayoutGeometryResponse) => [
+    geometry.x,
+    geometry.y,
+    geometry.width,
+    geometry.height,
+    geometry.rotationDegrees,
+  ]
+
+  return JSON.stringify({
+    seats: input.seats
+      .map((seat) => JSON.stringify([seat.seatId, geometryKey(seat.geometry)]))
+      .sort(),
+    elements: input.elements
+      .map((element) =>
+        JSON.stringify([element.kind, element.label ?? '', geometryKey(element.geometry)]),
+      )
+      .sort(),
+  })
+}
+
+function resetMoveHistory() {
+  undoMoves.value = []
+  redoMoves.value = []
+}
+
+function recordMove(before: GeometrySnapshot, after: GeometrySnapshot) {
+  if (snapshotKey(before) === snapshotKey(after)) return
+
+  undoMoves.value = [
+    ...undoMoves.value,
+    { before: snapshot(before), after: snapshot(after) },
+  ].slice(-HISTORY_LIMIT)
+
+  redoMoves.value = []
+}
 
 type DropBaseline = {
   roomId: string
@@ -96,6 +160,7 @@ const editorLocked = computed(
     elementBusy.value ||
     elementKind.value !== null ||
     dragTargetId.value !== '' ||
+    historyBusy.value ||
     dropBusy.value,
 )
 
@@ -149,7 +214,7 @@ async function onDraftCreated(created: RoomLayoutResponse) {
   draftOpen.value = false
   creationBlocked.value = false
   draftMessage.value = `Đã tạo bản nháp phiên bản ${created.layoutVersion}.`
-
+  resetMoveHistory()
   await nextTick()
   document.getElementById('room-layout-version')?.focus()
 }
@@ -162,6 +227,7 @@ async function reloadVersions() {
 
   if (result.isSuccess && requestedRoomId === roomId.value) {
     creationBlocked.value = false
+    resetMoveHistory()
   }
 }
 
@@ -194,7 +260,92 @@ const canAppend = computed(
     !contentBlocked.value,
 )
 
-const canDirectDrag = computed(() => canAppend.value && !elementKind.value && !dropBusy.value)
+const canUndo = computed(() => {
+  const entry = undoMoves.value.at(-1)
+
+  return Boolean(
+    entry &&
+    content.value &&
+    canAppend.value &&
+    !editorLocked.value &&
+    snapshotKey(toAdminRoomLayoutContentRequest(content.value)) === snapshotKey(entry.after),
+  )
+})
+
+const canRedo = computed(() => {
+  const entry = redoMoves.value.at(-1)
+
+  return Boolean(
+    entry &&
+    content.value &&
+    canAppend.value &&
+    !editorLocked.value &&
+    snapshotKey(toAdminRoomLayoutContentRequest(content.value)) === snapshotKey(entry.before),
+  )
+})
+
+async function applyMoveHistory(direction: 'undo' | 'redo') {
+  if (!content.value || !(direction === 'undo' ? canUndo.value : canRedo.value)) {
+    return
+  }
+
+  const entry = direction === 'undo' ? undoMoves.value.at(-1) : redoMoves.value.at(-1)
+
+  if (!entry) return
+
+  const target = direction === 'undo' ? entry.before : entry.after
+  const requestedRoomId = roomId.value
+  const requestedLayoutId = layoutId.value
+  const expectedVersion = content.value.layout.version
+
+  historyAction.value = direction
+  dropError.value = ''
+  saveMessage.value = ''
+
+  try {
+    const saved = await historyMutation.mutateAsync({
+      roomId: requestedRoomId,
+      layoutId: requestedLayoutId,
+      input: {
+        expectedVersion,
+        ...snapshot(target),
+      },
+    })
+
+    if (requestedRoomId !== roomId.value || requestedLayoutId !== layoutId.value) {
+      return
+    }
+
+    if (snapshotKey(toAdminRoomLayoutContentRequest(saved)) !== snapshotKey(target)) {
+      throw new Error('Không thể xác nhận nội dung sau khi hoàn tác/làm lại.')
+    }
+
+    if (direction === 'undo') {
+      undoMoves.value = undoMoves.value.slice(0, -1)
+      redoMoves.value = [...redoMoves.value, entry]
+    } else {
+      redoMoves.value = redoMoves.value.slice(0, -1)
+      undoMoves.value = [...undoMoves.value, entry]
+    }
+
+    selectedKey.value = ''
+    saveMessage.value =
+      direction === 'undo' ? 'Đã hoàn tác vị trí phần tử.' : 'Đã làm lại vị trí phần tử.'
+  } catch (error) {
+    if (requestedRoomId === roomId.value && requestedLayoutId === layoutId.value) {
+      contentBlocked.value = true
+      dropError.value =
+        adminRoomErrorMessage(error, 'Không thể hoàn tác/làm lại vị trí.') +
+        ' Hãy tải lại nội dung trước khi thao tác tiếp.'
+    }
+  } finally {
+    historyAction.value = null
+  }
+}
+
+const canDirectDrag = computed(
+  () => canAppend.value && !elementKind.value && !dropBusy.value && !historyBusy.value,
+)
 
 const drag = useRoomLayoutElementDrag(svgCanvas, {
   enabled: () => canDirectDrag.value,
@@ -248,7 +399,7 @@ async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
   dropBusy.value = true
 
   try {
-    await dropMutation.mutateAsync({
+    const saved = await dropMutation.mutateAsync({
       roomId: baseline.roomId,
       layoutId: baseline.layoutId,
       input: {
@@ -261,6 +412,8 @@ async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
     })
 
     if (roomId.value === baseline.roomId && layoutId.value === baseline.layoutId) {
+      recordMove(baseline.input, toAdminRoomLayoutContentRequest(saved))
+
       selectedKey.value = ''
       saveMessage.value = 'Đã lưu vị trí phần tử.'
     }
@@ -301,6 +454,7 @@ function onElementSaved(action: 'created' | 'updated' | 'deleted') {
   contentBlocked.value = false
   saveMessage.value = messages[action]
   elementPreview.value = null
+  resetMoveHistory()
 }
 
 async function reloadContent() {
@@ -319,6 +473,7 @@ async function reloadContent() {
   ) {
     contentBlocked.value = false
     dropError.value = ''
+    resetMoveHistory()
   }
 }
 
@@ -475,6 +630,7 @@ watch(
     elementPreview.value = null
     drag.cancel()
     dropError.value = ''
+    resetMoveHistory()
   },
   { flush: 'sync' },
 )
@@ -486,6 +642,7 @@ watch(layoutId, () => {
   elementPreview.value = null
   drag.cancel()
   dropError.value = ''
+  resetMoveHistory()
 })
 
 watch(objects, (items) => {
@@ -570,7 +727,9 @@ watch(objects, (items) => {
       </p>
 
       <p v-if="dropBusy" class="layout-muted" role="status">Đang lưu vị trí…</p>
-
+      <p v-if="historyBusy" class="layout-muted" role="status">
+        {{ historyAction === 'undo' ? 'Đang hoàn tác vị trí…' : 'Đang làm lại vị trí…' }}
+      </p>
       <div v-if="dropError" class="layout-feedback">
         <p class="layout-error" role="alert">{{ dropError }}</p>
         <AppButton
@@ -586,8 +745,7 @@ watch(objects, (items) => {
         {{ saveMessage }}
       </p>
       <p v-if="editingElementId" class="layout-muted">
-        Kéo phần tử đang sửa để đổi vị trí. Nhấn Escape để hoàn tác lần kéo. Bấm Lưu nháp để lưu;
-        đóng form để bỏ thay đổi.
+        Chỉnh thuộc tính trong inspector rồi bấm Lưu nháp. Đóng form để bỏ các thay đổi đang nhập.
       </p>
       <section class="layout-toolbar layout-panel" aria-label="Công cụ thiết kế">
         <div class="layout-tools" role="group" aria-label="Công cụ đặt đối tượng">
@@ -608,14 +766,35 @@ watch(objects, (items) => {
         </div>
 
         <div class="layout-toolbar__actions">
-          <button class="layout-icon-button" type="button" disabled aria-label="Hoàn tác">↶</button>
-          <button class="layout-icon-button" type="button" disabled aria-label="Làm lại">↷</button>
+          <button
+            class="layout-icon-button"
+            type="button"
+            aria-label="Hoàn tác vị trí"
+            title="Hoàn tác lần kéo đã lưu"
+            :disabled="!canUndo"
+            :aria-busy="historyAction === 'undo'"
+            @click="applyMoveHistory('undo')"
+          >
+            ↶
+          </button>
+
+          <button
+            class="layout-icon-button"
+            type="button"
+            aria-label="Làm lại vị trí"
+            title="Làm lại lần kéo đã hoàn tác"
+            :disabled="!canRedo"
+            :aria-busy="historyAction === 'redo'"
+            @click="applyMoveHistory('redo')"
+          >
+            ↷
+          </button>
           <span class="layout-toolbar__divider" aria-hidden="true"></span>
           <button
             class="layout-icon-button"
             type="button"
             aria-label="Thu nhỏ sơ đồ"
-            :disabled="drag.active.value || dropBusy || !content || zoom <= 50"
+            :disabled="drag.active.value || dropBusy || historyBusy || !content || zoom <= 50"
             @click="zoom = Math.max(50, zoom - 25)"
           >
             −
@@ -625,7 +804,7 @@ watch(objects, (items) => {
             class="layout-icon-button"
             type="button"
             aria-label="Phóng to sơ đồ"
-            :disabled="drag.active.value || dropBusy || !content || zoom >= 200"
+            :disabled="drag.active.value || dropBusy || historyBusy || !content || zoom >= 200"
             @click="zoom = Math.min(200, zoom + 25)"
           >
             ＋
