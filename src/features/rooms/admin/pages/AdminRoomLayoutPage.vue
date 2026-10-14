@@ -25,6 +25,8 @@ import { useRoomLayoutElementDrag } from '../composables/use-room-layout-element
 import { toAdminRoomLayoutContentRequest } from '../mappers/admin-room-layout-content.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
+import AdminSeatLayoutInitializeForm from '../components/AdminSeatLayoutInitializeForm.vue'
+
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
@@ -61,6 +63,9 @@ const elementBusy = ref(false)
 const contentBlocked = ref(false)
 const saveMessage = ref('')
 const elementForm = ref<InstanceType<typeof AdminRoomLayoutElementForm> | null>(null)
+const seatLayoutOpen = ref(false)
+const seatLayoutBusy = ref(false)
+const seatLayoutForm = ref<InstanceType<typeof AdminSeatLayoutInitializeForm> | null>(null)
 const svgCanvas = ref<SVGSVGElement | null>(null)
 const elementPreview = ref<RoomLayoutGeometryResponse | null>(null)
 const dragTargetId = ref('')
@@ -165,6 +170,8 @@ const editorLocked = computed(
     dragTargetId.value !== '' ||
     historyBusy.value ||
     publishMutation.isPending.value ||
+    seatLayoutOpen.value ||
+    seatLayoutBusy.value ||
     dropBusy.value,
 )
 
@@ -263,6 +270,44 @@ const canAppend = computed(
     !creationBlocked.value &&
     !contentBlocked.value,
 )
+
+async function openSeatLayoutForm() {
+  if (!canAppend.value || editorLocked.value || !content.value || content.value.seats.length) {
+    return
+  }
+
+  seatLayoutOpen.value = true
+  selectedKey.value = ''
+  saveMessage.value = ''
+
+  await nextTick()
+  document.querySelector<HTMLElement>('.layout-seat-initialize input')?.focus()
+}
+
+function closeSeatLayoutForm() {
+  if (seatLayoutBusy.value) return
+  seatLayoutOpen.value = false
+}
+
+function onSeatLayoutSaved(count: number) {
+  seatLayoutOpen.value = false
+  selectedKey.value = ''
+  contentBlocked.value = false
+  publishError.value = ''
+  dropError.value = ''
+  resetMoveHistory()
+  saveMessage.value = `Đã lưu geometry cho ${count} ghế.`
+}
+
+function saveInspector() {
+  if (!canAppend.value) return
+
+  if (seatLayoutOpen.value) {
+    void seatLayoutForm.value?.submit()
+  } else {
+    void elementForm.value?.submit()
+  }
+}
 
 const hasLayoutSeats = computed(() => Boolean(content.value?.seats.length))
 
@@ -433,7 +478,13 @@ async function applyMoveHistory(direction: 'undo' | 'redo') {
 }
 
 const canDirectDrag = computed(
-  () => canAppend.value && !elementKind.value && !dropBusy.value && !historyBusy.value,
+  () =>
+    canAppend.value &&
+    !elementKind.value &&
+    !dropBusy.value &&
+    !historyBusy.value &&
+    !seatLayoutOpen.value &&
+    !seatLayoutBusy.value,
 )
 
 const drag = useRoomLayoutElementDrag(svgCanvas, {
@@ -732,6 +783,8 @@ watch(
     drag.cancel()
     dropError.value = ''
     resetMoveHistory()
+    seatLayoutOpen.value = false
+    seatLayoutBusy.value = false
   },
   { flush: 'sync' },
 )
@@ -744,6 +797,8 @@ watch(layoutId, () => {
   drag.cancel()
   dropError.value = ''
   resetMoveHistory()
+  seatLayoutOpen.value = false
+  seatLayoutBusy.value = false
 })
 
 watch(objects, (items) => {
@@ -774,9 +829,13 @@ watch(objects, (items) => {
         >
         <AppButton
           variant="secondary"
-          :disabled="!elementKind || !canAppend || !elementForm?.canSave"
-          :loading="elementBusy"
-          @click="elementForm?.submit()"
+          :disabled="
+            seatLayoutOpen
+              ? !seatLayoutForm?.canSave
+              : !elementKind || !canAppend || !elementForm?.canSave
+          "
+          :loading="elementBusy || seatLayoutBusy"
+          @click="saveInspector"
         >
           Lưu nháp
         </AppButton>
@@ -1067,17 +1126,31 @@ watch(objects, (items) => {
         <aside class="layout-inspector">
           <section
             class="layout-inspector-panel layout-panel"
-            :aria-labelledby="elementKind ? undefined : 'layout-object-title'"
+            :aria-labelledby="seatLayoutOpen || elementKind ? undefined : 'layout-object-title'"
             :aria-label="
-              elementKind
-                ? editingElementId
-                  ? 'Sửa phần tử không gian'
-                  : 'Thêm phần tử không gian'
-                : undefined
+              seatLayoutOpen
+                ? 'Khởi tạo geometry ghế'
+                : elementKind
+                  ? editingElementId
+                    ? 'Sửa phần tử không gian'
+                    : 'Thêm phần tử không gian'
+                  : undefined
             "
           >
+            <AdminSeatLayoutInitializeForm
+              v-if="seatLayoutOpen && content"
+              ref="seatLayoutForm"
+              class="layout-seat-initialize"
+              :key="`${roomId}:${layoutId}`"
+              :content="content"
+              :enabled="canAppend"
+              @busy="seatLayoutBusy = $event"
+              @saved="onSeatLayoutSaved"
+              @failed="contentBlocked = true"
+              @cancel="closeSeatLayoutForm"
+            />
             <AdminRoomLayoutElementForm
-              v-if="elementKind && content"
+              v-else-if="elementKind && content"
               ref="elementForm"
               class="layout-element-inspector"
               :key="`${roomId}:${layoutId}:${elementKind}:${editingElementId}`"
@@ -1239,7 +1312,14 @@ watch(objects, (items) => {
               @failed="creationBlocked = true"
               @cancel="draftOpen = false"
             />
-
+            <AppButton
+              v-if="content && !content.seats.length && !seatLayoutOpen"
+              variant="secondary"
+              :disabled="editorLocked || !canAppend"
+              @click="openSeatLayoutForm"
+            >
+              Khởi tạo geometry ghế
+            </AppButton>
             <dl v-if="content" class="layout-summary">
               <div>
                 <dt>Số hàng</dt>
