@@ -2,44 +2,173 @@ import type {
   RoomLayoutContentResponse,
   RoomLayoutGeometryResponse,
 } from '@/services/api/generated/inventory-service/model'
-import {
-  ADMIN_SEAT_LAYOUT_GEOMETRY,
-  ADMIN_SEAT_MATRIX_STEP,
-  getAdminSeatMatrixGeometry,
-  readAdminSeatMatrix,
-} from './admin-seat-layout.mapper'
+import { ADMIN_SEAT_MATRIX_STEP, readAdminSeatMatrix } from './admin-seat-layout.mapper'
+
+type Geometry = RoomLayoutGeometryResponse
+type SeatPosition = RoomLayoutContentResponse['seats'][number]
 
 export type SeatRowMovePlan = {
   anchorSeatId: string
-  anchor: RoomLayoutGeometryResponse
+  anchor: Geometry
   rowLabels: string[]
-  stepX: number
-  stepY: number
-  seats: {
-    seatId: string
-    geometry: RoomLayoutGeometryResponse
-  }[]
+  movingIds: string[]
+  movingRows: string[]
+  content: RoomLayoutContentResponse
+  origin: { x: number; y: number }
 }
 
-const MAX_COORDINATE = 999999999
+const collator = new Intl.Collator('vi', { numeric: true })
+const EPSILON = 0.000001
 
-function coordinate(value: number) {
-  const result = Math.round(value)
+function capacity(seat: SeatPosition) {
+  return seat.seatTypeSnapshot === 'COUPLE' ? 2 : 1
+}
 
-  if (!Number.isFinite(value) || result < 0 || result > MAX_COORDINATE) {
-    throw new Error('Tọa độ ghế không hợp lệ. Hãy tải lại nội dung.')
+function originOf(content: RoomLayoutContentResponse) {
+  const { anchor } = readAdminSeatMatrix(content)
+
+  return {
+    x: Math.round(anchor.geometry.x),
+    y: Math.round(anchor.geometry.y),
   }
-
-  return result
 }
 
 function snap(value: number, origin: number, step: number) {
-  const minimumCell = Math.ceil(-origin / step)
-  const maximumCell = Math.floor((MAX_COORDINATE - origin) / step)
+  return origin + Math.round((value - origin) / step) * step
+}
 
-  const cell = Math.min(maximumCell, Math.max(minimumCell, Math.round((value - origin) / step)))
+function seatCell(seat: SeatPosition, geometry: Geometry): Geometry {
+  return {
+    ...geometry,
+    width: capacity(seat) * ADMIN_SEAT_MATRIX_STEP.x,
+    height: ADMIN_SEAT_MATRIX_STEP.y,
+  }
+}
 
-  return origin + cell * step
+function corners(geometry: Geometry) {
+  const cx = geometry.x + geometry.width / 2
+  const cy = geometry.y + geometry.height / 2
+  const angle = (geometry.rotationDegrees * Math.PI) / 180
+  const cos = Math.cos(angle)
+  const sin = Math.sin(angle)
+
+  return [
+    [-geometry.width / 2, -geometry.height / 2],
+    [geometry.width / 2, -geometry.height / 2],
+    [geometry.width / 2, geometry.height / 2],
+    [-geometry.width / 2, geometry.height / 2],
+  ].map(([x, y]) => ({
+    x: cx + x! * cos - y! * sin,
+    y: cy + x! * sin + y! * cos,
+  }))
+}
+
+function overlaps(left: Geometry, right: Geometry) {
+  const a = corners(left)
+  const b = corners(right)
+
+  for (const polygon of [a, b]) {
+    for (let index = 0; index < polygon.length; index++) {
+      const start = polygon[index]!
+      const end = polygon[(index + 1) % polygon.length]!
+      const nx = -(end.y - start.y)
+      const ny = end.x - start.x
+      const length = Math.hypot(nx, ny)
+
+      if (!length) continue
+
+      const project = (point: { x: number; y: number }) => (point.x * nx + point.y * ny) / length
+
+      const pa = a.map(project)
+      const pb = b.map(project)
+
+      if (
+        Math.max(...pa) <= Math.min(...pb) + EPSILON ||
+        Math.max(...pb) <= Math.min(...pa) + EPSILON
+      ) {
+        return false
+      }
+    }
+  }
+
+  return true
+}
+
+function assertInside(content: RoomLayoutContentResponse, geometry: Geometry) {
+  if (
+    !Object.values(geometry).every(Number.isFinite) ||
+    geometry.width <= 0 ||
+    geometry.height <= 0 ||
+    !Number.isInteger(geometry.x) ||
+    !Number.isInteger(geometry.y) ||
+    geometry.x > 999999999 ||
+    geometry.y > 999999999
+  ) {
+    throw new Error('Geometry sau khi dịch không hợp lệ.')
+  }
+
+  if (
+    corners(geometry).some(
+      (point) =>
+        point.x < -EPSILON ||
+        point.y < -EPSILON ||
+        point.x > content.layout.canvasWidth + EPSILON ||
+        point.y > content.layout.canvasHeight + EPSILON,
+    )
+  ) {
+    throw new Error('Canvas không còn đủ chỗ cho nhóm đối tượng sau khi dịch.')
+  }
+}
+
+function assertOnGrid(geometry: Geometry, origin: { x: number; y: number }) {
+  if (
+    Math.abs(snap(geometry.x, origin.x, ADMIN_SEAT_MATRIX_STEP.x) - geometry.x) > EPSILON ||
+    Math.abs(snap(geometry.y, origin.y, ADMIN_SEAT_MATRIX_STEP.y) - geometry.y) > EPSILON ||
+    geometry.rotationDegrees !== 0
+  ) {
+    throw new Error('Ghế cần nằm thẳng và bám grid trước khi dịch.')
+  }
+}
+
+function validateSeats(
+  content: RoomLayoutContentResponse,
+  result: Map<string, Geometry>,
+  changedIds: Set<string>,
+  origin: { x: number; y: number },
+) {
+  for (const seat of content.seats) {
+    const geometry = result.get(seat.seatId)!
+
+    if (changedIds.has(seat.seatId)) {
+      assertInside(content, geometry)
+      assertOnGrid(geometry, origin)
+    }
+  }
+
+  for (let index = 0; index < content.seats.length; index++) {
+    const seat = content.seats[index]!
+    const geometry = result.get(seat.seatId)!
+
+    for (const other of content.seats.slice(index + 1)) {
+      if (!changedIds.has(seat.seatId) && !changedIds.has(other.seatId)) {
+        continue
+      }
+
+      if (overlaps(seatCell(seat, geometry), seatCell(other, result.get(other.seatId)!))) {
+        throw new Error('Các ghế còn chồng ô sau khi dịch. Hãy chọn một vị trí khác.')
+      }
+    }
+
+    if (!changedIds.has(seat.seatId)) continue
+
+    for (const element of content.elements) {
+      const reserved = element.kind === 'AISLE' ? seatCell(seat, geometry) : geometry
+
+      if (overlaps(reserved, element.geometry)) {
+        throw new Error('Nhóm ghế sau khi dịch đè lên lối đi hoặc phần tử không gian.')
+      }
+    }
+  }
 }
 
 export function createSeatRowMovePlan(
@@ -53,109 +182,237 @@ export function createSeatRowMovePlan(
     throw new Error('Ghế đang kéo không còn trong sơ đồ.')
   }
 
-  const { matrix, anchor: a1 } = readAdminSeatMatrix(content)
-  const originX = coordinate(a1.geometry.x)
-  const originY = coordinate(a1.geometry.y)
-  const selectedIds = new Set([...selectedSeatIds, anchorSeatId])
-  const moveWholeMatrix = selectedIds.has(a1.seatId)
+  const grouped = new Map<string, SeatPosition[]>()
 
-  const rowLabels = matrix.rows
-    .filter((row) => moveWholeMatrix || row.entries.some((seat) => selectedIds.has(seat.seatId)))
-    .map((row) => row.label)
-
-  let positions: Map<string, RoomLayoutGeometryResponse>
-
-  if (moveWholeMatrix) {
-    positions = getAdminSeatMatrixGeometry(matrix, originX, originY)
-  } else {
-    positions = new Map()
-
-    for (const row of matrix.rows) {
-      if (!rowLabels.includes(row.label)) continue
-
-      const firstEntry = row.entries[0]
-      const firstSeat = content.seats.find((seat) => seat.seatId === firstEntry?.seatId)
-
-      if (!firstSeat) {
-        throw new Error('Không thể xác định ghế đầu hàng.')
-      }
-
-      const rowX = snap(firstSeat.geometry.x, originX, ADMIN_SEAT_MATRIX_STEP.x)
-      const rowY = snap(
-        row.label === anchorSeat.rowLabelSnapshot ? anchorSeat.geometry.y : firstSeat.geometry.y,
-        originY,
-        ADMIN_SEAT_MATRIX_STEP.y,
-      )
-
-      for (const seat of row.entries) {
-        positions.set(seat.seatId, {
-          x: coordinate(rowX + seat.column * ADMIN_SEAT_MATRIX_STEP.x),
-          y: coordinate(rowY),
-          width:
-            seat.capacity * ADMIN_SEAT_LAYOUT_GEOMETRY.width +
-            (seat.capacity - 1) * ADMIN_SEAT_LAYOUT_GEOMETRY.gapX,
-          height: ADMIN_SEAT_LAYOUT_GEOMETRY.height,
-          rotationDegrees: 0,
-        })
-      }
-    }
+  for (const seat of content.seats) {
+    const row = grouped.get(seat.rowLabelSnapshot) ?? []
+    row.push(seat)
+    grouped.set(seat.rowLabelSnapshot, row)
   }
 
-  const anchor = positions.get(anchorSeatId)
+  const selected = new Set([...selectedSeatIds, anchorSeatId])
+  const movingRows: string[] = []
 
-  if (!anchor) {
-    throw new Error('Không thể xác định vị trí ghế đang kéo.')
+  for (const [label, seats] of grouped) {
+    const first = [...seats].sort(
+      (left, right) =>
+        collator.compare(left.seatNumberSnapshot, right.seatNumberSnapshot) ||
+        left.seatId.localeCompare(right.seatId),
+    )[0]!
+
+    if (selected.has(first.seatId)) {
+      movingRows.push(label)
+
+      for (const seat of seats) selected.add(seat.seatId)
+    }
   }
 
   return {
     anchorSeatId,
-    anchor: { ...anchor },
-    rowLabels,
-    stepX: moveWholeMatrix ? 1 : ADMIN_SEAT_MATRIX_STEP.x,
-    stepY: moveWholeMatrix ? 1 : ADMIN_SEAT_MATRIX_STEP.y,
-    seats: [...positions].map(([seatId, geometry]) => ({
-      seatId,
-      geometry: { ...geometry },
-    })),
+    anchor: { ...anchorSeat.geometry },
+    movingIds: [...selected],
+    movingRows,
+    rowLabels: [
+      ...new Set(
+        content.seats
+          .filter((seat) => selected.has(seat.seatId))
+          .map((seat) => seat.rowLabelSnapshot),
+      ),
+    ],
+    origin: originOf(content),
+    content: {
+      layout: { ...content.layout },
+      seats: content.seats.map((seat) => ({
+        ...seat,
+        geometry: { ...seat.geometry },
+      })),
+      elements: content.elements.map((element) => ({
+        ...element,
+        geometry: { ...element.geometry },
+      })),
+    },
   }
 }
 
-export function moveSeatRows(
-  plan: SeatRowMovePlan,
-  target: RoomLayoutGeometryResponse,
-): Map<string, RoomLayoutGeometryResponse> {
-  const xs = plan.seats.map((seat) => seat.geometry.x)
-  const ys = plan.seats.map((seat) => seat.geometry.y)
+export function moveSeatRows(plan: SeatRowMovePlan, target: Geometry): Map<string, Geometry> {
+  const { content, origin } = plan
+  const moving = new Set(plan.movingIds)
 
-  function delta(requested: number, minimum: number, maximum: number, step: number) {
-    return Math.min(
-      Math.floor(maximum / step) * step,
-      Math.max(Math.ceil(minimum / step) * step, Math.round(requested / step) * step),
-    )
+  const targetX = snap(target.x, origin.x, ADMIN_SEAT_MATRIX_STEP.x)
+  const targetY = snap(target.y, origin.y, ADMIN_SEAT_MATRIX_STEP.y)
+  const dx = targetX - plan.anchor.x
+  const dy = targetY - plan.anchor.y
+
+  if (dx === 0 && dy === 0) return new Map()
+
+  const result = new Map(content.seats.map((seat) => [seat.seatId, { ...seat.geometry }]))
+
+  for (const seat of content.seats) {
+    if (!moving.has(seat.seatId)) continue
+
+    result.set(seat.seatId, {
+      ...seat.geometry,
+      x: Math.round(seat.geometry.x + dx),
+      y: Math.round(seat.geometry.y + dy),
+    })
   }
 
-  const dx = delta(
-    target.x - plan.anchor.x,
-    -Math.min(...xs),
-    MAX_COORDINATE - Math.max(...xs),
-    plan.stepX,
-  )
+  const rows = new Map<string, SeatPosition[]>()
 
-  const dy = delta(
-    target.y - plan.anchor.y,
-    -Math.min(...ys),
-    MAX_COORDINATE - Math.max(...ys),
-    plan.stepY,
-  )
+  for (const seat of content.seats) {
+    const row = rows.get(seat.rowLabelSnapshot) ?? []
+    row.push(seat)
+    rows.set(seat.rowLabelSnapshot, row)
+  }
 
-  return new Map(
-    plan.seats.map((seat) => [
-      seat.seatId,
-      {
-        ...seat.geometry,
-        x: seat.geometry.x + dx,
-        y: seat.geometry.y + dy,
-      },
+  const heads = new Map(
+    [...rows].map(([label, seats]) => [
+      label,
+      [...seats].sort(
+        (left, right) =>
+          collator.compare(left.seatNumberSnapshot, right.seatNumberSnapshot) ||
+          left.seatId.localeCompare(right.seatId),
+      )[0]!,
     ]),
   )
+
+  // Chèn hàng: xử lý theo vị trí đích từ trên xuống.
+  const movingRows = [...plan.movingRows].sort(
+    (left, right) =>
+      result.get(heads.get(left)!.seatId)!.y - result.get(heads.get(right)!.seatId)!.y,
+  )
+
+  for (const label of movingRows) {
+    const targetRowY = result.get(heads.get(label)!.seatId)!.y
+
+    const stationaryRows = [...heads].filter(
+      ([rowLabel, head]) => !plan.movingRows.includes(rowLabel) && !moving.has(head.seatId),
+    )
+
+    const occupied = stationaryRows.some(
+      ([, head]) => Math.abs(result.get(head.seatId)!.y - targetRowY) < EPSILON,
+    )
+
+    if (!occupied) continue
+
+    const shiftedLabels = new Set(
+      stationaryRows
+        .filter(([, head]) => result.get(head.seatId)!.y >= targetRowY)
+        .map(([rowLabel]) => rowLabel),
+    )
+
+    for (const seat of content.seats) {
+      if (moving.has(seat.seatId) || !shiftedLabels.has(seat.rowLabelSnapshot)) {
+        continue
+      }
+
+      const geometry = result.get(seat.seatId)!
+
+      result.set(seat.seatId, {
+        ...geometry,
+        y: geometry.y + ADMIN_SEAT_MATRIX_STEP.y,
+      })
+    }
+  }
+
+  // Chèn ghế riêng lẻ; các ghế thuộc hàng đang kéo không xử lý lại.
+  const individuals = content.seats
+    .filter((seat) => moving.has(seat.seatId) && !plan.movingRows.includes(seat.rowLabelSnapshot))
+    .sort(
+      (left, right) =>
+        result.get(left.seatId)!.y - result.get(right.seatId)!.y ||
+        result.get(left.seatId)!.x - result.get(right.seatId)!.x ||
+        left.seatId.localeCompare(right.seatId),
+    )
+
+  for (const seat of individuals) {
+    const destination = result.get(seat.seatId)!
+    const destinationEnd = destination.x + capacity(seat) * ADMIN_SEAT_MATRIX_STEP.x
+
+    const stationary = content.seats.filter(
+      (other) =>
+        !moving.has(other.seatId) &&
+        other.rowLabelSnapshot === seat.rowLabelSnapshot &&
+        Math.abs(result.get(other.seatId)!.y - destination.y) < EPSILON,
+    )
+
+    const collided = stationary.filter((other) => {
+      const geometry = result.get(other.seatId)!
+
+      return (
+        geometry.x < destinationEnd &&
+        geometry.x + capacity(other) * ADMIN_SEAT_MATRIX_STEP.x > destination.x
+      )
+    })
+
+    if (!collided.length) continue
+
+    const firstX = Math.min(...collided.map((other) => result.get(other.seatId)!.x))
+
+    // Bao gồm trường hợp thả vào ô thứ hai của một ghế COUPLE.
+    const shift =
+      Math.ceil(
+        Math.max(capacity(seat) * ADMIN_SEAT_MATRIX_STEP.x, destinationEnd - firstX) /
+          ADMIN_SEAT_MATRIX_STEP.x,
+      ) * ADMIN_SEAT_MATRIX_STEP.x
+
+    for (const other of stationary) {
+      const geometry = result.get(other.seatId)!
+      if (geometry.x < firstX) continue
+
+      result.set(other.seatId, {
+        ...geometry,
+        x: geometry.x + shift,
+      })
+    }
+  }
+
+  const changed = new Map<string, Geometry>()
+
+  for (const seat of content.seats) {
+    const geometry = result.get(seat.seatId)!
+
+    if (geometry.x !== seat.geometry.x || geometry.y !== seat.geometry.y) {
+      changed.set(seat.seatId, geometry)
+    }
+  }
+
+  validateSeats(content, result, new Set(changed.keys()), origin)
+  return changed
+}
+
+export function snapAisleToGrid(
+  content: RoomLayoutContentResponse,
+  input: Geometry,
+  excludedElementId?: string,
+): Geometry {
+  const origin = originOf(content)
+
+  if (!Object.values(input).every(Number.isFinite) || input.width <= 0 || input.height <= 0) {
+    throw new Error('Geometry lối đi không hợp lệ.')
+  }
+
+  const geometry: Geometry = {
+    x: snap(input.x, origin.x, ADMIN_SEAT_MATRIX_STEP.x),
+    y: snap(input.y, origin.y, ADMIN_SEAT_MATRIX_STEP.y),
+    width: Math.ceil(input.width / ADMIN_SEAT_MATRIX_STEP.x) * ADMIN_SEAT_MATRIX_STEP.x,
+    height: Math.ceil(input.height / ADMIN_SEAT_MATRIX_STEP.y) * ADMIN_SEAT_MATRIX_STEP.y,
+    rotationDegrees: 0,
+  }
+
+  assertInside(content, geometry)
+
+  if (content.seats.some((seat) => overlaps(geometry, seatCell(seat, seat.geometry)))) {
+    throw new Error('Các ô đặt lối đi đang có ghế.')
+  }
+
+  if (
+    content.elements.some(
+      (element) => element.id !== excludedElementId && overlaps(geometry, element.geometry),
+    )
+  ) {
+    throw new Error('Lối đi chồng lên phần tử không gian khác.')
+  }
+
+  return geometry
 }

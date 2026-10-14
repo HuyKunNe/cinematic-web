@@ -29,6 +29,7 @@ import AdminSeatLayoutInitializeForm from '../components/AdminSeatLayoutInitiali
 import {
   createSeatRowMovePlan,
   moveSeatRows,
+  snapAisleToGrid,
   type SeatRowMovePlan,
 } from '../mappers/admin-seat-row-move.mapper'
 import {
@@ -512,9 +513,24 @@ const canDirectDrag = computed(
 const drag = useRoomLayoutElementDrag(svgCanvas, {
   enabled: () => canDirectDrag.value,
   onPosition: (geometry) => {
-    if (dropBaseline?.kind === 'seats') {
-      seatMovePreview.value = moveSeatRows(dropBaseline.plan, geometry)
-    } else {
+    try {
+      if (dropBaseline?.kind === 'seats') {
+        seatMovePreview.value = moveSeatRows(dropBaseline.plan, geometry)
+      } else if (dropBaseline?.kind === 'element' && content.value) {
+        const baseline = dropBaseline
+        const element = content.value.elements.find((item) => item.id === baseline.elementId)
+        dragPreview.value =
+          element?.kind === 'AISLE'
+            ? snapAisleToGrid(content.value, geometry, element.id)
+            : geometry
+      }
+
+      dropError.value = ''
+    } catch (error) {
+      // Không giữ preview hợp lệ của vị trí trước đó.
+      seatMovePreview.value = new Map()
+      dragPreview.value = null
+      dropError.value = adminRoomErrorMessage(error, 'Không thể đặt đối tượng vào vị trí này.')
       dragPreview.value = geometry
     }
   },
@@ -609,7 +625,7 @@ function startObjectDrag(event: PointerEvent, key: string) {
     }
 
     dragTargetId.value = key
-    seatMovePreview.value = moveSeatRows(plan, plan.anchor)
+    seatMovePreview.value = new Map()
 
     if (!drag.start(event, plan.anchor)) clearDropPreview()
     return
@@ -645,17 +661,26 @@ const seatMatrix = computed(() => {
   if (!content.value?.seats.length) return { grid: null, error: '' }
 
   try {
-    const { matrix, anchor } = readAdminSeatMatrix(content.value)
-    const geometry = seatMovePreview.value.get(anchor.seatId) ?? anchor.geometry
+    const { anchor } = readAdminSeatMatrix(content.value)
+    const originX = Math.round(anchor.geometry.x)
+    const originY = Math.round(anchor.geometry.y)
+    const width = content.value.layout.canvasWidth
+    const height = content.value.layout.canvasHeight
 
     return {
       grid: {
-        x: Math.round(geometry.x),
-        y: Math.round(geometry.y),
-        columns: matrix.columnCount,
-        rows: matrix.rows.length,
-        width: matrix.columnCount * ADMIN_SEAT_MATRIX_STEP.x,
-        height: matrix.rows.length * ADMIN_SEAT_MATRIX_STEP.y,
+        x: 0,
+        y: 0,
+        originX,
+        originY,
+        columns:
+          Math.ceil((width - originX) / ADMIN_SEAT_MATRIX_STEP.x) -
+          Math.floor(-originX / ADMIN_SEAT_MATRIX_STEP.x),
+        rows:
+          Math.ceil((height - originY) / ADMIN_SEAT_MATRIX_STEP.y) -
+          Math.floor(-originY / ADMIN_SEAT_MATRIX_STEP.y),
+        width,
+        height,
       },
       error: '',
     }
@@ -744,7 +769,29 @@ function formatGeometryValue(
 async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
   const baseline = dropBaseline
   if (!baseline) return
-  const movedSeats = baseline.kind === 'seats' ? moveSeatRows(baseline.plan, geometry) : null
+  let movedSeats: Map<string, RoomLayoutGeometryResponse> | null = null
+  let elementGeometry = geometry
+
+  // Tính lại từ snapshot đầu lần kéo, không dùng preview tích lũy.
+  try {
+    if (baseline.kind === 'seats') {
+      movedSeats = moveSeatRows(baseline.plan, geometry)
+    } else {
+      const currentContent = content.value
+      if (!currentContent) throw new Error('Không còn nội dung sơ đồ.')
+
+      const element = currentContent.elements.find((item) => item.id === baseline.elementId)
+      if (!element) throw new Error('Phần tử đang kéo không còn tồn tại.')
+
+      if (element.kind === 'AISLE') {
+        elementGeometry = snapAisleToGrid(currentContent, geometry, element.id)
+      }
+    }
+  } catch (error) {
+    clearDropPreview()
+    dropError.value = adminRoomErrorMessage(error, 'Không thể đặt đối tượng vào vị trí này.')
+    return
+  }
 
   const input: ReplaceRoomLayoutContentRequest = {
     expectedVersion: baseline.input.expectedVersion,
@@ -754,7 +801,7 @@ async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
     })),
     elements: baseline.input.elements.map((element, index) =>
       baseline.kind === 'element' && index === baseline.index
-        ? { ...element, geometry: { ...geometry } }
+        ? { ...element, geometry: { ...elementGeometry } }
         : element,
     ),
   }
@@ -781,7 +828,8 @@ async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
       if (baseline.kind === 'seats') {
         const anchor = saved.seats.find((seat) => seat.seatId === baseline.plan.anchorSeatId)
         selectedKey.value = anchor ? `seat:${anchor.id}` : ''
-        saveMessage.value = `Đã lưu vị trí ${baseline.plan.seats.length} ghế thuộc ${baseline.plan.rowLabels.length} hàng.`
+        saveMessage.value =
+          `Đã lưu vị trí ${movedSeats?.size ?? 0} ghế, ` + 'bao gồm các ghế được dịch khi chèn.'
       } else {
         selectedKey.value = ''
         saveMessage.value = 'Đã lưu vị trí phần tử.'
@@ -955,15 +1003,6 @@ function isObjectSelected(key: string) {
     ? selectedSeatIds.value.includes(object.seatId) || seatMovePreview.value.has(object.seatId)
     : selectedKey.value === key
 }
-
-const selectedSeatRowCount = computed(
-  () =>
-    new Set(
-      content.value?.seats
-        .filter((seat) => selectedSeatIds.value.includes(seat.seatId))
-        .map((seat) => seat.rowLabelSnapshot) ?? [],
-    ).size,
-)
 
 watch(
   () => content.value?.seats,
@@ -1167,9 +1206,9 @@ watch(objects, (items) => {
       </aside>
 
       <p class="layout-muted">
-        A1 là gốc ma trận. Kéo A1 để dịch toàn bộ ma trận; kéo ghế khác để dịch cả hàng theo bước ô.
-        Ghế đôi chiếm hai ô ngang. Giữ Ctrl, ⌘ hoặc Shift để chọn nhiều ghế. Thả để tự lưu; nhấn
-        Escape khi đang kéo để hủy.
+        Grid phủ toàn canvas và lấy vị trí A1 làm mốc đường lưới. Kéo ghế đầu hàng để dịch cả hàng;
+        kéo ghế khác để dịch riêng ghế đó. Thả vào hàng hoặc ghế đang có sẽ dịch nhóm phía sau để
+        chèn. Giữ Ctrl, ⌘ hoặc Shift để chọn nhiều. Thả để tự lưu; Escape để hủy.
       </p>
 
       <p v-if="multiSeatMode" class="layout-muted" role="status">
@@ -1177,8 +1216,8 @@ watch(objects, (items) => {
       </p>
 
       <p v-if="selectedSeatIds.length" class="layout-muted" role="status">
-        Đã chọn {{ selectedSeatIds.length }} ghế. Khi nhóm chọn chứa A1, toàn bộ ma trận sẽ dịch.
-        Các nhóm khác dịch {{ selectedSeatRowCount }} hàng đang chọn.
+        Đã chọn {{ selectedSeatIds.length }} ghế. Ghế đầu hàng được chọn sẽ kéo theo toàn bộ hàng
+        của nó. Các ghế còn lại chỉ di chuyển riêng.
       </p>
 
       <p v-if="dropBusy" class="layout-muted" role="status">Đang lưu vị trí…</p>
@@ -1229,14 +1268,7 @@ watch(objects, (items) => {
           <button class="layout-tool" type="button" @click="backToSeats" :disabled="editorLocked">
             Xếp ghế theo hàng
           </button>
-          <button
-            class="layout-tool"
-            type="button"
-            :disabled="editorLocked || !canDirectDrag || !seatMatrix.grid"
-            @click="alignSeatMatrix"
-          >
-            Căn ma trận theo A1
-          </button>
+
           <button
             class="layout-tool"
             type="button"
@@ -1364,8 +1396,8 @@ watch(objects, (items) => {
             {{ seatMatrix.error }}
           </p>
           <p v-if="seatMatrix.grid" class="layout-muted">
-            Ma trận {{ seatMatrix.grid.rows }} hàng × {{ seatMatrix.grid.columns }} ô ngang.
-            Capacity: ghế thường 1 ô, ghế đôi 2 ô.
+            Grid phủ canvas: {{ seatMatrix.grid.rows }} hàng ô × {{ seatMatrix.grid.columns }} cột
+            ô, kể cả ô cắt tại mép canvas. Capacity: ghế thường 1 ô, ghế đôi 2 ô.
           </p>
 
           <AdminRoomLayoutRuler
@@ -1390,8 +1422,8 @@ watch(objects, (items) => {
                 <pattern
                   :id="matrixPatternId"
                   patternUnits="userSpaceOnUse"
-                  :x="seatMatrix.grid?.x ?? 0"
-                  :y="seatMatrix.grid?.y ?? 0"
+                  :x="seatMatrix.grid?.originX ?? 0"
+                  :y="seatMatrix.grid?.originY ?? 0"
                   :width="ADMIN_SEAT_MATRIX_STEP.x"
                   :height="ADMIN_SEAT_MATRIX_STEP.y"
                 >
