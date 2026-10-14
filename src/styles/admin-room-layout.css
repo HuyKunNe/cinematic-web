@@ -597,3 +597,12 @@
   padding: 0;
   border: 0;
 }
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-draggable {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-dragging {
+  cursor: grabbing;
+}

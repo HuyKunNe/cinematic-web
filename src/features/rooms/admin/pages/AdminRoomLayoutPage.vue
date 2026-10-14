@@ -19,6 +19,7 @@ import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
 import AdminRoomLayoutDraftForm from '../components/AdminRoomLayoutDraftForm.vue'
 import { RoomLayoutElementInputKind } from '@/services/api/generated/inventory-service/model'
 import AdminRoomLayoutElementForm from '../components/AdminRoomLayoutElementForm.vue'
+import { useRoomLayoutElementDrag } from '../composables/use-room-layout-element-drag'
 
 const route = useRoute()
 const router = useRouter()
@@ -56,6 +57,8 @@ const elementBusy = ref(false)
 const contentBlocked = ref(false)
 const saveMessage = ref('')
 const elementForm = ref<InstanceType<typeof AdminRoomLayoutElementForm> | null>(null)
+const svgCanvas = ref<SVGSVGElement | null>(null)
+const elementPreview = ref<RoomLayoutGeometryResponse | null>(null)
 
 const elementTools = [
   { kind: RoomLayoutElementInputKind.SCREEN, label: '+ Màn hình' },
@@ -161,9 +164,40 @@ const canAppend = computed(
     !contentBlocked.value,
 )
 
+const drag = useRoomLayoutElementDrag(svgCanvas, {
+  enabled: () => Boolean(canAppend.value && editingElementId.value && elementForm.value?.canMove),
+  onPosition: (x, y) => {
+    elementForm.value?.setPosition(x, y)
+  },
+})
+
+function canDragObject(key: string) {
+  return (
+    canAppend.value &&
+    Boolean(editingElementId.value) &&
+    key === `element:${editingElementId.value}` &&
+    Boolean(elementForm.value?.canMove)
+  )
+}
+
+function startElementDrag(event: PointerEvent, key: string) {
+  if (!canDragObject(key)) return
+
+  const geometry = elementForm.value?.getGeometry()
+
+  if (!geometry) {
+    saveMessage.value = 'Nhập geometry hợp lệ trước khi kéo phần tử.'
+    return
+  }
+
+  saveMessage.value = ''
+  drag.start(event, geometry)
+}
+
 async function openElementForm(kind: RoomLayoutElementInputKind) {
   if (!canAppend.value || editorLocked.value) return
   editingElementId.value = ''
+  elementPreview.value = null
   elementKind.value = kind
   saveMessage.value = ''
 
@@ -183,6 +217,7 @@ function onElementSaved(action: 'created' | 'updated' | 'deleted') {
   selectedKey.value = ''
   contentBlocked.value = false
   saveMessage.value = messages[action]
+  elementPreview.value = null
 }
 
 async function reloadContent() {
@@ -233,7 +268,10 @@ const objects = computed(() => [
     kind: element.kind as string,
     type: element.kind as string,
     row: '',
-    geometry: element.geometry,
+    geometry:
+      element.id === editingElementId.value && elementPreview.value
+        ? elementPreview.value
+        : element.geometry,
   })),
 ])
 
@@ -247,6 +285,7 @@ async function openEditElementForm() {
   const element = selectedElement.value
   if (!element || !canAppend.value || editorLocked.value) return
 
+  elementPreview.value = null
   editingElementId.value = element.id
   elementKind.value = element.kind
   saveMessage.value = ''
@@ -260,6 +299,7 @@ function closeElementForm() {
 
   elementKind.value = null
   editingElementId.value = ''
+  elementPreview.value = null
 }
 
 function selectObject(key: string) {
@@ -346,6 +386,7 @@ watch(
     elementBusy.value = false
     contentBlocked.value = false
     saveMessage.value = ''
+    elementPreview.value = null
   },
   { flush: 'sync' },
 )
@@ -354,6 +395,7 @@ watch(layoutId, () => {
   saveMessage.value = ''
   selectedKey.value = ''
   zoom.value = 100
+  elementPreview.value = null
 })
 
 watch(objects, (items) => {
@@ -438,7 +480,10 @@ watch(objects, (items) => {
       <p v-if="saveMessage" class="layout-muted" role="status">
         {{ saveMessage }}
       </p>
-
+      <p v-if="editingElementId" class="layout-muted">
+        Kéo phần tử đang sửa để đổi vị trí. Nhấn Escape để hoàn tác lần kéo. Bấm Lưu nháp để lưu;
+        đóng form để bỏ thay đổi.
+      </p>
       <section class="layout-toolbar layout-panel" aria-label="Công cụ thiết kế">
         <div class="layout-tools" role="group" aria-label="Công cụ đặt đối tượng">
           <button class="layout-tool" type="button" @click="backToSeats" :disabled="editorLocked">
@@ -465,7 +510,7 @@ watch(objects, (items) => {
             class="layout-icon-button"
             type="button"
             aria-label="Thu nhỏ sơ đồ"
-            :disabled="!content || zoom <= 50"
+            :disabled="drag.active.value || !content || zoom <= 50"
             @click="zoom = Math.max(50, zoom - 25)"
           >
             −
@@ -475,7 +520,7 @@ watch(objects, (items) => {
             class="layout-icon-button"
             type="button"
             aria-label="Phóng to sơ đồ"
-            :disabled="!content || zoom >= 200"
+            :disabled="drag.active.value || !content || zoom >= 200"
             @click="zoom = Math.min(200, zoom + 25)"
           >
             ＋
@@ -526,6 +571,11 @@ watch(objects, (items) => {
               :viewBox="`0 0 ${content.layout.canvasWidth} ${content.layout.canvasHeight}`"
               :width="content.layout.canvasWidth"
               :height="content.layout.canvasHeight"
+              ref="svgCanvas"
+              @pointermove="drag.move"
+              @pointerup="drag.end"
+              @pointercancel="drag.cancel"
+              @lostpointercapture="drag.cancel"
               aria-label="Đối tượng trong sơ đồ phòng"
             >
               <g
@@ -538,6 +588,8 @@ watch(objects, (items) => {
                   'is-aisle': object.kind === 'AISLE',
                   'is-exit': object.kind === 'EXIT',
                   'is-selected': selectedKey === object.key,
+                  'is-draggable': canDragObject(object.key),
+                  'is-dragging': drag.active.value && canDragObject(object.key),
                 }"
                 :transform="rotation(object.geometry)"
                 role="button"
@@ -548,6 +600,7 @@ watch(objects, (items) => {
                 @keydown.space.prevent="selectObject(object.key)"
                 :aria-label="`${kindLabel(object.type)} ${object.name}`"
                 :aria-pressed="selectedKey === object.key"
+                @pointerdown="startElementDrag($event, object.key)"
               >
                 <title>{{ object.name }}</title>
                 <rect
@@ -579,10 +632,13 @@ watch(objects, (items) => {
           </p>
 
           <footer class="layout-canvas-footer">
-            <span
-              >{{ content?.seats.length ?? 0 }} ghế · {{ content?.elements.length ?? 0 }} phần
-              tử</span
-            >
+            <span>
+              {{
+                editingElementId
+                  ? 'Vị trí đang chỉnh chưa được lưu.'
+                  : 'Kéo ngang để xem toàn bộ sơ đồ trên màn hình nhỏ'
+              }}
+            </span>
             <span>Kéo ngang để xem toàn bộ sơ đồ trên màn hình nhỏ</span>
           </footer>
         </section>
@@ -612,6 +668,8 @@ watch(objects, (items) => {
               @saved="onElementSaved"
               @failed="contentBlocked = true"
               @cancel="closeElementForm"
+              :dragging="drag.active.value"
+              @geometry="elementPreview = $event"
             />
 
             <template v-else>
@@ -724,7 +782,7 @@ watch(objects, (items) => {
               variant="secondary"
               :disabled="editorLocked || draftOpen || !layoutId"
               :loading="contentQuery.isFetching.value"
-              @click="contentQuery.refetch()"
+              @click="reloadContent"
             >
               Tải lại nội dung
             </AppButton>

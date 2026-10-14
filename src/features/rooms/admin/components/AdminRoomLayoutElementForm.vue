@@ -6,6 +6,7 @@ import type {
   RoomLayoutContentResponse,
   RoomLayoutElementInput,
   RoomLayoutElementInputKind,
+  RoomLayoutGeometryResponse,
 } from '@/services/api/generated/inventory-service/model'
 import { useReplaceAdminRoomLayoutContentMutation } from '../api/admin-room-layout-queries'
 import { toAdminRoomLayoutContentRequest } from '../mappers/admin-room-layout-content.mapper'
@@ -17,11 +18,13 @@ const props = defineProps<{
   content: RoomLayoutContentResponse
   kind: RoomLayoutElementInputKind
   elementId?: string
+  dragging?: boolean
   enabled: boolean
 }>()
 
 const emit = defineEmits<{
   busy: [value: boolean]
+  geometry: [value: RoomLayoutGeometryResponse | null]
   saved: [action: SaveAction]
   failed: []
   cancel: []
@@ -94,8 +97,46 @@ const deleteArmed = ref(false)
 const mutation = useReplaceAdminRoomLayoutContentMutation()
 const busy = computed(() => mutation.isPending.value)
 
-const canSave = computed(() => props.enabled && !busy.value && !blocked.value && !deleteArmed.value)
-const canDelete = computed(() => editing && props.enabled && !busy.value && !blocked.value)
+const canMove = computed(() => props.enabled && !busy.value && !blocked.value && !deleteArmed.value)
+
+const canSave = computed(() => canMove.value && !props.dragging)
+
+const canDelete = computed(
+  () => editing && props.enabled && !busy.value && !blocked.value && !props.dragging,
+)
+
+const previewGeometry = computed<RoomLayoutGeometryResponse | null>(() => {
+  const parsed = schema.safeParse(values)
+  if (!parsed.success) return null
+
+  const { x, y, width, height, rotationDegrees } = parsed.data
+  return { x, y, width, height, rotationDegrees }
+})
+
+watch(previewGeometry, (geometry) => emit('geometry', geometry), { immediate: true, flush: 'sync' })
+
+function getGeometry() {
+  return previewGeometry.value ? { ...previewGeometry.value } : null
+}
+
+function setPosition(x: number, y: number) {
+  if (
+    !canMove.value ||
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
+    x < 0 ||
+    y < 0 ||
+    x > 999999999.999 ||
+    y > 999999999.999
+  ) {
+    return
+  }
+
+  values.x = x.toFixed(3)
+  values.y = y.toFixed(3)
+  delete errors.value.x
+  delete errors.value.y
+}
 
 watch(busy, (value) => emit('busy', value), { flush: 'sync' })
 onBeforeUnmount(() => emit('busy', false))
@@ -195,7 +236,7 @@ async function requestDelete() {
   )
 }
 
-defineExpose({ submit, canSave })
+defineExpose({ submit, canSave, canMove, getGeometry, setPosition })
 </script>
 
 <template>
@@ -215,7 +256,10 @@ defineExpose({ submit, canSave })
       </div>
     </header>
 
-    <fieldset class="layout-draft-fields" :disabled="busy || blocked || !enabled || deleteArmed">
+    <fieldset
+      class="layout-draft-fields"
+      :disabled="busy || blocked || !enabled || deleteArmed || dragging"
+    >
       <label v-for="field in fields" :key="field.key" class="layout-field">
         <span>{{ field.label }}{{ field.required ? ' *' : '' }}</span>
         <input
@@ -263,12 +307,14 @@ defineExpose({ submit, canSave })
     <AppButton
       v-if="deleteArmed"
       variant="secondary"
-      :disabled="busy || blocked"
+      :disabled="busy || blocked || dragging"
       @click="deleteArmed = false"
     >
       Giữ phần tử
     </AppButton>
 
-    <AppButton variant="secondary" :disabled="busy" @click="emit('cancel')"> Đóng form </AppButton>
+    <AppButton variant="secondary" :disabled="busy || blocked || dragging" @click="emit('cancel')">
+      Đóng form
+    </AppButton>
   </form>
 </template>
