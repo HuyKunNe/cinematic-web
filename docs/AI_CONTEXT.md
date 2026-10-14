@@ -125,10 +125,36 @@ The full editor and persistence remain incomplete.
 
 ## Current round
 
-S1.1 — Remove superseded seat implementations and reconcile handoff documents.
+Create empty room-layout drafts from the existing inspector.
 
-Consult CURRENT_STATUS.md for application and verification status.
-Do not restore the old dialog or temporary matrix implementation.
+Frontend commit 9d81421 contains:
+
+- Room-seats presentation aligned with the approved reference.
+- Room-layout version reads and saved-content preview.
+- Canvas object selection and geometry inspection.
+- Preview zoom.
+
+Draft creation implementation has been provided.
+Application and manual verification remain pending.
+
+Preserve the reference heading, status notice, toolbar and single
+canvas/inspector workspace.
+
+CreateRoomLayoutRequest contains roomId, canvasWidth and canvasHeight.
+Dimensions must be positive, with at most nine integer digits
+and three decimal digits.
+
+Backend assigns layoutVersion and creates empty content.
+Creation does not copy the selected layout.
+Do not add a room-active restriction that Backend does not enforce.
+
+Do not automatically retry POST after failure.
+Reload and inspect the layout list before another attempt.
+
+Content editing, saving, publication and seat matrix persistence
+remain incomplete.
+
+Consult CURRENT_STATUS.md for verified progress.
 
 ## Deferred scope
 

@@ -581,3 +581,19 @@
   border-color: var(--color-border);
   background: var(--color-surface-raised);
 }
+:where([data-reference='admin-room-layout']) .layout-draft-form {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+
+:where([data-reference='admin-room-layout']) .layout-draft-fields {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}

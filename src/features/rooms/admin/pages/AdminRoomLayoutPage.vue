@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
-import type { RoomLayoutGeometryResponse } from '@/services/api/generated/inventory-service/model'
+import type {
+  RoomLayoutGeometryResponse,
+  RoomLayoutResponse,
+} from '@/services/api/generated/inventory-service/model'
 import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
 import {
   useAdminRoomLayoutsQuery,
@@ -13,6 +16,7 @@ import {
 } from '../api/admin-room-layout-queries'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
+import AdminRoomLayoutDraftForm from '../components/AdminRoomLayoutDraftForm.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -40,6 +44,75 @@ const layouts = useAdminRoomLayoutsQuery(roomId, canRead)
 const chosenId = ref('')
 const selectedKey = ref('')
 const zoom = ref(100)
+const draftOpen = ref(false)
+const draftBusy = ref(false)
+const creationBlocked = ref(false)
+const draftMessage = ref('')
+
+const canCreate = computed(
+  () =>
+    canRead.value &&
+    !context.isFetching.value &&
+    layouts.isSuccess.value &&
+    !layouts.isFetching.value &&
+    !draftBusy.value &&
+    !creationBlocked.value,
+)
+
+function preventUnload(event: BeforeUnloadEvent) {
+  event.preventDefault()
+  event.returnValue = ''
+}
+
+watch(
+  draftBusy,
+  (pending) => {
+    if (pending) window.addEventListener('beforeunload', preventUnload)
+    else window.removeEventListener('beforeunload', preventUnload)
+  },
+  { flush: 'sync' },
+)
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', preventUnload)
+})
+
+onBeforeRouteLeave(() => !draftBusy.value)
+onBeforeRouteUpdate(() => !draftBusy.value)
+
+async function openDraftForm() {
+  if (!canCreate.value || draftOpen.value) return
+
+  draftMessage.value = ''
+  draftOpen.value = true
+
+  await nextTick()
+  document.querySelector<HTMLElement>('.layout-draft-form input')?.focus()
+}
+
+async function onDraftCreated(created: RoomLayoutResponse) {
+  if (created.roomId !== roomId.value) return
+
+  chosenId.value = created.id
+  selectedKey.value = ''
+  draftOpen.value = false
+  creationBlocked.value = false
+  draftMessage.value = `Đã tạo bản nháp phiên bản ${created.layoutVersion}.`
+
+  await nextTick()
+  document.getElementById('room-layout-version')?.focus()
+}
+
+async function reloadVersions() {
+  if (draftBusy.value || draftOpen.value || !canRead.value) return
+
+  const requestedRoomId = roomId.value
+  const result = await layouts.refetch()
+
+  if (result.isSuccess && requestedRoomId === roomId.value) {
+    creationBlocked.value = false
+  }
+}
 
 const selectedVersion = computed(() => {
   const items = layouts.data.value ?? []
@@ -144,6 +217,7 @@ function formatDate(value?: string) {
 }
 
 function backToSeats() {
+  if (draftBusy.value) return
   void router.push({
     name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
     params: { roomId: validRoom.value ? roomId.value : '' },
@@ -154,6 +228,10 @@ function backToSeats() {
 watch(
   roomId,
   () => {
+    draftOpen.value = false
+    draftBusy.value = false
+    creationBlocked.value = false
+    draftMessage.value = ''
     chosenId.value = ''
     selectedKey.value = ''
     zoom.value = 100
@@ -189,7 +267,9 @@ watch(objects, (items) => {
       </div>
 
       <div class="layout-heading__actions">
-        <AppButton variant="secondary" @click="backToSeats">Quay lại phòng</AppButton>
+        <AppButton variant="secondary" @click="backToSeats" :disabled="draftBusy"
+          >Quay lại phòng</AppButton
+        >
         <AppButton variant="secondary" disabled title="Lưu nháp chưa được triển khai.">
           Lưu nháp
         </AppButton>
@@ -217,6 +297,9 @@ watch(objects, (items) => {
 
     <template v-else>
       <aside class="layout-draft-notice" role="status">
+        <p v-if="draftMessage" class="layout-muted" role="status">
+          {{ draftMessage }}
+        </p>
         <span class="layout-draft-notice__dot" aria-hidden="true"></span>
         <span>
           <strong>
@@ -237,7 +320,9 @@ watch(objects, (items) => {
 
       <section class="layout-toolbar layout-panel" aria-label="Công cụ thiết kế">
         <div class="layout-tools" role="group" aria-label="Công cụ đặt đối tượng">
-          <button class="layout-tool" type="button" @click="backToSeats">Xếp ghế theo hàng</button>
+          <button class="layout-tool" type="button" @click="backToSeats" :disabled="draftBusy">
+            Xếp ghế theo hàng
+          </button>
           <button class="layout-tool" type="button" disabled>+ Màn hình</button>
           <button class="layout-tool" type="button" disabled>+ Lối đi</button>
           <button class="layout-tool" type="button" disabled>+ Lối ra</button>
@@ -426,8 +511,11 @@ watch(objects, (items) => {
             <label class="layout-field">
               <span>Phiên bản</span>
               <select
+                id="room-layout-version"
                 :value="layoutId"
-                :disabled="layouts.isFetching.value || !layouts.data.value?.length"
+                :disabled="
+                  draftBusy || draftOpen || layouts.isFetching.value || !layouts.data.value?.length
+                "
                 @change="chosenId = ($event.target as HTMLSelectElement).value"
               >
                 <option value="" disabled>Chọn phiên bản</option>
@@ -440,9 +528,9 @@ watch(objects, (items) => {
 
             <p v-if="layouts.isError.value" class="layout-error" role="alert">
               {{ adminRoomErrorMessage(layouts.error.value, 'Không thể tải phiên bản sơ đồ.') }}
-              <template v-if="layouts.data.value"
-                >Đang hiển thị danh sách từ lần tải trước.</template
-              >
+              <template v-if="layouts.data.value">
+                Đang hiển thị danh sách từ lần tải trước.
+              </template>
             </p>
             <p v-else-if="layouts.isFetching.value" class="layout-muted" role="status">
               Đang tải phiên bản…
@@ -451,24 +539,50 @@ watch(objects, (items) => {
               v-else-if="layouts.isSuccess.value && !layouts.data.value?.length"
               class="layout-muted"
             >
-              Phòng chưa có phiên bản sơ đồ. Tạo bản nháp sẽ được bổ sung ở round tiếp theo.
+              Phòng chưa có phiên bản sơ đồ. Tạo bản nháp để bắt đầu.
             </p>
 
             <AppButton
               variant="secondary"
+              :disabled="draftBusy || draftOpen || !canRead"
               :loading="layouts.isFetching.value"
-              @click="layouts.refetch()"
+              @click="reloadVersions"
             >
               Tải lại phiên bản
             </AppButton>
+
             <AppButton
               variant="secondary"
-              :disabled="!layoutId"
+              :disabled="draftBusy || draftOpen || !layoutId"
               :loading="contentQuery.isFetching.value"
               @click="contentQuery.refetch()"
             >
               Tải lại nội dung
             </AppButton>
+
+            <p v-if="creationBlocked" class="layout-warning" role="status">
+              Đóng form và tải lại danh sách để kiểm tra kết quả tạo nháp trước khi thử lại.
+            </p>
+
+            <AppButton
+              v-if="!draftOpen"
+              variant="secondary"
+              :disabled="!canCreate"
+              @click="openDraftForm"
+            >
+              Tạo bản nháp mới
+            </AppButton>
+
+            <AdminRoomLayoutDraftForm
+              v-if="draftOpen"
+              :key="roomId"
+              :room-id="roomId"
+              :enabled="canCreate"
+              @busy="draftBusy = $event"
+              @created="onDraftCreated"
+              @failed="creationBlocked = true"
+              @cancel="draftOpen = false"
+            />
 
             <dl v-if="content" class="layout-summary">
               <div>

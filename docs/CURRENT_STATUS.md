@@ -2,21 +2,18 @@
 
 ## Last audited
 
-2026-10-13
+2026-10-14
 
 ## Audited source
 
-- Frontend main: 79f1e83b318933548fe6977f171c78337beff10b
+- Frontend main: 9d81421
 - Backend main: dc6209debcd6b7cf350f1e9d2b2d71a8ad5adfc7
 
-These commits identify the source inspected before round S1.1.
-They do not identify the commit containing S1.1.
+The room-seats reference alignment and room-layout preview are present
+in the audited Frontend source.
 
-This document records source-code findings.
-It does not claim successful browser verification or runtime integration.
-
-Both repositories are read-only for the assistant.
-The user applies and commits proposed changes.
+These commits identify the source inspected before inspector draft creation.
+Manual browser verification remains unconfirmed.
 
 ## Technology and architecture
 
@@ -228,8 +225,17 @@ Booking:
 Admin showtimes, bookings, users, promotions and showtime creation
 currently use AdminReferencePage.
 
-The Admin room-layout route remains a placeholder.
-Its current route title is Thiết kế không gian phòng.
+The Admin room-layout route implements layout-version reads,
+saved-content preview, object inspection and preview zoom.
+
+The page follows the reference editor structure:
+heading, status notice, toolbar, canvas and inspector.
+
+Inspector draft creation has been proposed.
+Application and manual verification remain pending.
+
+Content editing, saving, publication and seat matrix persistence
+remain incomplete.
 
 Customer cinemas, showtimes, account and booking history
 currently use placeholders.
@@ -255,3 +261,25 @@ No tests, lint, type checking or build were run during this audit.
 
 Provide manual verification steps after every round.
 Do not claim runtime success from source inspection alone.
+
+## Active round — Create room layout drafts from the inspector
+
+Status: IMPLEMENTATION PROVIDED — APPLICATION PENDING
+
+Scope:
+
+- Create an empty draft through the generated API client.
+- Validate canvas dimensions against the Backend request constraints.
+- Receive the layout revision number from Backend.
+- Update the room's layout-list cache from the response.
+- Select the created draft and load its content.
+- Keep the existing reference workspace structure.
+- Prevent navigation while the create request is pending.
+- Preserve inputs after request failure.
+- Require explicit list reload before another create attempt after failure.
+- Do not automatically retry creation.
+
+No content replacement or publication is implemented in this round.
+
+No automated checks were run.
+Manual verification remains pending.

@@ -1,12 +1,14 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
   getRoomLayoutsByRoom,
   getRoomLayoutContent,
+  createRoomLayoutDraft,
 } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
 import type {
   RoomLayoutResponse,
   RoomLayoutGeometryResponse,
+  CreateRoomLayoutRequest,
 } from '@/services/api/generated/inventory-service/model'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 
@@ -155,5 +157,41 @@ export function useAdminRoomLayoutContentQuery(
     staleTime: 0,
     retry: false,
     refetchOnWindowFocus: false,
+  })
+}
+export function useCreateAdminRoomLayoutDraftMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: CreateRoomLayoutRequest) => {
+      const created = await createRoomLayoutDraft(input)
+
+      validateLayout(created, input.roomId)
+
+      if (
+        created.status !== 'DRAFT' ||
+        created.canvasWidth !== input.canvasWidth ||
+        created.canvasHeight !== input.canvasHeight
+      ) {
+        throw new Error('Không thể xác nhận bản nháp vừa tạo. Hãy tải lại danh sách phiên bản.')
+      }
+
+      return created
+    },
+    retry: false,
+    onSuccess: (created) => {
+      const listKey = adminRoomLayoutKeys.list(created.roomId)
+
+      queryClient.setQueryData<RoomLayoutResponse[]>(listKey, (previous) =>
+        [created, ...(previous ?? []).filter((layout) => layout.id !== created.id)].sort(
+          (a, b) => b.layoutVersion - a.layoutVersion,
+        ),
+      )
+
+      void queryClient.invalidateQueries({
+        queryKey: listKey,
+        refetchType: 'none',
+      })
+    },
   })
 }
