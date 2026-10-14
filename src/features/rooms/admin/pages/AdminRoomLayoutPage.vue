@@ -9,7 +9,7 @@ import type {
 } from '@/services/api/generated/inventory-service/model'
 import { RoomLayoutElementInputKind } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
-import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import {
   useAdminRoomLayoutContentQuery,
@@ -29,7 +29,6 @@ import AdminSeatLayoutInitializeForm from '../components/AdminSeatLayoutInitiali
 import {
   createSeatRowMovePlan,
   moveSeatRows,
-  snapAisleToGrid,
   type SeatRowMovePlan,
 } from '../mappers/admin-seat-row-move.mapper'
 import {
@@ -88,7 +87,6 @@ const dropError = ref('')
 const dropMutation = useReplaceAdminRoomLayoutContentMutation()
 const publishMutation = usePublishAdminRoomLayoutMutation()
 const publishError = ref('')
-const matrixPatternId = `seat-matrix-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
 type GeometrySnapshot = Pick<ReplaceRoomLayoutContentRequest, 'seats' | 'elements'>
 
 type MoveHistoryEntry = {
@@ -516,13 +514,8 @@ const drag = useRoomLayoutElementDrag(svgCanvas, {
     try {
       if (dropBaseline?.kind === 'seats') {
         seatMovePreview.value = moveSeatRows(dropBaseline.plan, geometry)
-      } else if (dropBaseline?.kind === 'element' && content.value) {
-        const baseline = dropBaseline
-        const element = content.value.elements.find((item) => item.id === baseline.elementId)
-        dragPreview.value =
-          element?.kind === 'AISLE'
-            ? snapAisleToGrid(content.value, geometry, element.id)
-            : geometry
+      } else if (dropBaseline?.kind === 'element') {
+        dragPreview.value = { ...geometry }
       }
 
       dropError.value = ''
@@ -531,7 +524,6 @@ const drag = useRoomLayoutElementDrag(svgCanvas, {
       seatMovePreview.value = new Map()
       dragPreview.value = null
       dropError.value = adminRoomErrorMessage(error, 'Không thể đặt đối tượng vào vị trí này.')
-      dragPreview.value = geometry
     }
   },
   onDrop: (geometry) => {
@@ -770,7 +762,7 @@ async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
   const baseline = dropBaseline
   if (!baseline) return
   let movedSeats: Map<string, RoomLayoutGeometryResponse> | null = null
-  let elementGeometry = geometry
+  const elementGeometry = geometry
 
   // Tính lại từ snapshot đầu lần kéo, không dùng preview tích lũy.
   try {
@@ -782,10 +774,6 @@ async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
 
       const element = currentContent.elements.find((item) => item.id === baseline.elementId)
       if (!element) throw new Error('Phần tử đang kéo không còn tồn tại.')
-
-      if (element.kind === 'AISLE') {
-        elementGeometry = snapAisleToGrid(currentContent, geometry, element.id)
-      }
     }
   } catch (error) {
     clearDropPreview()
@@ -936,6 +924,38 @@ const objects = computed(() => [
           : element.geometry,
   })),
 ])
+
+const objectLayers = computed(() => [
+  {
+    key: 'seats',
+    objects: objects.value.filter((object) => object.kind === 'SEAT'),
+  },
+  {
+    key: 'elements',
+    objects: objects.value.filter((object) => object.kind !== 'SEAT'),
+  },
+])
+
+function gridBorders(origin: number, length: number, step: number) {
+  const first = Math.ceil(-origin / step)
+  const last = Math.floor((length - origin) / step)
+
+  return Array.from(
+    { length: Math.max(0, last - first + 1) },
+    (_, index) => origin + (first + index) * step,
+  )
+}
+
+const seatGridBorders = computed(() => {
+  const grid = seatMatrix.value.grid
+
+  return grid
+    ? {
+        x: gridBorders(grid.originX, grid.width, ADMIN_SEAT_MATRIX_STEP.x),
+        y: gridBorders(grid.originY, grid.height, ADMIN_SEAT_MATRIX_STEP.y),
+      }
+    : { x: [], y: [] }
+})
 
 const selected = computed(() => objects.value.find((object) => object.key === selectedKey.value))
 
@@ -1405,6 +1425,7 @@ watch(objects, (items) => {
             :canvas-width="content.layout.canvasWidth"
             :canvas-height="content.layout.canvasHeight"
             :zoom="zoom"
+            :show-grid="false"
           >
             <svg
               ref="svgCanvas"
@@ -1418,30 +1439,29 @@ watch(objects, (items) => {
               @pointercancel="drag.cancel"
               @lostpointercapture="drag.cancel"
             >
-              <defs>
-                <pattern
-                  :id="matrixPatternId"
-                  patternUnits="userSpaceOnUse"
-                  :x="seatMatrix.grid?.originX ?? 0"
-                  :y="seatMatrix.grid?.originY ?? 0"
-                  :width="ADMIN_SEAT_MATRIX_STEP.x"
-                  :height="ADMIN_SEAT_MATRIX_STEP.y"
-                >
-                  <path
-                    class="layout-seat-matrix-line"
-                    :d="`M ${ADMIN_SEAT_MATRIX_STEP.x} 0 H 0 V ${ADMIN_SEAT_MATRIX_STEP.y}`"
-                    vector-effect="non-scaling-stroke"
-                  />
-                </pattern>
-              </defs>
-
-              <g v-if="seatMatrix.grid" class="layout-seat-matrix-grid" aria-hidden="true">
-                <rect
-                  :x="seatMatrix.grid.x"
-                  :y="seatMatrix.grid.y"
-                  :width="seatMatrix.grid.width"
-                  :height="seatMatrix.grid.height"
-                  :fill="`url(#${matrixPatternId})`"
+              <g
+                v-if="seatMatrix.grid"
+                class="layout-seat-matrix-grid"
+                data-layer="grid"
+                aria-hidden="true"
+              >
+                <line
+                  v-for="x in seatGridBorders.x"
+                  :key="`column-${x}`"
+                  class="layout-seat-matrix-line"
+                  :x1="x"
+                  :x2="x"
+                  :y1="0"
+                  :y2="seatMatrix.grid.height"
+                />
+                <line
+                  v-for="y in seatGridBorders.y"
+                  :key="`row-${y}`"
+                  class="layout-seat-matrix-line"
+                  :x1="0"
+                  :x2="seatMatrix.grid.width"
+                  :y1="y"
+                  :y2="y"
                 />
                 <rect
                   class="layout-seat-matrix-line"
@@ -1449,48 +1469,49 @@ watch(objects, (items) => {
                   :y="seatMatrix.grid.y"
                   :width="seatMatrix.grid.width"
                   :height="seatMatrix.grid.height"
-                  vector-effect="non-scaling-stroke"
                 />
               </g>
-              <g
-                v-for="object in objects"
-                :key="object.key"
-                class="layout-preview-object"
-                :class="{
-                  'is-vip': object.type === 'VIP',
-                  'is-screen': object.kind === 'SCREEN',
-                  'is-aisle': object.kind === 'AISLE',
-                  'is-exit': object.kind === 'EXIT',
-                  'is-selected': isObjectSelected(object.key),
-                  'is-draggable': canDragObject(object.key),
-                  'is-dragging': drag.active.value && isMovingObject(object.key),
-                }"
-                :transform="rotation(object.geometry)"
-                role="button"
-                :tabindex="editorLocked ? -1 : 0"
-                :aria-disabled="editorLocked"
-                @click="selectObject(object.key)"
-                @keydown.enter.prevent="activateObject($event, object.key)"
-                @keydown.space.prevent="activateObject($event, object.key)"
-                :aria-label="`${kindLabel(object.type)} ${object.name}`"
-                :aria-pressed="isObjectSelected(object.key)"
-                @pointerdown="startObjectDrag($event, object.key)"
-              >
-                <title>{{ object.name }}</title>
-                <rect
-                  :x="object.geometry.x"
-                  :y="object.geometry.y"
-                  :width="object.geometry.width"
-                  :height="object.geometry.height"
-                />
-                <text
-                  :x="object.geometry.x + object.geometry.width / 2"
-                  :y="object.geometry.y + object.geometry.height / 2"
-                  text-anchor="middle"
-                  dominant-baseline="middle"
+              <g v-for="layer in objectLayers" :key="layer.key" :data-layer="layer.key">
+                <g
+                  v-for="object in layer.objects"
+                  :key="object.key"
+                  class="layout-preview-object"
+                  :class="{
+                    'is-vip': object.type === 'VIP',
+                    'is-screen': object.kind === 'SCREEN',
+                    'is-aisle': object.kind === 'AISLE',
+                    'is-exit': object.kind === 'EXIT',
+                    'is-selected': isObjectSelected(object.key),
+                    'is-draggable': canDragObject(object.key),
+                    'is-dragging': drag.active.value && isMovingObject(object.key),
+                  }"
+                  :transform="rotation(object.geometry)"
+                  role="button"
+                  :tabindex="editorLocked ? -1 : 0"
+                  :aria-disabled="editorLocked"
+                  @click="selectObject(object.key)"
+                  @keydown.enter.prevent="activateObject($event, object.key)"
+                  @keydown.space.prevent="activateObject($event, object.key)"
+                  :aria-label="`${kindLabel(object.type)} ${object.name}`"
+                  :aria-pressed="isObjectSelected(object.key)"
+                  @pointerdown="startObjectDrag($event, object.key)"
                 >
-                  {{ object.name }}
-                </text>
+                  <title>{{ object.name }}</title>
+                  <rect
+                    :x="object.geometry.x"
+                    :y="object.geometry.y"
+                    :width="object.geometry.width"
+                    :height="object.geometry.height"
+                  />
+                  <text
+                    :x="object.geometry.x + object.geometry.width / 2"
+                    :y="object.geometry.y + object.geometry.height / 2"
+                    text-anchor="middle"
+                    dominant-baseline="middle"
+                  >
+                    {{ object.name }}
+                  </text>
+                </g>
               </g>
             </svg>
           </AdminRoomLayoutRuler>

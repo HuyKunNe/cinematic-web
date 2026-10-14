@@ -805,12 +805,19 @@
   position: relative;
   z-index: var(--layout-grid-object-layer);
 }
+:where([data-reference='admin-room-layout']) {
+  --layout-seat-grid-border-color: var(--color-border-strong);
+  --layout-seat-grid-border-width: var(--layout-grid-stroke);
+}
+
 :where([data-reference='admin-room-layout']) .layout-seat-matrix-grid {
+  fill: none;
   pointer-events: none;
 }
 
 :where([data-reference='admin-room-layout']) .layout-seat-matrix-line {
   fill: none;
-  stroke: var(--color-border);
-  stroke-width: var(--border-width);
+  stroke: var(--layout-seat-grid-border-color);
+  stroke-width: var(--layout-seat-grid-border-width);
+  vector-effect: non-scaling-stroke;
 }

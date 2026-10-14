@@ -11,7 +11,6 @@ import type {
 import { useReplaceAdminRoomLayoutContentMutation } from '../api/admin-room-layout-queries'
 import { toAdminRoomLayoutContentRequest } from '../mappers/admin-room-layout-content.mapper'
 import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
-import { snapAisleToGrid } from '../mappers/admin-seat-row-move.mapper'
 
 type SaveAction = 'created' | 'updated' | 'deleted'
 
@@ -233,29 +232,12 @@ async function submit() {
   const { label, x, y, width, height, rotationDegrees } = parsed.data
   values.x = x.toFixed(2)
   values.y = y.toFixed(2)
-  let geometry: RoomLayoutGeometryResponse = {
+  const geometry: RoomLayoutGeometryResponse = {
     x,
     y,
     width,
     height,
     rotationDegrees,
-  }
-
-  if (kind === 'AISLE') {
-    try {
-      geometry = snapAisleToGrid(props.content, geometry, props.elementId)
-    } catch (error) {
-      requestError.value = adminRoomErrorMessage(error, 'Không thể đặt lối đi vào các ô này.')
-      await focusError()
-      return
-    }
-
-    values.x = geometry.x.toFixed(2)
-    values.y = geometry.y.toFixed(2)
-    values.width = String(geometry.width)
-    values.height = String(geometry.height)
-    values.rotationDegrees = '0'
-    emit('geometry', { ...geometry })
   }
 
   const replacement: RoomLayoutElementInput = {

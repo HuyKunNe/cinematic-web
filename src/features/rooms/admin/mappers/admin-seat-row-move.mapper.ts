@@ -162,9 +162,7 @@ function validateSeats(
     if (!changedIds.has(seat.seatId)) continue
 
     for (const element of content.elements) {
-      const reserved = element.kind === 'AISLE' ? seatCell(seat, geometry) : geometry
-
-      if (overlaps(reserved, element.geometry)) {
+      if (overlaps(geometry, element.geometry)) {
         throw new Error('Nhóm ghế sau khi dịch đè lên lối đi hoặc phần tử không gian.')
       }
     }
@@ -379,40 +377,4 @@ export function moveSeatRows(plan: SeatRowMovePlan, target: Geometry): Map<strin
 
   validateSeats(content, result, new Set(changed.keys()), origin)
   return changed
-}
-
-export function snapAisleToGrid(
-  content: RoomLayoutContentResponse,
-  input: Geometry,
-  excludedElementId?: string,
-): Geometry {
-  const origin = originOf(content)
-
-  if (!Object.values(input).every(Number.isFinite) || input.width <= 0 || input.height <= 0) {
-    throw new Error('Geometry lối đi không hợp lệ.')
-  }
-
-  const geometry: Geometry = {
-    x: snap(input.x, origin.x, ADMIN_SEAT_MATRIX_STEP.x),
-    y: snap(input.y, origin.y, ADMIN_SEAT_MATRIX_STEP.y),
-    width: Math.ceil(input.width / ADMIN_SEAT_MATRIX_STEP.x) * ADMIN_SEAT_MATRIX_STEP.x,
-    height: Math.ceil(input.height / ADMIN_SEAT_MATRIX_STEP.y) * ADMIN_SEAT_MATRIX_STEP.y,
-    rotationDegrees: 0,
-  }
-
-  assertInside(content, geometry)
-
-  if (content.seats.some((seat) => overlaps(geometry, seatCell(seat, seat.geometry)))) {
-    throw new Error('Các ô đặt lối đi đang có ghế.')
-  }
-
-  if (
-    content.elements.some(
-      (element) => element.id !== excludedElementId && overlaps(geometry, element.geometry),
-    )
-  ) {
-    throw new Error('Lối đi chồng lên phần tử không gian khác.')
-  }
-
-  return geometry
 }

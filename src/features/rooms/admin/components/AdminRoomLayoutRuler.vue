@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-const props = defineProps<{
-  canvasWidth: number
-  canvasHeight: number
-  zoom: number
-}>()
+const props = withDefaults(
+  defineProps<{
+    canvasWidth: number
+    canvasHeight: number
+    zoom: number
+    showGrid?: boolean
+  }>(),
+  { showGrid: true },
+)
 
 const canvasHost = ref<HTMLDivElement | null>(null)
 const renderedWidth = ref(0)
@@ -109,6 +113,7 @@ onBeforeUnmount(() => observer?.disconnect())
 
         <div ref="canvasHost" class="layout-ruler-canvas">
           <svg
+            v-if="showGrid"
             class="layout-ruler-grid"
             :viewBox="`0 0 ${canvasWidth} ${canvasHeight}`"
             preserveAspectRatio="none"
