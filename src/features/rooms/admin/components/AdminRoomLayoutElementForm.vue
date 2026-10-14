@@ -4,21 +4,25 @@ import { z } from 'zod'
 import AppButton from '@/components/ui/AppButton.vue'
 import type {
   RoomLayoutContentResponse,
+  RoomLayoutElementInput,
   RoomLayoutElementInputKind,
 } from '@/services/api/generated/inventory-service/model'
 import { useReplaceAdminRoomLayoutContentMutation } from '../api/admin-room-layout-queries'
 import { toAdminRoomLayoutContentRequest } from '../mappers/admin-room-layout-content.mapper'
 import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
 
+type SaveAction = 'created' | 'updated' | 'deleted'
+
 const props = defineProps<{
   content: RoomLayoutContentResponse
   kind: RoomLayoutElementInputKind
+  elementId?: string
   enabled: boolean
 }>()
 
 const emit = defineEmits<{
   busy: [value: boolean]
-  saved: []
+  saved: [action: SaveAction]
   failed: []
   cancel: []
 }>()
@@ -60,28 +64,38 @@ const fields = [
   { key: 'rotationDegrees', label: 'Góc xoay (độ)', numeric: true, required: true },
 ] as const
 
-const prefix = useId()
-const form = ref<HTMLFormElement | null>(null)
-const values = reactive({
-  label: '',
-  x: '0',
-  y: '0',
-  width: '',
-  height: '',
-  rotationDegrees: '0',
-})
-const errors = ref<Partial<Record<Field, string>>>({})
-const requestError = ref('')
-const blocked = ref(false)
-const mutation = useReplaceAdminRoomLayoutContentMutation()
-const busy = computed(() => mutation.isPending.value)
-
-// Baseline cố định từ lúc mở form.
-// Không thay expectedVersion bằng dữ liệu refetch mới.
+// Baseline và vị trí phần tử được chụp một lần khi mở form.
 const baseline = toAdminRoomLayoutContentRequest(props.content)
 const roomId = props.content.layout.roomId
 const layoutId = props.content.layout.id
-const kind = props.kind
+const editing = Boolean(props.elementId)
+const targetIndex = props.content.elements.findIndex((element) => element.id === props.elementId)
+const target = targetIndex >= 0 ? props.content.elements[targetIndex] : undefined
+const kind = target?.kind ?? props.kind
+const missingTarget = editing && !target
+
+const prefix = useId()
+const form = ref<HTMLFormElement | null>(null)
+const values = reactive({
+  label: target?.label ?? '',
+  x: String(target?.geometry.x ?? 0),
+  y: String(target?.geometry.y ?? 0),
+  width: target ? String(target.geometry.width) : '',
+  height: target ? String(target.geometry.height) : '',
+  rotationDegrees: String(target?.geometry.rotationDegrees ?? 0),
+})
+
+const errors = ref<Partial<Record<Field, string>>>({})
+const requestError = ref(
+  missingTarget ? 'Không tìm thấy phần tử đang sửa. Hãy đóng form và tải lại.' : '',
+)
+const blocked = ref(missingTarget)
+const deleteArmed = ref(false)
+const mutation = useReplaceAdminRoomLayoutContentMutation()
+const busy = computed(() => mutation.isPending.value)
+
+const canSave = computed(() => props.enabled && !busy.value && !blocked.value && !deleteArmed.value)
+const canDelete = computed(() => editing && props.enabled && !busy.value && !blocked.value)
 
 watch(busy, (value) => emit('busy', value), { flush: 'sync' })
 onBeforeUnmount(() => emit('busy', false))
@@ -96,8 +110,43 @@ async function focusError() {
   form.value?.querySelector<HTMLElement>('[aria-invalid="true"], [data-request-error]')?.focus()
 }
 
+async function save(action: SaveAction, elements: RoomLayoutElementInput[]) {
+  errors.value = {}
+  requestError.value = ''
+
+  try {
+    await mutation.mutateAsync({
+      roomId,
+      layoutId,
+      input: {
+        expectedVersion: baseline.expectedVersion,
+        seats: baseline.seats,
+        elements,
+      },
+    })
+
+    emit('saved', action)
+  } catch (error) {
+    blocked.value = true
+
+    const messages: Record<string, string> = {
+      INVENTORY_ROOM_LAYOUT_VERSION_CONFLICT:
+        'Sơ đồ đã thay đổi ở nơi khác. Không thể lưu bằng phiên bản đang mở.',
+      INVENTORY_ROOM_LAYOUT_NOT_DRAFT: 'Phiên bản này không còn là bản nháp.',
+      INVENTORY_ROOM_LAYOUT_NOT_FOUND: 'Phiên bản sơ đồ không còn tồn tại.',
+    }
+
+    requestError.value = isAdminRoomApiError(error)
+      ? (messages[error.code ?? ''] ?? adminRoomErrorMessage(error, 'Không thể cập nhật phần tử.'))
+      : adminRoomErrorMessage(error, 'Không thể cập nhật phần tử.')
+
+    emit('failed')
+    await focusError()
+  }
+}
+
 async function submit() {
-  if (!props.enabled || busy.value || blocked.value) return
+  if (!canSave.value) return
 
   errors.value = {}
   requestError.value = ''
@@ -118,64 +167,55 @@ async function submit() {
   }
 
   const { label, x, y, width, height, rotationDegrees } = parsed.data
-
-  try {
-    await mutation.mutateAsync({
-      roomId,
-      layoutId,
-      input: {
-        expectedVersion: baseline.expectedVersion,
-        seats: baseline.seats,
-        elements: [
-          ...baseline.elements,
-          {
-            kind,
-            label: label || undefined,
-            geometry: { x, y, width, height, rotationDegrees },
-          },
-        ],
-      },
-    })
-
-    emit('saved')
-  } catch (error) {
-    blocked.value = true
-
-    const messages: Record<string, string> = {
-      INVENTORY_ROOM_LAYOUT_VERSION_CONFLICT:
-        'Sơ đồ đã thay đổi ở nơi khác. Không thể lưu bằng phiên bản đang mở.',
-      INVENTORY_ROOM_LAYOUT_NOT_DRAFT: 'Phiên bản này không còn là bản nháp.',
-      INVENTORY_ROOM_LAYOUT_NOT_FOUND: 'Phiên bản sơ đồ không còn tồn tại.',
-    }
-
-    requestError.value = isAdminRoomApiError(error)
-      ? (messages[error.code ?? ''] ?? adminRoomErrorMessage(error, 'Không thể lưu phần tử.'))
-      : adminRoomErrorMessage(error, 'Không thể lưu phần tử.')
-
-    emit('failed')
-    await focusError()
+  const replacement: RoomLayoutElementInput = {
+    kind,
+    label: label || undefined,
+    geometry: { x, y, width, height, rotationDegrees },
   }
+
+  const elements = editing
+    ? baseline.elements.map((element, index) => (index === targetIndex ? replacement : element))
+    : [...baseline.elements, replacement]
+
+  await save(editing ? 'updated' : 'created', elements)
 }
 
-defineExpose({ submit })
+async function requestDelete() {
+  if (!canDelete.value) return
+
+  if (!deleteArmed.value) {
+    deleteArmed.value = true
+    return
+  }
+
+  // Chỉ bỏ phần tử đích khỏi baseline. Giữ toàn bộ ghế và phần tử khác.
+  await save(
+    'deleted',
+    baseline.elements.filter((_, index) => index !== targetIndex),
+  )
+}
+
+defineExpose({ submit, canSave })
 </script>
 
 <template>
   <form
     ref="form"
     class="layout-draft-form"
-    :aria-label="`Thêm ${names[kind]}`"
+    :aria-label="`${editing ? 'Sửa' : 'Thêm'} ${names[kind]}`"
     novalidate
     @submit.prevent="submit"
   >
     <header class="layout-canvas-heading">
       <div>
-        <p class="layout-inspector__eyebrow">THÊM PHẦN TỬ</p>
+        <p class="layout-inspector__eyebrow">
+          {{ editing ? 'SỬA PHẦN TỬ' : 'THÊM PHẦN TỬ' }}
+        </p>
         <h2>{{ names[kind] }}</h2>
       </div>
     </header>
 
-    <fieldset class="layout-draft-fields" :disabled="busy || blocked || !enabled">
+    <fieldset class="layout-draft-fields" :disabled="busy || blocked || !enabled || deleteArmed">
       <label v-for="field in fields" :key="field.key" class="layout-field">
         <span>{{ field.label }}{{ field.required ? ' *' : '' }}</span>
         <input
@@ -207,9 +247,28 @@ defineExpose({ submit })
       Nội dung nhập vẫn được giữ. Đóng form và tải lại nội dung trước khi thử lại.
     </p>
 
-    <AppButton type="submit" :disabled="blocked || !enabled" :loading="busy">
-      Lưu phần tử
+    <p v-if="deleteArmed" class="layout-warning" role="status">
+      Xóa “{{ target?.label?.trim() || names[kind] }}” khỏi bản nháp? Các thay đổi đang nhập cho
+      phần tử này sẽ bị bỏ.
+    </p>
+
+    <AppButton type="submit" :disabled="!canSave" :loading="busy">
+      {{ editing ? 'Áp dụng vị trí' : 'Lưu phần tử' }}
     </AppButton>
+
+    <AppButton v-if="editing" variant="secondary" :disabled="!canDelete" @click="requestDelete">
+      {{ deleteArmed ? 'Xác nhận xóa' : 'Xóa phần tử' }}
+    </AppButton>
+
+    <AppButton
+      v-if="deleteArmed"
+      variant="secondary"
+      :disabled="busy || blocked"
+      @click="deleteArmed = false"
+    >
+      Giữ phần tử
+    </AppButton>
+
     <AppButton variant="secondary" :disabled="busy" @click="emit('cancel')"> Đóng form </AppButton>
   </form>
 </template>

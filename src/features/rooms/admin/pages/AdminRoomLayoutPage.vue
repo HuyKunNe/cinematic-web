@@ -51,6 +51,7 @@ const draftBusy = ref(false)
 const creationBlocked = ref(false)
 const draftMessage = ref('')
 const elementKind = ref<RoomLayoutElementInputKind | null>(null)
+const editingElementId = ref('')
 const elementBusy = ref(false)
 const contentBlocked = ref(false)
 const saveMessage = ref('')
@@ -162,7 +163,7 @@ const canAppend = computed(
 
 async function openElementForm(kind: RoomLayoutElementInputKind) {
   if (!canAppend.value || editorLocked.value) return
-
+  editingElementId.value = ''
   elementKind.value = kind
   saveMessage.value = ''
 
@@ -170,11 +171,18 @@ async function openElementForm(kind: RoomLayoutElementInputKind) {
   document.querySelector<HTMLElement>('.layout-element-inspector input')?.focus()
 }
 
-function onElementSaved() {
+function onElementSaved(action: 'created' | 'updated' | 'deleted') {
+  const messages = {
+    created: 'Đã thêm phần tử vào bản nháp.',
+    updated: 'Đã cập nhật phần tử trong bản nháp.',
+    deleted: 'Đã xóa phần tử khỏi bản nháp.',
+  }
+
   elementKind.value = null
+  editingElementId.value = ''
   selectedKey.value = ''
   contentBlocked.value = false
-  saveMessage.value = 'Đã thêm phần tử vào bản nháp.'
+  saveMessage.value = messages[action]
 }
 
 async function reloadContent() {
@@ -230,6 +238,37 @@ const objects = computed(() => [
 ])
 
 const selected = computed(() => objects.value.find((object) => object.key === selectedKey.value))
+
+const selectedElement = computed(() =>
+  content.value?.elements.find((element) => `element:${element.id}` === selectedKey.value),
+)
+
+async function openEditElementForm() {
+  const element = selectedElement.value
+  if (!element || !canAppend.value || editorLocked.value) return
+
+  editingElementId.value = element.id
+  elementKind.value = element.kind
+  saveMessage.value = ''
+
+  await nextTick()
+  document.querySelector<HTMLElement>('.layout-element-inspector input')?.focus()
+}
+
+function closeElementForm() {
+  if (elementBusy.value) return
+
+  elementKind.value = null
+  editingElementId.value = ''
+}
+
+function selectObject(key: string) {
+  if (editorLocked.value || !objects.value.some((object) => object.key === key)) {
+    return
+  }
+
+  selectedKey.value = key
+}
 
 const geometryFields = [
   { key: 'x', label: 'Vị trí X' },
@@ -302,6 +341,7 @@ watch(
     chosenId.value = ''
     selectedKey.value = ''
     zoom.value = 100
+    editingElementId.value = ''
     elementKind.value = null
     elementBusy.value = false
     contentBlocked.value = false
@@ -311,6 +351,7 @@ watch(
 )
 
 watch(layoutId, () => {
+  saveMessage.value = ''
   selectedKey.value = ''
   zoom.value = 100
 })
@@ -343,7 +384,7 @@ watch(objects, (items) => {
         >
         <AppButton
           variant="secondary"
-          :disabled="!elementKind || !canAppend"
+          :disabled="!elementKind || !canAppend || !elementForm?.canSave"
           :loading="elementBusy"
           @click="elementForm?.submit()"
         >
@@ -400,7 +441,7 @@ watch(objects, (items) => {
 
       <section class="layout-toolbar layout-panel" aria-label="Công cụ thiết kế">
         <div class="layout-tools" role="group" aria-label="Công cụ đặt đối tượng">
-          <button class="layout-tool" type="button" @click="backToSeats" :disabled="draftBusy">
+          <button class="layout-tool" type="button" @click="backToSeats" :disabled="editorLocked">
             Xếp ghế theo hàng
           </button>
           <button
@@ -500,12 +541,13 @@ watch(objects, (items) => {
                 }"
                 :transform="rotation(object.geometry)"
                 role="button"
-                tabindex="0"
+                :tabindex="editorLocked ? -1 : 0"
+                :aria-disabled="editorLocked"
+                @click="selectObject(object.key)"
+                @keydown.enter.prevent="selectObject(object.key)"
+                @keydown.space.prevent="selectObject(object.key)"
                 :aria-label="`${kindLabel(object.type)} ${object.name}`"
                 :aria-pressed="selectedKey === object.key"
-                @click="selectedKey = object.key"
-                @keydown.enter.prevent="selectedKey = object.key"
-                @keydown.space.prevent="selectedKey = object.key"
               >
                 <title>{{ object.name }}</title>
                 <rect
@@ -549,20 +591,27 @@ watch(objects, (items) => {
           <section
             class="layout-inspector-panel layout-panel"
             :aria-labelledby="elementKind ? undefined : 'layout-object-title'"
-            :aria-label="elementKind ? 'Thêm phần tử không gian' : undefined"
+            :aria-label="
+              elementKind
+                ? editingElementId
+                  ? 'Sửa phần tử không gian'
+                  : 'Thêm phần tử không gian'
+                : undefined
+            "
           >
             <AdminRoomLayoutElementForm
               v-if="elementKind && content"
               ref="elementForm"
               class="layout-element-inspector"
-              :key="`${roomId}:${layoutId}:${elementKind}`"
+              :key="`${roomId}:${layoutId}:${elementKind}:${editingElementId}`"
               :content="content"
               :kind="elementKind"
+              :element-id="editingElementId || undefined"
               :enabled="canAppend"
               @busy="elementBusy = $event"
               @saved="onElementSaved"
               @failed="contentBlocked = true"
-              @cancel="elementKind = null"
+              @cancel="closeElementForm"
             />
 
             <template v-else>
@@ -598,7 +647,17 @@ watch(objects, (items) => {
 
               <p v-else class="layout-muted">Chọn đối tượng trên canvas để xem geometry.</p>
 
-              <AppButton variant="secondary" class="layout-inspector__button" disabled>
+              <AppButton
+                v-if="selectedElement"
+                variant="secondary"
+                class="layout-inspector__button"
+                :disabled="editorLocked || !canAppend"
+                @click="openEditElementForm"
+              >
+                Sửa phần tử
+              </AppButton>
+
+              <AppButton v-else variant="secondary" class="layout-inspector__button" disabled>
                 Áp dụng vị trí
               </AppButton>
             </template>
@@ -671,7 +730,7 @@ watch(objects, (items) => {
             </AppButton>
 
             <p v-if="contentBlocked" class="layout-warning" role="status">
-              Đóng form và tải lại nội dung trước khi thêm phần tử tiếp.
+              Đóng form và tải lại nội dung trước khi thao tác tiếp.
             </p>
 
             <p v-if="creationBlocked" class="layout-warning" role="status">
