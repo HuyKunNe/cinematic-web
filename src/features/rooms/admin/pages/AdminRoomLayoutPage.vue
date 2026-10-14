@@ -14,6 +14,7 @@ import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vu
 import {
   useAdminRoomLayoutContentQuery,
   useAdminRoomLayoutsQuery,
+  usePublishAdminRoomLayoutMutation,
   useReplaceAdminRoomLayoutContentMutation,
 } from '../api/admin-room-layout-queries'
 import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
@@ -23,7 +24,7 @@ import AdminRoomLayoutRuler from '../components/AdminRoomLayoutRuler.vue'
 import { useRoomLayoutElementDrag } from '../composables/use-room-layout-element-drag'
 import { toAdminRoomLayoutContentRequest } from '../mappers/admin-room-layout-content.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
-import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
+import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
@@ -67,6 +68,8 @@ const dragPreview = ref<RoomLayoutGeometryResponse | null>(null)
 const dropBusy = ref(false)
 const dropError = ref('')
 const dropMutation = useReplaceAdminRoomLayoutContentMutation()
+const publishMutation = usePublishAdminRoomLayoutMutation()
+const publishError = ref('')
 type GeometrySnapshot = Pick<ReplaceRoomLayoutContentRequest, 'seats' | 'elements'>
 
 type MoveHistoryEntry = {
@@ -161,6 +164,7 @@ const editorLocked = computed(
     elementKind.value !== null ||
     dragTargetId.value !== '' ||
     historyBusy.value ||
+    publishMutation.isPending.value ||
     dropBusy.value,
 )
 
@@ -259,6 +263,91 @@ const canAppend = computed(
     !creationBlocked.value &&
     !contentBlocked.value,
 )
+
+const hasLayoutSeats = computed(() => Boolean(content.value?.seats.length))
+
+const hasLayoutScreen = computed(() =>
+  Boolean(content.value?.elements.some((element) => element.kind === 'SCREEN')),
+)
+
+const canPublish = computed(
+  () => canAppend.value && !editorLocked.value && hasLayoutSeats.value && hasLayoutScreen.value,
+)
+
+const publishHint = computed(() => {
+  if (!content.value) return ''
+  if (content.value.layout.status === 'PUBLISHED') {
+    return 'Phiên bản đã xuất bản chỉ được xem.'
+  }
+
+  if (!hasLayoutSeats.value && !hasLayoutScreen.value) {
+    return 'Xuất bản cần ít nhất một ghế có geometry và một màn hình.'
+  }
+  if (!hasLayoutSeats.value) {
+    return 'Chưa có ghế trong phiên bản layout này.'
+  }
+  if (!hasLayoutScreen.value) {
+    return 'Chưa có màn hình trong phiên bản layout này.'
+  }
+
+  return ''
+})
+
+async function publishLayout() {
+  const baseline = content.value?.layout
+  if (!baseline || !canPublish.value) return
+
+  const requestedRoomId = roomId.value
+  const requestedLayoutId = baseline.id
+  const expectedVersion = baseline.version
+
+  publishError.value = ''
+  saveMessage.value = ''
+  dropError.value = ''
+
+  try {
+    const published = await publishMutation.mutateAsync({
+      roomId: requestedRoomId,
+      layoutId: requestedLayoutId,
+      expectedVersion,
+    })
+
+    if (requestedRoomId !== roomId.value || requestedLayoutId !== layoutId.value) {
+      return
+    }
+
+    resetMoveHistory()
+    selectedKey.value = ''
+    draftMessage.value = ''
+    saveMessage.value = `Đã xuất bản phiên bản ${published.layoutVersion}.`
+  } catch (error) {
+    if (requestedRoomId !== roomId.value || requestedLayoutId !== layoutId.value) {
+      return
+    }
+
+    const messages: Record<string, string> = {
+      INVENTORY_ROOM_LAYOUT_VERSION_CONFLICT:
+        'Sơ đồ đã thay đổi ở nơi khác. Hãy tải lại trước khi xuất bản.',
+      INVENTORY_ROOM_LAYOUT_NOT_DRAFT: 'Phiên bản này không còn là bản nháp.',
+      INVENTORY_ROOM_LAYOUT_NOT_FOUND: 'Phiên bản sơ đồ không còn tồn tại.',
+      INVENTORY_ROOM_LAYOUT_INCOMPLETE: 'Sơ đồ cần ít nhất một ghế và một màn hình.',
+      INVENTORY_ROOM_LAYOUT_OUTSIDE_CANVAS: 'Có đối tượng vượt giới hạn canvas sau khi xoay.',
+      INVENTORY_ROOM_LAYOUT_GEOMETRY_OVERLAP:
+        'Geometry ghế đang chồng lên ghế khác hoặc phần tử không gian.',
+      INVENTORY_ROOM_LAYOUT_GEOMETRY_INVALID: 'Geometry chưa hợp lệ để xuất bản.',
+      INVENTORY_ROOM_LAYOUT_SEAT_ROOM_MISMATCH: 'Có ghế không thuộc phòng của sơ đồ.',
+    }
+
+    publishError.value = isAdminRoomApiError(error)
+      ? (messages[error.code ?? ''] ??
+        adminRoomErrorMessage(error, 'Không thể xác nhận kết quả xuất bản.'))
+      : adminRoomErrorMessage(error, 'Không thể xác nhận kết quả xuất bản.')
+
+    // A lost response may follow a successful publication.
+    // Reload before allowing further writes.
+    contentBlocked.value = true
+  }
+}
 
 const canUndo = computed(() => {
   const entry = undoMoves.value.at(-1)
@@ -474,6 +563,7 @@ async function reloadContent() {
     contentBlocked.value = false
     dropError.value = ''
     resetMoveHistory()
+    publishError.value = ''
   }
 }
 
@@ -679,7 +769,13 @@ watch(objects, (items) => {
         >
           Lưu nháp
         </AppButton>
-        <AppButton disabled title="Xuất bản chưa được triển khai."> Xuất bản layout </AppButton>
+        <AppButton
+          :disabled="!canPublish"
+          :loading="publishMutation.isPending.value"
+          @click="publishLayout"
+        >
+          Xuất bản layout
+        </AppButton>
       </div>
     </header>
 
@@ -702,7 +798,11 @@ watch(objects, (items) => {
     <p v-else-if="!current" class="layout-muted" role="status">Đang tải thông tin phòng…</p>
 
     <template v-else>
-      <aside class="layout-draft-notice" role="status">
+      <aside
+        class="layout-draft-notice"
+        role="status"
+        :class="{ 'is-published': layout?.status === 'PUBLISHED' }"
+      >
         <span class="layout-draft-notice__dot" aria-hidden="true"></span>
         <span>
           <strong>
@@ -730,6 +830,28 @@ watch(objects, (items) => {
       <p v-if="historyBusy" class="layout-muted" role="status">
         {{ historyAction === 'undo' ? 'Đang hoàn tác vị trí…' : 'Đang làm lại vị trí…' }}
       </p>
+      <p v-if="publishHint" class="layout-muted" role="status">
+        {{ publishHint }}
+      </p>
+
+      <p v-if="publishMutation.isPending.value" class="layout-muted" role="status">
+        Đang kiểm tra và xuất bản sơ đồ…
+      </p>
+
+      <div v-if="publishError" class="layout-feedback">
+        <p class="layout-error" role="alert">
+          {{ publishError }}
+          Tải lại nội dung để xác nhận trạng thái trước khi thao tác tiếp.
+        </p>
+        <AppButton
+          variant="secondary"
+          :disabled="editorLocked || draftOpen"
+          :loading="contentQuery.isFetching.value"
+          @click="reloadContent"
+        >
+          Tải lại nội dung
+        </AppButton>
+      </div>
       <div v-if="dropError" class="layout-feedback">
         <p class="layout-error" role="alert">{{ dropError }}</p>
         <AppButton
@@ -794,7 +916,14 @@ watch(objects, (items) => {
             class="layout-icon-button"
             type="button"
             aria-label="Thu nhỏ sơ đồ"
-            :disabled="drag.active.value || dropBusy || historyBusy || !content || zoom <= 50"
+            :disabled="
+              drag.active.value ||
+              dropBusy ||
+              historyBusy ||
+              publishMutation.isPending.value ||
+              !content ||
+              zoom <= 50
+            "
             @click="zoom = Math.max(50, zoom - 25)"
           >
             −
@@ -804,7 +933,14 @@ watch(objects, (items) => {
             class="layout-icon-button"
             type="button"
             aria-label="Phóng to sơ đồ"
-            :disabled="drag.active.value || dropBusy || historyBusy || !content || zoom >= 200"
+            :disabled="
+              drag.active.value ||
+              dropBusy ||
+              historyBusy ||
+              publishMutation.isPending.value ||
+              !content ||
+              zoom >= 200
+            "
             @click="zoom = Math.min(200, zoom + 25)"
           >
             ＋
@@ -1105,6 +1241,10 @@ watch(objects, (items) => {
               <div>
                 <dt>Canvas</dt>
                 <dd>{{ content.layout.canvasWidth }} × {{ content.layout.canvasHeight }}</dd>
+              </div>
+              <div v-if="content.layout.status === 'PUBLISHED'">
+                <dt>Xuất bản lúc</dt>
+                <dd>{{ formatDate(content.layout.publishedAt) }}</dd>
               </div>
             </dl>
           </section>

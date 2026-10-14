@@ -757,3 +757,12 @@
   outline: var(--focus-ring-width) solid var(--color-focus);
   outline-offset: var(--space-1);
 }
+:where([data-reference='admin-room-layout']) .layout-draft-notice.is-published strong {
+  color: var(--color-success);
+}
+
+:where([data-reference='admin-room-layout'])
+  .layout-draft-notice.is-published
+  .layout-draft-notice__dot {
+  background: var(--color-success);
+}

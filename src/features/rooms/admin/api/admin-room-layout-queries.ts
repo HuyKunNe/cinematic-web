@@ -5,6 +5,7 @@ import {
   getRoomLayoutContent,
   createRoomLayoutDraft,
   replaceRoomLayoutContent,
+  publishRoomLayout,
 } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
 import type {
   RoomLayoutResponse,
@@ -251,6 +252,74 @@ export function useReplaceAdminRoomLayoutContentMutation() {
         queryKey: listKey,
         refetchType: 'none',
       })
+    },
+  })
+}
+type PublishAdminRoomLayoutVariables = {
+  roomId: string
+  layoutId: string
+  expectedVersion: number
+}
+
+export function usePublishAdminRoomLayoutMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      roomId,
+      layoutId,
+      expectedVersion,
+    }: PublishAdminRoomLayoutVariables) => {
+      const published = await publishRoomLayout(layoutId, {
+        expectedVersion,
+      })
+
+      validateLayout(published, roomId)
+
+      if (
+        published.id !== layoutId ||
+        published.status !== 'PUBLISHED' ||
+        published.version <= expectedVersion ||
+        !published.publishedAt ||
+        !Number.isFinite(Date.parse(published.publishedAt))
+      ) {
+        throw new Error(
+          'Không thể xác nhận kết quả xuất bản. Hãy tải lại nội dung.',
+        )
+      }
+
+      return published
+    },
+    retry: false,
+    onSuccess: (published, variables) => {
+      const contentKey = adminRoomLayoutKeys.content(
+        variables.roomId,
+        variables.layoutId,
+      )
+      const listKey = adminRoomLayoutKeys.list(variables.roomId)
+
+      // Publication changes metadata, not seat/element content.
+      queryClient.setQueryData<RoomLayoutContentResponse>(
+        contentKey,
+        (previous) =>
+          previous?.layout.id === published.id
+            ? { ...previous, layout: published }
+            : undefined,
+      )
+
+      queryClient.setQueryData<RoomLayoutResponse[]>(listKey, (previous) =>
+        [
+          published,
+          ...(previous ?? []).filter((item) => item.id !== published.id),
+        ].sort((a, b) => b.layoutVersion - a.layoutVersion),
+      )
+
+      for (const queryKey of [contentKey, listKey]) {
+        void queryClient.invalidateQueries({
+          queryKey,
+          refetchType: 'none',
+        })
+      }
     },
   })
 }
