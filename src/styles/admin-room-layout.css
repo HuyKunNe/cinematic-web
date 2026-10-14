@@ -606,3 +606,154 @@
 :where([data-reference='admin-room-layout']) .layout-preview-object.is-dragging {
   cursor: grabbing;
 }
+:where([data-reference='admin-room-layout']) {
+  --layout-ruler-size: var(--space-6);
+  --layout-ruler-layer: 2;
+  --layout-ruler-corner-layer: 3;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-host {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-viewport {
+  min-width: 0;
+  overflow: auto;
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--room-layout-panel-radius);
+  background: var(--color-background);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-sheet {
+  --layout-sheet-width: max(
+    calc(var(--room-layout-canvas-min-width) * var(--layout-zoom-factor)),
+    calc(
+      (100cqw - var(--layout-ruler-size) - var(--border-width-thin) - var(--border-width-thin)) *
+        var(--layout-zoom-factor)
+    )
+  );
+
+  display: grid;
+  grid-template-columns: var(--layout-ruler-size) var(--layout-sheet-width);
+  grid-template-rows: var(--layout-ruler-size) auto;
+  width: max-content;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-corner,
+:where([data-reference='admin-room-layout']) .layout-ruler-x,
+:where([data-reference='admin-room-layout']) .layout-ruler-y {
+  position: sticky;
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+  font-family: var(--font-family-base);
+  font-size: var(--room-layout-small-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-corner {
+  top: 0;
+  left: 0;
+  z-index: var(--layout-ruler-corner-layer);
+  display: grid;
+  place-items: center;
+  border-right: var(--border-width-thin) solid var(--color-border);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-x {
+  top: 0;
+  z-index: var(--layout-ruler-layer);
+  overflow: hidden;
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-y {
+  left: 0;
+  z-index: var(--layout-ruler-layer);
+  overflow: hidden;
+  border-right: var(--border-width-thin) solid var(--color-border);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-tick {
+  position: absolute;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-x .layout-ruler-tick {
+  top: 0;
+  bottom: 0;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-y .layout-ruler-tick {
+  left: 0;
+  right: 0;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-tick::after {
+  position: absolute;
+  content: '';
+  background: var(--color-border-strong);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-x .layout-ruler-tick::after {
+  bottom: 0;
+  width: var(--border-width-thin);
+  height: var(--space-2);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-x .is-major::after {
+  height: var(--space-3);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-y .layout-ruler-tick::after {
+  right: 0;
+  width: var(--space-2);
+  height: var(--border-width-thin);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-y .is-major::after {
+  width: var(--space-3);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-label {
+  position: absolute;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-x .layout-ruler-label {
+  top: var(--space-1);
+  left: var(--space-1);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-x .is-end .layout-ruler-label {
+  left: auto;
+  right: var(--space-1);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-y .layout-ruler-label {
+  top: var(--space-1);
+  right: var(--space-1);
+  writing-mode: vertical-rl;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-y .is-end .layout-ruler-label {
+  top: auto;
+  bottom: var(--space-1);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-canvas {
+  min-width: 0;
+  background: var(--color-background);
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-canvas .layout-preview-svg {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+}
+
+:where([data-reference='admin-room-layout']) .layout-ruler-viewport:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}

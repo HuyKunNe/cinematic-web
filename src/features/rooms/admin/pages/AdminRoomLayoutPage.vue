@@ -1,26 +1,29 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
-import { useAuthStore } from '@/stores/auth.store'
 import type {
+  ReplaceRoomLayoutContentRequest,
   RoomLayoutGeometryResponse,
   RoomLayoutResponse,
 } from '@/services/api/generated/inventory-service/model'
-import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
+import { RoomLayoutElementInputKind } from '@/services/api/generated/inventory-service/model'
+import { useAuthStore } from '@/stores/auth.store'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import {
-  useAdminRoomLayoutsQuery,
   useAdminRoomLayoutContentQuery,
+  useAdminRoomLayoutsQuery,
+  useReplaceAdminRoomLayoutContentMutation,
 } from '../api/admin-room-layout-queries'
+import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
+import AdminRoomLayoutDraftForm from '../components/AdminRoomLayoutDraftForm.vue'
+import AdminRoomLayoutElementForm from '../components/AdminRoomLayoutElementForm.vue'
+import AdminRoomLayoutRuler from '../components/AdminRoomLayoutRuler.vue'
+import { useRoomLayoutElementDrag } from '../composables/use-room-layout-element-drag'
+import { toAdminRoomLayoutContentRequest } from '../mappers/admin-room-layout-content.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
-import AdminRoomLayoutDraftForm from '../components/AdminRoomLayoutDraftForm.vue'
-import { RoomLayoutElementInputKind } from '@/services/api/generated/inventory-service/model'
-import AdminRoomLayoutElementForm from '../components/AdminRoomLayoutElementForm.vue'
-import { useRoomLayoutElementDrag } from '../composables/use-room-layout-element-drag'
-
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
@@ -59,6 +62,27 @@ const saveMessage = ref('')
 const elementForm = ref<InstanceType<typeof AdminRoomLayoutElementForm> | null>(null)
 const svgCanvas = ref<SVGSVGElement | null>(null)
 const elementPreview = ref<RoomLayoutGeometryResponse | null>(null)
+const dragTargetId = ref('')
+const dragPreview = ref<RoomLayoutGeometryResponse | null>(null)
+const dropBusy = ref(false)
+const dropError = ref('')
+const dropMutation = useReplaceAdminRoomLayoutContentMutation()
+
+type DropBaseline = {
+  roomId: string
+  layoutId: string
+  elementId: string
+  index: number
+  input: ReplaceRoomLayoutContentRequest
+}
+
+let dropBaseline: DropBaseline | null = null
+
+function clearDropPreview() {
+  dropBaseline = null
+  dragTargetId.value = ''
+  dragPreview.value = null
+}
 
 const elementTools = [
   { kind: RoomLayoutElementInputKind.SCREEN, label: '+ Màn hình' },
@@ -67,8 +91,14 @@ const elementTools = [
 ] as const
 
 const editorLocked = computed(
-  () => draftBusy.value || elementBusy.value || elementKind.value !== null,
+  () =>
+    draftBusy.value ||
+    elementBusy.value ||
+    elementKind.value !== null ||
+    dragTargetId.value !== '' ||
+    dropBusy.value,
 )
+
 const canCreate = computed(
   () =>
     !editorLocked.value &&
@@ -164,34 +194,87 @@ const canAppend = computed(
     !contentBlocked.value,
 )
 
+const canDirectDrag = computed(() => canAppend.value && !elementKind.value && !dropBusy.value)
+
 const drag = useRoomLayoutElementDrag(svgCanvas, {
-  enabled: () => Boolean(canAppend.value && editingElementId.value && elementForm.value?.canMove),
-  onPosition: (x, y) => {
-    elementForm.value?.setPosition(x, y)
+  enabled: () => canDirectDrag.value,
+  onPosition: (geometry) => {
+    dragPreview.value = geometry
   },
+  onDrop: (geometry) => {
+    void saveDroppedPosition(geometry)
+  },
+  onCancel: clearDropPreview,
 })
 
 function canDragObject(key: string) {
   return (
-    canAppend.value &&
-    Boolean(editingElementId.value) &&
-    key === `element:${editingElementId.value}` &&
-    Boolean(elementForm.value?.canMove)
+    canDirectDrag.value &&
+    (!dragTargetId.value || key === `element:${dragTargetId.value}`) &&
+    Boolean(content.value?.elements.some((element) => `element:${element.id}` === key))
   )
 }
 
 function startElementDrag(event: PointerEvent, key: string) {
-  if (!canDragObject(key)) return
+  if (!canDragObject(key) || editorLocked.value || !content.value) return
 
-  const geometry = elementForm.value?.getGeometry()
+  const index = content.value.elements.findIndex((element) => `element:${element.id}` === key)
+  const element = content.value.elements[index]
+  if (!element) return
 
-  if (!geometry) {
-    saveMessage.value = 'Nhập geometry hợp lệ trước khi kéo phần tử.'
-    return
+  dropBaseline = {
+    roomId: roomId.value,
+    layoutId: layoutId.value,
+    elementId: element.id,
+    index,
+    input: toAdminRoomLayoutContentRequest(content.value),
   }
 
+  dragTargetId.value = element.id
+  dragPreview.value = { ...element.geometry }
+  selectedKey.value = key
+  dropError.value = ''
   saveMessage.value = ''
-  drag.start(event, geometry)
+
+  if (!drag.start(event, element.geometry)) {
+    clearDropPreview()
+  }
+}
+
+async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
+  const baseline = dropBaseline
+  if (!baseline) return
+
+  dropBusy.value = true
+
+  try {
+    await dropMutation.mutateAsync({
+      roomId: baseline.roomId,
+      layoutId: baseline.layoutId,
+      input: {
+        expectedVersion: baseline.input.expectedVersion,
+        seats: baseline.input.seats,
+        elements: baseline.input.elements.map((element, index) =>
+          index === baseline.index ? { ...element, geometry: { ...geometry } } : element,
+        ),
+      },
+    })
+
+    if (roomId.value === baseline.roomId && layoutId.value === baseline.layoutId) {
+      selectedKey.value = ''
+      saveMessage.value = 'Đã lưu vị trí phần tử.'
+    }
+  } catch (error) {
+    if (roomId.value === baseline.roomId && layoutId.value === baseline.layoutId) {
+      contentBlocked.value = true
+      dropError.value =
+        adminRoomErrorMessage(error, 'Không thể xác nhận vị trí đã lưu.') +
+        ' Hãy tải lại nội dung trước khi kéo tiếp.'
+    }
+  } finally {
+    if (dropBaseline === baseline) clearDropPreview()
+    dropBusy.value = false
+  }
 }
 
 async function openElementForm(kind: RoomLayoutElementInputKind) {
@@ -235,6 +318,7 @@ async function reloadContent() {
     requestedLayoutId === layoutId.value
   ) {
     contentBlocked.value = false
+    dropError.value = ''
   }
 }
 
@@ -269,9 +353,11 @@ const objects = computed(() => [
     type: element.kind as string,
     row: '',
     geometry:
-      element.id === editingElementId.value && elementPreview.value
-        ? elementPreview.value
-        : element.geometry,
+      element.id === dragTargetId.value && dragPreview.value
+        ? dragPreview.value
+        : element.id === editingElementId.value && elementPreview.value
+          ? elementPreview.value
+          : element.geometry,
   })),
 ])
 
@@ -387,6 +473,8 @@ watch(
     contentBlocked.value = false
     saveMessage.value = ''
     elementPreview.value = null
+    drag.cancel()
+    dropError.value = ''
   },
   { flush: 'sync' },
 )
@@ -396,6 +484,8 @@ watch(layoutId, () => {
   selectedKey.value = ''
   zoom.value = 100
   elementPreview.value = null
+  drag.cancel()
+  dropError.value = ''
 })
 
 watch(objects, (items) => {
@@ -474,9 +564,24 @@ watch(objects, (items) => {
         </span>
       </aside>
 
-      <p v-if="draftMessage" class="layout-muted" role="status">
-        {{ draftMessage }}
+      <p class="layout-muted">
+        Kéo trực tiếp màn hình, lối đi hoặc lối ra. Thả để tự lưu vị trí; nhấn Escape khi đang kéo
+        để hủy.
       </p>
+
+      <p v-if="dropBusy" class="layout-muted" role="status">Đang lưu vị trí…</p>
+
+      <div v-if="dropError" class="layout-feedback">
+        <p class="layout-error" role="alert">{{ dropError }}</p>
+        <AppButton
+          variant="secondary"
+          :disabled="editorLocked || draftOpen"
+          :loading="contentQuery.isFetching.value"
+          @click="reloadContent"
+        >
+          Tải lại nội dung
+        </AppButton>
+      </div>
       <p v-if="saveMessage" class="layout-muted" role="status">
         {{ saveMessage }}
       </p>
@@ -510,7 +615,7 @@ watch(objects, (items) => {
             class="layout-icon-button"
             type="button"
             aria-label="Thu nhỏ sơ đồ"
-            :disabled="drag.active.value || !content || zoom <= 50"
+            :disabled="drag.active.value || dropBusy || !content || zoom <= 50"
             @click="zoom = Math.max(50, zoom - 25)"
           >
             −
@@ -520,7 +625,7 @@ watch(objects, (items) => {
             class="layout-icon-button"
             type="button"
             aria-label="Phóng to sơ đồ"
-            :disabled="drag.active.value || !content || zoom >= 200"
+            :disabled="drag.active.value || dropBusy || !content || zoom >= 200"
             @click="zoom = Math.min(200, zoom + 25)"
           >
             ＋
@@ -558,25 +663,23 @@ watch(objects, (items) => {
             {{ outsideCount }} đối tượng vượt giới hạn canvas. Geometry được giữ nguyên.
           </p>
 
-          <div
-            class="layout-canvas-scroll"
-            role="region"
-            aria-label="Sơ đồ phòng, có thể cuộn"
-            tabindex="0"
+          <AdminRoomLayoutRuler
+            v-if="content"
+            :canvas-width="content.layout.canvasWidth"
+            :canvas-height="content.layout.canvasHeight"
+            :zoom="zoom"
           >
             <svg
-              v-if="content"
+              ref="svgCanvas"
               class="layout-preview-svg"
-              :style="{ '--layout-zoom-factor': zoom / 100 }"
               :viewBox="`0 0 ${content.layout.canvasWidth} ${content.layout.canvasHeight}`"
               :width="content.layout.canvasWidth"
               :height="content.layout.canvasHeight"
-              ref="svgCanvas"
+              aria-label="Đối tượng trong sơ đồ phòng"
               @pointermove="drag.move"
               @pointerup="drag.end"
               @pointercancel="drag.cancel"
               @lostpointercapture="drag.cancel"
-              aria-label="Đối tượng trong sơ đồ phòng"
             >
               <g
                 v-for="object in objects"
@@ -589,7 +692,7 @@ watch(objects, (items) => {
                   'is-exit': object.kind === 'EXIT',
                   'is-selected': selectedKey === object.key,
                   'is-draggable': canDragObject(object.key),
-                  'is-dragging': drag.active.value && canDragObject(object.key),
+                  'is-dragging': drag.active.value && object.key === `element:${dragTargetId}`,
                 }"
                 :transform="rotation(object.geometry)"
                 role="button"
@@ -619,27 +722,19 @@ watch(objects, (items) => {
                 </text>
               </g>
             </svg>
-
-            <p v-else class="layout-muted">
-              {{
-                layoutId ? 'Chưa có nội dung để hiển thị.' : 'Chọn phiên bản để xem sơ đồ phòng.'
-              }}
-            </p>
-          </div>
-
+          </AdminRoomLayoutRuler>
+          <p v-else class="layout-muted">
+            {{ layoutId ? 'Chưa có nội dung để hiển thị.' : 'Chọn phiên bản để xem sơ đồ phòng.' }}
+          </p>
           <p v-if="content && !objects.length" class="layout-muted">
             Phiên bản này chưa có ghế hoặc phần tử không gian.
           </p>
 
           <footer class="layout-canvas-footer">
             <span>
-              {{
-                editingElementId
-                  ? 'Vị trí đang chỉnh chưa được lưu.'
-                  : 'Kéo ngang để xem toàn bộ sơ đồ trên màn hình nhỏ'
-              }}
+              {{ content?.seats.length ?? 0 }} ghế · {{ content?.elements.length ?? 0 }} phần tử
             </span>
-            <span>Kéo ngang để xem toàn bộ sơ đồ trên màn hình nhỏ</span>
+            <span>Thước dùng đơn vị layout · Thả phần tử để tự lưu vị trí</span>
           </footer>
         </section>
 

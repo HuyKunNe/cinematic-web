@@ -5,17 +5,23 @@ type Point = { x: number; y: number }
 
 type DragOptions = {
   enabled: () => boolean
-  onPosition: (x: number, y: number) => void
+  onPosition: (geometry: RoomLayoutGeometryResponse) => void
+  onDrop: (geometry: RoomLayoutGeometryResponse) => void
+  onCancel: () => void
 }
 
 type DragSession = {
   pointerId: number
   svg: SVGSVGElement
   origin: Point
-  geometry: RoomLayoutGeometryResponse
+  clientOrigin: Point
+  initial: RoomLayoutGeometryResponse
+  current: RoomLayoutGeometryResponse
+  moved: boolean
 }
 
 const MAX_COORDINATE = 999999999.999
+const DRAG_THRESHOLD = 4
 
 export function useRoomLayoutElementDrag(canvas: Ref<SVGSVGElement | null>, options: DragOptions) {
   const active = ref(false)
@@ -41,29 +47,32 @@ export function useRoomLayoutElementDrag(canvas: Ref<SVGSVGElement | null>, opti
   }
 
   function coordinate(value: number) {
-    const bounded = Math.min(MAX_COORDINATE, Math.max(0, value))
-    return Number(bounded.toFixed(3))
+    return Number(Math.min(MAX_COORDINATE, Math.max(0, value)).toFixed(3))
   }
 
-  function finish(restore: boolean) {
+  function finish(drop: boolean) {
     const previous = session
     if (!previous) return
 
-    // Clear first: releasing capture also emits lostpointercapture.
     session = null
     active.value = false
     window.removeEventListener('keydown', onKeyDown)
-
-    if (restore) {
-      options.onPosition(previous.geometry.x, previous.geometry.y)
-    }
 
     try {
       if (previous.svg.hasPointerCapture(previous.pointerId)) {
         previous.svg.releasePointerCapture(previous.pointerId)
       }
     } catch {
-      // The SVG may already have been removed.
+      // SVG may already have been removed.
+    }
+
+    const changed =
+      previous.current.x !== previous.initial.x || previous.current.y !== previous.initial.y
+
+    if (drop && previous.moved && changed) {
+      options.onDrop({ ...previous.current })
+    } else {
+      options.onCancel()
     }
   }
 
@@ -72,7 +81,7 @@ export function useRoomLayoutElementDrag(canvas: Ref<SVGSVGElement | null>, opti
 
     event.preventDefault()
     event.stopPropagation()
-    finish(true)
+    finish(false)
   }
 
   function start(event: PointerEvent, geometry: RoomLayoutGeometryResponse) {
@@ -95,12 +104,14 @@ export function useRoomLayoutElementDrag(canvas: Ref<SVGSVGElement | null>, opti
       pointerId: event.pointerId,
       svg,
       origin,
-      geometry: { ...geometry },
+      clientOrigin: { x: event.clientX, y: event.clientY },
+      initial: { ...geometry },
+      current: { ...geometry },
+      moved: false,
     }
 
     active.value = true
     window.addEventListener('keydown', onKeyDown)
-
     event.preventDefault()
     event.stopPropagation()
     return true
@@ -108,25 +119,35 @@ export function useRoomLayoutElementDrag(canvas: Ref<SVGSVGElement | null>, opti
 
   function move(event: PointerEvent) {
     const current = session
-
     if (!current || event.pointerId !== current.pointerId) return
 
     if (!options.enabled()) {
-      finish(true)
+      finish(false)
+      return
+    }
+
+    if (
+      !current.moved &&
+      Math.hypot(event.clientX - current.clientOrigin.x, event.clientY - current.clientOrigin.y) <
+        DRAG_THRESHOLD
+    ) {
       return
     }
 
     const point = logicalPoint(current.svg, event)
     if (!point) {
-      finish(true)
+      finish(false)
       return
     }
 
-    options.onPosition(
-      coordinate(current.geometry.x + point.x - current.origin.x),
-      coordinate(current.geometry.y + point.y - current.origin.y),
-    )
+    current.moved = true
+    current.current = {
+      ...current.initial,
+      x: coordinate(current.initial.x + point.x - current.origin.x),
+      y: coordinate(current.initial.y + point.y - current.origin.y),
+    }
 
+    options.onPosition({ ...current.current })
     event.preventDefault()
   }
 
@@ -134,15 +155,15 @@ export function useRoomLayoutElementDrag(canvas: Ref<SVGSVGElement | null>, opti
     if (!session || event.pointerId !== session.pointerId) return
 
     move(event)
-    finish(false)
+    finish(true)
   }
 
   function cancel(event?: PointerEvent) {
     if (event && session && event.pointerId !== session.pointerId) return
-    finish(true)
+    finish(false)
   }
 
-  onBeforeUnmount(() => finish(true))
+  onBeforeUnmount(() => finish(false))
 
   return { active, start, move, end, cancel }
 }
