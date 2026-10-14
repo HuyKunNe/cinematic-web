@@ -185,18 +185,18 @@ async function changeActivity() {
       <div>
         <p class="seatmap-eyebrow">Cấu hình phòng chiếu</p>
         <h1 id="room-seats-title" tabindex="-1">Ma trận ghế của phòng</h1>
-        <p class="seatmap-muted">
-          Quản lý ghế theo hàng. Không gian vật lý của phòng được cấu hình riêng.
+        <p class="seatmap-description">
+          Sắp xếp ghế theo hàng và cột. Màn hình, lối đi và cửa thoát hiểm được cấu hình riêng.
         </p>
       </div>
 
       <AppButton
-        variant="secondary"
-        :disabled="!current || busy"
+        :disabled="!canManage || !current || busy"
         @click="
           router.push({
             name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
             params: { roomId },
+            query: cinemaId ? { cinemaId } : {},
           })
         "
       >
@@ -256,6 +256,7 @@ async function changeActivity() {
           {{ adminRoomErrorMessage(cinemas.error.value, 'Không thể tải danh sách rạp.') }}
         </p>
         <AppButton
+          variant="secondary"
           size="sm"
           :disabled="busy"
           :loading="cinemas.isFetching.value"
@@ -270,6 +271,7 @@ async function changeActivity() {
           {{ adminRoomErrorMessage(rooms.error.value, 'Không thể tải danh sách phòng.') }}
         </p>
         <AppButton
+          variant="secondary"
           size="sm"
           :disabled="busy"
           :loading="rooms.isFetching.value"
@@ -292,6 +294,7 @@ async function changeActivity() {
           {{ adminRoomErrorMessage(context.error.value) }}
         </p>
         <AppButton
+          variant="secondary"
           size="sm"
           :disabled="busy"
           :loading="context.isFetching.value"
@@ -318,77 +321,125 @@ async function changeActivity() {
             <strong>{{ catalog.matrix?.seats.length ?? '—' }}</strong>
           </article>
           <article class="seatmap-stat">
-            <span>Trạng thái phòng</span>
-            <strong>{{ statusLabel(current.room.active) }}</strong>
+            <span>Trạng thái</span>
+            <strong>
+              <span class="seatmap-status" :class="current.room.active ? 'is-active' : 'is-paused'">
+                {{ statusLabel(current.room.active) }}
+              </span>
+            </strong>
           </article>
         </section>
 
-        <div class="seatmap-actions">
-          <AppButton
-            :disabled="busy || !ready || current.room.active !== true || Boolean(catalog.error)"
-            :aria-expanded="createOpen"
-            aria-controls="seatmap-create-panel"
-            @click="toggleCreate"
-          >
-            {{ createOpen ? 'Đóng form tạo ghế' : 'Thêm dãy ghế' }}
-          </AppButton>
-
-          <AppButton
-            variant="secondary"
-            :disabled="busy"
-            :loading="seats.isFetching.value"
-            @click="seats.refetch()"
-          >
-            Tải lại ghế
-          </AppButton>
-        </div>
-
-        <p v-if="current.room.active === false" class="seatmap-muted" role="status">
+        <p
+          v-if="current.room.active === false"
+          class="seatmap-feedback seatmap-muted"
+          role="status"
+        >
           Phòng đang tạm ngưng. Có thể xem và đổi trạng thái ghế; chưa thể tạo dãy mới.
         </p>
 
-        <div v-if="createOpen" id="seatmap-create-panel" class="seatmap-panel">
-          <AdminSeatRangeForm
-            :key="roomId"
-            :room-id="roomId"
-            :disabled="
-              !ready ||
-              current.room.active !== true ||
-              activity.isPending.value ||
-              Boolean(catalog.error)
-            "
-            @busy="createBusy = $event"
-          />
-        </div>
-
-        <p v-if="seats.isError.value" class="seatmap-error" role="alert">
+        <p v-if="seats.isError.value" class="seatmap-feedback seatmap-error" role="alert">
           {{ adminRoomErrorMessage(seats.error.value, 'Không thể tải danh mục ghế.') }}
           <template v-if="seats.data.value !== undefined">
             Đang hiển thị dữ liệu từ lần tải trước; thao tác ghi bị khóa.
           </template>
         </p>
-        <p v-else-if="seats.isFetching.value" class="seatmap-muted" role="status">
+        <p v-else-if="seats.isFetching.value" class="seatmap-feedback seatmap-muted" role="status">
           Đang cập nhật danh mục ghế…
         </p>
-        <p v-if="catalog.error" class="seatmap-error" role="alert">{{ catalog.error }}</p>
+        <p v-if="catalog.error" class="seatmap-feedback seatmap-error" role="alert">
+          {{ catalog.error }}
+        </p>
 
-        <div v-if="catalog.matrix" class="seatmap-layout">
+        <div class="seatmap-layout">
           <section class="seatmap-panel" aria-labelledby="seatmap-title">
-            <h2 id="seatmap-title">Ma trận ghế</h2>
-            <p id="seatmap-help" class="seatmap-muted">
-              Ghế được liệt kê liên tiếp theo hàng. Cột là thứ tự hiển thị, chưa phản ánh vị trí đã
-              lưu trong phòng.
+            <header class="seatmap-panel-heading">
+              <div>
+                <h2 id="seatmap-title">Ma trận ghế</h2>
+                <p>Chọn ghế để xem thông tin.</p>
+              </div>
+            </header>
+
+            <div class="seatmap-actions" role="group" aria-label="Thao tác ma trận">
+              <button
+                class="seatmap-action"
+                type="button"
+                :disabled="busy || !ready || current.room.active !== true || Boolean(catalog.error)"
+                :aria-expanded="createOpen"
+                aria-controls="seatmap-create-panel"
+                @click="toggleCreate"
+              >
+                {{ createOpen ? 'Đóng form tạo ghế' : '+ Thêm hàng' }}
+              </button>
+
+              <button
+                class="seatmap-action"
+                type="button"
+                disabled
+                title="Thêm cột chưa được triển khai."
+              >
+                + Thêm cột
+              </button>
+
+              <button
+                class="seatmap-action"
+                type="button"
+                :disabled="busy || seats.isFetching.value"
+                :aria-busy="seats.isFetching.value"
+                @click="seats.refetch()"
+              >
+                {{ seats.isFetching.value ? 'Đang tải…' : 'Tải lại ghế' }}
+              </button>
+            </div>
+
+            <p class="seatmap-instructions" id="seatmap-help">
+              Hiện đang hiển thị danh mục ghế theo hàng. Sắp xếp vị trí và thêm cột chưa khả dụng.
             </p>
 
             <div class="seatmap-legend" aria-label="Chú giải">
               <span v-for="option in adminSeatTypeOptions" :key="option.value">
-                {{ option.label }}
+                <i
+                  class="seatmap-legend__dot"
+                  :class="{
+                    'is-standard': option.value === 'STANDARD',
+                    'is-premium': option.value === 'VIP',
+                    'is-couple': option.value === 'COUPLE',
+                    'is-accessible': option.value === 'ACCESSIBLE',
+                  }"
+                  aria-hidden="true"
+                ></i>
+                {{
+                  option.value === 'STANDARD'
+                    ? 'Ghế thường'
+                    : option.value === 'VIP'
+                      ? 'Ghế cao cấp'
+                      : option.label
+                }}
               </span>
-              <span>Ghế viền nét đứt: tạm ngưng</span>
+              <span>
+                <i class="seatmap-legend__dot is-selected" aria-hidden="true"></i>
+                Đang chọn
+              </span>
+              <span>
+                <i class="seatmap-legend__dot is-blocked" aria-hidden="true"></i>
+                Ngừng sử dụng
+              </span>
+              <span>
+                <i class="seatmap-legend__dot is-empty" aria-hidden="true"></i>
+                Ô trống
+              </span>
             </div>
 
-            <p v-if="!catalog.matrix.seats.length" class="seatmap-muted" role="status">
-              Phòng chưa có ghế. Dùng “Thêm dãy ghế” để tạo danh mục.
+            <p v-if="!catalog.matrix" class="seatmap-muted" role="status">
+              {{
+                seats.isError.value || catalog.error
+                  ? 'Chưa thể hiển thị ma trận ghế.'
+                  : 'Đang tải danh mục ghế…'
+              }}
+            </p>
+
+            <p v-else-if="!catalog.matrix.seats.length" class="seatmap-muted" role="status">
+              Phòng chưa có ghế. Dùng “Thêm hàng” để tạo dãy ghế.
             </p>
 
             <div
@@ -406,39 +457,55 @@ async function changeActivity() {
               <div
                 class="seatmap-scroll"
                 role="region"
-                aria-label="Danh mục ghế theo hàng, có thể cuộn ngang"
+                aria-label="Ma trận ghế, có thể cuộn ngang"
                 aria-describedby="seatmap-help"
                 tabindex="0"
               >
-                <div class="seatmap-columns" aria-hidden="true">
-                  <span v-for="column in catalog.matrix.columnCount" :key="column">
-                    {{ column }}
-                  </span>
-                </div>
+                <div class="seatmap-canvas-content">
+                  <div class="seatmap-stage"><span>MÀN HÌNH</span></div>
 
-                <div v-for="row in catalog.matrix.rows" :key="row.label" class="seatmap-row">
-                  <div v-for="(seat, column) in row.cells" :key="column" class="seatmap-cell">
-                    <button
-                      v-if="seat"
-                      class="seatmap-seat"
-                      type="button"
-                      :class="{
-                        'is-selected': selectedId === seat.id,
-                        'is-inactive': !seat.active,
-                        'is-vip': seat.seatType === 'VIP',
-                        'is-couple': seat.seatType === 'COUPLE',
-                        'is-accessible': seat.seatType === 'ACCESSIBLE',
-                      }"
-                      :disabled="busy"
-                      :aria-pressed="selectedId === seat.id"
-                      :aria-label="`${seat.seatNumber}, hàng ${row.label}, cột hiển thị ${
-                        column + 1
-                      }, ${typeLabel(seat.seatType)}, ${statusLabel(seat.active)}`"
-                      @click="selectedId = seat.id"
-                    >
-                      {{ seat.seatNumber }}
-                    </button>
-                    <span v-else class="seatmap-empty" aria-hidden="true"></span>
+                  <div class="seatmap-columns" aria-hidden="true">
+                    <span v-for="column in catalog.matrix.columnCount" :key="column">
+                      {{ String(column).padStart(2, '0') }}
+                    </span>
+                  </div>
+
+                  <div v-for="row in catalog.matrix.rows" :key="row.label" class="seatmap-row">
+                    <div v-for="(seat, column) in row.cells" :key="column" class="seatmap-slot">
+                      <button
+                        v-if="seat"
+                        class="seatmap-cell"
+                        type="button"
+                        :class="{
+                          'is-standard': seat.seatType === 'STANDARD',
+                          'is-premium': seat.seatType === 'VIP',
+                          'is-couple': seat.seatType === 'COUPLE',
+                          'is-accessible': seat.seatType === 'ACCESSIBLE',
+                          'is-blocked': !seat.active,
+                          'is-selected': selectedId === seat.id,
+                        }"
+                        :disabled="busy"
+                        :aria-pressed="selectedId === seat.id"
+                        :aria-label="`${seat.seatNumber}, hàng ${row.label}, cột hiển thị ${
+                          column + 1
+                        }, ${typeLabel(seat.seatType)}, ${statusLabel(seat.active)}`"
+                        @click="selectedId = seat.id"
+                      >
+                        {{
+                          seat.seatNumber.startsWith(row.label) &&
+                          /^\d+$/.test(seat.seatNumber.slice(row.label.length))
+                            ? seat.seatNumber.slice(row.label.length)
+                            : seat.seatNumber
+                        }}
+                      </button>
+
+                      <span
+                        v-else
+                        class="seatmap-cell seatmap-cell--empty"
+                        role="img"
+                        :aria-label="`Ô trống tại hàng ${row.label}, cột ${column + 1}`"
+                      ></span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -446,7 +513,26 @@ async function changeActivity() {
           </section>
 
           <aside class="seatmap-panel seatmap-details" aria-labelledby="seatmap-details-title">
-            <h2 id="seatmap-details-title">Chi tiết ghế</h2>
+            <header class="seatmap-panel-heading">
+              <div>
+                <h2 id="seatmap-details-title">Chi tiết ghế</h2>
+                <p>Thông tin vị trí đang chọn.</p>
+              </div>
+            </header>
+
+            <div v-if="createOpen" id="seatmap-create-panel" class="seatmap-create-panel">
+              <AdminSeatRangeForm
+                :key="roomId"
+                :room-id="roomId"
+                :disabled="
+                  !ready ||
+                  current.room.active !== true ||
+                  activity.isPending.value ||
+                  Boolean(catalog.error)
+                "
+                @busy="createBusy = $event"
+              />
+            </div>
 
             <dl v-if="selected">
               <div>
@@ -458,8 +544,8 @@ async function changeActivity() {
                 <dd>{{ selected.seat.rowLabel }}</dd>
               </div>
               <div>
-                <dt>Cột hiển thị</dt>
-                <dd>{{ selected.column }}</dd>
+                <dt>Cột</dt>
+                <dd>{{ String(selected.column).padStart(2, '0') }}</dd>
               </div>
               <div>
                 <dt>Loại ghế</dt>
@@ -482,28 +568,44 @@ async function changeActivity() {
               {{ selected.seat.active ? 'Tạm ngưng ghế' : 'Kích hoạt ghế' }}
             </AppButton>
 
-            <p v-if="activityError" class="seatmap-error" role="alert">{{ activityError }}</p>
+            <p v-if="activityError" class="seatmap-error" role="alert">
+              {{ activityError }}
+            </p>
             <p v-if="activityMessage" role="status">{{ activityMessage }}</p>
 
-            <h3>Thống kê danh mục</h3>
-            <dl>
-              <div>
-                <dt>Số hàng</dt>
-                <dd>{{ catalog.matrix.rows.length }}</dd>
-              </div>
-              <div>
-                <dt>Số cột hiển thị</dt>
-                <dd>{{ catalog.matrix.columnCount }}</dd>
-              </div>
-              <div>
-                <dt>Ghế tạm ngưng</dt>
-                <dd>{{ catalog.matrix.inactiveCount }}</dd>
-              </div>
-              <div>
-                <dt>Ô đệm cuối hàng</dt>
-                <dd>{{ catalog.matrix.emptyCount }}</dd>
-              </div>
-            </dl>
+            <template v-if="catalog.matrix">
+              <h3 class="seatmap-details__subtitle">Thống kê ma trận</h3>
+              <dl>
+                <div>
+                  <dt>Tổng số vị trí</dt>
+                  <dd>{{ catalog.matrix.rows.length * catalog.matrix.columnCount }}</dd>
+                </div>
+                <div v-for="option in adminSeatTypeOptions" :key="option.value">
+                  <dt>
+                    {{
+                      option.value === 'STANDARD'
+                        ? 'Ghế thường'
+                        : option.value === 'VIP'
+                          ? 'Ghế cao cấp'
+                          : option.label
+                    }}
+                  </dt>
+                  <dd>
+                    {{
+                      catalog.matrix.seats.filter((seat) => seat.seatType === option.value).length
+                    }}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Ngừng sử dụng</dt>
+                  <dd>{{ catalog.matrix.inactiveCount }}</dd>
+                </div>
+                <div>
+                  <dt>Ô trống</dt>
+                  <dd>{{ catalog.matrix.emptyCount }}</dd>
+                </div>
+              </dl>
+            </template>
           </aside>
         </div>
       </template>
