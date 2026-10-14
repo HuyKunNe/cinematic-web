@@ -821,3 +821,10 @@
   stroke-width: var(--layout-seat-grid-border-width);
   vector-effect: non-scaling-stroke;
 }
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-aisle rect {
+  pointer-events: all;
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-aisle text {
+  pointer-events: none;
+}

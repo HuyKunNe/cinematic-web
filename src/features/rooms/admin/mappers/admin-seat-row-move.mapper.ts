@@ -160,17 +160,18 @@ function validateSeats(
 
       if (
         overlaps(
-          freeAnchor ? geometry : seatCell(seat, geometry),
-          freeAnchor ? otherGeometry : seatCell(other, otherGeometry),
+    geometry,
+    otherGeometry,
         )
       ) {
-        throw new Error('Các ghế còn chồng ô sau khi dịch. Hãy chọn một vị trí khác.')
+        throw new Error('Các ghế thực sự chồng lên nhau sau khi dịch.')
       }
     }
 
     if (!changedIds.has(seat.seatId)) continue
 
     for (const element of content.elements) {
+      if (element.kind === 'AISLE') continue
       if (overlaps(geometry, element.geometry)) {
         throw new Error('Nhóm ghế sau khi dịch đè lên lối đi hoặc phần tử không gian.')
       }
