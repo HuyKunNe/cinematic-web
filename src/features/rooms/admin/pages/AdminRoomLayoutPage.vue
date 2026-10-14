@@ -26,6 +26,11 @@ import { toAdminRoomLayoutContentRequest } from '../mappers/admin-room-layout-co
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
 import AdminSeatLayoutInitializeForm from '../components/AdminSeatLayoutInitializeForm.vue'
+import {
+  createSeatRowMovePlan,
+  moveSeatRows,
+  type SeatRowMovePlan,
+} from '../mappers/admin-seat-row-move.mapper'
 
 const route = useRoute()
 const router = useRouter()
@@ -70,6 +75,9 @@ const svgCanvas = ref<SVGSVGElement | null>(null)
 const elementPreview = ref<RoomLayoutGeometryResponse | null>(null)
 const dragTargetId = ref('')
 const dragPreview = ref<RoomLayoutGeometryResponse | null>(null)
+const selectedSeatIds = ref<string[]>([])
+const multiSeatMode = ref(false)
+const seatMovePreview = ref<Map<string, RoomLayoutGeometryResponse>>(new Map())
 const dropBusy = ref(false)
 const dropError = ref('')
 const dropMutation = useReplaceAdminRoomLayoutContentMutation()
@@ -143,10 +151,18 @@ function recordMove(before: GeometrySnapshot, after: GeometrySnapshot) {
 type DropBaseline = {
   roomId: string
   layoutId: string
-  elementId: string
-  index: number
   input: ReplaceRoomLayoutContentRequest
-}
+} & (
+  | {
+      kind: 'element'
+      elementId: string
+      index: number
+    }
+  | {
+      kind: 'seats'
+      plan: SeatRowMovePlan
+    }
+)
 
 let dropBaseline: DropBaseline | null = null
 
@@ -154,6 +170,7 @@ function clearDropPreview() {
   dropBaseline = null
   dragTargetId.value = ''
   dragPreview.value = null
+  seatMovePreview.value = new Map()
 }
 
 const elementTools = [
@@ -490,7 +507,11 @@ const canDirectDrag = computed(
 const drag = useRoomLayoutElementDrag(svgCanvas, {
   enabled: () => canDirectDrag.value,
   onPosition: (geometry) => {
-    dragPreview.value = geometry
+    if (dropBaseline?.kind === 'seats') {
+      seatMovePreview.value = moveSeatRows(dropBaseline.plan, geometry)
+    } else {
+      dragPreview.value = geometry
+    }
   },
   onDrop: (geometry) => {
     void saveDroppedPosition(geometry)
@@ -499,28 +520,111 @@ const drag = useRoomLayoutElementDrag(svgCanvas, {
 })
 
 function canDragObject(key: string) {
-  return (
-    canDirectDrag.value &&
-    (!dragTargetId.value || key === `element:${dragTargetId.value}`) &&
-    Boolean(content.value?.elements.some((element) => `element:${element.id}` === key))
-  )
+  if (!canDirectDrag.value) return false
+  if (dragTargetId.value) return isMovingObject(key)
+
+  const seat = content.value?.seats.find((item) => `seat:${item.id}` === key)
+  if (seat) return !multiSeatMode.value
+
+  return Boolean(content.value?.elements.some((element) => `element:${element.id}` === key))
 }
 
-function startElementDrag(event: PointerEvent, key: string) {
-  if (!canDragObject(key) || editorLocked.value || !content.value) return
+function isMovingObject(key: string) {
+  if (key === `element:${dragTargetId.value}`) return true
 
-  const index = content.value.elements.findIndex((element) => `element:${element.id}` === key)
-  const element = content.value.elements[index]
+  const seat = content.value?.seats.find((item) => `seat:${item.id}` === key)
+  return Boolean(seat && seatMovePreview.value.has(seat.seatId))
+}
+
+function toggleSeatSelection(seatId: string, key: string) {
+  selectedSeatIds.value = selectedSeatIds.value.includes(seatId)
+    ? selectedSeatIds.value.filter((id) => id !== seatId)
+    : [...selectedSeatIds.value, seatId]
+
+  selectedKey.value = selectedSeatIds.value.includes(seatId) ? key : ''
+}
+
+function clearSeatSelection() {
+  if (editorLocked.value) return
+  selectedSeatIds.value = []
+  selectedKey.value = ''
+}
+
+function toggleMultiSeatMode() {
+  if (!canDirectDrag.value || editorLocked.value) return
+  multiSeatMode.value = !multiSeatMode.value
+}
+
+function startObjectDrag(event: PointerEvent, key: string) {
+  if (
+    event.button !== 0 ||
+    !event.isPrimary ||
+    editorLocked.value ||
+    !canDirectDrag.value ||
+    !content.value
+  ) {
+    return
+  }
+
+  const currentContent = content.value
+  const seat = currentContent.seats.find((item) => `seat:${item.id}` === key)
+
+  if (seat) {
+    if (multiSeatMode.value || event.ctrlKey || event.metaKey || event.shiftKey) {
+      event.preventDefault()
+      event.stopPropagation()
+      toggleSeatSelection(seat.seatId, key)
+      return
+    }
+
+    const selection = selectedSeatIds.value.includes(seat.seatId)
+      ? selectedSeatIds.value
+      : [seat.seatId]
+
+    let plan: SeatRowMovePlan
+
+    try {
+      plan = createSeatRowMovePlan(currentContent, seat.seatId, selection)
+    } catch (error) {
+      dropError.value = adminRoomErrorMessage(error, 'Không thể bắt đầu kéo hàng ghế.')
+      return
+    }
+
+    selectedSeatIds.value = [...selection]
+    selectedKey.value = key
+    dropError.value = ''
+    saveMessage.value = ''
+
+    dropBaseline = {
+      kind: 'seats',
+      roomId: roomId.value,
+      layoutId: layoutId.value,
+      input: toAdminRoomLayoutContentRequest(currentContent),
+      plan,
+    }
+
+    dragTargetId.value = key
+    seatMovePreview.value = moveSeatRows(plan, plan.anchor)
+
+    if (!drag.start(event, plan.anchor)) clearDropPreview()
+    return
+  }
+
+  if (!canDragObject(key)) return
+
+  const index = currentContent.elements.findIndex((element) => `element:${element.id}` === key)
+  const element = currentContent.elements[index]
   if (!element) return
 
   dropBaseline = {
+    kind: 'element',
     roomId: roomId.value,
     layoutId: layoutId.value,
     elementId: element.id,
     index,
-    input: toAdminRoomLayoutContentRequest(content.value),
+    input: toAdminRoomLayoutContentRequest(currentContent),
   }
-
+  selectedSeatIds.value = []
   dragTargetId.value = element.id
   dragPreview.value = { ...element.geometry }
   selectedKey.value = key
@@ -546,6 +650,25 @@ function formatGeometryValue(
 async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
   const baseline = dropBaseline
   if (!baseline) return
+  const movedSeats = baseline.kind === 'seats' ? moveSeatRows(baseline.plan, geometry) : null
+
+  const input: ReplaceRoomLayoutContentRequest = {
+    expectedVersion: baseline.input.expectedVersion,
+    seats: baseline.input.seats.map((seat) => ({
+      ...seat,
+      geometry: movedSeats?.get(seat.seatId) ?? seat.geometry,
+    })),
+    elements: baseline.input.elements.map((element, index) =>
+      baseline.kind === 'element' && index === baseline.index
+        ? { ...element, geometry: { ...geometry } }
+        : element,
+    ),
+  }
+
+  if (snapshotKey(input) === snapshotKey(baseline.input)) {
+    clearDropPreview()
+    return
+  }
 
   dropBusy.value = true
 
@@ -553,20 +676,22 @@ async function saveDroppedPosition(geometry: RoomLayoutGeometryResponse) {
     const saved = await dropMutation.mutateAsync({
       roomId: baseline.roomId,
       layoutId: baseline.layoutId,
-      input: {
-        expectedVersion: baseline.input.expectedVersion,
-        seats: baseline.input.seats,
-        elements: baseline.input.elements.map((element, index) =>
-          index === baseline.index ? { ...element, geometry: { ...geometry } } : element,
-        ),
-      },
+      input,
     })
-
     if (roomId.value === baseline.roomId && layoutId.value === baseline.layoutId) {
+      if (snapshotKey(toAdminRoomLayoutContentRequest(saved)) !== snapshotKey(input)) {
+        throw new Error('Nội dung trả về không khớp vị trí vừa lưu.')
+      }
       recordMove(baseline.input, toAdminRoomLayoutContentRequest(saved))
 
-      selectedKey.value = ''
-      saveMessage.value = 'Đã lưu vị trí phần tử.'
+      if (baseline.kind === 'seats') {
+        const anchor = saved.seats.find((seat) => seat.seatId === baseline.plan.anchorSeatId)
+        selectedKey.value = anchor ? `seat:${anchor.id}` : ''
+        saveMessage.value = `Đã lưu vị trí ${baseline.plan.seats.length} ghế thuộc ${baseline.plan.rowLabels.length} hàng.`
+      } else {
+        selectedKey.value = ''
+        saveMessage.value = 'Đã lưu vị trí phần tử.'
+      }
     }
   } catch (error) {
     if (roomId.value === baseline.roomId && layoutId.value === baseline.layoutId) {
@@ -647,14 +772,16 @@ function kindLabel(kind: string) {
 const objects = computed(() => [
   ...(content.value?.seats ?? []).map((seat) => ({
     key: `seat:${seat.id}`,
+    seatId: seat.seatId,
     name: seat.seatNumberSnapshot,
     kind: 'SEAT',
     type: seat.seatTypeSnapshot as string,
     row: seat.rowLabelSnapshot,
-    geometry: seat.geometry,
+    geometry: seatMovePreview.value.get(seat.seatId) ?? seat.geometry,
   })),
   ...(content.value?.elements ?? []).map((element) => ({
     key: `element:${element.id}`,
+    seatId: '',
     name: element.label?.trim() || kindLabel(element.kind),
     kind: element.kind as string,
     type: element.kind as string,
@@ -696,12 +823,62 @@ function closeElementForm() {
 }
 
 function selectObject(key: string) {
-  if (editorLocked.value || !objects.value.some((object) => object.key === key)) {
+  if (editorLocked.value) return
+  const object = objects.value.find((item) => item.key === key)
+  if (!object) return
+
+  // Ghế có thể kéo được đã xử lý chọn tại pointerdown.
+  // Không xử lý lần nữa khi trình duyệt phát click sau pointerup.
+  if (object.kind === 'SEAT' && canDirectDrag.value) return
+
+  selectedKey.value = key
+  selectedSeatIds.value = object.seatId ? [object.seatId] : []
+}
+
+function activateObject(event: KeyboardEvent, key: string) {
+  if (editorLocked.value) return
+  const object = objects.value.find((item) => item.key === key)
+  if (!object) return
+
+  if (
+    object.seatId &&
+    canDirectDrag.value &&
+    (multiSeatMode.value || event.ctrlKey || event.metaKey || event.shiftKey)
+  ) {
+    toggleSeatSelection(object.seatId, key)
     return
   }
 
   selectedKey.value = key
+  selectedSeatIds.value = object.seatId ? [object.seatId] : []
 }
+
+function isObjectSelected(key: string) {
+  const object = objects.value.find((item) => item.key === key)
+  if (!object) return false
+
+  return object.seatId
+    ? selectedSeatIds.value.includes(object.seatId) || seatMovePreview.value.has(object.seatId)
+    : selectedKey.value === key
+}
+
+const selectedSeatRowCount = computed(
+  () =>
+    new Set(
+      content.value?.seats
+        .filter((seat) => selectedSeatIds.value.includes(seat.seatId))
+        .map((seat) => seat.rowLabelSnapshot) ?? [],
+    ).size,
+)
+
+watch(
+  () => content.value?.seats,
+  (seats) => {
+    if (!seats) return
+    const existing = new Set(seats.map((seat) => seat.seatId))
+    selectedSeatIds.value = selectedSeatIds.value.filter((id) => existing.has(id))
+  },
+)
 
 const geometryFields = [
   { key: 'x', label: 'Vị trí X' },
@@ -767,6 +944,8 @@ function backToSeats() {
 watch(
   roomId,
   () => {
+    selectedSeatIds.value = []
+    multiSeatMode.value = false
     draftOpen.value = false
     draftBusy.value = false
     creationBlocked.value = false
@@ -790,6 +969,8 @@ watch(
 )
 
 watch(layoutId, () => {
+  selectedSeatIds.value = []
+  multiSeatMode.value = false
   saveMessage.value = ''
   selectedKey.value = ''
   zoom.value = 100
@@ -892,8 +1073,17 @@ watch(objects, (items) => {
       </aside>
 
       <p class="layout-muted">
-        Kéo trực tiếp màn hình, lối đi hoặc lối ra. Thả để tự lưu vị trí; nhấn Escape khi đang kéo
-        để hủy.
+        Kéo ghế để dịch và căn ngang cả hàng. Giữ Ctrl, ⌘ hoặc Shift để chọn nhiều ghế, rồi kéo một
+        ghế đã chọn. Thả để tự lưu; nhấn Escape khi đang kéo để hủy.
+      </p>
+
+      <p v-if="multiSeatMode" class="layout-muted" role="status">
+        Chạm từng ghế để chọn hoặc bỏ chọn. Bấm Hoàn tất chọn rồi kéo một ghế đã chọn.
+      </p>
+
+      <p v-if="selectedSeatIds.length" class="layout-muted" role="status">
+        Đã chọn {{ selectedSeatIds.length }} ghế. Khi kéo, toàn bộ {{ selectedSeatRowCount }} hàng
+        chứa các ghế này sẽ cùng di chuyển.
       </p>
 
       <p v-if="dropBusy" class="layout-muted" role="status">Đang lưu vị trí…</p>
@@ -944,6 +1134,25 @@ watch(objects, (items) => {
           <button class="layout-tool" type="button" @click="backToSeats" :disabled="editorLocked">
             Xếp ghế theo hàng
           </button>
+          <button
+            class="layout-tool"
+            type="button"
+            :class="{ 'is-active': multiSeatMode }"
+            :aria-pressed="multiSeatMode"
+            :disabled="editorLocked || !canDirectDrag"
+            @click="toggleMultiSeatMode"
+          >
+            {{ multiSeatMode ? 'Hoàn tất chọn' : 'Chọn nhiều ghế' }}
+          </button>
+          <button
+            class="layout-tool"
+            type="button"
+            :disabled="editorLocked || !selectedSeatIds.length"
+            @click="clearSeatSelection"
+          >
+            Bỏ chọn ghế
+          </button>
+
           <button
             v-for="tool in elementTools"
             :key="tool.kind"
@@ -1075,20 +1284,21 @@ watch(objects, (items) => {
                   'is-screen': object.kind === 'SCREEN',
                   'is-aisle': object.kind === 'AISLE',
                   'is-exit': object.kind === 'EXIT',
-                  'is-selected': selectedKey === object.key,
+                  'is-selected': isObjectSelected(object.key),
                   'is-draggable': canDragObject(object.key),
-                  'is-dragging': drag.active.value && object.key === `element:${dragTargetId}`,
+                  'is-dragging': drag.active.value && isMovingObject(object.key),
+
                 }"
                 :transform="rotation(object.geometry)"
                 role="button"
                 :tabindex="editorLocked ? -1 : 0"
                 :aria-disabled="editorLocked"
                 @click="selectObject(object.key)"
-                @keydown.enter.prevent="selectObject(object.key)"
-                @keydown.space.prevent="selectObject(object.key)"
+                @keydown.enter.prevent="activateObject($event, object.key)"
+                @keydown.space.prevent="activateObject($event, object.key)"
                 :aria-label="`${kindLabel(object.type)} ${object.name}`"
-                :aria-pressed="selectedKey === object.key"
-                @pointerdown="startElementDrag($event, object.key)"
+                :aria-pressed="isObjectSelected(object.key)"
+                @pointerdown="startObjectDrag($event, object.key)"
               >
                 <title>{{ object.name }}</title>
                 <rect
@@ -1119,7 +1329,7 @@ watch(objects, (items) => {
             <span>
               {{ content?.seats.length ?? 0 }} ghế · {{ content?.elements.length ?? 0 }} phần tử
             </span>
-            <span>Thước dùng đơn vị layout · Thả phần tử để tự lưu vị trí</span>
+            <span>Thước dùng đơn vị layout · Thả đối tượng để tự lưu vị trí</span>
           </footer>
         </section>
 
