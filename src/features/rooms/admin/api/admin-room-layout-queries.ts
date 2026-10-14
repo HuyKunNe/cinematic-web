@@ -4,11 +4,14 @@ import {
   getRoomLayoutsByRoom,
   getRoomLayoutContent,
   createRoomLayoutDraft,
+  replaceRoomLayoutContent,
 } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
 import type {
   RoomLayoutResponse,
   RoomLayoutGeometryResponse,
   CreateRoomLayoutRequest,
+  RoomLayoutContentResponse,
+  ReplaceRoomLayoutContentRequest,
 } from '@/services/api/generated/inventory-service/model'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 
@@ -50,6 +53,62 @@ function validateGeometry(geometry: RoomLayoutGeometryResponse) {
   ) {
     throw new Error('Geometry của sơ đồ không hợp lệ. Hãy tải lại.')
   }
+}
+
+function validateContent(content: RoomLayoutContentResponse, roomId: string, layoutId: string) {
+  if (
+    !content ||
+    content.layout?.id !== layoutId ||
+    !Array.isArray(content.seats) ||
+    !Array.isArray(content.elements)
+  ) {
+    throw new Error('Nội dung sơ đồ không hợp lệ. Hãy tải lại.')
+  }
+
+  validateLayout(content.layout, roomId)
+
+  const keys = new Set<string>()
+  const seatIds = new Set<string>()
+
+  for (const seat of content.seats) {
+    const key = `seat:${seat.id}`
+
+    if (
+      !isRoomSeatUuid(seat.id) ||
+      !isRoomSeatUuid(seat.seatId) ||
+      typeof seat.seatNumberSnapshot !== 'string' ||
+      !seat.seatNumberSnapshot.trim() ||
+      typeof seat.rowLabelSnapshot !== 'string' ||
+      !seat.rowLabelSnapshot.trim() ||
+      !['STANDARD', 'VIP', 'COUPLE', 'ACCESSIBLE'].includes(seat.seatTypeSnapshot) ||
+      keys.has(key) ||
+      seatIds.has(seat.seatId)
+    ) {
+      throw new Error('Snapshot ghế trong sơ đồ không hợp lệ.')
+    }
+
+    keys.add(key)
+    seatIds.add(seat.seatId)
+    validateGeometry(seat.geometry)
+  }
+
+  for (const element of content.elements) {
+    const key = `element:${element.id}`
+
+    if (
+      !isRoomSeatUuid(element.id) ||
+      !['SCREEN', 'AISLE', 'EXIT'].includes(element.kind) ||
+      (element.label != null && typeof element.label !== 'string') ||
+      keys.has(key)
+    ) {
+      throw new Error('Phần tử không gian trong sơ đồ không hợp lệ.')
+    }
+
+    keys.add(key)
+    validateGeometry(element.geometry)
+  }
+
+  return content
 }
 
 export function useAdminRoomLayoutsQuery(
@@ -97,63 +156,8 @@ export function useAdminRoomLayoutContentQuery(
       () =>
         toValue(enabled) && isRoomSeatUuid(toValue(roomId)) && isRoomSeatUuid(toValue(layoutId)),
     ),
-    queryFn: async ({ queryKey }) => {
-      const content = await getRoomLayoutContent(queryKey[4])
-
-      if (
-        !content ||
-        content.layout?.id !== queryKey[4] ||
-        !Array.isArray(content.seats) ||
-        !Array.isArray(content.elements)
-      ) {
-        throw new Error('Nội dung sơ đồ không hợp lệ. Hãy tải lại.')
-      }
-
-      validateLayout(content.layout, queryKey[2])
-
-      const keys = new Set<string>()
-      const seatIds = new Set<string>()
-
-      for (const seat of content.seats) {
-        const key = `seat:${seat.id}`
-
-        if (
-          !isRoomSeatUuid(seat.id) ||
-          !isRoomSeatUuid(seat.seatId) ||
-          typeof seat.seatNumberSnapshot !== 'string' ||
-          !seat.seatNumberSnapshot.trim() ||
-          typeof seat.rowLabelSnapshot !== 'string' ||
-          !seat.rowLabelSnapshot.trim() ||
-          !['STANDARD', 'VIP', 'COUPLE', 'ACCESSIBLE'].includes(seat.seatTypeSnapshot) ||
-          keys.has(key) ||
-          seatIds.has(seat.seatId)
-        ) {
-          throw new Error('Snapshot ghế trong sơ đồ không hợp lệ.')
-        }
-
-        keys.add(key)
-        seatIds.add(seat.seatId)
-        validateGeometry(seat.geometry)
-      }
-
-      for (const element of content.elements) {
-        const key = `element:${element.id}`
-
-        if (
-          !isRoomSeatUuid(element.id) ||
-          !['SCREEN', 'AISLE', 'EXIT'].includes(element.kind) ||
-          (element.label != null && typeof element.label !== 'string') ||
-          keys.has(key)
-        ) {
-          throw new Error('Phần tử không gian trong sơ đồ không hợp lệ.')
-        }
-
-        keys.add(key)
-        validateGeometry(element.geometry)
-      }
-
-      return content
-    },
+    queryFn: async ({ queryKey }) =>
+      validateContent(await getRoomLayoutContent(queryKey[4]), queryKey[2], queryKey[4]),
     staleTime: 0,
     retry: false,
     refetchOnWindowFocus: false,
@@ -184,6 +188,61 @@ export function useCreateAdminRoomLayoutDraftMutation() {
 
       queryClient.setQueryData<RoomLayoutResponse[]>(listKey, (previous) =>
         [created, ...(previous ?? []).filter((layout) => layout.id !== created.id)].sort(
+          (a, b) => b.layoutVersion - a.layoutVersion,
+        ),
+      )
+
+      void queryClient.invalidateQueries({
+        queryKey: listKey,
+        refetchType: 'none',
+      })
+    },
+  })
+}
+type ReplaceAdminRoomLayoutVariables = {
+  roomId: string
+  layoutId: string
+  input: ReplaceRoomLayoutContentRequest
+}
+
+export function useReplaceAdminRoomLayoutContentMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ roomId, layoutId, input }: ReplaceAdminRoomLayoutVariables) => {
+      const saved = validateContent(
+        await replaceRoomLayoutContent(layoutId, input),
+        roomId,
+        layoutId,
+      )
+
+      const expectedSeatIds = new Set(input.seats.map((seat) => seat.seatId))
+
+      if (
+        saved.layout.status !== 'DRAFT' ||
+        saved.layout.version <= input.expectedVersion ||
+        saved.seats.length !== input.seats.length ||
+        saved.elements.length !== input.elements.length ||
+        saved.seats.some((seat) => !expectedSeatIds.has(seat.seatId))
+      ) {
+        throw new Error(
+          'Không thể xác nhận kết quả lưu. Hãy tải lại nội dung trước khi thao tác tiếp.',
+        )
+      }
+
+      return saved
+    },
+    retry: false,
+    onSuccess: (saved, variables) => {
+      queryClient.setQueryData(
+        adminRoomLayoutKeys.content(variables.roomId, variables.layoutId),
+        saved,
+      )
+
+      const listKey = adminRoomLayoutKeys.list(variables.roomId)
+
+      queryClient.setQueryData<RoomLayoutResponse[]>(listKey, (previous) =>
+        [saved.layout, ...(previous ?? []).filter((layout) => layout.id !== saved.layout.id)].sort(
           (a, b) => b.layoutVersion - a.layoutVersion,
         ),
       )

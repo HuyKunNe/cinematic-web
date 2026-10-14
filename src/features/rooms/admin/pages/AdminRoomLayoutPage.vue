@@ -17,6 +17,8 @@ import {
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
 import AdminRoomLayoutDraftForm from '../components/AdminRoomLayoutDraftForm.vue'
+import { RoomLayoutElementInputKind } from '@/services/api/generated/inventory-service/model'
+import AdminRoomLayoutElementForm from '../components/AdminRoomLayoutElementForm.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -48,9 +50,24 @@ const draftOpen = ref(false)
 const draftBusy = ref(false)
 const creationBlocked = ref(false)
 const draftMessage = ref('')
+const elementKind = ref<RoomLayoutElementInputKind | null>(null)
+const elementBusy = ref(false)
+const contentBlocked = ref(false)
+const saveMessage = ref('')
+const elementForm = ref<InstanceType<typeof AdminRoomLayoutElementForm> | null>(null)
 
+const elementTools = [
+  { kind: RoomLayoutElementInputKind.SCREEN, label: '+ Màn hình' },
+  { kind: RoomLayoutElementInputKind.AISLE, label: '+ Lối đi' },
+  { kind: RoomLayoutElementInputKind.EXIT, label: '+ Lối ra' },
+] as const
+
+const editorLocked = computed(
+  () => draftBusy.value || elementBusy.value || elementKind.value !== null,
+)
 const canCreate = computed(
   () =>
+    !editorLocked.value &&
     canRead.value &&
     !context.isFetching.value &&
     layouts.isSuccess.value &&
@@ -65,7 +82,7 @@ function preventUnload(event: BeforeUnloadEvent) {
 }
 
 watch(
-  draftBusy,
+  editorLocked,
   (pending) => {
     if (pending) window.addEventListener('beforeunload', preventUnload)
     else window.removeEventListener('beforeunload', preventUnload)
@@ -77,8 +94,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', preventUnload)
 })
 
-onBeforeRouteLeave(() => !draftBusy.value)
-onBeforeRouteUpdate(() => !draftBusy.value)
+onBeforeRouteLeave(() => !editorLocked.value)
+onBeforeRouteUpdate(() => !editorLocked.value)
 
 async function openDraftForm() {
   if (!canCreate.value || draftOpen.value) return
@@ -104,7 +121,7 @@ async function onDraftCreated(created: RoomLayoutResponse) {
 }
 
 async function reloadVersions() {
-  if (draftBusy.value || draftOpen.value || !canRead.value) return
+  if (editorLocked.value || draftOpen.value || !canRead.value) return
 
   const requestedRoomId = roomId.value
   const result = await layouts.refetch()
@@ -127,6 +144,56 @@ const content = computed(() =>
 )
 
 const layout = computed(() => content.value?.layout ?? selectedVersion.value)
+
+const canAppend = computed(
+  () =>
+    canRead.value &&
+    !context.isFetching.value &&
+    layouts.isSuccess.value &&
+    !layouts.isFetching.value &&
+    contentQuery.isSuccess.value &&
+    !contentQuery.isFetching.value &&
+    content.value?.layout.status === 'DRAFT' &&
+    !draftBusy.value &&
+    !draftOpen.value &&
+    !creationBlocked.value &&
+    !contentBlocked.value,
+)
+
+async function openElementForm(kind: RoomLayoutElementInputKind) {
+  if (!canAppend.value || editorLocked.value) return
+
+  elementKind.value = kind
+  saveMessage.value = ''
+
+  await nextTick()
+  document.querySelector<HTMLElement>('.layout-element-inspector input')?.focus()
+}
+
+function onElementSaved() {
+  elementKind.value = null
+  selectedKey.value = ''
+  contentBlocked.value = false
+  saveMessage.value = 'Đã thêm phần tử vào bản nháp.'
+}
+
+async function reloadContent() {
+  if (editorLocked.value || draftOpen.value || !canRead.value || !layoutId.value) {
+    return
+  }
+
+  const requestedRoomId = roomId.value
+  const requestedLayoutId = layoutId.value
+  const result = await contentQuery.refetch()
+
+  if (
+    result.isSuccess &&
+    requestedRoomId === roomId.value &&
+    requestedLayoutId === layoutId.value
+  ) {
+    contentBlocked.value = false
+  }
+}
 
 function kindLabel(kind: string) {
   const labels: Record<string, string> = {
@@ -217,7 +284,7 @@ function formatDate(value?: string) {
 }
 
 function backToSeats() {
-  if (draftBusy.value) return
+  if (editorLocked.value) return
   void router.push({
     name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
     params: { roomId: validRoom.value ? roomId.value : '' },
@@ -235,6 +302,10 @@ watch(
     chosenId.value = ''
     selectedKey.value = ''
     zoom.value = 100
+    elementKind.value = null
+    elementBusy.value = false
+    contentBlocked.value = false
+    saveMessage.value = ''
   },
   { flush: 'sync' },
 )
@@ -267,10 +338,15 @@ watch(objects, (items) => {
       </div>
 
       <div class="layout-heading__actions">
-        <AppButton variant="secondary" @click="backToSeats" :disabled="draftBusy"
+        <AppButton variant="secondary" @click="backToSeats" :disabled="editorLocked"
           >Quay lại phòng</AppButton
         >
-        <AppButton variant="secondary" disabled title="Lưu nháp chưa được triển khai.">
+        <AppButton
+          variant="secondary"
+          :disabled="!elementKind || !canAppend"
+          :loading="elementBusy"
+          @click="elementForm?.submit()"
+        >
           Lưu nháp
         </AppButton>
         <AppButton disabled title="Xuất bản chưa được triển khai."> Xuất bản layout </AppButton>
@@ -297,9 +373,6 @@ watch(objects, (items) => {
 
     <template v-else>
       <aside class="layout-draft-notice" role="status">
-        <p v-if="draftMessage" class="layout-muted" role="status">
-          {{ draftMessage }}
-        </p>
         <span class="layout-draft-notice__dot" aria-hidden="true"></span>
         <span>
           <strong>
@@ -318,14 +391,29 @@ watch(objects, (items) => {
         </span>
       </aside>
 
+      <p v-if="draftMessage" class="layout-muted" role="status">
+        {{ draftMessage }}
+      </p>
+      <p v-if="saveMessage" class="layout-muted" role="status">
+        {{ saveMessage }}
+      </p>
+
       <section class="layout-toolbar layout-panel" aria-label="Công cụ thiết kế">
         <div class="layout-tools" role="group" aria-label="Công cụ đặt đối tượng">
           <button class="layout-tool" type="button" @click="backToSeats" :disabled="draftBusy">
             Xếp ghế theo hàng
           </button>
-          <button class="layout-tool" type="button" disabled>+ Màn hình</button>
-          <button class="layout-tool" type="button" disabled>+ Lối đi</button>
-          <button class="layout-tool" type="button" disabled>+ Lối ra</button>
+          <button
+            v-for="tool in elementTools"
+            :key="tool.kind"
+            class="layout-tool"
+            type="button"
+            :class="{ 'is-active': elementKind === tool.kind }"
+            :disabled="editorLocked || !canAppend"
+            @click="openElementForm(tool.kind)"
+          >
+            {{ tool.label }}
+          </button>
         </div>
 
         <div class="layout-toolbar__actions">
@@ -460,41 +548,60 @@ watch(objects, (items) => {
         <aside class="layout-inspector">
           <section
             class="layout-inspector-panel layout-panel"
-            aria-labelledby="layout-object-title"
+            :aria-labelledby="elementKind ? undefined : 'layout-object-title'"
+            :aria-label="elementKind ? 'Thêm phần tử không gian' : undefined"
           >
-            <header class="layout-canvas-heading">
-              <div>
-                <p class="layout-inspector__eyebrow">ĐỐI TƯỢNG ĐANG CHỌN</p>
-                <h2 id="layout-object-title">{{ selected?.name ?? 'Chưa chọn đối tượng' }}</h2>
-              </div>
-              <span v-if="selected" class="layout-seat-type-badge">
-                {{ kindLabel(selected.type) }}
-              </span>
-            </header>
+            <AdminRoomLayoutElementForm
+              v-if="elementKind && content"
+              ref="elementForm"
+              class="layout-element-inspector"
+              :key="`${roomId}:${layoutId}:${elementKind}`"
+              :content="content"
+              :kind="elementKind"
+              :enabled="canAppend"
+              @busy="elementBusy = $event"
+              @saved="onElementSaved"
+              @failed="contentBlocked = true"
+              @cancel="elementKind = null"
+            />
 
-            <p class="layout-muted">Loại ghế và trạng thái được chỉnh trong trang Ghế của phòng.</p>
+            <template v-else>
+              <header class="layout-canvas-heading">
+                <div>
+                  <p class="layout-inspector__eyebrow">ĐỐI TƯỢNG ĐANG CHỌN</p>
+                  <h2 id="layout-object-title">{{ selected?.name ?? 'Chưa chọn đối tượng' }}</h2>
+                </div>
+                <span v-if="selected" class="layout-seat-type-badge">
+                  {{ kindLabel(selected.type) }}
+                </span>
+              </header>
 
-            <template v-if="selected">
-              <label v-for="field in geometryFields" :key="field.key" class="layout-field">
-                <span>{{ field.label }}</span>
-                <input type="text" :value="selected.geometry[field.key]" readonly />
-              </label>
+              <p class="layout-muted">
+                Loại ghế và trạng thái được chỉnh trong trang Ghế của phòng.
+              </p>
 
-              <div v-if="selected.kind === 'SEAT'" class="layout-seat-info">
-                <span
-                  >Hàng <strong>{{ selected.row }}</strong></span
-                >
-                <span
-                  >Mã ghế <strong>{{ selected.name }}</strong></span
-                >
-              </div>
+              <template v-if="selected">
+                <label v-for="field in geometryFields" :key="field.key" class="layout-field">
+                  <span>{{ field.label }}</span>
+                  <input type="text" :value="selected.geometry[field.key]" readonly />
+                </label>
+
+                <div v-if="selected.kind === 'SEAT'" class="layout-seat-info">
+                  <span
+                    >Hàng <strong>{{ selected.row }}</strong></span
+                  >
+                  <span
+                    >Mã ghế <strong>{{ selected.name }}</strong></span
+                  >
+                </div>
+              </template>
+
+              <p v-else class="layout-muted">Chọn đối tượng trên canvas để xem geometry.</p>
+
+              <AppButton variant="secondary" class="layout-inspector__button" disabled>
+                Áp dụng vị trí
+              </AppButton>
             </template>
-
-            <p v-else class="layout-muted">Chọn đối tượng trên canvas để xem geometry.</p>
-
-            <AppButton variant="secondary" class="layout-inspector__button" disabled>
-              Áp dụng vị trí
-            </AppButton>
           </section>
 
           <section
@@ -514,7 +621,10 @@ watch(objects, (items) => {
                 id="room-layout-version"
                 :value="layoutId"
                 :disabled="
-                  draftBusy || draftOpen || layouts.isFetching.value || !layouts.data.value?.length
+                  editorLocked ||
+                  draftOpen ||
+                  layouts.isFetching.value ||
+                  !layouts.data.value?.length
                 "
                 @change="chosenId = ($event.target as HTMLSelectElement).value"
               >
@@ -544,7 +654,7 @@ watch(objects, (items) => {
 
             <AppButton
               variant="secondary"
-              :disabled="draftBusy || draftOpen || !canRead"
+              :disabled="editorLocked || draftOpen || !canRead"
               :loading="layouts.isFetching.value"
               @click="reloadVersions"
             >
@@ -553,12 +663,16 @@ watch(objects, (items) => {
 
             <AppButton
               variant="secondary"
-              :disabled="draftBusy || draftOpen || !layoutId"
+              :disabled="editorLocked || draftOpen || !layoutId"
               :loading="contentQuery.isFetching.value"
               @click="contentQuery.refetch()"
             >
               Tải lại nội dung
             </AppButton>
+
+            <p v-if="contentBlocked" class="layout-warning" role="status">
+              Đóng form và tải lại nội dung trước khi thêm phần tử tiếp.
+            </p>
 
             <p v-if="creationBlocked" class="layout-warning" role="status">
               Đóng form và tải lại danh sách để kiểm tra kết quả tạo nháp trước khi thử lại.
