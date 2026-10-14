@@ -18,6 +18,9 @@ const loadAdminCinemasPage = () => import('../features/cinemas/admin/pages/Admin
 const loadAdminRoomsPage = () => import('../features/rooms/admin/pages/AdminRoomsPage.vue')
 const loadAdminReferencePage = () => import('../features/admin/pages/AdminReferencePage.vue')
 const loadAdminRoomSeatsPage = () => import('../features/rooms/admin/pages/AdminRoomSeatsPage.vue')
+const loadAdminRoomLayoutPage = () =>
+  import('../features/rooms/admin/pages/AdminRoomLayoutPage.vue')
+
 const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.HOME,
@@ -215,8 +218,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_ROOM_LAYOUT,
     name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
-    component: loadPlaceholder,
-    props: true,
+    component: loadAdminRoomLayoutPage,
     meta: {
       layout: 'admin',
       title: 'Thiết kế không gian phòng',

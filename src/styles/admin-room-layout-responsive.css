@@ -1,0 +1,39 @@
+@variant admin-seats-stacked {
+  :where([data-reference='admin-room-layout']) {
+    --room-layout-workspace-columns: minmax(0, 1fr);
+  }
+
+  :where([data-reference='admin-room-layout']) .layout-inspector {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@variant admin-reference-mobile {
+  :where([data-reference='admin-room-layout']) .layout-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  :where([data-reference='admin-room-layout']) .layout-heading__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  :where([data-reference='admin-room-layout']) .layout-draft-notice {
+    flex-wrap: wrap;
+  }
+
+  :where([data-reference='admin-room-layout']) .layout-draft-notice__meta {
+    width: 100%;
+    margin-left: calc(var(--space-2) + var(--space-2));
+  }
+
+  :where([data-reference='admin-room-layout']) .layout-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  :where([data-reference='admin-room-layout']) .layout-inspector {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

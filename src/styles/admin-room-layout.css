@@ -1,0 +1,583 @@
+/* Page content only. Shell, tokens and responsive have separate owners. */
+:where([data-reference='admin-room-layout']) {
+  --room-layout-content-gap: var(--space-5);
+  --room-layout-workspace-columns: minmax(0, 1fr) minmax(17rem, 21rem);
+  --room-layout-tool-gap: var(--space-2);
+  --room-layout-row-label-size: 2rem;
+  --room-layout-seat-size: 2.25rem;
+  --room-layout-seat-gap: 0.5rem;
+  --room-layout-aisle-size: 1rem;
+  --room-layout-canvas-min-width: 31rem;
+  --room-layout-screen-height: 2.25rem;
+  --room-layout-action-size: var(--control-height);
+  --room-layout-heading-size: clamp(1.75rem, 3vw, 2.25rem);
+  --room-layout-copy-size: 0.8125rem;
+  --room-layout-label-size: 0.75rem;
+  --room-layout-small-size: 0.6875rem;
+  --room-layout-panel-radius: var(--radius-md);
+  --room-layout-seat-radius: var(--radius-sm);
+}
+
+:where([data-reference='admin-room-layout']) .room-layout-page {
+  display: grid;
+  gap: var(--room-layout-content-gap);
+}
+
+:where([data-reference='admin-room-layout']) .layout-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+:where([data-reference='admin-room-layout']) .layout-heading h1 {
+  margin: 0;
+  font-size: var(--room-layout-heading-size);
+  line-height: 1.15;
+}
+
+:where([data-reference='admin-room-layout']) .layout-heading > div:first-child > p:last-child {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-copy-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-heading__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+:where([data-reference='admin-room-layout']) .layout-draft-notice {
+  display: flex;
+  min-height: var(--control-height);
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-label-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-draft-notice strong {
+  color: var(--color-warning);
+}
+
+:where([data-reference='admin-room-layout']) .layout-draft-notice__dot {
+  width: var(--space-2);
+  height: var(--space-2);
+  flex: 0 0 auto;
+  border-radius: var(--radius-pill);
+  background: var(--color-warning);
+}
+
+:where([data-reference='admin-room-layout']) .layout-draft-notice__meta {
+  margin-left: auto;
+  color: var(--color-text-tertiary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-toolbar {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+:where([data-reference='admin-room-layout']) .layout-tools,
+:where([data-reference='admin-room-layout']) .layout-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--room-layout-tool-gap);
+}
+
+:where([data-reference='admin-room-layout']) .layout-tool,
+:where([data-reference='admin-room-layout']) .layout-icon-button {
+  display: inline-flex;
+  min-height: var(--room-layout-action-size);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--room-layout-label-size);
+  cursor: pointer;
+}
+
+:where([data-reference='admin-room-layout']) .layout-tool:hover,
+:where([data-reference='admin-room-layout']) .layout-icon-button:hover,
+:where([data-reference='admin-room-layout']) .layout-tool.is-active {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-tool.is-active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-tool__swatch,
+:where([data-reference='admin-room-layout']) .layout-legend__swatch {
+  width: var(--space-3);
+  height: var(--space-3);
+  flex: 0 0 auto;
+  border-radius: var(--radius-xs);
+}
+
+:where([data-reference='admin-room-layout']) .layout-tool__swatch--standard,
+:where([data-reference='admin-room-layout']) .layout-legend__swatch--standard {
+  background: var(--color-primary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-tool__swatch--vip,
+:where([data-reference='admin-room-layout']) .layout-legend__swatch--vip {
+  background: var(--color-warning);
+}
+
+:where([data-reference='admin-room-layout']) .layout-tool__swatch--blocked,
+:where([data-reference='admin-room-layout']) .layout-legend__swatch--blocked {
+  background: var(--color-text-tertiary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-legend__swatch--selected {
+  background: var(--color-success);
+}
+
+:where([data-reference='admin-room-layout']) .layout-icon-button {
+  width: var(--room-layout-action-size);
+  padding: 0;
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+  font-size: 1rem;
+}
+
+:where([data-reference='admin-room-layout']) .layout-toolbar__divider {
+  width: var(--border-width);
+  height: var(--space-6);
+  margin-inline: var(--space-1);
+  background: var(--color-border);
+}
+
+:where([data-reference='admin-room-layout']) .layout-zoom {
+  min-width: var(--room-layout-row-label-size);
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-small-size);
+  text-align: center;
+}
+
+:where([data-reference='admin-room-layout']) .layout-workspace {
+  display: grid;
+  grid-template-columns: var(--room-layout-workspace-columns);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+:where([data-reference='admin-room-layout']) .layout-canvas-panel,
+:where([data-reference='admin-room-layout']) .layout-inspector-panel {
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+:where([data-reference='admin-room-layout']) .layout-canvas-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+:where([data-reference='admin-room-layout']) .layout-canvas-heading h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+:where([data-reference='admin-room-layout']) .layout-canvas-heading p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-small-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat-count,
+:where([data-reference='admin-room-layout']) .layout-seat-type-badge {
+  display: inline-flex;
+  min-height: var(--space-6);
+  align-items: center;
+  padding-inline: var(--space-2);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-small-size);
+  white-space: nowrap;
+}
+
+:where([data-reference='admin-room-layout']) .layout-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin-block: var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-small-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+:where([data-reference='admin-room-layout']) .layout-canvas-scroll {
+  overflow: auto;
+  padding: var(--space-3) var(--space-2);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--room-layout-panel-radius);
+  background: var(--color-background);
+}
+
+:where([data-reference='admin-room-layout']) .layout-canvas {
+  display: grid;
+  width: max-content;
+  min-width: var(--room-layout-canvas-min-width);
+  gap: var(--space-3);
+  margin-inline: auto;
+}
+
+:where([data-reference='admin-room-layout']) .layout-screen {
+  display: grid;
+  min-height: var(--room-layout-screen-height);
+  place-items: center;
+  border-top: var(--space-1) solid var(--color-primary);
+  border-radius: var(--radius-pill) var(--radius-pill) 0 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--room-layout-small-size);
+  letter-spacing: 0.12em;
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat-row {
+  display: grid;
+  grid-template-columns: var(--room-layout-row-label-size) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+:where([data-reference='admin-room-layout']) .layout-row-label {
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-small-size);
+  font-weight: 700;
+  text-align: center;
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat-grid {
+  display: grid;
+  grid-template-columns: repeat(8, var(--room-layout-seat-size));
+  gap: var(--room-layout-seat-gap);
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat:nth-child(5) {
+  margin-left: var(--room-layout-aisle-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat {
+  width: var(--room-layout-seat-size);
+  height: var(--room-layout-seat-size);
+  padding: 0;
+  border: var(--border-width) solid var(--color-primary);
+  border-radius: var(--room-layout-seat-radius);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+  color: var(--color-primary);
+  font-size: var(--room-layout-small-size);
+  cursor: pointer;
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat--vip {
+  border-color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 12%, var(--color-surface));
+  color: var(--color-warning);
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat--blocked {
+  border-color: var(--color-border);
+  background: var(--color-background-soft);
+  color: var(--color-text-tertiary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat.is-selected {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 16%, var(--color-surface));
+  color: var(--color-success);
+  box-shadow: 0 0 0 var(--border-width) var(--color-success);
+}
+
+:where([data-reference='admin-room-layout']) .layout-canvas-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  color: var(--color-text-tertiary);
+  font-size: var(--room-layout-small-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-inspector {
+  display: grid;
+  gap: var(--space-4);
+}
+
+:where([data-reference='admin-room-layout']) .layout-inspector-panel {
+  display: grid;
+  gap: var(--space-3);
+}
+
+:where([data-reference='admin-room-layout']) .layout-inspector__eyebrow {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-tertiary);
+  font-size: var(--room-layout-small-size);
+  letter-spacing: 0.08em;
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat-type-badge {
+  color: var(--color-primary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-field {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-label-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-field select {
+  width: 100%;
+  min-height: var(--control-height);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-background-soft);
+  color: var(--color-text-primary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat-info {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  border-block: var(--border-width) solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-label-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-seat-info strong {
+  color: var(--color-text-primary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-inspector__button {
+  width: 100%;
+}
+
+:where([data-reference='admin-room-layout']) .layout-summary {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+:where([data-reference='admin-room-layout']) .layout-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-label-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-summary dd {
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-summary__pending {
+  color: var(--color-warning) !important;
+}
+:where([data-reference='admin-room-layout']) {
+  --control-height: var(--control-height-md);
+  --border-width: var(--border-width-thin);
+  --color-text-tertiary: var(--color-text-muted);
+  --color-background-soft: var(--admin-reference-background-soft);
+  --radius-xs: var(--space-1);
+  --layout-object-tint: 12%;
+  --layout-selected-tint: 16%;
+  --layout-preview-stroke: 1;
+}
+
+:where([data-reference='admin-room-layout']).room-layout-page {
+  display: grid;
+  min-width: 0;
+  gap: var(--room-layout-content-gap);
+}
+
+:where([data-reference='admin-room-layout']) .layout-heading h1 {
+  font-family: var(--font-family-base);
+  line-height: var(--line-height-heading);
+}
+
+:where([data-reference='admin-room-layout']) .layout-eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-primary);
+  font-size: var(--admin-reference-tiny-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--admin-reference-heading-tracking);
+  text-transform: uppercase;
+}
+
+:where([data-reference='admin-room-layout']) .layout-panel {
+  min-width: 0;
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--admin-reference-panel-shadow);
+}
+
+:where([data-reference='admin-room-layout']) .layout-muted {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--room-layout-copy-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-error,
+:where([data-reference='admin-room-layout']) .layout-warning {
+  margin: var(--space-3) 0;
+  font-size: var(--room-layout-copy-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-error {
+  color: var(--color-error);
+}
+
+:where([data-reference='admin-room-layout']) .layout-warning {
+  color: var(--color-warning);
+}
+
+:where([data-reference='admin-room-layout']) .layout-feedback {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+}
+
+:where([data-reference='admin-room-layout']) .layout-field input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--admin-reference-background-soft);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+:where([data-reference='admin-room-layout']) .layout-canvas-scroll {
+  min-width: 0;
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-svg {
+  display: block;
+  width: calc(100% * var(--layout-zoom-factor));
+  min-width: calc(var(--room-layout-canvas-min-width) * var(--layout-zoom-factor));
+  max-width: none;
+  height: auto;
+  overflow: hidden;
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object {
+  cursor: pointer;
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object rect {
+  fill: color-mix(in srgb, var(--color-primary) var(--layout-object-tint), var(--color-surface));
+  stroke: var(--color-primary);
+  stroke-width: var(--layout-preview-stroke);
+  vector-effect: non-scaling-stroke;
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object text {
+  fill: var(--color-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--room-layout-small-size);
+  pointer-events: none;
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-vip rect {
+  fill: color-mix(in srgb, var(--color-warning) var(--layout-object-tint), var(--color-surface));
+  stroke: var(--color-warning);
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-vip text {
+  fill: var(--color-warning);
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-aisle rect {
+  fill: var(--color-background);
+  stroke: var(--color-border);
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-aisle text {
+  fill: var(--color-text-secondary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-exit rect {
+  fill: var(--color-surface-raised);
+  stroke: var(--color-success);
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-exit text {
+  fill: var(--color-success);
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-selected rect {
+  fill: color-mix(in srgb, var(--color-success) var(--layout-selected-tint), var(--color-surface));
+  stroke: var(--color-success);
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object.is-selected text {
+  fill: var(--color-success);
+}
+
+:where([data-reference='admin-room-layout']) .layout-preview-object:focus-visible rect {
+  stroke: var(--color-focus);
+}
+
+:where([data-reference='admin-room-layout']) .layout-canvas-scroll:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+
+:where([data-reference='admin-room-layout']) .layout-summary dd {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+:where([data-reference='admin-room-layout']) :disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+:where([data-reference='admin-room-layout']) .layout-tool:hover:disabled,
+:where([data-reference='admin-room-layout']) .layout-icon-button:hover:disabled {
+  color: var(--color-text-secondary);
+}
+
+:where([data-reference='admin-room-layout']) .layout-tool:hover:disabled {
+  border-color: transparent;
+  background: transparent;
+}
+
+:where([data-reference='admin-room-layout']) .layout-icon-button:hover:disabled {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+}
