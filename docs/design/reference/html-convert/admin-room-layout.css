@@ -1,32 +1,30 @@
-/* Nội dung trang; shell và responsive dùng stylesheet chung. */
+/* Page content only. Admin shell and shared controls retain shared ownership. */
 :where([data-reference='admin-room-layout']) {
-  --room-layout-content-gap: var(--space-5);
-  --room-layout-workspace-columns: minmax(0, 1fr) minmax(17rem, 21rem);
-  --room-layout-tool-gap: var(--admin-space-2);
-  --room-layout-row-label-size: 2.5rem;
-  --room-layout-seat-width: 2.5rem;
-  --room-layout-seat-height: 1.875rem;
-  --room-layout-seat-gap: 2.5rem;
-  --room-layout-row-gap: 2.5rem;
-  --room-layout-aisle-width: 3rem;
-  --room-layout-matrix-min-width: 42.5rem;
-  --room-layout-screen-height: var(--space-8);
-  --room-layout-action-size: var(--admin-control-height);
-  --room-layout-heading-size: var(--font-size-display);
-  --room-layout-copy-size: var(--font-size-sm);
-  --room-layout-label-size: var(--font-size-xs);
-  --room-layout-small-size: var(--font-size-xs);
-  --room-layout-panel-radius: var(--admin-card-radius);
-  --room-layout-seat-radius: var(--radius-sm);
-  --room-layout-standard-tint: 12%;
-  --room-layout-vip-tint: 18%;
-  --room-layout-blocked-tint: 20%;
-  --room-layout-screen-letter-spacing: 0.18em;
+  --room-layout-inspector-min: 17rem;
+  --room-layout-inspector-max: 21rem;
+  --room-layout-workspace-columns: minmax(0, 1fr)
+    minmax(var(--room-layout-inspector-min), var(--room-layout-inspector-max));
+
+  --matrix-axis-width: var(--space-16);
+  --matrix-cell-width: var(--space-16);
+  --matrix-cell-height: var(--space-16);
+  --matrix-input-height: var(--admin-control-height);
+  --matrix-edge-width: 6rem;
+  --matrix-screen-height: var(--space-10);
+  --matrix-cell-padding: var(--space-2);
+  --matrix-tint: 12%;
+  --matrix-letter-spacing: 0.14em;
+  --matrix-axis-layer: 1;
+
+  --matrix-standard-color: var(--admin-success);
+  --matrix-vip-color: var(--admin-accent);
+  --matrix-couple-color: var(--admin-warning);
+  --matrix-accessible-color: var(--admin-text-muted);
 }
 
 :where([data-reference='admin-room-layout']) .room-layout-page {
   display: grid;
-  gap: var(--room-layout-content-gap);
+  gap: var(--admin-space-5);
 }
 
 :where([data-reference='admin-room-layout']) .layout-heading {
@@ -38,51 +36,47 @@
 
 :where([data-reference='admin-room-layout']) .layout-heading h1 {
   margin: 0;
-  font-size: var(--room-layout-heading-size);
+  font-family: var(--font-display);
+  font-size: var(--font-size-display);
   line-height: var(--line-height-heading);
 }
 
 :where([data-reference='admin-room-layout']) .layout-heading > div:first-child > p:last-child {
-  margin: var(--admin-space-2) 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--admin-text-muted);
-  font-size: var(--room-layout-copy-size);
+}
+
+:where([data-reference='admin-room-layout']) .layout-heading__actions,
+:where([data-reference='admin-room-layout']) .layout-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--admin-space-2);
 }
 
 :where([data-reference='admin-room-layout']) .layout-heading__actions {
-  display: flex;
-  flex-wrap: wrap;
   justify-content: flex-end;
-  gap: var(--admin-space-2);
 }
 
 :where([data-reference='admin-room-layout']) .layout-draft-notice {
   display: flex;
-  min-height: var(--admin-control-height);
-  align-items: center;
-  gap: var(--admin-space-2);
-  padding: var(--admin-space-2) var(--admin-space-3);
+  flex-wrap: wrap;
+  gap: var(--admin-space-2) var(--admin-space-3);
+  padding: var(--admin-space-3) var(--admin-space-4);
   border: var(--admin-border-width) solid var(--admin-border);
   border-radius: var(--admin-control-radius);
   background: var(--admin-surface);
   color: var(--admin-text-muted);
-  font-size: var(--room-layout-label-size);
+  font-size: var(--font-size-xs);
 }
 
 :where([data-reference='admin-room-layout']) .layout-draft-notice strong {
   color: var(--admin-warning);
 }
 
-:where([data-reference='admin-room-layout']) .layout-draft-notice__dot {
-  width: var(--admin-space-2);
-  height: var(--admin-space-2);
-  flex: 0 0 auto;
-  border-radius: var(--radius-pill);
-  background: var(--admin-warning);
-}
-
 :where([data-reference='admin-room-layout']) .layout-toolbar {
   display: flex;
-  min-width: 0;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--admin-space-3);
@@ -90,62 +84,9 @@
 }
 
 :where([data-reference='admin-room-layout']) .layout-tools,
-:where([data-reference='admin-room-layout']) .layout-toolbar__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--room-layout-tool-gap);
-}
-
-:where([data-reference='admin-room-layout']) .layout-tool,
-:where([data-reference='admin-room-layout']) .layout-icon-button {
-  display: inline-flex;
-  min-height: var(--room-layout-action-size);
-  align-items: center;
-  justify-content: center;
-  gap: var(--admin-space-2);
-  padding-inline: var(--admin-space-3);
-  border: var(--admin-border-width) solid transparent;
-  border-radius: var(--admin-control-radius);
-  background: transparent;
+:where([data-reference='admin-room-layout']) .layout-size {
   color: var(--admin-text-muted);
-  font: inherit;
-  font-size: var(--room-layout-label-size);
-  cursor: pointer;
-}
-
-:where([data-reference='admin-room-layout']) .layout-tool:hover,
-:where([data-reference='admin-room-layout']) .layout-icon-button:hover,
-:where([data-reference='admin-room-layout']) .layout-tool.is-active {
-  border-color: var(--admin-border);
-  background: var(--admin-surface-raised);
-  color: var(--admin-text);
-}
-
-:where([data-reference='admin-room-layout']) .layout-tool.is-active {
-  border-color: var(--admin-accent);
-  color: var(--admin-accent);
-}
-
-:where([data-reference='admin-room-layout']) .layout-icon-button {
-  width: var(--room-layout-action-size);
-  padding: 0;
-  border-color: var(--admin-border);
-  background: var(--admin-surface-raised);
-}
-
-:where([data-reference='admin-room-layout']) .layout-toolbar__divider {
-  width: var(--admin-border-width);
-  height: var(--space-6);
-  margin-inline: var(--space-1);
-  background: var(--admin-border);
-}
-
-:where([data-reference='admin-room-layout']) .layout-zoom {
-  min-width: var(--room-layout-row-label-size);
-  color: var(--admin-text-muted);
-  font-size: var(--room-layout-small-size);
-  text-align: center;
+  font-size: var(--font-size-xs);
 }
 
 :where([data-reference='admin-room-layout']) .layout-workspace {
@@ -163,7 +104,8 @@
 
 :where([data-reference='admin-room-layout']) .layout-panel-heading {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--admin-space-3);
 }
@@ -173,10 +115,11 @@
   font-size: var(--font-size-md);
 }
 
-:where([data-reference='admin-room-layout']) .layout-panel-heading p {
-  margin: var(--admin-space-1) 0 0;
+:where([data-reference='admin-room-layout']) .layout-panel-heading p,
+:where([data-reference='admin-room-layout']) .layout-hint {
+  margin: var(--space-1) 0 0;
   color: var(--admin-text-muted);
-  font-size: var(--room-layout-small-size);
+  font-size: var(--font-size-xs);
 }
 
 :where([data-reference='admin-room-layout']) .layout-seat-count,
@@ -184,56 +127,75 @@
   display: inline-flex;
   min-height: var(--space-6);
   align-items: center;
-  padding-inline: var(--admin-space-2);
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
   border: var(--admin-border-width) solid var(--admin-border);
   border-radius: var(--radius-pill);
   color: var(--admin-text-muted);
-  font-size: var(--room-layout-small-size);
+  font-size: var(--font-size-xs);
   white-space: nowrap;
 }
 
 :where([data-reference='admin-room-layout']) .layout-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--admin-space-3) var(--admin-space-4);
+  gap: var(--admin-space-3);
   margin-block: var(--admin-space-4);
   color: var(--admin-text-muted);
-  font-size: var(--room-layout-small-size);
+  font-size: var(--font-size-xs);
 }
 
 :where([data-reference='admin-room-layout']) .layout-legend > span {
   display: inline-flex;
   align-items: center;
-  gap: var(--admin-space-2);
+  gap: var(--space-2);
 }
 
-:where([data-reference='admin-room-layout']) .layout-legend__swatch {
+:where([data-reference='admin-room-layout']) [data-type='STANDARD'],
+:where([data-reference='admin-room-layout']) [data-seat-type='STANDARD'] {
+  --matrix-seat-color: var(--matrix-standard-color);
+}
+
+:where([data-reference='admin-room-layout']) [data-type='VIP'],
+:where([data-reference='admin-room-layout']) [data-seat-type='VIP'] {
+  --matrix-seat-color: var(--matrix-vip-color);
+}
+
+:where([data-reference='admin-room-layout']) [data-type='COUPLE'],
+:where([data-reference='admin-room-layout']) [data-seat-type='COUPLE'] {
+  --matrix-seat-color: var(--matrix-couple-color);
+}
+
+:where([data-reference='admin-room-layout']) [data-type='ACCESSIBLE'],
+:where([data-reference='admin-room-layout']) [data-seat-type='ACCESSIBLE'] {
+  --matrix-seat-color: var(--matrix-accessible-color);
+}
+
+:where([data-reference='admin-room-layout']) .layout-legend i {
   width: var(--space-3);
   height: var(--space-3);
-  flex: 0 0 auto;
-  border: var(--admin-border-width) solid var(--admin-border);
+  border: var(--admin-border-width) solid var(--matrix-seat-color, var(--admin-border));
   border-radius: var(--radius-xs);
-  background: var(--admin-surface-raised);
+  background: var(--matrix-seat-color, transparent);
 }
 
-:where([data-reference='admin-room-layout']) .layout-legend__swatch--standard {
-  border-color: var(--admin-success);
-  background: var(--admin-success);
+:where([data-reference='admin-room-layout']) .layout-legend i.is-empty {
+  border-style: dashed;
 }
 
-:where([data-reference='admin-room-layout']) .layout-legend__swatch--vip {
-  border-color: var(--admin-accent);
-  background: var(--admin-accent);
+:where([data-reference='admin-room-layout']) .layout-message,
+:where([data-reference='admin-room-layout']) .layout-error {
+  margin-block: 0 var(--space-3);
+  padding: var(--space-3);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--admin-control-radius);
+  color: var(--admin-text-muted);
+  font-size: var(--font-size-xs);
 }
 
-:where([data-reference='admin-room-layout']) .layout-legend__swatch--blocked {
+:where([data-reference='admin-room-layout']) .layout-error {
   border-color: var(--admin-danger);
-  background: var(--admin-danger);
-}
-
-:where([data-reference='admin-room-layout']) .layout-legend__swatch--selected {
-  border-color: var(--admin-focus);
-  background: var(--admin-focus);
+  color: var(--admin-danger);
 }
 
 :where([data-reference='admin-room-layout']) .layout-matrix-scroll {
@@ -241,122 +203,169 @@
   overflow-x: auto;
   padding: var(--admin-space-4);
   border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--room-layout-panel-radius);
+  border-radius: var(--admin-control-radius);
   background: var(--admin-bg);
+  overscroll-behavior-inline: contain;
 }
 
-:where([data-reference='admin-room-layout']) .layout-matrix-content {
+:where([data-reference='admin-room-layout']) .layout-matrix-frame {
+  display: grid;
   width: max-content;
-  min-width: var(--room-layout-matrix-min-width);
+  grid-template-columns: max-content var(--matrix-edge-width);
+  gap: var(--admin-space-3);
   margin-inline: auto;
 }
 
 :where([data-reference='admin-room-layout']) .layout-screen {
   display: grid;
-  min-height: var(--room-layout-screen-height);
+  grid-column: 1;
+  grid-row: 1;
+  min-height: var(--matrix-screen-height);
   place-items: center;
-  margin: 0 auto var(--admin-space-4);
+  margin-inline-start: var(--matrix-axis-width);
   border-top: var(--space-1) solid var(--admin-accent);
   border-radius: var(--radius-pill) var(--radius-pill) 0 0;
   color: var(--admin-text-subtle);
   font-size: var(--font-size-xs);
-  letter-spacing: var(--room-layout-screen-letter-spacing);
+  letter-spacing: var(--matrix-letter-spacing);
 }
 
 :where([data-reference='admin-room-layout']) .layout-matrix {
+  grid-column: 1;
+  grid-row: 2;
   width: max-content;
-  min-width: var(--room-layout-matrix-min-width);
-  margin-inline: auto;
-  border-collapse: separate;
-  border-spacing: var(--room-layout-seat-gap) var(--room-layout-row-gap);
-  color: var(--admin-text-muted);
+  margin: 0;
+  border-collapse: collapse;
+  color: var(--admin-text);
   text-align: center;
 }
 
-:where([data-reference='admin-room-layout']) .layout-matrix__axis-column {
-  width: var(--room-layout-row-label-size);
-}
-
-:where([data-reference='admin-room-layout']) .layout-matrix__seat-column {
-  width: var(--room-layout-seat-width);
-}
-
-:where([data-reference='admin-room-layout']) .layout-matrix__aisle-column {
-  width: var(--room-layout-aisle-width);
+:where([data-reference='admin-room-layout']) .layout-matrix th,
+:where([data-reference='admin-room-layout']) .layout-matrix td {
+  height: var(--matrix-cell-height);
+  padding: var(--matrix-cell-padding);
+  border: var(--admin-border-width) solid var(--admin-border);
+  vertical-align: middle;
 }
 
 :where([data-reference='admin-room-layout']) .layout-matrix th {
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-}
-
-:where([data-reference='admin-room-layout']) .layout-matrix tbody th[scope='row'] {
-  color: var(--admin-text-muted);
+  position: sticky;
+  left: 0;
+  z-index: var(--matrix-axis-layer);
+  min-width: var(--matrix-axis-width);
+  background: var(--admin-surface);
 }
 
 :where([data-reference='admin-room-layout']) .layout-matrix td {
-  height: var(--room-layout-seat-height);
-  padding: 0;
+  min-width: var(--matrix-cell-width);
+  background: var(--admin-bg);
 }
 
-:where([data-reference='admin-room-layout']) .layout-matrix__aisle,
-:where([data-reference='admin-room-layout']) .layout-matrix__aisle-heading {
-  background: transparent;
-}
-
-:where([data-reference='admin-room-layout']) .layout-seat {
+:where([data-reference='admin-room-layout']) .layout-row-label {
   display: grid;
-  width: var(--room-layout-seat-width);
-  height: var(--room-layout-seat-height);
-  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--matrix-input-height);
   place-items: center;
   padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--admin-text-muted);
+  font: inherit;
+  font-weight: 700;
+}
+
+:where([data-reference='admin-room-layout']) .layout-row-label[aria-pressed='true'] {
+  background: var(--admin-surface-raised);
+  color: var(--admin-accent);
+}
+
+:where([data-reference='admin-room-layout']) .layout-cell-input {
+  width: calc(var(--matrix-cell-width) - var(--matrix-cell-padding) * 2);
+  min-height: var(--matrix-input-height);
+  padding: 0;
+  border: var(--admin-border-width) dashed var(--admin-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--admin-text);
+  font: inherit;
+  text-align: center;
+}
+
+:where([data-reference='admin-room-layout']) .layout-cell-input[readonly] {
+  border-style: solid;
+  border-color: var(--matrix-seat-color);
+  background: color-mix(in srgb, var(--matrix-seat-color) var(--matrix-tint), var(--admin-surface));
+  cursor: pointer;
+}
+
+:where([data-reference='admin-room-layout']) .layout-matrix td.is-selected {
+  outline: var(--focus-ring-width) solid var(--admin-focus);
+  outline-offset: calc(var(--focus-ring-width) * -1);
+}
+
+:where([data-reference='admin-room-layout']) .layout-cell-input[aria-invalid='true'] {
+  border-style: solid;
+  border-color: var(--admin-danger);
+}
+
+:where([data-reference='admin-room-layout']) .layout-edge-action,
+:where([data-reference='admin-room-layout']) .layout-action {
+  display: inline-flex;
+  min-height: var(--admin-control-height);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--room-layout-seat-radius);
+  border-radius: var(--admin-control-radius);
   background: var(--admin-surface-raised);
   color: var(--admin-text);
   font: inherit;
   font-size: var(--font-size-xs);
-  cursor: pointer;
 }
 
-:where([data-reference='admin-room-layout']) .layout-seat--standard {
-  border-color: var(--admin-success);
-  background: color-mix(
-    in srgb,
-    var(--admin-success) var(--room-layout-standard-tint),
-    var(--admin-surface)
-  );
+:where([data-reference='admin-room-layout']) .layout-edge-action {
+  border-style: dashed;
+  color: var(--admin-accent);
 }
 
-:where([data-reference='admin-room-layout']) .layout-seat--vip {
+:where([data-reference='admin-room-layout']) .layout-edge-action--column {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: stretch;
+  flex-direction: column;
+}
+
+:where([data-reference='admin-room-layout']) .layout-edge-action--row {
+  grid-column: 1;
+  grid-row: 3;
+  margin-inline-start: var(--matrix-axis-width);
+}
+
+:where([data-reference='admin-room-layout']) .layout-action:not(:disabled):hover,
+:where([data-reference='admin-room-layout']) .layout-edge-action:hover {
   border-color: var(--admin-accent);
-  background: color-mix(
-    in srgb,
-    var(--admin-accent) var(--room-layout-vip-tint),
-    var(--admin-surface)
-  );
+  background: var(--admin-surface-hover);
 }
 
-:where([data-reference='admin-room-layout']) .layout-seat--blocked {
-  border-color: var(--admin-danger);
-  background: color-mix(
-    in srgb,
-    var(--admin-danger) var(--room-layout-blocked-tint),
-    var(--admin-surface)
-  );
-  color: var(--admin-text-muted);
+:where([data-reference='admin-room-layout']) .layout-action--danger {
+  color: var(--admin-danger);
 }
 
-:where([data-reference='admin-room-layout']) .layout-seat.is-selected {
-  border-color: var(--admin-focus);
-  background: var(--admin-focus);
-  color: var(--admin-bg);
+:where([data-reference='admin-room-layout']) :is(button, select):disabled {
+  opacity: var(--reference-disabled-opacity);
 }
 
-:where([data-reference='admin-room-layout']) .layout-seat:focus-visible,
-:where([data-reference='admin-room-layout']) .layout-matrix-scroll:focus-visible {
+:where([data-reference='admin-room-layout'])
+  :is(
+    .layout-action,
+    .layout-edge-action,
+    .layout-cell-input,
+    .layout-row-label,
+    .layout-matrix-scroll,
+    .layout-field select
+  ):focus-visible {
   outline: var(--focus-ring-width) solid var(--admin-focus);
   outline-offset: var(--space-1);
 }
@@ -365,8 +374,8 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: var(--admin-space-2);
-  margin-top: var(--admin-space-3);
+  gap: var(--space-3);
+  margin-top: var(--space-3);
   color: var(--admin-text-subtle);
   font-size: var(--font-size-xs);
 }
@@ -376,435 +385,46 @@
   gap: var(--admin-space-4);
 }
 
-:where([data-reference='admin-room-layout']) .layout-inspector-panel {
+:where([data-reference='admin-room-layout']) .layout-inspector-panel,
+:where([data-reference='admin-room-layout']) .layout-structure-actions {
   display: grid;
   gap: var(--admin-space-3);
 }
 
 :where([data-reference='admin-room-layout']) .layout-inspector__eyebrow {
-  margin: 0 0 var(--admin-space-1);
+  margin: 0 0 var(--space-1);
   color: var(--admin-text-subtle);
-  font-size: var(--room-layout-small-size);
-  letter-spacing: var(--room-layout-screen-letter-spacing);
-}
-
-:where([data-reference='admin-room-layout']) .layout-seat-type-badge {
-  color: var(--admin-accent);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--matrix-letter-spacing);
 }
 
 :where([data-reference='admin-room-layout']) .layout-field {
   display: grid;
-  gap: var(--admin-space-2);
+  gap: var(--space-2);
   color: var(--admin-text-muted);
-  font-size: var(--room-layout-label-size);
+  font-size: var(--font-size-xs);
 }
 
 :where([data-reference='admin-room-layout']) .layout-field select {
   width: 100%;
-  min-height: var(--admin-control-height);
-  padding-inline: var(--admin-space-3);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--admin-control-radius);
-  background: var(--admin-bg);
-  color: var(--admin-text);
-}
-
-:where([data-reference='admin-room-layout']) .layout-seat-info {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--admin-space-3);
-  padding-block: var(--admin-space-2);
-  border-block: var(--admin-border-width) solid var(--admin-border);
-  color: var(--admin-text-muted);
-  font-size: var(--room-layout-label-size);
-}
-
-:where([data-reference='admin-room-layout']) .layout-seat-info strong {
-  color: var(--admin-text);
-}
-
-:where([data-reference='admin-room-layout']) .layout-inspector__button {
-  width: 100%;
+  padding-inline: var(--space-3);
 }
 
 :where([data-reference='admin-room-layout']) .layout-summary {
   display: grid;
-  gap: var(--admin-space-3);
+  gap: var(--space-3);
   margin: 0;
 }
 
 :where([data-reference='admin-room-layout']) .layout-summary > div {
   display: flex;
   justify-content: space-between;
-  gap: var(--admin-space-3);
+  gap: var(--space-3);
   color: var(--admin-text-muted);
-  font-size: var(--room-layout-label-size);
+  font-size: var(--font-size-xs);
 }
 
 :where([data-reference='admin-room-layout']) .layout-summary dd {
-  margin: 0;
-  color: var(--admin-text);
-}
-
-:where([data-reference='admin-room-layout']) .layout-summary__pending {
-  color: var(--admin-warning);
-}
-:where([data-reference="admin-room-layout"]) {
-  --room-layout-workspace-columns: minmax(0, 1fr) minmax(17rem, 21rem);
-  --room-layout-row-label-width: 3rem;
-  --room-layout-seat-width: 2.5rem;
-  --room-layout-seat-height: 2.25rem;
-  --room-layout-cell-gap: var(--space-2);
-  --room-layout-row-gap: var(--space-2);
-  --room-layout-screen-height: var(--space-8);
-  --room-layout-matrix-min-width: 27rem;
-  --room-layout-edge-action-width: 6rem;
-  --room-layout-panel-gap: var(--admin-space-4);
-  --room-layout-seat-radius: var(--radius-sm);
-  --room-layout-input-border: var(--admin-border);
-  --room-layout-seat-tint: 16%;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-workspace {
-  display: grid;
-  grid-template-columns: var(--room-layout-workspace-columns);
-  align-items: start;
-  gap: var(--room-layout-panel-gap);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix-panel,
-:where([data-reference="admin-room-layout"]) .layout-inspector-panel {
-  min-width: 0;
-  padding: var(--admin-space-4);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-inspector {
-  display: grid;
-  gap: var(--room-layout-panel-gap);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-panel-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--admin-space-3);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-panel-heading h2 {
-  margin: 0;
-  font-size: var(--font-size-md);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-panel-heading p {
-  margin: var(--admin-space-1) 0 0;
-  color: var(--admin-text-muted);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--admin-space-3) var(--admin-space-4);
-  margin-block: var(--admin-space-4);
-  color: var(--admin-text-muted);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-legend > span {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--admin-space-2);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-legend__swatch {
-  width: var(--space-3);
-  height: var(--space-3);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--radius-xs);
-  background: var(--admin-surface-raised);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-legend__swatch--standard {
-  border-color: var(--admin-success);
-  background: var(--admin-success);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-legend__swatch--vip {
-  border-color: var(--admin-accent);
-  background: var(--admin-accent);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-legend__swatch--selected {
-  border-color: var(--admin-focus);
-  background: var(--admin-focus);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix-message {
-  min-height: var(--control-height);
-  margin: 0 0 var(--admin-space-3);
-  padding: var(--admin-space-2) var(--admin-space-3);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--admin-control-radius);
-  color: var(--admin-text-muted);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix-message.is-error {
-  border-color: var(--admin-danger);
-  color: var(--admin-danger);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix-scroll {
-  max-width: 100%;
-  overflow: auto;
-  padding: var(--admin-space-4);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--admin-card-radius);
-  background: var(--admin-bg);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix-frame {
-  width: max-content;
-  min-width: var(--room-layout-matrix-min-width);
-  margin-inline: auto;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-screen {
-  display: grid;
-  min-height: var(--room-layout-screen-height);
-  place-items: center;
-  margin-bottom: var(--admin-space-4);
-  border-top: var(--space-1) solid var(--admin-accent);
-  border-radius: var(--radius-pill) var(--radius-pill) 0 0;
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
-  letter-spacing: 0.18em;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix-with-column-action {
-  display: grid;
-  grid-template-columns: max-content var(--room-layout-edge-action-width);
-  align-items: center;
-  gap: var(--admin-space-3);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix {
-  width: max-content;
-  border-collapse: separate;
-  border-spacing: var(--room-layout-cell-gap) var(--room-layout-row-gap);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix th,
-:where([data-reference="admin-room-layout"]) .layout-matrix td {
-  padding: 0;
-  text-align: center;
-  vertical-align: middle;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix tbody th {
-  width: var(--room-layout-row-label-width);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-row-label {
-  display: grid;
-  width: var(--room-layout-row-label-width);
-  height: var(--room-layout-seat-height);
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: var(--room-layout-seat-radius);
-  background: transparent;
-  color: var(--admin-text-muted);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-row-label.is-selected {
-  background: var(--admin-surface-raised);
-  color: var(--admin-accent);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix__cell {
-  width: var(--room-layout-seat-width);
-  height: var(--room-layout-seat-height);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-cell-input {
-  width: var(--room-layout-seat-width);
-  height: var(--room-layout-seat-height);
-  box-sizing: border-box;
-  padding: 0;
-  border: var(--admin-border-width) dashed var(--room-layout-input-border);
-  border-radius: var(--room-layout-seat-radius);
-  background: transparent;
-  color: var(--admin-text);
-  font: inherit;
-  font-size: var(--font-size-xs);
-  text-align: center;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-cell-input:not(:read-only) {
-  cursor: text;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-cell-input:read-only {
-  border-style: solid;
-  cursor: pointer;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix__cell.is-standard .layout-cell-input {
-  border-color: var(--admin-success);
-  background: color-mix(in srgb, var(--admin-success) var(--room-layout-seat-tint), var(--admin-surface));
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix__cell.is-vip .layout-cell-input {
-  border-color: var(--admin-accent);
-  background: color-mix(in srgb, var(--admin-accent) var(--room-layout-seat-tint), var(--admin-surface));
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix__cell.is-selected .layout-cell-input {
-  outline: var(--focus-ring-width) solid var(--admin-focus);
-  outline-offset: var(--space-1);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-cell-input:focus-visible,
-:where([data-reference="admin-room-layout"]) .layout-matrix-scroll:focus-visible {
-  outline: var(--focus-ring-width) solid var(--admin-focus);
-  outline-offset: var(--space-1);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-edge-action {
-  display: inline-flex;
-  min-height: var(--admin-control-height);
-  align-items: center;
-  justify-content: center;
-  gap: var(--admin-space-2);
-  padding: var(--admin-space-2);
-  border: var(--admin-border-width) dashed var(--admin-border);
-  border-radius: var(--admin-control-radius);
-  background: var(--admin-surface);
-  color: var(--admin-accent);
-  font: inherit;
-  font-size: var(--font-size-xs);
-  cursor: pointer;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-edge-action:hover,
-:where([data-reference="admin-room-layout"]) .layout-action:hover {
-  border-color: var(--admin-accent);
-  background: var(--admin-surface-hover);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-edge-action--row {
-  margin-top: var(--admin-space-3);
-  margin-left: calc(var(--room-layout-row-label-width) + var(--room-layout-cell-gap));
-}
-
-:where([data-reference="admin-room-layout"]) .layout-matrix-footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--admin-space-4);
-  margin-top: var(--admin-space-3);
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-structure-actions {
-  display: grid;
-  gap: var(--admin-space-2);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-action {
-  min-height: var(--admin-control-height);
-  padding-inline: var(--admin-space-3);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--admin-control-radius);
-  background: var(--admin-surface-raised);
-  color: var(--admin-text);
-  font: inherit;
-  font-size: var(--font-size-xs);
-  text-align: left;
-  cursor: pointer;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-action--danger {
-  color: var(--admin-danger);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-action:disabled,
-:where([data-reference="admin-room-layout"]) .layout-inspector__button:disabled {
-  cursor: not-allowed;
-  opacity: var(--reference-disabled-opacity);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-inspector-panel {
-  display: grid;
-  gap: var(--admin-space-3);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-inspector__eyebrow {
-  margin: 0 0 var(--admin-space-1);
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
-  letter-spacing: 0.08em;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-seat-type-badge {
-  display: inline-flex;
-  min-height: var(--space-6);
-  align-items: center;
-  padding-inline: var(--admin-space-2);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--radius-pill);
-  color: var(--admin-text-muted);
-  font-size: var(--font-size-xs);
-  white-space: nowrap;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-field {
-  display: grid;
-  gap: var(--admin-space-2);
-  color: var(--admin-text-muted);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-field select {
-  width: 100%;
-  min-height: var(--admin-control-height);
-  padding-inline: var(--admin-space-3);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--admin-control-radius);
-  background: var(--admin-bg);
-  color: var(--admin-text);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-field-hint {
-  margin: 0;
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-inspector__button {
-  width: 100%;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-summary {
-  display: grid;
-  gap: var(--admin-space-3);
-  margin: 0;
-}
-
-:where([data-reference="admin-room-layout"]) .layout-summary > div {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--admin-space-3);
-  color: var(--admin-text-muted);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference="admin-room-layout"]) .layout-summary dd {
   margin: 0;
   color: var(--admin-text);
 }

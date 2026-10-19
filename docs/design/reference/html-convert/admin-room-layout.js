@@ -1,361 +1,421 @@
-const initialRowCount = 6
-const initialColumnCount = 6
+;(() => {
+  'use strict'
 
-const matrix = {
-  columns: initialColumnCount,
-  rows: Array.from({ length: initialRowCount }, () =>
-    Array.from({ length: initialColumnCount }, () => null),
-  ),
-}
+  const root = document.querySelector('[data-reference="admin-room-layout"]')
+  if (!root) return
 
-let selected = { row: 0, column: 0 }
-
-const matrixBody = document.querySelector('#seatMatrixBody')
-const matrixMessage = document.querySelector('#matrixMessage')
-const seatTypeSelect = document.querySelector('#seatType')
-
-function rowLabel(index) {
-  let number = index + 1
-  let label = ''
-
-  while (number > 0) {
-    number -= 1
-    label = String.fromCharCode(65 + (number % 26)) + label
-    number = Math.floor(number / 26)
+  const types = {
+    STANDARD: 'Standard',
+    VIP: 'VIP',
+    COUPLE: 'Couple',
+    ACCESSIBLE: 'Accessible',
   }
 
-  return label
-}
+  const body = root.querySelector('#seatMatrixBody')
+  const status = root.querySelector('#matrixStatus')
+  const error = root.querySelector('#matrixError')
+  const typeSelect = root.querySelector('#seatType')
 
-function selectedCell() {
-  return matrix.rows[selected.row]?.[selected.column] ?? null
-}
+  function emptyRow(columns) {
+    return Array.from({ length: columns }, () => null)
+  }
 
-function occupiedInRow(row) {
-  return row.filter(Boolean).length
-}
-
-function renumberRow(row) {
-  let nextNumber = 1
-
-  row.forEach((cell) => {
-    if (cell) {
-      cell.number = nextNumber
-      nextNumber += 1
+  function initialMatrix() {
+    return {
+      columns: 6,
+      rows: Array.from({ length: 6 }, () => emptyRow(6)),
     }
-  })
-}
+  }
 
-function renumberAllRows() {
-  matrix.rows.forEach(renumberRow)
-}
+  let matrix = initialMatrix()
+  let selected = { row: 0, column: 0 }
 
-function announce(message, isError = false) {
-  matrixMessage.textContent = message
-  matrixMessage.classList.toggle('is-error', isError)
-}
+  function rowLabel(index) {
+    let value = index + 1
+    let label = ''
 
-function updateSummary() {
-  const seats = matrix.rows.flat().filter(Boolean)
-  const standardCount = seats.filter((seat) => seat.seatType === 'STANDARD').length
-  const vipCount = seats.filter((seat) => seat.seatType === 'VIP').length
-
-  document.querySelector('#rowCount').textContent = matrix.rows.length
-  document.querySelector('#columnCount').textContent = matrix.columns
-  document.querySelector('#seatCount').textContent = seats.length
-  document.querySelector('#summaryRows').textContent = matrix.rows.length
-  document.querySelector('#summaryColumns').textContent = matrix.columns
-  document.querySelector('#summarySeats').textContent = seats.length
-  document.querySelector('#summaryStandard').textContent = standardCount
-  document.querySelector('#summaryVip').textContent = vipCount
-}
-
-function updateInspector() {
-  selected.row = Math.min(selected.row, matrix.rows.length - 1)
-  selected.column = Math.min(selected.column, matrix.columns - 1)
-
-  const cell = selectedCell()
-  const currentRowLabel = rowLabel(selected.row)
-  const cellTitle = cell
-    ? `${currentRowLabel}${String(cell.number).padStart(2, '0')}`
-    : `${currentRowLabel} · ô ${selected.column + 1}`
-
-  document.querySelector('#selected-cell-title').textContent = cellTitle
-  document.querySelector('#selectedSeatBadge').textContent = cell
-    ? cell.seatType === 'VIP'
-      ? 'VIP'
-      : 'Standard'
-    : 'Ô trống'
-
-  seatTypeSelect.disabled = !cell
-  seatTypeSelect.value = cell?.seatType ?? 'STANDARD'
-
-  document.querySelector('#emptyCellHint').hidden = Boolean(cell)
-  document.querySelector('[data-action="clear-cell"]').disabled = !cell
-
-  document.querySelector('[data-action="delete-row"]').disabled = matrix.rows.length <= 1
-  document.querySelector('[data-action="delete-column"]').disabled = matrix.columns <= 1
-}
-
-function renderMatrix(focusSelectedCell = false) {
-  const fragment = document.createDocumentFragment()
-
-  matrix.rows.forEach((row, rowIndex) => {
-    const tr = document.createElement('tr')
-    const rowHeader = document.createElement('th')
-    const rowButton = document.createElement('button')
-
-    rowHeader.scope = 'row'
-    rowButton.type = 'button'
-    rowButton.className = 'layout-row-label'
-    rowButton.textContent = rowLabel(rowIndex)
-    rowButton.dataset.selectRow = String(rowIndex)
-    rowButton.setAttribute('aria-label', `Chọn hàng ${rowLabel(rowIndex)}`)
-
-    if (selected.row === rowIndex) {
-      rowButton.classList.add('is-selected')
+    while (value > 0) {
+      value -= 1
+      label = String.fromCharCode(65 + (value % 26)) + label
+      value = Math.floor(value / 26)
     }
 
-    rowHeader.append(rowButton)
-    tr.append(rowHeader)
+    return label
+  }
 
-    row.forEach((cell, columnIndex) => {
-      const td = document.createElement('td')
-      const input = document.createElement('input')
-      const rowName = rowLabel(rowIndex)
+  function renumberRow(row) {
+    let number = 0
 
-      td.className = 'layout-matrix__cell'
+    for (const seat of row) {
+      if (seat) seat.number = ++number
+    }
+  }
 
-      if (cell?.seatType === 'VIP') {
-        td.classList.add('is-vip')
-      } else if (cell) {
-        td.classList.add('is-standard')
+  function renumberAll() {
+    matrix.rows.forEach(renumberRow)
+  }
+
+  function selectedSeat() {
+    return matrix.rows[selected.row][selected.column]
+  }
+
+  function announce(message, isError = false) {
+    error.hidden = !isError
+    error.textContent = isError ? message : ''
+    status.textContent = isError ? '' : message
+  }
+
+  function setSelection(row, column) {
+    selected = {
+      row: Math.max(0, Math.min(row, matrix.rows.length - 1)),
+      column: Math.max(0, Math.min(column, matrix.columns - 1)),
+    }
+
+    updateInspector()
+    updateSelection()
+  }
+
+  function updateSelection() {
+    for (const input of body.querySelectorAll('[data-seat-input]')) {
+      const active =
+        Number(input.dataset.row) === selected.row &&
+        Number(input.dataset.column) === selected.column
+
+      input.closest('td').classList.toggle('is-selected', active)
+    }
+
+    for (const button of body.querySelectorAll('[data-select-row]')) {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.selectRow) === selected.row))
+    }
+  }
+
+  function updateInspector() {
+    const seat = selectedSeat()
+    const label = rowLabel(selected.row)
+
+    root.querySelector('#selectedCellTitle').textContent = seat
+      ? `${label}${seat.number}`
+      : `${label} · ô ${selected.column + 1}`
+
+    root.querySelector('#selectedSeatBadge').textContent = seat ? types[seat.seatType] : 'Ô trống'
+
+    root.querySelector('#selectedCellHint').textContent = seat
+      ? 'Số ghế tự cập nhật theo thứ tự trong hàng. Có thể đổi loại hoặc xóa ghế.'
+      : 'Nhập số nguyên dương chưa dùng trong hàng để thêm ghế Standard.'
+
+    typeSelect.disabled = !seat
+    typeSelect.value = seat?.seatType ?? 'STANDARD'
+
+    root.querySelector('[data-action="clear-cell"]').disabled = !seat
+    root.querySelector('[data-action="delete-row"]').disabled = matrix.rows.length <= 1
+    root.querySelector('[data-action="delete-column"]').disabled = matrix.columns <= 1
+  }
+
+  function updateSummary() {
+    const seats = matrix.rows.flat().filter((seat) => seat !== null)
+
+    const counts = {
+      rows: matrix.rows.length,
+      columns: matrix.columns,
+      seats: seats.length,
+      empty: matrix.rows.length * matrix.columns - seats.length,
+      STANDARD: 0,
+      VIP: 0,
+      COUPLE: 0,
+      ACCESSIBLE: 0,
+    }
+
+    for (const seat of seats) counts[seat.seatType] += 1
+
+    for (const node of root.querySelectorAll('[data-count]')) {
+      node.textContent = String(counts[node.dataset.count])
+    }
+
+    root.querySelector('#matrixSize').textContent = `${matrix.rows.length} × ${matrix.columns}`
+  }
+
+  function syncCells() {
+    for (const input of body.querySelectorAll('[data-seat-input]')) {
+      const row = Number(input.dataset.row)
+      const column = Number(input.dataset.column)
+      const seat = matrix.rows[row][column]
+      const cell = input.closest('td')
+
+      input.value = seat ? String(seat.number) : ''
+      input.readOnly = Boolean(seat)
+      input.removeAttribute('aria-invalid')
+
+      if (seat) {
+        cell.dataset.seatType = seat.seatType
+      } else {
+        delete cell.dataset.seatType
       }
 
-      if (selected.row === rowIndex && selected.column === columnIndex) {
-        td.classList.add('is-selected')
-      }
+      input.setAttribute(
+        'aria-label',
+        seat
+          ? `Ghế ${rowLabel(row)}${seat.number}, ${types[seat.seatType]}`
+          : `Ô trống hàng ${rowLabel(row)}, vị trí ${column + 1}`,
+      )
+    }
 
-      input.type = 'number'
-      input.min = '1'
-      input.step = '1'
-      input.inputMode = 'numeric'
-      input.className = 'layout-cell-input'
-      input.value = cell?.number ?? ''
-      input.readOnly = Boolean(cell)
-      input.dataset.seatInput = 'true'
-      input.dataset.row = String(rowIndex)
-      input.dataset.column = String(columnIndex)
-      input.setAttribute('aria-label', `Số ghế hàng ${rowName}, ô ${columnIndex + 1}`)
-      input.setAttribute('aria-describedby', 'matrixHelp matrixMessage')
+    updateSelection()
+    updateInspector()
+    updateSummary()
+  }
 
-      td.append(input)
-      tr.append(td)
-    })
-
-    fragment.append(tr)
-  })
-
-  matrixBody.replaceChildren(fragment)
-  updateInspector()
-  updateSummary()
-
-  if (focusSelectedCell) {
-    const input = matrixBody.querySelector(
-      `[data-seat-input][data-row="${selected.row}"][data-column="${selected.column}"]`,
+  function focusSelectedCell() {
+    const input = body.querySelector(
+      `[data-seat-input][data-row="${selected.row}"]` + `[data-column="${selected.column}"]`,
     )
+
     input?.focus()
   }
-}
 
-function commitSeatInput(input) {
-  const rowIndex = Number(input.dataset.row)
-  const columnIndex = Number(input.dataset.column)
-  const row = matrix.rows[rowIndex]
-  const rawValue = input.value.trim()
+  function renderMatrix(focusCell = false) {
+    const fragment = document.createDocumentFragment()
 
-  selected = { row: rowIndex, column: columnIndex }
+    matrix.rows.forEach((row, rowIndex) => {
+      const tr = document.createElement('tr')
+      const th = document.createElement('th')
+      const rowButton = document.createElement('button')
 
-  if (!rawValue) {
-    announce('Ô trống chưa tạo ghế.')
-    updateInspector()
-    return
+      th.scope = 'row'
+      th.id = `matrix-row-${rowIndex}`
+
+      rowButton.type = 'button'
+      rowButton.className = 'layout-row-label'
+      rowButton.dataset.selectRow = String(rowIndex)
+      rowButton.textContent = rowLabel(rowIndex)
+      rowButton.setAttribute('aria-label', `Chọn hàng ${rowLabel(rowIndex)}`)
+
+      th.append(rowButton)
+      tr.append(th)
+
+      row.forEach((_, columnIndex) => {
+        const td = document.createElement('td')
+        const input = document.createElement('input')
+
+        td.setAttribute('headers', th.id)
+
+        input.type = 'text'
+        input.inputMode = 'numeric'
+        input.autocomplete = 'off'
+        input.spellcheck = false
+        input.className = 'layout-cell-input'
+        input.dataset.seatInput = ''
+        input.dataset.row = String(rowIndex)
+        input.dataset.column = String(columnIndex)
+        input.setAttribute('aria-describedby', 'matrixHelp matrixStatus matrixError')
+
+        td.append(input)
+        tr.append(td)
+      })
+
+      fragment.append(tr)
+    })
+
+    body.replaceChildren(fragment)
+    syncCells()
+
+    if (focusCell) focusSelectedCell()
   }
 
-  const number = Number(rawValue)
-
-  if (!Number.isSafeInteger(number) || number < 1) {
-    announce('Nhập số nguyên lớn hơn 0.', true)
-    input.setAttribute('aria-invalid', 'true')
+  function rejectInput(input, message) {
     input.value = ''
-    return
-  }
-
-  const isDuplicate = row.some((cell) => cell?.number === number)
-
-  if (isDuplicate) {
-    announce('Số ghế đã được dùng trong hàng này.', true)
     input.setAttribute('aria-invalid', 'true')
-    input.value = ''
-    return
+    announce(message, true)
+    return false
   }
 
-  const expectedNumber = occupiedInRow(row) + 1
+  function commitSeatInput(input) {
+    if (input.readOnly) return true
 
-  if (number !== expectedNumber) {
-    announce(`Hàng ${rowLabel(rowIndex)} đang cần số ${expectedNumber}.`, true)
-    input.setAttribute('aria-invalid', 'true')
-    input.value = ''
-    return
+    const rowIndex = Number(input.dataset.row)
+    const columnIndex = Number(input.dataset.column)
+    const raw = input.value.trim()
+    const row = matrix.rows[rowIndex]
+
+    setSelection(rowIndex, columnIndex)
+
+    if (!raw) return true
+
+    if (!/^[0-9]+$/.test(raw)) {
+      return rejectInput(input, 'Số ghế phải là số nguyên dương, ví dụ 1, 2 hoặc 3.')
+    }
+
+    const number = Number(raw)
+
+    if (!Number.isSafeInteger(number) || number <= 0) {
+      return rejectInput(input, 'Nhập số nguyên lớn hơn 0 trong giới hạn an toàn.')
+    }
+
+    if (row.some((seat) => seat?.number === number)) {
+      return rejectInput(
+        input,
+        `Hàng ${rowLabel(rowIndex)} đã có số ${number}. Hãy nhập số chưa dùng.`,
+      )
+    }
+
+    row[columnIndex] = { number, seatType: 'STANDARD' }
+    renumberRow(row)
+    syncCells()
+
+    announce(
+      `Đã thêm ghế ${rowLabel(rowIndex)}${row[columnIndex].number}. ` +
+        'Các ghế trong hàng đã được đánh số liên tiếp theo vị trí.',
+    )
+
+    return true
   }
 
-  row[columnIndex] = {
-    number,
-    seatType: 'STANDARD',
+  function insertRow(index) {
+    matrix.rows.splice(index, 0, emptyRow(matrix.columns))
+    selected.row = index
+    renumberAll()
+    renderMatrix(true)
+    announce(`Đã chèn hàng ${rowLabel(index)}. Nhãn các hàng đã được cập nhật.`)
   }
 
-  renumberRow(row)
-  announce(
-    `Đã thêm ghế Standard ở hàng ${rowLabel(rowIndex)}. Số ghế trong hàng đã được sắp xếp lại từ 1.`,
-  )
-  renderMatrix(true)
-}
+  function insertColumn(index) {
+    for (const row of matrix.rows) row.splice(index, 0, null)
 
-function insertRow(index) {
-  const newRow = Array.from({ length: matrix.columns }, () => null)
-  matrix.rows.splice(index, 0, newRow)
-  selected.row = index
-  renumberAllRows()
-  renderMatrix()
-}
-
-function insertColumn(index) {
-  matrix.rows.forEach((row) => row.splice(index, 0, null))
-  matrix.columns += 1
-  selected.column = index
-  renumberAllRows()
-  renderMatrix()
-}
-
-matrixBody.addEventListener('focusin', (event) => {
-  const input = event.target.closest('[data-seat-input]')
-  if (!input) return
-
-  selected = {
-    row: Number(input.dataset.row),
-    column: Number(input.dataset.column),
+    matrix.columns += 1
+    selected.column = index
+    renumberAll()
+    renderMatrix(true)
+    announce('Đã chèn một cột trống trên tất cả hàng.')
   }
 
-  matrixBody.querySelectorAll('.layout-matrix__cell.is-selected').forEach((cell) => {
-    cell.classList.remove('is-selected')
+  body.addEventListener('focusin', (event) => {
+    if (!(event.target instanceof Element)) return
+
+    const input = event.target.closest('[data-seat-input]')
+    if (!input) return
+
+    setSelection(Number(input.dataset.row), Number(input.dataset.column))
   })
 
-  input.closest('td')?.classList.add('is-selected')
-  updateInspector()
-})
+  body.addEventListener('change', (event) => {
+    if (!(event.target instanceof Element)) return
 
-matrixBody.addEventListener('change', (event) => {
-  const input = event.target.closest('[data-seat-input]')
-  if (!input || input.readOnly) return
+    const input = event.target.closest('[data-seat-input]')
+    if (input) commitSeatInput(input)
+  })
 
-  input.removeAttribute('aria-invalid')
-  commitSeatInput(input)
-})
+  body.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.isComposing) return
+    if (!(event.target instanceof Element)) return
 
-matrixBody.addEventListener('click', (event) => {
-  const rowButton = event.target.closest('[data-select-row]')
-  if (!rowButton) return
+    const input = event.target.closest('[data-seat-input]')
+    if (!input) return
 
-  selected.row = Number(rowButton.dataset.selectRow)
-  selected.column = Math.min(selected.column, matrix.columns - 1)
-  renderMatrix()
-})
+    event.preventDefault()
+    commitSeatInput(input)
+  })
 
-seatTypeSelect.addEventListener('change', () => {
-  const cell = selectedCell()
-  if (!cell) return
+  body.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) return
 
-  cell.seatType = seatTypeSelect.value
-  announce(`Đã đổi loại ghế ${rowLabel(selected.row)}${cell.number}.`)
-  renderMatrix()
-})
+    const button = event.target.closest('[data-select-row]')
+    if (!button) return
 
-document.addEventListener('click', (event) => {
-  const button = event.target.closest('[data-action]')
-  if (!button) return
+    setSelection(Number(button.dataset.selectRow), selected.column)
+    focusSelectedCell()
+  })
 
-  const row = selected.row
-  const column = selected.column
+  typeSelect.addEventListener('change', () => {
+    const seat = selectedSeat()
+    const type = typeSelect.value
 
-  switch (button.dataset.action) {
-    case 'add-row':
-      insertRow(matrix.rows.length)
-      announce('Đã thêm hàng mới.')
-      break
+    if (!seat || !Object.hasOwn(types, type)) return
 
-    case 'add-column':
-      insertColumn(matrix.columns)
-      announce('Đã thêm cột mới.')
-      break
+    seat.seatType = type
+    syncCells()
+    announce(`Đã đổi ghế ${rowLabel(selected.row)}${seat.number} sang ${types[type]}.`)
+  })
 
-    case 'insert-row-before':
-      insertRow(row)
-      announce(`Đã chèn hàng phía trên hàng ${rowLabel(row)}.`)
-      break
+  root.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) return
 
-    case 'insert-row-after':
-      insertRow(row + 1)
-      announce(`Đã chèn hàng phía dưới hàng ${rowLabel(row)}.`)
-      break
+    const button = event.target.closest('[data-action]')
+    if (!button || button.disabled) return
 
-    case 'delete-row':
-      if (matrix.rows.length <= 1) {
-        announce('Ma trận phải có ít nhất một hàng.', true)
+    const row = selected.row
+    const column = selected.column
+
+    switch (button.dataset.action) {
+      case 'new-layout': {
+        const hasSeats = matrix.rows.some((items) => items.some(Boolean))
+
+        if (hasSeats && !window.confirm('Tạo layout 6 × 6 trống và bỏ các ghế đang chỉnh?')) {
+          return
+        }
+
+        matrix = initialMatrix()
+        selected = { row: 0, column: 0 }
+        renderMatrix()
+        announce('Đã tạo layout mới: 6 hàng, 6 cột và 0 ghế.')
         break
       }
 
-      matrix.rows.splice(row, 1)
-      selected.row = Math.min(row, matrix.rows.length - 1)
-      renumberAllRows()
-      renderMatrix()
-      announce('Đã xóa hàng. Nhãn hàng được cập nhật lại theo thứ tự.')
-      break
-
-    case 'insert-column-before':
-      insertColumn(column)
-      announce('Đã chèn cột bên trái.')
-      break
-
-    case 'insert-column-after':
-      insertColumn(column + 1)
-      announce('Đã chèn cột bên phải.')
-      break
-
-    case 'delete-column':
-      if (matrix.columns <= 1) {
-        announce('Ma trận phải có ít nhất một cột.', true)
+      case 'add-row':
+        insertRow(matrix.rows.length)
         break
-      }
 
-      matrix.rows.forEach((seatRow) => seatRow.splice(column, 1))
-      matrix.columns -= 1
-      selected.column = Math.min(column, matrix.columns - 1)
-      renumberAllRows()
-      renderMatrix()
-      announce('Đã xóa cột và đánh số lại ghế trong từng hàng.')
-      break
+      case 'add-column':
+        insertColumn(matrix.columns)
+        break
 
-    case 'clear-cell': {
-      const seatRow = matrix.rows[row]
-      if (!seatRow[column]) break
+      case 'insert-row-before':
+        insertRow(row)
+        break
 
-      seatRow[column] = null
-      renumberRow(seatRow)
-      renderMatrix()
-      announce('Đã xóa ghế trong ô. Các ghế còn lại đã được đánh số lại.')
-      break
+      case 'insert-row-after':
+        insertRow(row + 1)
+        break
+
+      case 'insert-column-before':
+        insertColumn(column)
+        break
+
+      case 'insert-column-after':
+        insertColumn(column + 1)
+        break
+
+      case 'delete-row':
+        if (matrix.rows.length <= 1) return
+
+        matrix.rows.splice(row, 1)
+        selected.row = Math.min(row, matrix.rows.length - 1)
+        renumberAll()
+        renderMatrix(true)
+        announce('Đã xóa hàng cùng các ghế. Nhãn hàng đã được cập nhật.')
+        break
+
+      case 'delete-column':
+        if (matrix.columns <= 1) return
+
+        for (const items of matrix.rows) items.splice(column, 1)
+
+        matrix.columns -= 1
+        selected.column = Math.min(column, matrix.columns - 1)
+        renumberAll()
+        renderMatrix(true)
+        announce('Đã xóa cột trên tất cả hàng và đánh số lại ghế.')
+        break
+
+      case 'clear-cell':
+        if (!selectedSeat()) return
+
+        matrix.rows[row][column] = null
+        renumberRow(matrix.rows[row])
+        syncCells()
+        focusSelectedCell()
+        announce('Đã xóa ghế. Ô vẫn được giữ trống trong ma trận.')
+        break
     }
-  }
-})
+  })
 
-renderMatrix()
+  renderMatrix()
+})()

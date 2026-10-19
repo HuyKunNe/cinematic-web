@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thiết kế layout phòng | CINEMA Admin</title>
+    <title>Thiết kế ma trận ghế | CINEMATIC Admin</title>
 
     <link rel="stylesheet" href="./reference-tokens.css" />
     <link rel="stylesheet" href="./reference-base.css" />
@@ -97,87 +97,80 @@
             <span aria-current="page">Thiết kế layout</span>
           </nav>
 
-          <section class="layout-heading">
+          <section class="layout-heading" aria-labelledby="layout-title">
             <div>
-              <p class="eyebrow">CINEMA HỒ GƯƠM · PHÒNG 01</p>
-              <h1>Thiết kế layout ghế</h1>
-              <p>Sắp xếp ghế theo hàng, cột và lối đi trước khi xuất bản sơ đồ.</p>
+              <p class="eyebrow">Cấu hình sơ đồ phòng</p>
+              <h1 id="layout-title">Thiết kế ma trận ghế</h1>
+              <p>Tạo ghế, chèn hàng và cột để bố trí sơ đồ phòng chiếu.</p>
             </div>
 
             <div class="layout-heading__actions">
               <a class="action-button action-button--secondary" href="./admin-rooms.html">
                 Quay lại phòng
               </a>
-              <button class="action-button action-button--secondary" type="button">Lưu nháp</button>
-              <button class="action-button action-button--primary" type="button">
-                Xuất bản layout
+              <button
+                class="action-button action-button--secondary"
+                type="button"
+                disabled
+                title="Bản tham chiếu chưa hỗ trợ lưu"
+              >
+                Lưu nháp
+              </button>
+              <button
+                class="action-button action-button--primary"
+                type="button"
+                disabled
+                title="Bản tham chiếu chưa hỗ trợ xuất bản"
+              >
+                Xuất bản
               </button>
             </div>
           </section>
 
-          <aside class="layout-draft-notice" role="status">
-            <span class="layout-draft-notice__dot" aria-hidden="true"></span>
-            <span> <strong>Bản nháp</strong> · Có thay đổi chưa xuất bản </span>
+          <aside class="layout-draft-notice">
+            <strong>Bản thiết kế tương tác</strong>
+            <span>Thay đổi chỉ giữ trong trang đang mở. Tải lại trang sẽ tạo ma trận trống.</span>
           </aside>
 
-          <section class="layout-toolbar panel" aria-label="Công cụ thiết kế ma trận">
-            <div class="layout-tools" role="group" aria-label="Công cụ ma trận">
-              <button class="layout-tool is-active" type="button" aria-pressed="true">
-                Chọn ghế
+          <section class="layout-toolbar panel" aria-label="Công cụ ma trận">
+            <div class="layout-tools">
+              <button class="layout-action" type="button" data-action="new-layout">
+                Tạo layout mới
               </button>
-              <button class="layout-tool" type="button">Xếp ghế theo hàng</button>
-              <button class="layout-tool" type="button">+ Lối đi</button>
-              <button class="layout-tool" type="button">+ Lối ra</button>
-              <button class="layout-tool" type="button">Chỉnh màn hình</button>
+              <span>Khởi tạo 6 hàng × 6 cột trống</span>
             </div>
-
-            <div class="layout-toolbar__actions">
-              <button class="layout-icon-button" type="button" aria-label="Hoàn tác">↶</button>
-              <button class="layout-icon-button" type="button" aria-label="Làm lại">↷</button>
-              <span class="layout-toolbar__divider" aria-hidden="true"></span>
-              <span class="layout-zoom">Ma trận 6 × 8</span>
-            </div>
+            <strong id="matrixSize" class="layout-size">6 × 6</strong>
           </section>
 
           <div class="layout-workspace">
             <section class="layout-matrix-panel panel" aria-labelledby="layout-matrix-title">
-              <div class="layout-panel-heading">
+              <header class="layout-panel-heading">
                 <div>
-                  <h2 id="layout-matrix-title">Sơ đồ phòng</h2>
+                  <h2 id="layout-matrix-title">Ma trận ghế</h2>
                   <p id="matrixHelp">
-                    Nhập số vào ô trống để thêm ghế. Ghế mới mặc định là Standard.
+                    Nhập số nguyên dương chưa dùng trong hàng vào ô trống. Các ghế sẽ tự đánh số lại
+                    từ trái sang phải, bỏ qua ô trống.
                   </p>
                 </div>
-                <span class="layout-seat-count"> <span id="seatCount">0</span> ghế </span>
-              </div>
+                <span class="layout-seat-count"> <span data-count="seats">0</span> ghế </span>
+              </header>
 
               <div class="layout-legend" aria-label="Chú thích loại ghế">
-                <span>
-                  <i
-                    class="layout-legend__swatch layout-legend__swatch--standard"
-                    aria-hidden="true"
-                  ></i>
-                  Standard
-                </span>
-                <span>
-                  <i
-                    class="layout-legend__swatch layout-legend__swatch--vip"
-                    aria-hidden="true"
-                  ></i>
-                  VIP
-                </span>
-                <span>
-                  <i
-                    class="layout-legend__swatch layout-legend__swatch--selected"
-                    aria-hidden="true"
-                  ></i>
-                  Ô đang chọn
-                </span>
+                <span><i data-type="STANDARD" aria-hidden="true"></i>Standard</span>
+                <span><i data-type="VIP" aria-hidden="true"></i>VIP</span>
+                <span><i data-type="COUPLE" aria-hidden="true"></i>Couple</span>
+                <span><i data-type="ACCESSIBLE" aria-hidden="true"></i>Accessible</span>
+                <span><i class="is-empty" aria-hidden="true"></i>Ô trống</span>
               </div>
 
-              <p id="matrixMessage" class="layout-matrix-message" role="status" aria-live="polite">
-                Layout mới bắt đầu với 6 hàng và 6 cột.
+              <p id="matrixStatus" class="layout-message" role="status" aria-live="polite">
+                Layout mới có 6 hàng, 6 cột và chưa có ghế.
               </p>
+              <p id="matrixError" class="layout-error" role="alert" hidden></p>
+
+              <noscript>
+                <p class="layout-error">Bật JavaScript để sử dụng công cụ chỉnh sửa ma trận.</p>
+              </noscript>
 
               <div
                 class="layout-matrix-scroll"
@@ -186,32 +179,29 @@
                 tabindex="0"
               >
                 <div class="layout-matrix-frame">
-                  <div class="layout-screen" role="img" aria-label="Màn hình chiếu">
-                    <span>MÀN HÌNH</span>
+                  <div class="layout-screen">
+                    <span>MÀN HÌNH CHIẾU</span>
                   </div>
 
-                  <div class="layout-matrix-with-column-action">
-                    <table
-                      class="layout-matrix"
-                      aria-label="Ma trận ghế với nhãn hàng theo thứ tự chữ cái"
-                      aria-describedby="matrixHelp matrixMessage"
-                    >
-                      <caption class="sr-only">
-                        Nhập số vào ô trống để thêm ghế. Ô trống không tạo ghế.
-                      </caption>
-                      <tbody id="seatMatrixBody"></tbody>
-                    </table>
+                  <table
+                    class="layout-matrix"
+                    aria-describedby="matrixHelp matrixKeyboard matrixStatus matrixError"
+                  >
+                    <caption class="sr-only">
+                      Ma trận ghế. Cột đầu là nhãn hàng. Mỗi ô còn lại có thể trống hoặc chứa một
+                      ghế.
+                    </caption>
+                    <tbody id="seatMatrixBody"></tbody>
+                  </table>
 
-                    <button
-                      class="layout-edge-action layout-edge-action--column"
-                      type="button"
-                      data-action="add-column"
-                      aria-label="Thêm một cột ở cuối ma trận"
-                    >
-                      <span aria-hidden="true">＋</span>
-                      <span>Thêm cột</span>
-                    </button>
-                  </div>
+                  <button
+                    class="layout-edge-action layout-edge-action--column"
+                    type="button"
+                    data-action="add-column"
+                  >
+                    <span aria-hidden="true">＋</span>
+                    Thêm cột
+                  </button>
 
                   <button
                     class="layout-edge-action layout-edge-action--row"
@@ -224,37 +214,41 @@
                 </div>
               </div>
 
-              <div class="layout-matrix-footer">
-                <span><span id="rowCount">6</span> hàng</span>
-                <span><span id="columnCount">6</span> cột</span>
-                <span>Đánh số riêng theo từng hàng</span>
-              </div>
+              <footer class="layout-matrix-footer">
+                <span>
+                  <span data-count="rows">6</span> hàng · <span data-count="columns">6</span> cột ·
+                  <span data-count="empty">36</span> ô trống
+                </span>
+                <span id="matrixKeyboard">Tab để chọn ô; Enter để xác nhận số ghế.</span>
+              </footer>
             </section>
 
-            <aside class="layout-inspector" aria-label="Thuộc tính và thao tác ma trận">
-              <section class="layout-inspector-panel panel" aria-labelledby="selected-cell-title">
-                <div class="layout-panel-heading">
+            <aside class="layout-inspector" aria-label="Thuộc tính ma trận">
+              <section class="layout-inspector-panel panel" aria-labelledby="selectedCellTitle">
+                <header class="layout-panel-heading">
                   <div>
                     <p class="layout-inspector__eyebrow">Ô ĐANG CHỌN</p>
-                    <h2 id="selected-cell-title">A · ô 1</h2>
+                    <h2 id="selectedCellTitle">A · ô 1</h2>
                   </div>
                   <span id="selectedSeatBadge" class="layout-seat-type-badge">Ô trống</span>
-                </div>
+                </header>
+
+                <p id="selectedCellHint" class="layout-hint">
+                  Nhập số vào ô trống để thêm ghế Standard.
+                </p>
 
                 <label class="layout-field" for="seatType">
                   <span>Loại ghế</span>
-                  <select id="seatType" name="seatType" disabled>
-                    <option value="STANDARD" selected>Standard</option>
-                    <option value="VIP">VIP</option>
+                  <select id="seatType" disabled>
+                    <option value="STANDARD">Standard — ghế thường</option>
+                    <option value="VIP">VIP — ghế cao cấp</option>
+                    <option value="COUPLE">Couple — ghế đôi</option>
+                    <option value="ACCESSIBLE">Accessible — ghế tiếp cận</option>
                   </select>
                 </label>
 
-                <p id="emptyCellHint" class="layout-field-hint">
-                  Nhập số vào ô đang chọn để tạo ghế Standard.
-                </p>
-
                 <button
-                  class="action-button action-button--secondary layout-inspector__button"
+                  class="layout-action layout-action--danger"
                   type="button"
                   data-action="clear-cell"
                   disabled
@@ -263,13 +257,13 @@
                 </button>
               </section>
 
-              <section class="layout-inspector-panel panel" aria-labelledby="row-actions-title">
-                <div class="layout-panel-heading">
+              <section class="layout-inspector-panel panel" aria-labelledby="rowActionsTitle">
+                <header class="layout-panel-heading">
                   <div>
-                    <h2 id="row-actions-title">Thao tác hàng</h2>
-                    <p>Chèn trước/sau hàng đang chọn hoặc xóa hàng.</p>
+                    <h2 id="rowActionsTitle">Hàng đang chọn</h2>
+                    <p>Chèn hàng trống hoặc xóa cả hàng cùng các ghế.</p>
                   </div>
-                </div>
+                </header>
 
                 <div class="layout-structure-actions">
                   <button class="layout-action" type="button" data-action="insert-row-before">
@@ -288,13 +282,13 @@
                 </div>
               </section>
 
-              <section class="layout-inspector-panel panel" aria-labelledby="column-actions-title">
-                <div class="layout-panel-heading">
+              <section class="layout-inspector-panel panel" aria-labelledby="columnActionsTitle">
+                <header class="layout-panel-heading">
                   <div>
-                    <h2 id="column-actions-title">Thao tác cột</h2>
-                    <p>Cột được chèn hoặc xóa xuyên suốt toàn bộ hàng.</p>
+                    <h2 id="columnActionsTitle">Cột đang chọn</h2>
+                    <p>Thao tác cột áp dụng cho tất cả hàng.</p>
                   </div>
-                </div>
+                </header>
 
                 <div class="layout-structure-actions">
                   <button class="layout-action" type="button" data-action="insert-column-before">
@@ -313,41 +307,55 @@
                 </div>
               </section>
 
-              <section class="layout-inspector-panel panel" aria-labelledby="layout-summary-title">
-                <div class="layout-panel-heading">
+              <section class="layout-inspector-panel panel" aria-labelledby="layoutSummaryTitle">
+                <header class="layout-panel-heading">
                   <div>
-                    <h2 id="layout-summary-title">Thông tin layout</h2>
-                    <p>Số liệu cập nhật theo ma trận.</p>
+                    <h2 id="layoutSummaryTitle">Thống kê ma trận</h2>
+                    <p>Cập nhật theo các ô đang có ghế.</p>
                   </div>
-                </div>
+                </header>
 
                 <dl class="layout-summary">
                   <div>
                     <dt>Số hàng</dt>
-                    <dd id="summaryRows">6</dd>
+                    <dd data-count="rows">6</dd>
                   </div>
                   <div>
                     <dt>Số cột</dt>
-                    <dd id="summaryColumns">6</dd>
+                    <dd data-count="columns">6</dd>
                   </div>
                   <div>
                     <dt>Tổng số ghế</dt>
-                    <dd id="summarySeats">0</dd>
+                    <dd data-count="seats">0</dd>
+                  </div>
+                  <div>
+                    <dt>Ô trống</dt>
+                    <dd data-count="empty">36</dd>
                   </div>
                   <div>
                     <dt>Standard</dt>
-                    <dd id="summaryStandard">0</dd>
+                    <dd data-count="STANDARD">0</dd>
                   </div>
                   <div>
                     <dt>VIP</dt>
-                    <dd id="summaryVip">0</dd>
+                    <dd data-count="VIP">0</dd>
+                  </div>
+                  <div>
+                    <dt>Couple</dt>
+                    <dd data-count="COUPLE">0</dd>
+                  </div>
+                  <div>
+                    <dt>Accessible</dt>
+                    <dd data-count="ACCESSIBLE">0</dd>
                   </div>
                 </dl>
               </section>
             </aside>
           </div>
 
-          <p class="reference-note">Thiết kế tham chiếu · Nội dung minh họa, chưa kết nối API.</p>
+          <p class="reference-note">
+            Thiết kế tham chiếu · Chưa kết nối thao tác lưu hoặc xuất bản.
+          </p>
         </main>
       </div>
     </div>
