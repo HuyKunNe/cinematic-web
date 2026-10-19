@@ -1,285 +1,219 @@
 # Current Status
 
-## Last audited
+## Last source inspection
 
-2026-10-14
+2026-10-19
 
-## Audited source
+Inspected revisions:
 
-- Frontend main: 9d81421
+- Frontend main: 3d47e0f
 - Backend main: dc6209debcd6b7cf350f1e9d2b2d71a8ad5adfc7
 
-The room-seats reference alignment and room-layout preview are present
-in the audited Frontend source.
+These revisions identify inspected source.
+They do not establish successful browser or automated verification.
 
-These commits identify the source inspected before inspector draft creation.
-Manual browser verification remains unconfirmed.
+## Working constraints
 
-## Technology and architecture
+- Both repositories are read-only for the assistant.
+- The user applies and commits proposed changes.
+- Do not run tests, lint, type checking, build or formatting unless requested.
+- Do not modify generated API files manually.
+- Do not treat proposed changes as applied until confirmed in source.
 
-Use package.json and package-lock.json as the version authority.
+## Application architecture
 
-The existing stack includes Vue, TypeScript, Vite, Vue Router,
-Pinia, TanStack Vue Query, Axios, Orval, oidc-client-ts,
-Tailwind CSS, Reka UI, VueUse, VeeValidate and Zod.
+Use package.json and package-lock.json for dependency versions.
 
-Dependency direction:
+Current foundations include:
 
-app → features → shared infrastructure
+- Vue and TypeScript.
+- Vite and Vue Router.
+- Pinia and TanStack Vue Query.
+- Axios and Orval.
+- oidc-client-ts.
+- Tailwind CSS and Reka UI.
+- VeeValidate and Zod.
 
-Rules:
+Application bootstrap is in src/main.ts and src/App.vue.
+Routes are composed in src/router/index.ts.
 
-- Vue Query owns server state.
-- Pinia owns cross-route client state.
-- Pages and components must not call Axios directly.
-- Feature API composables wrap generated clients.
-- Generated API files must not be edited manually.
-- Cross-feature imports use public exports or shared abstractions.
-- Do not add dependencies or change architecture without authorization.
+Vue Query owns server state.
+Pinia owns cross-route client state.
+Feature composables own local editor behavior.
 
-Application bootstrap currently resides in src/main.ts and src/App.vue.
-Routes are currently composed in src/router/index.ts.
-Do not move these files merely to match a proposed directory tree.
-
-Orval currently uses axios-functions.
-The existing generation script is npm run api.
-Current inputs are runtime OpenAPI URLs declared in orval.config.ts.
+Orval uses axios-functions.
+Its current inputs are runtime OpenAPI URLs.
 Reviewed snapshots also exist under openapi/.
 
 ## Visual source
 
-Use docs/design/reference/html-convert.
+Use docs/design/reference/html-convert and its README.
 
-Read its README before implementing a screen.
+Preserve shared Admin navigation and shell styling.
+Use existing tokens instead of a separate palette.
+Do not use Figma unless explicitly requested.
 
-Reference CSS ownership:
+Reference sample data is illustrative and must not become
+unverified application data.
 
-- reference-tokens.css: design tokens.
-- reference-base.css: reset and accessibility.
-- admin-unified.css: Admin shell.
-- admin-components.css: shared Admin components.
-- Page CSS: page-specific content scoped with data-reference.
-- reference-responsive.css: responsive rules, loaded last.
+## Implemented application areas
 
-Reuse existing CSS variables.
-Declare new design values as tokens.
-
-Static reference content is illustrative.
-Do not treat sample movies, seats, prices or statistics as application data.
-
-Figma is not used in the current workflow.
-
-## Implemented source code
-
-Customer:
+Customer source includes:
 
 - Home and cinema-scoped programme selection.
 - Movie listing and movie detail.
-- Booking start and seat selection grouped by row.
-- OIDC login and callback integration.
+- Booking start and local seat selection.
+- OIDC login and callback handling.
 
-Admin:
+Admin source includes:
 
 - Navigation and dashboard.
 - Movie and genre management.
 - Cinema management.
 - Room management.
-- Dedicated room-seats page.
-- Seat catalog presentation grouped by row.
+- Dedicated room seat catalog management.
+- Table-based room layout editing.
+
+These entries describe source implementation, not verified runtime behavior.
+
+## Room seat catalog
+
+AdminRoomSeatsPage remains separate from the layout editor.
+
+It supports:
+
+- Room and cinema context.
+- Reads of managed catalog seats.
+- Grouped catalog presentation.
 - Seat-range creation.
 - Seat activity updates.
 
-These entries describe existing source code.
-Manual browser verification remains unconfirmed.
+Catalog ordering is not the persisted position of a seat in the new matrix.
+Catalog activity is separate from per-showtime ShowSeat status.
 
-## S1 — Standalone room-seats page
+## Room layout design reference
 
-Status: IMPLEMENTED IN SOURCE — MANUAL VERIFICATION PENDING
+Implemented in reference files:
 
-Verified in the audited Frontend commit.
+- docs/design/reference/html-convert/admin-room-layout.html
+- docs/design/reference/html-convert/admin-room-layout.css
+- docs/design/reference/html-convert/admin-room-layout.js
 
-Current flow:
+The reference uses an HTML table and local JavaScript state.
+It starts with an empty 6 × 6 matrix.
+Its save and publish controls do not call APIs.
 
-1. Open Admin navigation: Phòng và ghế.
-2. Select a cinema.
-3. Open the room action menu.
-4. Select Ghế của phòng.
-5. Manage the room's seat catalog on the dedicated page.
+## Vue matrix editor
 
-Implemented behavior:
+Implemented source:
 
-- Route: /admin/rooms/:roomId?/seats.
-- AdminLayout owns the header, sidebar and breadcrumb.
-- Cinema and room selectors update the route.
-- Direct room URLs load room and cinema context from Backend.
-- Managed-seat reads include active and inactive seats.
-- Catalog seats are grouped by row and sorted for presentation.
-- Seat width is 40px and height is 30px.
-- Horizontal seat gap is 40px.
-- Vertical row gap is 40px.
-- The Hàng heading and row labels remain outside horizontal scrolling.
-- Seat details use Backend catalog data.
-- Seat activity updates use the existing seat update contract.
-- AdminSeatRangeForm owns seat-range creation.
-- Page responsive CSS is loaded after page CSS.
+- src/features/rooms/admin/pages/AdminRoomLayoutPage.vue
+- src/features/rooms/admin/components/AdminSeatMatrixEditor.vue
+- src/features/rooms/admin/composables/use-admin-seat-matrix.ts
 
-Current presentation files:
+Behavior:
 
-- src/features/rooms/admin/pages/AdminRoomSeatsPage.vue
-- src/features/rooms/admin/components/AdminSeatRangeForm.vue
-- src/features/rooms/admin/mappers/admin-seat-catalog.mapper.ts
-- src/styles/admin-room-seats.css
-- src/styles/admin-room-seats-responsive.css
+- Empty 6-row, 6-column initialization.
+- Row labels A through Z, then AA, AB.
+- Row headers use th with scope="row".
+- No numbered column header.
+- Screen above the table.
+- Add-row and add-column actions at matrix edges.
+- Insert and delete rows or columns.
+- Keep the matrix rectangular.
+- Preserve empty cells between seats.
+- Delete a seat without removing its cell.
+- Renumber occupied cells from 1 through n within each row.
+- Default new seats to STANDARD.
+- Support STANDARD, VIP, COUPLE and ACCESSIBLE.
+- Update seat and matrix statistics.
+- Provide field errors, keyboard focus and horizontal scrolling.
+- Warn before leaving a changed matrix.
 
-## Matrix data boundary
+Each seat occupies one table cell in the current UI.
 
-The current page presents catalog ordering.
+Editor state exists only in memory.
+Save and publish are disabled.
+Existing Backend layouts are not loaded.
 
-Displayed columns are not persisted room coordinates.
-Padding cells at row ends are presentation cells.
-Seat numbers must not be interpreted as saved matrix positions.
+## Removed legacy editor
 
-The agreed full matrix editor must support:
+The application no longer uses the old room-layout:
 
-- Empty cells within a row.
-- Additional columns even when the current width equals the largest row.
-- Dropping onto an occupied cell shifts the target and subsequent seats right.
-- No overwrite or swap.
-- The Hàng heading outside the canvas.
-- Row labels aligned with seat rows.
-- Physical room elements configured on a separate screen.
+- Canvas/SVG object editor.
+- Ruler and preview zoom.
+- Free-position dragging.
+- Geometry inspector and physical element forms.
+- Draft initialization through canvas dimensions.
+- Seat geometry initialization and row movement mappers.
+- Feature-specific layout queries used by that editor.
+- Global canvas page and responsive styles.
 
-These editing and persistence capabilities are not implemented
-in the active S1 page.
+Generated Backend clients remain because they represent existing contracts.
+Their presence does not mean the new matrix editor uses them.
 
-SeatResponse has no matrix row index, column index or column count.
-UpdateSeatRequest cannot save matrix positions.
+## Backend matrix integration boundary
 
-Backend RoomLayout content can persist seat geometry and physical elements.
-This is a separate layout contract, not an independent seat-catalog
-matrix contract.
+The inspected Backend has not yet migrated to the table matrix model.
 
-Do not introduce matrix persistence through seat updates,
-seat-number inference or localStorage.
+Current contracts include:
 
-## S1.1 — Superseded seat implementation cleanup
+- CreateRoomLayoutRequest:
+  roomId, canvasWidth and canvasHeight.
+- ReplaceRoomLayoutContentRequest:
+  expectedVersion, seats and elements.
+- Seat inputs:
+  existing seatId and geometry.
+- Content responses:
+  layout metadata, seat snapshots and element geometry.
 
-Status: IMPLEMENTATION PROVIDED — APPLICATION PENDING
+These contracts do not directly represent:
 
-Scope:
+- Independent row and column counts.
+- Entirely empty rows or columns.
+- A new seat created by entering a number into a matrix cell.
+- Matrix-owned changes to numbering and seat type.
 
-- Remove the unused AdminRoomSeatsDialog.vue.
-- Remove the unused temporary AdminSeatMatrix.vue.
-- Remove admin-seat-matrix.css.
-- Remove old seat-dialog CSS from admin-rooms.css.
-- Remove tokens used only by the old seat dialog.
-- Reconcile CURRENT_STATUS.md and AI_CONTEXT.md with current source.
+Do not send the frontend SeatMatrixDocument to these endpoints.
+Do not restore geometry persistence as a workaround.
 
-The active standalone page and its API behavior remain the S1 baseline.
+## Next integration work
 
-Only mark S1.1 applied after inspecting the user's new commit.
-Only mark browser verification complete after the user reports its result.
+After a Backend matrix contract is implemented and inspected:
 
-## Verified Backend constraints
+1. Review the runtime OpenAPI and source revision.
+2. Regenerate affected API clients.
+3. Define DTO-to-editor and editor-to-request mappers.
+4. Load matrix dimensions and cells.
+5. Create drafts with the agreed defaults.
+6. Save full matrix content with revision handling.
+7. Integrate publication and validation errors.
+8. Verify empty cells and empty trailing rows/columns survive reload.
 
-Inventory:
+The matrix API fields and endpoint behavior must come from Backend source.
+No proposed transport shape is treated as an implemented contract.
 
-- Management reads include inactive records when active is omitted.
-- Inventory administration requires inventory:manage.
-- Seat-range creation requires an active room.
-- Seat updates require seatNumber, rowLabel, seatType and active.
-- Catalog seat activity and per-showtime ShowSeat state are separate.
+## Other remaining work
 
-Room layouts:
-
-- Draft creation, content reads, content replacement and publication exist.
-- Content replacement replaces all seats and elements.
-- Empty arrays clear the corresponding content.
-- expectedVersion refers to layout.version, not layout.layoutVersion.
-- Geometry uses logical layout units.
-- Publication requires at least one seat and one SCREEN.
-- Publication validates geometry bounds and prohibited overlaps.
-- Publishing does not bind a layout to showtimes.
-
-Movies:
-
-- Movie catalog pagination and filters exist.
-- Movie metadata updates and editorial Hero APIs exist.
-
-Booking:
-
-- Booking creation returns 202 Accepted.
-- Booking responses use the Backend response envelope.
-- Do not assume every service uses the same success response shape.
-
-## Remaining implementation
-
-- Full seat matrix editing and persistence.
-- Physical room layout editor.
-- Admin showtime integration.
-- Admin booking and user integration.
+- Admin showtime management and showtime creation integration.
+- Admin booking and user management integration.
 - Customer cinema and showtime pages.
 - Account and booking history.
-- Completion of booking and payment flows.
+- Booking creation and payment completion.
+- Reconciliation of older architecture, roadmap and API documents.
 
 Admin showtimes, bookings, users, promotions and showtime creation
-currently use AdminReferencePage.
+still use reference pages.
 
-The Admin room-layout route implements layout-version reads,
-saved-content preview, object inspection and preview zoom.
-
-The page follows the reference editor structure:
-heading, status notice, toolbar, canvas and inspector.
-
-Inspector draft creation has been proposed.
-Application and manual verification remain pending.
-
-Content editing, saving, publication and seat matrix persistence
-remain incomplete.
-
-Customer cinemas, showtimes, account and booking history
-currently use placeholders.
+Customer cinema, showtime, account and booking history routes
+still include placeholders.
 
 R28 Notification remains deferred.
-Do not scaffold its routes, clients, DTOs, stores or UI.
 
-## Documentation follow-up
+## Verification
 
-DESIGN_SYSTEM.md, ROADMAP.md, API_INTEGRATION.md,
-DEFERRED_FEATURES.md and parts of ARCHITECTURE.md
-still contain outdated assumptions.
+No tests, lint, type checking or build were run in this documentation round.
 
-Examples include Figma requirements, foundation progress,
-API generation paths and unavailable movie APIs.
-
-Current user instructions and inspected source take precedence.
-Reconcile the remaining documents in a separate focused round.
-
-## Verification policy
-
-No tests, lint, type checking or build were run during this audit.
-
-Provide manual verification steps after every round.
-Do not claim runtime success from source inspection alone.
-
-## Active round — Create room layout drafts from the inspector
-
-Status: IMPLEMENTATION PROVIDED — APPLICATION PENDING
-
-Scope:
-
-- Create an empty draft through the generated API client.
-- Validate canvas dimensions against the Backend request constraints.
-- Receive the layout revision number from Backend.
-- Update the room's layout-list cache from the response.
-- Select the created draft and load its content.
-- Keep the existing reference workspace structure.
-- Prevent navigation while the create request is pending.
-- Preserve inputs after request failure.
-- Require explicit list reload before another create attempt after failure.
-- Do not automatically retry creation.
-
-No content replacement or publication is implemented in this round.
-
-No automated checks were run.
-Manual verification remains pending.
+Browser verification remains pending.
+Use manual checks at 390, 768, 1024 and 1440px.
+Do not mark persistence complete while editor data remains in memory.
