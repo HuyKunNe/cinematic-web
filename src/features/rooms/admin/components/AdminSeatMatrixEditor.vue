@@ -40,6 +40,14 @@ type RenderedCell = {
   span: 1 | 2
 }
 
+type PendingSeat = {
+  key: string
+  row: number
+  column: number
+  raw: string
+  seatType: MatrixSeat['seatType']
+}
+
 const matrix = useAdminSeatMatrix(props.initialDocument)
 
 const {
@@ -70,6 +78,19 @@ const error = ref('')
 const selectedKey = computed(() => cellKey(selection.value.row, selection.value.column))
 
 const selectedDraftType = computed(() => draftTypes.value[selectedKey.value] ?? 'STANDARD')
+
+const hasPending = computed(
+  () =>
+    Object.values(drafts.value).some((value) => value.trim().length > 0) ||
+    Object.keys(fieldErrors.value).length > 0,
+)
+
+const selectedHasDraft = computed(
+  () =>
+    Boolean(drafts.value[selectedKey.value]?.trim()) ||
+    draftTypes.value[selectedKey.value] !== undefined ||
+    fieldErrors.value[selectedKey.value] !== undefined,
+)
 
 const selectedTitle = computed(() => {
   const label = matrixRowLabel(selection.value.row)
@@ -140,13 +161,10 @@ watch(document, () => emit('change', matrix.snapshot()), {
   flush: 'sync',
 })
 
-watch(
-  () =>
-    Object.values(drafts.value).some((value) => value.trim().length > 0) ||
-    Object.keys(fieldErrors.value).length > 0,
-  (value) => emit('pending', value),
-  { immediate: true, flush: 'sync' },
-)
+watch(hasPending, (value) => emit('pending', value), {
+  immediate: true,
+  flush: 'sync',
+})
 
 function renderedRow(row: readonly MatrixCell[]): RenderedCell[] {
   const result: RenderedCell[] = []
@@ -179,6 +197,70 @@ function clearInputs() {
   drafts.value = {}
   draftTypes.value = {}
   fieldErrors.value = {}
+}
+
+function pendingSeats(): PendingSeat[] {
+  return Object.entries(drafts.value)
+    .map(([key, raw]) => {
+      const [row, column] = key.split(':').map(Number)
+
+      return {
+        key,
+        row: row!,
+        column: column!,
+        raw,
+        seatType: draftTypes.value[key] ?? 'STANDARD',
+      }
+    })
+    .sort((a, b) => a.row - b.row || a.column - b.column)
+}
+
+function pendingCoupleError(row: number, column: number, seatType: string) {
+  if (seatType === 'COUPLE' && drafts.value[cellKey(row, column + 1)]?.trim()) {
+    return (
+      'Ô bên phải đang có số ghế chưa xác nhận. ' +
+      'Hãy xác nhận hoặc bỏ nhập ô đó trước khi tạo ghế đôi.'
+    )
+  }
+
+  return ''
+}
+
+function showFieldError(row: number, column: number, message: string) {
+  fieldErrors.value[cellKey(row, column)] = message
+  announce(message, true)
+}
+
+async function focusSelected() {
+  await nextTick()
+
+  table.value
+    ?.querySelector<HTMLInputElement>(
+      `[data-cell="${cellKey(selection.value.row, selection.value.column)}"]`,
+    )
+    ?.focus()
+}
+
+function focusPending(key: string, message: string) {
+  const [row, column] = key.split(':').map(Number)
+
+  matrix.select(row!, column!)
+  announce(message, true)
+  void focusSelected()
+}
+
+function protectPending() {
+  if (!hasPending.value) return false
+
+  const first =
+    pendingSeats().find((item) => item.raw.trim())?.key ?? Object.keys(fieldErrors.value)[0]
+
+  const message = 'Hãy xác nhận hoặc bỏ nhập ghế đang chờ trước khi thay đổi ma trận.'
+
+  if (first) focusPending(first, message)
+  else announce(message, true)
+
+  return true
 }
 
 function updateDraft(row: number, column: number, event: Event) {
@@ -216,11 +298,17 @@ function commit(row: number, column: number) {
   if (raw === undefined) return true
 
   const seatType = draftTypes.value[key] ?? 'STANDARD'
+  const overlapError = raw.trim() ? pendingCoupleError(row, column, seatType) : ''
+
+  if (overlapError) {
+    showFieldError(row, column, overlapError)
+    return false
+  }
+
   const result = matrix.addSeat(row, column, raw, seatType)
 
   if (!result.ok) {
-    fieldErrors.value[key] = result.message
-    announce(result.message, true)
+    showFieldError(row, column, result.message)
     return false
   }
 
@@ -229,6 +317,13 @@ function commit(row: number, column: number) {
 
   if (result.changed) {
     delete draftTypes.value[key]
+
+    if (seatType === 'COUPLE') {
+      const coveredKey = cellKey(row, column + 1)
+      delete drafts.value[coveredKey]
+      delete draftTypes.value[coveredKey]
+      delete fieldErrors.value[coveredKey]
+    }
 
     const seat = document.value.rows[row]?.[column]
 
@@ -243,8 +338,9 @@ function commit(row: number, column: number) {
 }
 
 function onCellBlur(event: FocusEvent, row: number, column: number) {
-  // Cho phép nhập số rồi chuyển sang chọn loại trong form,
-  // không tạo STANDARD ngay khi input trong bảng mất focus.
+  // Không xác nhận khi chuyển sang form hoặc khi trình duyệt mất focus.
+  if (event.relatedTarget === null) return
+
   if (event.relatedTarget instanceof Node && entryForm.value?.contains(event.relatedTarget)) {
     return
   }
@@ -266,24 +362,24 @@ async function addSelectedSeat() {
   const key = cellKey(row, column)
 
   if (!drafts.value[key]?.trim()) {
-    const message = 'Hãy nhập số ghế trước khi thêm.'
-
-    fieldErrors.value[key] = message
-    announce(message, true)
+    showFieldError(row, column, 'Hãy nhập số ghế trước khi thêm.')
     return
   }
 
   if (commit(row, column)) await focusSelected()
 }
 
-async function focusSelected() {
-  await nextTick()
+async function cancelSelectedDraft() {
+  if (props.disabled || selectedSeat.value) return
 
-  table.value
-    ?.querySelector<HTMLInputElement>(
-      `[data-cell="${cellKey(selection.value.row, selection.value.column)}"]`,
-    )
-    ?.focus()
+  const key = selectedKey.value
+
+  delete drafts.value[key]
+  delete draftTypes.value[key]
+  delete fieldErrors.value[key]
+
+  announce('Đã bỏ dữ liệu đang nhập của ô này.')
+  await focusSelected()
 }
 
 async function selectCell(row: number, column: number) {
@@ -298,7 +394,7 @@ async function selectRow(row: number) {
 }
 
 async function mutate(action: () => boolean, message: string) {
-  if (props.disabled) return
+  if (props.disabled || protectPending()) return
 
   const changed = action()
 
@@ -361,6 +457,11 @@ function changeType(event: Event) {
 
   const target = event.target as HTMLSelectElement
 
+  if (protectPending()) {
+    target.value = selectedSeat.value?.seatType ?? 'STANDARD'
+    return
+  }
+
   if (!matrix.changeSelectedType(target.value)) {
     target.value = selectedSeat.value?.seatType ?? 'STANDARD'
 
@@ -381,8 +482,8 @@ function reset() {
   if (props.disabled) return
 
   if (
-    statistics.value.seats > 0 &&
-    !window.confirm('Tạo ma trận 6 × 6 trống và bỏ các ghế đang chỉnh?')
+    (statistics.value.seats > 0 || hasPending.value) &&
+    !window.confirm('Tạo ma trận 6 × 6 trống và bỏ các ghế cùng dữ liệu đang nhập?')
   ) {
     return
   }
@@ -400,23 +501,50 @@ function reset() {
 function prepareSave(): SeatMatrixDocument | null {
   if (props.disabled) return null
 
-  for (const key of Object.keys(drafts.value)) {
-    const [row, column] = key.split(':').map(Number)
-    commit(row!, column!)
+  const entries = pendingSeats()
+
+  // Kiểm tra trên bản sao trước, không thay đổi editor khi còn ô lỗi.
+  const preview = useAdminSeatMatrix(matrix.snapshot())
+  const remainingErrors = { ...fieldErrors.value }
+
+  for (const entry of entries) {
+    const overlapError = entry.raw.trim()
+      ? pendingCoupleError(entry.row, entry.column, entry.seatType)
+      : ''
+
+    if (overlapError) {
+      showFieldError(entry.row, entry.column, overlapError)
+      focusPending(entry.key, overlapError)
+      return null
+    }
+
+    const result = preview.addSeat(entry.row, entry.column, entry.raw, entry.seatType)
+
+    if (!result.ok) {
+      showFieldError(entry.row, entry.column, result.message)
+      focusPending(entry.key, result.message)
+      return null
+    }
+
+    delete remainingErrors[entry.key]
   }
 
-  const firstErrorKey = Object.keys(fieldErrors.value)[0]
+  const remainingErrorKey = Object.keys(remainingErrors)[0]
 
-  if (firstErrorKey) {
-    const [row, column] = firstErrorKey.split(':').map(Number)
-
-    matrix.select(row!, column!)
-    announce(fieldErrors.value[firstErrorKey]!, true)
-    void focusSelected()
-
+  if (remainingErrorKey) {
+    focusPending(remainingErrorKey, remainingErrors[remainingErrorKey]!)
     return null
   }
 
+  // Áp dụng cùng thứ tự đã kiểm tra; mỗi ghế vẫn có lịch sử undo riêng.
+  for (const entry of entries) {
+    if (!commit(entry.row, entry.column)) {
+      focusPending(entry.key, fieldErrors.value[entry.key] ?? 'Không thể thêm ghế.')
+      return null
+    }
+  }
+
+  clearInputs()
   return matrix.snapshot()
 }
 
@@ -464,6 +592,17 @@ defineExpose({
         class="seat-matrix-editor__panel seat-matrix-editor__main"
         :aria-labelledby="`${prefix}-title`"
       >
+        <h2 :id="`${prefix}-title`" class="admin-visually-hidden">Ma trận ghế</h2>
+
+        <p :id="`${prefix}-help`" class="admin-visually-hidden">
+          Chọn ô trống, nhập số và chọn loại trong phần Thêm ghế. Enter trong ô để xác nhận. Ghế đôi
+          gộp hai ô liền nhau.
+        </p>
+
+        <p :id="`${prefix}-status`" class="admin-visually-hidden" role="status" aria-live="polite">
+          {{ status }}
+        </p>
+
         <p v-if="error" class="seat-matrix-editor__error" role="alert">{{ error }}</p>
 
         <div
@@ -622,13 +761,29 @@ defineExpose({
             />
 
             <label :for="`${prefix}-new-type`">Loại ghế khi thêm</label>
-            <select :id="`${prefix}-new-type`" :value="selectedDraftType" @change="changeDraftType">
+            <select
+              :id="`${prefix}-new-type`"
+              :value="selectedDraftType"
+              :aria-describedby="`${prefix}-entry-help`"
+              @change="changeDraftType"
+            >
               <option v-for="option in matrixSeatTypes" :key="option.value" :value="option.value">
                 {{ option.label }}
               </option>
             </select>
 
+            <p :id="`${prefix}-entry-help`" class="admin-visually-hidden">
+              {{
+                selectedDraftType === 'COUPLE'
+                  ? 'Ghế đôi cần ô đang chọn và một ô trống ngay bên phải.'
+                  : 'Ghế được tạo tại ô đang chọn và tự đánh số lại trong hàng.'
+              }}
+            </p>
+
             <button type="submit">Thêm ghế</button>
+            <button type="button" :disabled="!selectedHasDraft" @click="cancelSelectedDraft">
+              Bỏ nhập
+            </button>
           </form>
 
           <template v-else>
@@ -743,17 +898,12 @@ defineExpose({
   background: var(--color-surface);
 }
 
-.seat-matrix-editor__toolbar,
-.seat-matrix-editor__heading {
+.seat-matrix-editor__toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-}
-
-.seat-matrix-editor__toolbar {
-  align-items: center;
 }
 
 .seat-matrix-editor__history {
@@ -796,19 +946,6 @@ defineExpose({
 .seat-matrix-editor__toolbar > span {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-}
-
-.seat-matrix-editor__heading p {
-  margin: var(--space-2) 0 0;
-}
-
-.seat-matrix-editor__badge {
-  padding: var(--space-1) var(--space-2);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-pill);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  white-space: nowrap;
 }
 
 .seat-matrix-editor footer {
@@ -1024,25 +1161,5 @@ defineExpose({
 .seat-matrix-editor :disabled {
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
-}
-
-.seat-matrix-editor dl {
-  display: grid;
-  margin: 0;
-  gap: var(--space-2);
-}
-
-.seat-matrix-editor dl > div {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.seat-matrix-editor dd {
-  margin: 0;
-}
-
-.seat-matrix-editor dt {
-  color: var(--color-text-secondary);
 }
 </style>
