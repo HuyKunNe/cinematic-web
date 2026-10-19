@@ -7,6 +7,8 @@ export type MatrixSeat = {
   seatType: SeatResponseSeatType
 }
 
+// Ghế đôi được lưu ở ô bắt đầu.
+// Ô bên phải vẫn là null trong document, nhưng được ghế đôi chiếm.
 export type MatrixCell = MatrixSeat | null
 
 export type SeatMatrixDocument = {
@@ -25,6 +27,11 @@ type MatrixCheckpoint = {
 }
 
 type AddSeatResult = { ok: true; changed: boolean } | { ok: false; message: string }
+
+export const MATRIX_LIMITS = {
+  dimension: 100,
+  seats: 2500,
+} as const
 
 export const matrixSeatTypes = [
   { value: 'STANDARD', label: 'Standard — ghế thường' },
@@ -49,6 +56,82 @@ export function matrixRowLabel(index: number) {
   }
 
   return result
+}
+
+export function matrixSeatSpan(seat: MatrixSeat | null | undefined): 1 | 2 {
+  return seat?.seatType === 'COUPLE' ? 2 : 1
+}
+
+export function matrixSeatOwnerColumn(row: readonly MatrixCell[], column: number) {
+  if (column > 0 && row[column - 1]?.seatType === 'COUPLE') {
+    return column - 1
+  }
+
+  return column
+}
+
+export function validateSeatMatrixDocument(input: SeatMatrixDocument) {
+  if (
+    !input ||
+    !Number.isSafeInteger(input.columns) ||
+    input.columns < 1 ||
+    input.columns > MATRIX_LIMITS.dimension ||
+    !Array.isArray(input.rows) ||
+    input.rows.length < 1 ||
+    input.rows.length > MATRIX_LIMITS.dimension
+  ) {
+    throw new Error('Ma trận phải có từ 1 đến 100 hàng và cột.')
+  }
+
+  let seatCount = 0
+
+  for (let rowIndex = 0; rowIndex < input.rows.length; rowIndex += 1) {
+    const row = input.rows[rowIndex]
+
+    if (!Array.isArray(row) || row.length !== input.columns) {
+      throw new Error('Tất cả hàng phải có cùng số cột.')
+    }
+
+    let expectedNumber = 1
+
+    for (let column = 0; column < row.length; column += 1) {
+      const seat = row[column]
+
+      if (seat === null) continue
+
+      if (
+        !seat ||
+        !Number.isSafeInteger(seat.number) ||
+        seat.number !== expectedNumber ||
+        !matrixSeatTypes.some((option) => option.value === seat.seatType)
+      ) {
+        throw new Error(
+          `Ghế hàng ${matrixRowLabel(rowIndex)} phải có loại hợp lệ và số liên tiếp từ 1.`,
+        )
+      }
+
+      if (seat.seatType === 'COUPLE') {
+        if (column + 1 >= input.columns) {
+          throw new Error(`Ghế ${matrixRowLabel(rowIndex)}${seat.number} cần thêm một ô bên phải.`)
+        }
+
+        if (row[column + 1] !== null) {
+          throw new Error(
+            `Ghế đôi ${matrixRowLabel(rowIndex)}${seat.number} đang chồng lên ghế bên phải.`,
+          )
+        }
+
+        column += 1
+      }
+
+      expectedNumber += 1
+      seatCount += 1
+
+      if (seatCount > MATRIX_LIMITS.seats) {
+        throw new Error('Ma trận chỉ hỗ trợ tối đa 2.500 ghế.')
+      }
+    }
+  }
 }
 
 function emptyRow(columns: number): MatrixCell[] {
@@ -78,12 +161,14 @@ function renumber(row: MatrixCell[]) {
 }
 
 export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
-  const document = ref<SeatMatrixDocument>(
-    initialDocument ? copyDocument(initialDocument) : emptyDocument(),
-  )
+  const initial = initialDocument ?? emptyDocument()
+  validateSeatMatrixDocument(initial)
+
+  const document = ref<SeatMatrixDocument>(copyDocument(initial))
   const selection = ref<MatrixSelection>({ row: 0, column: 0 })
   const undoStack = ref<MatrixCheckpoint[]>([])
   const redoStack = ref<MatrixCheckpoint[]>([])
+  const operationError = ref('')
 
   const canUndo = computed(() => undoStack.value.length > 0)
   const canRedo = computed(() => redoStack.value.length > 0)
@@ -92,11 +177,14 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     () => document.value.rows[selection.value.row]?.[selection.value.column] ?? null,
   )
 
+  const selectedSpan = computed(() => matrixSeatSpan(selectedSeat.value))
+
   const statistics = computed(() => {
     const counts = {
       rows: document.value.rows.length,
       columns: document.value.columns,
       seats: 0,
+      occupied: 0,
       empty: 0,
       STANDARD: 0,
       VIP: 0,
@@ -106,17 +194,22 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
 
     for (const row of document.value.rows) {
       for (const seat of row) {
-        if (seat) {
-          counts.seats += 1
-          counts[seat.seatType] += 1
-        } else {
-          counts.empty += 1
-        }
+        if (!seat) continue
+
+        counts.seats += 1
+        counts.occupied += matrixSeatSpan(seat)
+        counts[seat.seatType] += 1
       }
     }
 
+    counts.empty = counts.rows * counts.columns - counts.occupied
     return counts
   })
+
+  function fail(message: string) {
+    operationError.value = message
+    return false
+  }
 
   function validCell(row: number, column: number) {
     return (
@@ -130,7 +223,12 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
   }
 
   function select(row: number, column: number) {
-    if (validCell(row, column)) selection.value = { row, column }
+    if (!validCell(row, column)) return
+
+    selection.value = {
+      row,
+      column: matrixSeatOwnerColumn(document.value.rows[row]!, column),
+    }
   }
 
   function snapshot() {
@@ -146,13 +244,22 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
 
   function restore(entry: MatrixCheckpoint) {
     document.value = copyDocument(entry.document)
-    selection.value = {
-      row: Math.max(0, Math.min(entry.selection.row, document.value.rows.length - 1)),
-      column: Math.max(0, Math.min(entry.selection.column, document.value.columns - 1)),
-    }
+
+    const row = Math.max(0, Math.min(entry.selection.row, document.value.rows.length - 1))
+    const column = Math.max(0, Math.min(entry.selection.column, document.value.columns - 1))
+
+    select(row, column)
   }
 
   function commit(next: SeatMatrixDocument, nextSelection: MatrixSelection = selection.value) {
+    operationError.value = ''
+
+    try {
+      validateSeatMatrixDocument(next)
+    } catch (error) {
+      return fail(error instanceof Error ? error.message : 'Ma trận sau thao tác không hợp lệ.')
+    }
+
     if (JSON.stringify(next) === JSON.stringify(document.value)) {
       select(nextSelection.row, nextSelection.column)
       return false
@@ -170,6 +277,8 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
   }
 
   function undo() {
+    operationError.value = ''
+
     const entry = undoStack.value.at(-1)
     if (!entry) return false
 
@@ -180,6 +289,8 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
   }
 
   function redo() {
+    operationError.value = ''
+
     const entry = redoStack.value.at(-1)
     if (!entry) return false
 
@@ -194,11 +305,20 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
   }
 
   function addSeat(rowIndex: number, columnIndex: number, raw: string): AddSeatResult {
+    operationError.value = ''
+
     if (!validCell(rowIndex, columnIndex)) {
       return { ok: false, message: 'Ô được chọn không còn tồn tại.' }
     }
 
     const row = document.value.rows[rowIndex]!
+
+    if (matrixSeatOwnerColumn(row, columnIndex) !== columnIndex) {
+      return {
+        ok: false,
+        message: 'Ô này là phần thứ hai của ghế đôi, không thể thêm ghế.',
+      }
+    }
 
     if (row[columnIndex]) {
       return { ok: false, message: 'Ô này đã có ghế.' }
@@ -227,19 +347,27 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
       }
     }
 
+    if (statistics.value.seats >= MATRIX_LIMITS.seats) {
+      return { ok: false, message: 'Ma trận chỉ hỗ trợ tối đa 2.500 ghế.' }
+    }
+
     const next = snapshot()
     const nextRow = next.rows[rowIndex]!
 
     nextRow[columnIndex] = { number, seatType: 'STANDARD' }
     renumber(nextRow)
 
-    return {
-      ok: true,
-      changed: commit(next, { row: rowIndex, column: columnIndex }),
+    const changed = commit(next, { row: rowIndex, column: columnIndex })
+
+    if (!changed && operationError.value) {
+      return { ok: false, message: operationError.value }
     }
+
+    return { ok: true, changed }
   }
 
   function clearSelectedSeat() {
+    operationError.value = ''
     if (!selectedSeat.value) return false
 
     const next = snapshot()
@@ -247,24 +375,47 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
 
     row[selection.value.column] = null
     renumber(row)
+
     return commit(next)
   }
 
   function changeSelectedType(value: string) {
+    operationError.value = ''
+
     const option = matrixSeatTypes.find((item) => item.value === value)
 
     if (!option || !selectedSeat.value || selectedSeat.value.seatType === option.value) {
       return false
     }
 
+    const { row: rowIndex, column } = selection.value
+    const row = document.value.rows[rowIndex]!
+
+    if (option.value === 'COUPLE') {
+      if (column + 1 >= document.value.columns) {
+        return fail('Ghế đôi cần 2 ô liền nhau. Hãy thêm cột bên phải trước.')
+      }
+
+      if (row[column + 1] !== null) {
+        return fail('Ô bên phải đã có ghế. Hãy để trống ô đó trước khi đổi sang ghế đôi.')
+      }
+    }
+
     const next = snapshot()
-    next.rows[selection.value.row]![selection.value.column]!.seatType = option.value
+    next.rows[rowIndex]![column]!.seatType = option.value
+
     return commit(next)
   }
 
   function insertRow(index: number) {
+    operationError.value = ''
+
     if (!Number.isInteger(index) || index < 0 || index > document.value.rows.length) {
-      return false
+      return fail('Vị trí chèn hàng không hợp lệ.')
+    }
+
+    if (document.value.rows.length >= MATRIX_LIMITS.dimension) {
+      return fail('Ma trận chỉ hỗ trợ tối đa 100 hàng.')
     }
 
     const next = snapshot()
@@ -274,7 +425,11 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
   }
 
   function deleteSelectedRow() {
-    if (document.value.rows.length <= 1) return false
+    operationError.value = ''
+
+    if (document.value.rows.length <= 1) {
+      return fail('Ma trận phải còn ít nhất một hàng.')
+    }
 
     const next = snapshot()
     const index = selection.value.row
@@ -287,8 +442,25 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
   }
 
   function insertColumn(index: number) {
+    operationError.value = ''
+
     if (!Number.isInteger(index) || index < 0 || index > document.value.columns) {
-      return false
+      return fail('Vị trí chèn cột không hợp lệ.')
+    }
+
+    if (document.value.columns >= MATRIX_LIMITS.dimension) {
+      return fail('Ma trận chỉ hỗ trợ tối đa 100 cột.')
+    }
+
+    const affectedRow = document.value.rows.findIndex(
+      (row) => index > 0 && row[index - 1]?.seatType === 'COUPLE',
+    )
+
+    if (affectedRow >= 0) {
+      return fail(
+        `Không thể chèn cột giữa ghế đôi ở hàng ${matrixRowLabel(affectedRow)}. ` +
+          'Hãy chọn vị trí nằm ngoài ghế đôi.',
+      )
     }
 
     const next = snapshot()
@@ -299,16 +471,28 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     }
 
     next.columns += 1
+
     return commit(next, { row: selection.value.row, column: index })
   }
 
   function deleteSelectedColumn() {
-    if (document.value.columns <= 1) return false
+    operationError.value = ''
+
+    if (document.value.columns <= 1) {
+      return fail('Ma trận phải còn ít nhất một cột.')
+    }
 
     const next = snapshot()
     const index = selection.value.column
 
     for (const row of next.rows) {
+      const owner = matrixSeatOwnerColumn(row, index)
+
+      // Xóa toàn bộ ghế đôi nếu cột bị xóa đi qua một trong hai ô.
+      if (row[owner]?.seatType === 'COUPLE') {
+        row[owner] = null
+      }
+
       row.splice(index, 1)
       renumber(row)
     }
@@ -325,7 +509,9 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     document,
     selection,
     selectedSeat,
+    selectedSpan,
     statistics,
+    operationError,
     canUndo,
     canRedo,
     select,

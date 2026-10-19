@@ -4,19 +4,16 @@ import type {
   RoomLayoutResponse,
 } from '@/services/api/generated/inventory-service/model'
 import {
+  MATRIX_LIMITS,
   matrixSeatTypes,
+  validateSeatMatrixDocument,
   type MatrixSeat,
   type SeatMatrixDocument,
 } from '../composables/use-admin-seat-matrix'
 import { isRoomSeatUuid } from './admin-seat-catalog.mapper'
 
-export const ADMIN_ROOM_MATRIX_LIMITS = {
-  dimension: 100,
-  seats: 2500,
-} as const
+export const ADMIN_ROOM_MATRIX_LIMITS = MATRIX_LIMITS
 
-// UI model extended to preserve optional catalog-seat bindings.
-// This is not a duplicate Backend DTO.
 export type BoundMatrixSeat = MatrixSeat & {
   seatId?: string
 }
@@ -69,14 +66,7 @@ export function toAdminRoomMatrixRequest(
     throw new Error('Version dùng để lưu ma trận không hợp lệ.')
   }
 
-  if (
-    !document ||
-    !Array.isArray(document.rows) ||
-    !validDimension(document.rows.length) ||
-    !validDimension(document.columns)
-  ) {
-    throw new Error('Ma trận phải có từ 1 đến 100 hàng và cột.')
-  }
+  validateSeatMatrixDocument(document)
 
   type MatrixInput = NonNullable<ReplaceRoomLayoutContentRequest['matrix']>
 
@@ -88,28 +78,13 @@ export function toAdminRoomMatrixRequest(
 
   const seatIds = new Set<string>()
 
-  for (let rowIndex = 0; rowIndex < document.rows.length; rowIndex++) {
-    const row = document.rows[rowIndex]
+  for (let rowIndex = 0; rowIndex < document.rows.length; rowIndex += 1) {
+    const row = document.rows[rowIndex]!
 
-    if (!Array.isArray(row) || row.length !== document.columns) {
-      throw new Error('Tất cả hàng phải có cùng số cột.')
-    }
-
-    let expectedNumber = 1
-
-    for (let columnIndex = 0; columnIndex < row.length; columnIndex++) {
+    for (let columnIndex = 0; columnIndex < row.length; columnIndex += 1) {
       const seat = row[columnIndex]
 
-      if (seat === null) continue
-
-      if (
-        !seat ||
-        !Number.isSafeInteger(seat.number) ||
-        seat.number !== expectedNumber ||
-        !validSeatType(seat.seatType)
-      ) {
-        throw new Error(`Ghế trong hàng ${rowIndex + 1} phải được đánh số liên tiếp từ 1.`)
-      }
+      if (!seat) continue
 
       const seatId = seat.seatId
 
@@ -127,6 +102,8 @@ export function toAdminRoomMatrixRequest(
         seatIds.add(normalizedId)
       }
 
+      // Chỉ gửi ô bắt đầu của ghế.
+      // COUPLE chiếm thêm ô bên phải, không tạo bản ghi ghế thứ hai.
       matrix.seats.push({
         rowIndex,
         columnIndex,
@@ -134,16 +111,9 @@ export function toAdminRoomMatrixRequest(
         seatType: seat.seatType,
         ...(seatId ? { seatId } : {}),
       })
-
-      expectedNumber += 1
-
-      if (matrix.seats.length > ADMIN_ROOM_MATRIX_LIMITS.seats) {
-        throw new Error('Ma trận chỉ hỗ trợ tối đa 2.500 ghế.')
-      }
     }
   }
 
-  // Matrix requests must omit legacy seats and elements.
   return {
     expectedVersion,
     matrix,
@@ -167,7 +137,6 @@ export function readAdminRoomMatrix(
 
   const matrix = content.matrix
 
-  // Existing geometry layouts remain distinguishable from matrix layouts.
   if (matrix == null) return null
 
   if (
@@ -205,8 +174,7 @@ export function readAdminRoomMatrix(
       throw new Error('Response chứa nhiều ghế tại cùng một ô.')
     }
 
-    // Backend explicitly allows null here.
-    // The current generated type incorrectly declares only string.
+    // Backend cho phép seatId = null.
     const seatId: unknown = seat.seatId
 
     if (seatId !== null && !isRoomSeatUuid(seatId)) {
@@ -220,8 +188,8 @@ export function readAdminRoomMatrix(
     }
   }
 
-  // Validate numbering, rectangular shape and duplicate bindings.
-  // Do not silently renumber invalid server data.
+  // Kiểm tra sau khi đã đặt toàn bộ ghế vào document:
+  // một ghế khác không được nằm trong ô thứ hai của ghế đôi.
   toAdminRoomMatrixRequest(document, content.layout.version)
 
   return document

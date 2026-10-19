@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId, watch } from 'vue'
 import {
+  MATRIX_LIMITS,
   matrixRowLabel,
+  matrixSeatSpan,
   matrixSeatTypes,
   useAdminSeatMatrix,
+  type MatrixCell,
   type SeatMatrixDocument,
 } from '../composables/use-admin-seat-matrix'
 
@@ -30,8 +33,24 @@ type StructureAction = {
   danger?: boolean
 }
 
+type RenderedCell = {
+  seat: MatrixCell
+  column: number
+  span: 1 | 2
+}
+
 const matrix = useAdminSeatMatrix(props.initialDocument)
-const { document, selection, selectedSeat, statistics, canUndo, canRedo } = matrix
+
+const {
+  document,
+  selection,
+  selectedSeat,
+  selectedSpan,
+  statistics,
+  operationError,
+  canUndo,
+  canRedo,
+} = matrix
 
 const prefix = useId()
 const table = ref<HTMLTableElement | null>(null)
@@ -62,11 +81,13 @@ const structureGroups: {
         label: 'Chèn hàng phía trên',
         message: 'Đã chèn hàng phía trên và cập nhật nhãn hàng.',
         run: () => matrix.insertRow(selection.value.row),
+        unavailable: () => statistics.value.rows >= MATRIX_LIMITS.dimension,
       },
       {
         label: 'Chèn hàng phía dưới',
         message: 'Đã chèn hàng phía dưới và cập nhật nhãn hàng.',
         run: () => matrix.insertRow(selection.value.row + 1),
+        unavailable: () => statistics.value.rows >= MATRIX_LIMITS.dimension,
       },
       {
         label: 'Xóa hàng đang chọn',
@@ -84,15 +105,17 @@ const structureGroups: {
         label: 'Chèn cột bên trái',
         message: 'Đã chèn cột bên trái trên tất cả hàng.',
         run: () => matrix.insertColumn(selection.value.column),
+        unavailable: () => statistics.value.columns >= MATRIX_LIMITS.dimension,
       },
       {
         label: 'Chèn cột bên phải',
         message: 'Đã chèn cột bên phải trên tất cả hàng.',
-        run: () => matrix.insertColumn(selection.value.column + 1),
+        run: () => matrix.insertColumn(selection.value.column + selectedSpan.value),
+        unavailable: () => statistics.value.columns >= MATRIX_LIMITS.dimension,
       },
       {
         label: 'Xóa cột đang chọn',
-        message: 'Đã xóa cột trên tất cả hàng và đánh số lại ghế.',
+        message: 'Đã xóa cột và đánh số lại ghế. Ghế đôi đi qua cột này được xóa toàn bộ.',
         run: matrix.deleteSelectedColumn,
         unavailable: () => statistics.value.columns <= 1,
         danger: true,
@@ -101,7 +124,10 @@ const structureGroups: {
   },
 ]
 
-watch(document, () => emit('change', matrix.snapshot()), { deep: true, flush: 'sync' })
+watch(document, () => emit('change', matrix.snapshot()), {
+  deep: true,
+  flush: 'sync',
+})
 
 watch(
   () =>
@@ -110,6 +136,20 @@ watch(
   (value) => emit('pending', value),
   { immediate: true, flush: 'sync' },
 )
+
+function renderedRow(row: readonly MatrixCell[]): RenderedCell[] {
+  const result: RenderedCell[] = []
+
+  for (let column = 0; column < row.length;) {
+    const seat = row[column] ?? null
+    const span = matrixSeatSpan(seat)
+
+    result.push({ seat, column, span })
+    column += span
+  }
+
+  return result
+}
 
 function cellKey(row: number, column: number) {
   return `${row}:${column}`
@@ -186,7 +226,14 @@ async function selectRow(row: number) {
 }
 
 async function mutate(action: () => boolean, message: string) {
-  if (props.disabled || !action()) return
+  if (props.disabled) return
+
+  const changed = action()
+
+  if (!changed) {
+    if (operationError.value) announce(operationError.value, true)
+    return
+  }
 
   clearInputs()
   announce(message)
@@ -216,7 +263,6 @@ function onHistoryKeyDown(event: KeyboardEvent) {
     return
   }
 
-  // Giữ undo văn bản của trình duyệt khi đang nhập số hoặc chọn loại.
   if (
     event.target.matches('input:not([readonly]), textarea, select') ||
     event.target.isContentEditable
@@ -241,11 +287,22 @@ function onHistoryKeyDown(event: KeyboardEvent) {
 function changeType(event: Event) {
   if (props.disabled) return
 
-  const value = (event.target as HTMLSelectElement).value
+  const target = event.target as HTMLSelectElement
 
-  if (matrix.changeSelectedType(value)) {
-    announce(`Đã đổi loại ghế ${selectedTitle.value}.`)
+  if (!matrix.changeSelectedType(target.value)) {
+    target.value = selectedSeat.value?.seatType ?? 'STANDARD'
+
+    if (operationError.value) announce(operationError.value, true)
+    return
   }
+
+  clearInputs()
+
+  announce(
+    selectedSeat.value?.seatType === 'COUPLE'
+      ? `Ghế ${selectedTitle.value} đã chiếm 2 ô liền nhau.`
+      : `Đã đổi loại ghế ${selectedTitle.value}.`,
+  )
 }
 
 function reset() {
@@ -271,7 +328,6 @@ function reset() {
 function prepareSave(): SeatMatrixDocument | null {
   if (props.disabled) return null
 
-  // Hoàn tất cả ô đang nhập, kể cả khi chưa blur hoặc nhấn Enter.
   for (const key of Object.keys(drafts.value)) {
     const [row, column] = key.split(':').map(Number)
     commit(row!, column!)
@@ -298,7 +354,12 @@ defineExpose({
 </script>
 
 <template>
-  <fieldset class="seat-matrix-editor" :disabled="disabled" @keydown="onHistoryKeyDown">
+  <fieldset
+    class="seat-matrix-editor"
+    :disabled="disabled"
+    :style="{ '--matrix-column-count': document.columns }"
+    @keydown="onHistoryKeyDown"
+  >
     <legend class="admin-visually-hidden">Chỉnh sửa ma trận ghế</legend>
 
     <div class="seat-matrix-editor__toolbar">
@@ -336,7 +397,7 @@ defineExpose({
             <h2 :id="`${prefix}-title`">Ma trận ghế</h2>
             <p :id="`${prefix}-help`">
               Nhập số nguyên dương chưa dùng trong hàng vào ô trống. Ghế tự đánh số từ trái sang
-              phải, bỏ qua ô trống.
+              phải, bỏ qua ô trống. Ghế đôi chiếm 2 ô liền nhau.
             </p>
           </div>
           <span class="seat-matrix-editor__badge">{{ statistics.seats }} ghế</span>
@@ -356,8 +417,17 @@ defineExpose({
 
             <table ref="table" :aria-describedby="`${prefix}-help ${prefix}-status`">
               <caption class="admin-visually-hidden">
-                Cột đầu là nhãn hàng. Mỗi ô còn lại có thể trống hoặc chứa một ghế.
+                Cột đầu là nhãn hàng. Ghế thường chiếm một ô, ghế đôi chiếm hai ô.
               </caption>
+
+              <colgroup>
+                <col class="seat-matrix-editor__axis-column" />
+                <col
+                  v-for="column in document.columns"
+                  :key="column"
+                  class="seat-matrix-editor__seat-column"
+                />
+              </colgroup>
 
               <tbody>
                 <tr v-for="(row, rowIndex) in document.rows" :key="rowIndex">
@@ -373,11 +443,12 @@ defineExpose({
                   </th>
 
                   <td
-                    v-for="(seat, columnIndex) in row"
-                    :key="columnIndex"
-                    :data-seat-type="seat?.seatType"
+                    v-for="cell in renderedRow(row)"
+                    :key="cell.column"
+                    :colspan="cell.span"
+                    :data-seat-type="cell.seat?.seatType"
                     :class="{
-                      'is-selected': selection.row === rowIndex && selection.column === columnIndex,
+                      'is-selected': selection.row === rowIndex && selection.column === cell.column,
                     }"
                   >
                     <input
@@ -385,32 +456,37 @@ defineExpose({
                       inputmode="numeric"
                       autocomplete="off"
                       :spellcheck="false"
-                      :data-cell="cellKey(rowIndex, columnIndex)"
-                      :readonly="Boolean(seat)"
-                      :value="drafts[cellKey(rowIndex, columnIndex)] ?? seat?.number ?? ''"
-                      :aria-invalid="fieldErrors[cellKey(rowIndex, columnIndex)] ? true : undefined"
+                      :data-cell="cellKey(rowIndex, cell.column)"
+                      :readonly="Boolean(cell.seat)"
+                      :value="
+                        drafts[cellKey(rowIndex, cell.column)] ??
+                        (cell.seat ? `${matrixRowLabel(rowIndex)}${cell.seat.number}` : '')
+                      "
+                      :aria-invalid="fieldErrors[cellKey(rowIndex, cell.column)] ? true : undefined"
                       :aria-describedby="
-                        fieldErrors[cellKey(rowIndex, columnIndex)]
-                          ? fieldErrorId(rowIndex, columnIndex)
+                        fieldErrors[cellKey(rowIndex, cell.column)]
+                          ? fieldErrorId(rowIndex, cell.column)
                           : `${prefix}-help`
                       "
                       :aria-label="
-                        seat
-                          ? `Ghế ${matrixRowLabel(rowIndex)}${seat.number}, ${seat.seatType}`
-                          : `Ô trống hàng ${matrixRowLabel(rowIndex)}, vị trí ${columnIndex + 1}`
+                        cell.seat
+                          ? `Ghế ${matrixRowLabel(rowIndex)}${cell.seat.number}, ${
+                              cell.seat.seatType
+                            }, chiếm ${cell.span} ô`
+                          : `Ô trống hàng ${matrixRowLabel(rowIndex)}, vị trí ${cell.column + 1}`
                       "
-                      @focus="matrix.select(rowIndex, columnIndex)"
-                      @input="updateDraft(rowIndex, columnIndex, $event)"
-                      @blur="commit(rowIndex, columnIndex)"
-                      @keydown.enter="onEnter($event, rowIndex, columnIndex)"
+                      @focus="matrix.select(rowIndex, cell.column)"
+                      @input="updateDraft(rowIndex, cell.column, $event)"
+                      @blur="commit(rowIndex, cell.column)"
+                      @keydown.enter="onEnter($event, rowIndex, cell.column)"
                     />
 
                     <span
-                      v-if="fieldErrors[cellKey(rowIndex, columnIndex)]"
-                      :id="fieldErrorId(rowIndex, columnIndex)"
+                      v-if="fieldErrors[cellKey(rowIndex, cell.column)]"
+                      :id="fieldErrorId(rowIndex, cell.column)"
                       class="admin-visually-hidden"
                     >
-                      {{ fieldErrors[cellKey(rowIndex, columnIndex)] }}
+                      {{ fieldErrors[cellKey(rowIndex, cell.column)] }}
                     </span>
                   </td>
                 </tr>
@@ -420,6 +496,7 @@ defineExpose({
             <button
               class="seat-matrix-editor__add-column"
               type="button"
+              :disabled="disabled || statistics.columns >= MATRIX_LIMITS.dimension"
               @click="
                 mutate(
                   () => matrix.insertColumn(document.columns),
@@ -434,6 +511,7 @@ defineExpose({
             <button
               class="seat-matrix-editor__add-row"
               type="button"
+              :disabled="disabled || statistics.rows >= MATRIX_LIMITS.dimension"
               @click="mutate(() => matrix.insertRow(document.rows.length), 'Đã thêm hàng trống.')"
             >
               <span aria-hidden="true">＋</span>
@@ -454,9 +532,11 @@ defineExpose({
       <aside class="seat-matrix-editor__inspector" aria-label="Thuộc tính ma trận">
         <section class="seat-matrix-editor__panel">
           <h2>{{ selectedTitle }}</h2>
-          <p>
-            {{ selectedSeat ? 'Đổi loại ghế hoặc xóa ghế trong ô.' : 'Ô này chưa có ghế.' }}
+          <p v-if="selectedSeat">
+            Ghế này chiếm {{ selectedSpan }} ô.
+            {{ selectedSpan === 2 ? 'Xóa ghế sẽ để lại hai ô trống.' : 'Có thể đổi loại ghế.' }}
           </p>
+          <p v-else>Ô này chưa có ghế.</p>
 
           <label :for="`${prefix}-type`">Loại ghế</label>
           <select
@@ -477,11 +557,11 @@ defineExpose({
             @click="
               mutate(
                 matrix.clearSelectedSeat,
-                'Đã xóa ghế, giữ nguyên ô trống và đánh số lại hàng.',
+                'Đã xóa ghế, giữ nguyên các ô trống và đánh số lại hàng.',
               )
             "
           >
-            Xóa ghế trong ô
+            Xóa ghế
           </button>
         </section>
 
@@ -501,6 +581,10 @@ defineExpose({
           >
             {{ action.label }}
           </button>
+
+          <p v-if="group.title === 'Thao tác cột'">
+            Xóa cột sẽ xóa cả ghế đôi đi qua cột đó trên mọi hàng.
+          </p>
         </section>
 
         <section class="seat-matrix-editor__panel">
@@ -517,6 +601,10 @@ defineExpose({
             <div>
               <dt>Tổng số ghế</dt>
               <dd>{{ statistics.seats }}</dd>
+            </div>
+            <div>
+              <dt>Ô đã chiếm</dt>
+              <dd>{{ statistics.occupied }}</dd>
             </div>
             <div>
               <dt>Ô trống</dt>
@@ -543,6 +631,9 @@ defineExpose({
   --matrix-axis-layer: 1;
   --matrix-seat-tint: 12%;
   --matrix-screen-spacing: 0.14em;
+  --matrix-table-width: calc(
+    var(--matrix-axis-size) + var(--matrix-cell-size) * var(--matrix-column-count)
+  );
 
   display: grid;
   min-width: 0;
@@ -671,12 +762,22 @@ defineExpose({
 .seat-matrix-editor table {
   grid-column: 1;
   grid-row: 2;
+  width: var(--matrix-table-width);
+  table-layout: fixed;
   border-collapse: collapse;
+}
+
+.seat-matrix-editor__axis-column {
+  width: var(--matrix-axis-size);
+}
+
+.seat-matrix-editor__seat-column {
+  width: var(--matrix-cell-size);
 }
 
 .seat-matrix-editor th,
 .seat-matrix-editor td {
-  min-width: var(--matrix-cell-size);
+  box-sizing: border-box;
   height: var(--matrix-cell-size);
   padding: var(--space-2);
   border: var(--border-width-thin) solid var(--color-border);
@@ -691,7 +792,9 @@ defineExpose({
 }
 
 .seat-matrix-editor input {
-  width: calc(var(--matrix-cell-size) - var(--space-2) * 2);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   min-height: var(--control-height-md);
   padding: 0;
   border: var(--border-width-thin) dashed var(--color-border);
@@ -699,6 +802,7 @@ defineExpose({
   background: transparent;
   color: var(--color-text-primary);
   font: inherit;
+  font-size: var(--font-size-sm);
   text-align: center;
 }
 
