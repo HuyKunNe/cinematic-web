@@ -7,8 +7,6 @@ export type MatrixSeat = {
   seatType: SeatResponseSeatType
 }
 
-// Ghế đôi nằm tại ô bắt đầu.
-// Ô bên phải là null được dành chỗ cho cùng ghế.
 export type MatrixCell = MatrixSeat | null
 
 export type SeatMatrixDocument = {
@@ -34,10 +32,10 @@ export const MATRIX_LIMITS = {
 } as const
 
 export const matrixSeatTypes = [
-  { value: 'STANDARD', label: 'Standard — ghế thường' },
-  { value: 'VIP', label: 'VIP — ghế cao cấp' },
-  { value: 'COUPLE', label: 'Couple — ghế đôi' },
-  { value: 'ACCESSIBLE', label: 'Accessible — ghế tiếp cận' },
+  { value: 'STANDARD', label: 'Standard' },
+  { value: 'VIP', label: 'VIP' },
+  { value: 'COUPLE', label: 'Couple' },
+  { value: 'ACCESSIBLE', label: 'Accessible' },
 ] as const satisfies readonly {
   value: SeatResponseSeatType
   label: string
@@ -304,7 +302,12 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     return commit(emptyDocument(), { row: 0, column: 0 })
   }
 
-  function addSeat(rowIndex: number, columnIndex: number, raw: string): AddSeatResult {
+  function addSeat(
+    rowIndex: number,
+    columnIndex: number,
+    raw: string,
+    seatType: string = 'STANDARD',
+  ): AddSeatResult {
     operationError.value = ''
 
     if (!validCell(rowIndex, columnIndex)) {
@@ -347,6 +350,28 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
       }
     }
 
+    const option = matrixSeatTypes.find((item) => item.value === seatType)
+
+    if (!option) {
+      return { ok: false, message: 'Loại ghế được chọn không hợp lệ.' }
+    }
+
+    if (option.value === 'COUPLE') {
+      if (columnIndex + 1 >= document.value.columns) {
+        return {
+          ok: false,
+          message: 'Ghế đôi cần 2 ô liền nhau. Hãy thêm cột bên phải trước.',
+        }
+      }
+
+      if (row[columnIndex + 1] !== null) {
+        return {
+          ok: false,
+          message: 'Ô bên phải đã có ghế, không đủ chỗ để tạo ghế đôi.',
+        }
+      }
+    }
+
     if (statistics.value.seats >= MATRIX_LIMITS.seats) {
       return { ok: false, message: 'Ma trận chỉ hỗ trợ tối đa 2.500 ghế.' }
     }
@@ -354,7 +379,11 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     const next = snapshot()
     const nextRow = next.rows[rowIndex]!
 
-    nextRow[columnIndex] = { number, seatType: 'STANDARD' }
+    nextRow[columnIndex] = {
+      number,
+      seatType: option.value,
+    }
+
     renumber(nextRow)
 
     const changed = commit(next, { row: rowIndex, column: columnIndex })
@@ -443,27 +472,21 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     const next = snapshot()
     const nextRow = next.rows[rowIndex]!
 
-    // Chỉ dịch nội dung của hàng đang chọn.
     nextRow.splice(index, 0, null)
 
     if (needsColumn) {
-      // Các hàng khác giữ nguyên vị trí ghế và được thêm ô trống cuối.
       for (let currentRow = 0; currentRow < next.rows.length; currentRow += 1) {
         if (currentRow !== rowIndex) next.rows[currentRow]!.push(null)
       }
 
       next.columns += 1
     } else {
-      // Chỉ bỏ ô cuối khi chắc chắn đó là ô trống độc lập.
       nextRow.pop()
     }
 
     renumber(nextRow)
 
     const changed = commit(next, { row: rowIndex, column: index })
-
-    // Hàng toàn ô trống có thể không đổi nội dung,
-    // nhưng vẫn chọn ô vừa yêu cầu chèn và thông báo thành công.
     return changed || !operationError.value
   }
 

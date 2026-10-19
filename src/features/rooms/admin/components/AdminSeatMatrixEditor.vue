@@ -7,6 +7,7 @@ import {
   matrixSeatTypes,
   useAdminSeatMatrix,
   type MatrixCell,
+  type MatrixSeat,
   type SeatMatrixDocument,
 } from '../composables/use-admin-seat-matrix'
 
@@ -54,13 +55,21 @@ const {
 
 const prefix = useId()
 const table = ref<HTMLTableElement | null>(null)
+const entryForm = ref<HTMLFormElement | null>(null)
+
 const drafts = ref<Record<string, string>>({})
+const draftTypes = ref<Record<string, MatrixSeat['seatType']>>({})
 const fieldErrors = ref<Record<string, string>>({})
+
 const status = ref(
   `Ma trận có ${statistics.value.rows} hàng, ` +
     `${statistics.value.columns} cột và ${statistics.value.seats} ghế.`,
 )
 const error = ref('')
+
+const selectedKey = computed(() => cellKey(selection.value.row, selection.value.column))
+
+const selectedDraftType = computed(() => draftTypes.value[selectedKey.value] ?? 'STANDARD')
 
 const selectedTitle = computed(() => {
   const label = matrixRowLabel(selection.value.row)
@@ -168,6 +177,7 @@ function announce(message: string, isError = false) {
 
 function clearInputs() {
   drafts.value = {}
+  draftTypes.value = {}
   fieldErrors.value = {}
 }
 
@@ -175,32 +185,71 @@ function updateDraft(row: number, column: number, event: Event) {
   if (props.disabled) return
 
   const key = cellKey(row, column)
+
   drafts.value[key] = (event.target as HTMLInputElement).value
   delete fieldErrors.value[key]
   error.value = ''
 }
 
+function changeDraftType(event: Event) {
+  if (props.disabled || selectedSeat.value) return
+
+  const target = event.target as HTMLSelectElement
+  const option = matrixSeatTypes.find((item) => item.value === target.value)
+
+  if (!option) {
+    target.value = selectedDraftType.value
+    return
+  }
+
+  draftTypes.value[selectedKey.value] = option.value
+  delete fieldErrors.value[selectedKey.value]
+
+  announce(`Loại ghế: ${option.label}.`)
+}
+
 function commit(row: number, column: number) {
-  if (props.disabled) return
+  if (props.disabled) return false
 
   const key = cellKey(row, column)
   const raw = drafts.value[key]
-  if (raw === undefined) return
+  if (raw === undefined) return true
 
-  const result = matrix.addSeat(row, column, raw)
+  const seatType = draftTypes.value[key] ?? 'STANDARD'
+  const result = matrix.addSeat(row, column, raw, seatType)
 
   if (!result.ok) {
     fieldErrors.value[key] = result.message
     announce(result.message, true)
-    return
+    return false
   }
 
   delete drafts.value[key]
   delete fieldErrors.value[key]
 
   if (result.changed) {
-    announce(`Đã thêm ghế hàng ${matrixRowLabel(row)} và đánh số lại theo vị trí.`)
+    delete draftTypes.value[key]
+
+    const seat = document.value.rows[row]?.[column]
+
+    announce(
+      seat
+        ? `Đã thêm ghế ${matrixRowLabel(row)}${seat.number}, loại ${seat.seatType}.`
+        : `Đã cập nhật hàng ${matrixRowLabel(row)}.`,
+    )
   }
+
+  return true
+}
+
+function onCellBlur(event: FocusEvent, row: number, column: number) {
+  // Cho phép nhập số rồi chuyển sang chọn loại trong form,
+  // không tạo STANDARD ngay khi input trong bảng mất focus.
+  if (event.relatedTarget instanceof Node && entryForm.value?.contains(event.relatedTarget)) {
+    return
+  }
+
+  commit(row, column)
 }
 
 function onEnter(event: KeyboardEvent, row: number, column: number) {
@@ -208,6 +257,23 @@ function onEnter(event: KeyboardEvent, row: number, column: number) {
 
   event.preventDefault()
   commit(row, column)
+}
+
+async function addSelectedSeat() {
+  if (props.disabled || selectedSeat.value) return
+
+  const { row, column } = selection.value
+  const key = cellKey(row, column)
+
+  if (!drafts.value[key]?.trim()) {
+    const message = 'Hãy nhập số ghế trước khi thêm.'
+
+    fieldErrors.value[key] = message
+    announce(message, true)
+    return
+  }
+
+  if (commit(row, column)) await focusSelected()
 }
 
 async function focusSelected() {
@@ -398,18 +464,6 @@ defineExpose({
         class="seat-matrix-editor__panel seat-matrix-editor__main"
         :aria-labelledby="`${prefix}-title`"
       >
-        <header class="seat-matrix-editor__heading">
-          <div>
-            <h2 :id="`${prefix}-title`">Ma trận ghế</h2>
-            <p :id="`${prefix}-help`">
-              Nhập số nguyên dương chưa dùng trong hàng vào ô trống. Ghế tự đánh số từ trái sang
-              phải, bỏ qua ô trống. Ghế đôi gộp 2 ô liền nhau.
-            </p>
-          </div>
-          <span class="seat-matrix-editor__badge">{{ statistics.seats }} ghế</span>
-        </header>
-
-        <p :id="`${prefix}-status`" role="status" aria-live="polite">{{ status }}</p>
         <p v-if="error" class="seat-matrix-editor__error" role="alert">{{ error }}</p>
 
         <div
@@ -484,7 +538,7 @@ defineExpose({
                       "
                       @focus="matrix.select(rowIndex, cell.column)"
                       @input="updateDraft(rowIndex, cell.column, $event)"
-                      @blur="commit(rowIndex, cell.column)"
+                      @blur="onCellBlur($event, rowIndex, cell.column)"
                       @keydown.enter="onEnter($event, rowIndex, cell.column)"
                     />
 
@@ -539,43 +593,88 @@ defineExpose({
       <aside class="seat-matrix-editor__inspector" aria-label="Thuộc tính ma trận">
         <section class="seat-matrix-editor__panel">
           <h2>{{ selectedTitle }}</h2>
-          <p v-if="selectedSeat">
-            Ghế này chiếm {{ selectedSpan }} ô.
-            {{ selectedSpan === 2 ? 'Xóa ghế sẽ để lại hai ô trống.' : 'Có thể đổi loại ghế.' }}
-          </p>
-          <p v-else>Ô này chưa có ghế.</p>
 
-          <label :for="`${prefix}-type`">Loại ghế</label>
-          <select
-            :id="`${prefix}-type`"
-            :value="selectedSeat?.seatType ?? 'STANDARD'"
-            :disabled="!selectedSeat || disabled"
-            @change="changeType"
+          <form
+            v-if="!selectedSeat"
+            ref="entryForm"
+            class="seat-matrix-editor__entry"
+            :aria-labelledby="`${prefix}-entry-title`"
+            @submit.prevent="addSelectedSeat"
           >
-            <option v-for="option in matrixSeatTypes" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
+            <h3 :id="`${prefix}-entry-title`">Thêm ghế</h3>
+
+            <label :for="`${prefix}-new-number`">Số ghế</label>
+            <input
+              :id="`${prefix}-new-number`"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              required
+              :spellcheck="false"
+              :value="drafts[selectedKey] ?? ''"
+              :aria-invalid="fieldErrors[selectedKey] ? true : undefined"
+              :aria-describedby="
+                fieldErrors[selectedKey]
+                  ? fieldErrorId(selection.row, selection.column)
+                  : `${prefix}-entry-help`
+              "
+              @input="updateDraft(selection.row, selection.column, $event)"
+            />
+
+            <label :for="`${prefix}-new-type`">Loại ghế khi thêm</label>
+            <select :id="`${prefix}-new-type`" :value="selectedDraftType" @change="changeDraftType">
+              <option v-for="option in matrixSeatTypes" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+
+            <button type="submit">Thêm ghế</button>
+          </form>
+
+          <template v-else>
+            <p>
+              Ghế này chiếm {{ selectedSpan }} ô.
+              {{ selectedSpan === 2 ? 'Xóa ghế sẽ để lại hai ô trống.' : 'Có thể đổi loại ghế.' }}
+            </p>
+
+            <label :for="`${prefix}-type`">Loại ghế</label>
+            <select
+              :id="`${prefix}-type`"
+              :value="selectedSeat.seatType"
+              :disabled="disabled"
+              @change="changeType"
+            >
+              <option v-for="option in matrixSeatTypes" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="is-danger"
+              :disabled="disabled"
+              @click="
+                mutate(
+                  matrix.clearSelectedSeat,
+                  'Đã xóa ghế, giữ nguyên các ô trống và đánh số lại hàng.',
+                )
+              "
+            >
+              Xóa ghế
+            </button>
+          </template>
 
           <button
             type="button"
-            :disabled="statistics.columns >= MATRIX_LIMITS.dimension"
-            @click="() => matrix.insertCell(selection.row, selection.column + selectedSpan)"
-          >
-            Chèn ô bên phải
-          </button>
-          <button
-            type="button"
-            class="is-danger"
-            :disabled="!selectedSeat || disabled"
+            :disabled="disabled"
             @click="
               mutate(
-                matrix.clearSelectedSeat,
-                'Đã xóa ghế, giữ nguyên các ô trống và đánh số lại hàng.',
+                () => matrix.insertCell(selection.row, selection.column + selectedSpan),
+                'Đã chèn ô trống bên phải trong hàng đang chọn.',
               )
             "
           >
-            Xóa ghế
+            Chèn ô bên phải
           </button>
         </section>
 
@@ -598,36 +697,6 @@ defineExpose({
           >
             {{ action.label }}
           </button>
-        </section>
-
-        <section class="seat-matrix-editor__panel">
-          <h2>Thống kê</h2>
-          <dl>
-            <div>
-              <dt>Số hàng</dt>
-              <dd>{{ statistics.rows }}</dd>
-            </div>
-            <div>
-              <dt>Số cột</dt>
-              <dd>{{ statistics.columns }}</dd>
-            </div>
-            <div>
-              <dt>Tổng số ghế</dt>
-              <dd>{{ statistics.seats }}</dd>
-            </div>
-            <div>
-              <dt>Ô đã chiếm</dt>
-              <dd>{{ statistics.occupied }}</dd>
-            </div>
-            <div>
-              <dt>Ô trống</dt>
-              <dd>{{ statistics.empty }}</dd>
-            </div>
-            <div v-for="option in matrixSeatTypes" :key="option.value">
-              <dt>{{ option.value }}</dt>
-              <dd>{{ statistics[option.value] }}</dd>
-            </div>
-          </dl>
         </section>
       </aside>
     </div>
@@ -818,7 +887,7 @@ defineExpose({
   cursor: pointer;
 }
 
-.seat-matrix-editor input {
+.seat-matrix-editor table input {
   display: block;
   box-sizing: border-box;
   width: var(--matrix-seat-width);
@@ -856,7 +925,7 @@ defineExpose({
   --matrix-seat-color: var(--color-text-secondary);
 }
 
-.seat-matrix-editor input[readonly] {
+.seat-matrix-editor table input[readonly] {
   border-style: solid;
   border-color: var(--matrix-seat-color);
   background: color-mix(
@@ -873,7 +942,9 @@ defineExpose({
 }
 
 .seat-matrix-editor button,
-.seat-matrix-editor select {
+.seat-matrix-editor select,
+.seat-matrix-editor__entry input {
+  box-sizing: border-box;
   min-height: var(--control-height-md);
   padding: var(--space-2) var(--space-3);
   border: var(--border-width-thin) solid var(--color-border);
@@ -889,9 +960,26 @@ defineExpose({
   font-size: var(--font-size-xs);
 }
 
-.seat-matrix-editor select {
+.seat-matrix-editor select,
+.seat-matrix-editor__entry input {
   width: 100%;
   min-width: 0;
+}
+
+.seat-matrix-editor__entry {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  gap: var(--space-3);
+}
+
+.seat-matrix-editor__entry h3 {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.seat-matrix-editor__entry p {
+  margin: 0;
 }
 
 .seat-matrix-editor button:not(:disabled):hover {

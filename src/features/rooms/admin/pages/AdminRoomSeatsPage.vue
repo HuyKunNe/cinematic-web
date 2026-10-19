@@ -379,7 +379,7 @@ async function changeActivity() {
                   option.value === 'STANDARD'
                     ? 'Ghế thường'
                     : option.value === 'VIP'
-                      ? 'Ghế cao cấp'
+                      ? 'Ghế VIP'
                       : option.label
                 }}
               </span>
@@ -551,7 +551,7 @@ async function changeActivity() {
                       option.value === 'STANDARD'
                         ? 'Ghế thường'
                         : option.value === 'VIP'
-                          ? 'Ghế cao cấp'
+                          ? 'Ghế VIP'
                           : option.label
                     }}
                   </dt>
