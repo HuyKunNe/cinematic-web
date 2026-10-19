@@ -18,6 +18,11 @@ type MatrixSelection = {
   column: number
 }
 
+type MatrixCheckpoint = {
+  document: SeatMatrixDocument
+  selection: MatrixSelection
+}
+
 type AddSeatResult = { ok: true; changed: boolean } | { ok: false; message: string }
 
 export const matrixSeatTypes = [
@@ -29,6 +34,8 @@ export const matrixSeatTypes = [
   value: SeatResponseSeatType
   label: string
 }[]
+
+const HISTORY_LIMIT = 50
 
 export function matrixRowLabel(index: number) {
   let value = index + 1
@@ -54,6 +61,13 @@ function emptyDocument(): SeatMatrixDocument {
   }
 }
 
+function copyDocument(input: SeatMatrixDocument): SeatMatrixDocument {
+  return {
+    columns: input.columns,
+    rows: input.rows.map((row) => row.map((seat) => (seat ? { ...seat } : null))),
+  }
+}
+
 function renumber(row: MatrixCell[]) {
   let number = 0
 
@@ -65,6 +79,11 @@ function renumber(row: MatrixCell[]) {
 export function useAdminSeatMatrix() {
   const document = ref<SeatMatrixDocument>(emptyDocument())
   const selection = ref<MatrixSelection>({ row: 0, column: 0 })
+  const undoStack = ref<MatrixCheckpoint[]>([])
+  const redoStack = ref<MatrixCheckpoint[]>([])
+
+  const canUndo = computed(() => undoStack.value.length > 0)
+  const canRedo = computed(() => redoStack.value.length > 0)
 
   const selectedSeat = computed(
     () => document.value.rows[selection.value.row]?.[selection.value.column] ?? null,
@@ -96,46 +115,93 @@ export function useAdminSeatMatrix() {
     return counts
   })
 
-  function select(row: number, column: number) {
-    if (
-      !Number.isInteger(row) ||
-      !Number.isInteger(column) ||
-      row < 0 ||
-      row >= document.value.rows.length ||
-      column < 0 ||
-      column >= document.value.columns
-    ) {
-      return
-    }
-
-    selection.value = { row, column }
+  function validCell(row: number, column: number) {
+    return (
+      Number.isInteger(row) &&
+      Number.isInteger(column) &&
+      row >= 0 &&
+      row < document.value.rows.length &&
+      column >= 0 &&
+      column < document.value.columns
+    )
   }
 
-  function snapshot(): SeatMatrixDocument {
+  function select(row: number, column: number) {
+    if (validCell(row, column)) selection.value = { row, column }
+  }
+
+  function snapshot() {
+    return copyDocument(document.value)
+  }
+
+  function checkpoint(): MatrixCheckpoint {
     return {
-      columns: document.value.columns,
-      rows: document.value.rows.map((row) => row.map((seat) => (seat ? { ...seat } : null))),
+      document: snapshot(),
+      selection: { ...selection.value },
     }
+  }
+
+  function restore(entry: MatrixCheckpoint) {
+    document.value = copyDocument(entry.document)
+    selection.value = {
+      row: Math.max(0, Math.min(entry.selection.row, document.value.rows.length - 1)),
+      column: Math.max(0, Math.min(entry.selection.column, document.value.columns - 1)),
+    }
+  }
+
+  function commit(next: SeatMatrixDocument, nextSelection: MatrixSelection = selection.value) {
+    if (JSON.stringify(next) === JSON.stringify(document.value)) {
+      select(nextSelection.row, nextSelection.column)
+      return false
+    }
+
+    undoStack.value = [...undoStack.value, checkpoint()].slice(-HISTORY_LIMIT)
+    redoStack.value = []
+
+    restore({
+      document: next,
+      selection: { ...nextSelection },
+    })
+
+    return true
+  }
+
+  function undo() {
+    const entry = undoStack.value.at(-1)
+    if (!entry) return false
+
+    redoStack.value = [...redoStack.value, checkpoint()].slice(-HISTORY_LIMIT)
+    undoStack.value = undoStack.value.slice(0, -1)
+    restore(entry)
+    return true
+  }
+
+  function redo() {
+    const entry = redoStack.value.at(-1)
+    if (!entry) return false
+
+    undoStack.value = [...undoStack.value, checkpoint()].slice(-HISTORY_LIMIT)
+    redoStack.value = redoStack.value.slice(0, -1)
+    restore(entry)
+    return true
   }
 
   function reset() {
-    document.value = emptyDocument()
-    selection.value = { row: 0, column: 0 }
+    return commit(emptyDocument(), { row: 0, column: 0 })
   }
 
   function addSeat(rowIndex: number, columnIndex: number, raw: string): AddSeatResult {
-    const row = document.value.rows[rowIndex]
-
-    if (!row || columnIndex < 0 || columnIndex >= document.value.columns) {
+    if (!validCell(rowIndex, columnIndex)) {
       return { ok: false, message: 'Ô được chọn không còn tồn tại.' }
     }
+
+    const row = document.value.rows[rowIndex]!
 
     if (row[columnIndex]) {
       return { ok: false, message: 'Ô này đã có ghế.' }
     }
 
     const value = raw.trim()
-
     if (!value) return { ok: true, changed: false }
 
     if (!/^[0-9]+$/.test(value)) {
@@ -158,31 +224,39 @@ export function useAdminSeatMatrix() {
       }
     }
 
-    row[columnIndex] = { number, seatType: 'STANDARD' }
-    renumber(row)
-    select(rowIndex, columnIndex)
+    const next = snapshot()
+    const nextRow = next.rows[rowIndex]!
 
-    return { ok: true, changed: true }
+    nextRow[columnIndex] = { number, seatType: 'STANDARD' }
+    renumber(nextRow)
+
+    return {
+      ok: true,
+      changed: commit(next, { row: rowIndex, column: columnIndex }),
+    }
   }
 
   function clearSelectedSeat() {
-    const row = document.value.rows[selection.value.row]
+    if (!selectedSeat.value) return false
 
-    if (!row || !row[selection.value.column]) return false
+    const next = snapshot()
+    const row = next.rows[selection.value.row]!
 
     row[selection.value.column] = null
     renumber(row)
-    return true
+    return commit(next)
   }
 
   function changeSelectedType(value: string) {
-    if (!matrixSeatTypes.some((option) => option.value === value)) return false
+    const option = matrixSeatTypes.find((item) => item.value === value)
 
-    const seat = selectedSeat.value
-    if (!seat) return false
+    if (!option || !selectedSeat.value || selectedSeat.value.seatType === option.value) {
+      return false
+    }
 
-    seat.seatType = value as SeatResponseSeatType
-    return true
+    const next = snapshot()
+    next.rows[selection.value.row]![selection.value.column]!.seatType = option.value
+    return commit(next)
   }
 
   function insertRow(index: number) {
@@ -190,18 +264,23 @@ export function useAdminSeatMatrix() {
       return false
     }
 
-    document.value.rows.splice(index, 0, emptyRow(document.value.columns))
-    select(index, selection.value.column)
-    return true
+    const next = snapshot()
+    next.rows.splice(index, 0, emptyRow(next.columns))
+
+    return commit(next, { row: index, column: selection.value.column })
   }
 
   function deleteSelectedRow() {
     if (document.value.rows.length <= 1) return false
 
+    const next = snapshot()
     const index = selection.value.row
-    document.value.rows.splice(index, 1)
-    select(Math.min(index, document.value.rows.length - 1), selection.value.column)
-    return true
+    next.rows.splice(index, 1)
+
+    return commit(next, {
+      row: Math.min(index, next.rows.length - 1),
+      column: selection.value.column,
+    })
   }
 
   function insertColumn(index: number) {
@@ -209,29 +288,34 @@ export function useAdminSeatMatrix() {
       return false
     }
 
-    for (const row of document.value.rows) {
+    const next = snapshot()
+
+    for (const row of next.rows) {
       row.splice(index, 0, null)
       renumber(row)
     }
 
-    document.value.columns += 1
-    select(selection.value.row, index)
-    return true
+    next.columns += 1
+    return commit(next, { row: selection.value.row, column: index })
   }
 
   function deleteSelectedColumn() {
     if (document.value.columns <= 1) return false
 
+    const next = snapshot()
     const index = selection.value.column
 
-    for (const row of document.value.rows) {
+    for (const row of next.rows) {
       row.splice(index, 1)
       renumber(row)
     }
 
-    document.value.columns -= 1
-    select(selection.value.row, Math.min(index, document.value.columns - 1))
-    return true
+    next.columns -= 1
+
+    return commit(next, {
+      row: selection.value.row,
+      column: Math.min(index, next.columns - 1),
+    })
   }
 
   return {
@@ -239,9 +323,13 @@ export function useAdminSeatMatrix() {
     selection,
     selectedSeat,
     statistics,
+    canUndo,
+    canRedo,
     select,
     snapshot,
     reset,
+    undo,
+    redo,
     addSeat,
     clearSelectedSeat,
     changeSelectedType,

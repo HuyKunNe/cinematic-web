@@ -29,7 +29,7 @@ type StructureAction = {
 }
 
 const matrix = useAdminSeatMatrix()
-const { document, selection, selectedSeat, statistics } = matrix
+const { document, selection, selectedSeat, statistics, canUndo, canRedo } = matrix
 
 const prefix = useId()
 const table = ref<HTMLTableElement | null>(null)
@@ -111,6 +111,11 @@ function announce(message: string, isError = false) {
   status.value = isError ? '' : message
 }
 
+function clearInputs() {
+  drafts.value = {}
+  fieldErrors.value = {}
+}
+
 function updateDraft(row: number, column: number, event: Event) {
   if (props.disabled) return
 
@@ -125,7 +130,6 @@ function commit(row: number, column: number) {
 
   const key = cellKey(row, column)
   const raw = drafts.value[key]
-
   if (raw === undefined) return
 
   const result = matrix.addSeat(row, column, raw)
@@ -172,8 +176,7 @@ async function selectRow(row: number) {
 async function mutate(action: () => boolean, message: string) {
   if (props.disabled || !action()) return
 
-  drafts.value = {}
-  fieldErrors.value = {}
+  clearInputs()
   announce(message)
   await focusSelected()
 }
@@ -181,6 +184,46 @@ async function mutate(action: () => boolean, message: string) {
 function runStructureAction(action: StructureAction) {
   if (action.unavailable?.()) return
   void mutate(action.run, action.message)
+}
+
+function applyHistory(direction: 'undo' | 'redo') {
+  return mutate(
+    direction === 'undo' ? matrix.undo : matrix.redo,
+    direction === 'undo' ? 'Đã hoàn tác thao tác ma trận.' : 'Đã làm lại thao tác ma trận.',
+  )
+}
+
+function onHistoryKeyDown(event: KeyboardEvent) {
+  if (
+    props.disabled ||
+    event.isComposing ||
+    event.altKey ||
+    !(event.ctrlKey || event.metaKey) ||
+    !(event.target instanceof HTMLElement)
+  ) {
+    return
+  }
+
+  // Giữ undo văn bản của trình duyệt khi đang nhập số hoặc chọn loại.
+  if (
+    event.target.matches('input:not([readonly]), textarea, select') ||
+    event.target.isContentEditable
+  ) {
+    return
+  }
+
+  const key = event.key.toLowerCase()
+  let direction: 'undo' | 'redo' | null = null
+
+  if (key === 'z') direction = event.shiftKey ? 'redo' : 'undo'
+  else if (key === 'y' && !event.shiftKey) direction = 'redo'
+
+  if (!direction) return
+  if (direction === 'undo' ? !canUndo.value : !canRedo.value) return
+
+  event.preventDefault()
+  event.stopPropagation()
+  void applyHistory(direction)
 }
 
 function changeType(event: Event) {
@@ -203,19 +246,43 @@ function reset() {
     return
   }
 
-  matrix.reset()
-  drafts.value = {}
-  fieldErrors.value = {}
-  announce('Đã tạo ma trận mới: 6 hàng, 6 cột và 0 ghế.')
+  const changed = matrix.reset()
+  clearInputs()
+
+  announce(
+    changed
+      ? 'Đã tạo ma trận mới. Có thể hoàn tác để khôi phục ma trận trước đó.'
+      : 'Ma trận hiện tại đã là 6 × 6 trống.',
+  )
 }
 </script>
 
 <template>
-  <fieldset class="seat-matrix-editor" :disabled="disabled">
+  <fieldset class="seat-matrix-editor" :disabled="disabled" @keydown="onHistoryKeyDown">
     <legend class="admin-visually-hidden">Chỉnh sửa ma trận ghế</legend>
 
     <div class="seat-matrix-editor__toolbar">
       <button type="button" @click="reset">Tạo ma trận mới</button>
+
+      <div class="seat-matrix-editor__history" role="group" aria-label="Lịch sử chỉnh sửa">
+        <button
+          type="button"
+          :disabled="disabled || !canUndo"
+          title="Ctrl/⌘ + Z khi không nhập văn bản"
+          @click="applyHistory('undo')"
+        >
+          ↶ Hoàn tác
+        </button>
+        <button
+          type="button"
+          :disabled="disabled || !canRedo"
+          title="Ctrl/⌘ + Shift + Z hoặc Ctrl + Y"
+          @click="applyHistory('redo')"
+        >
+          ↷ Làm lại
+        </button>
+      </div>
+
       <span>{{ statistics.rows }} hàng × {{ statistics.columns }} cột</span>
     </div>
 
@@ -232,15 +299,11 @@ function reset() {
               phải, bỏ qua ô trống.
             </p>
           </div>
-          <span class="seat-matrix-editor__badge"> {{ statistics.seats }} ghế </span>
+          <span class="seat-matrix-editor__badge">{{ statistics.seats }} ghế</span>
         </header>
 
-        <p :id="`${prefix}-status`" role="status" aria-live="polite">
-          {{ status }}
-        </p>
-        <p v-if="error" class="seat-matrix-editor__error" role="alert">
-          {{ error }}
-        </p>
+        <p :id="`${prefix}-status`" role="status" aria-live="polite">{{ status }}</p>
+        <p v-if="error" class="seat-matrix-editor__error" role="alert">{{ error }}</p>
 
         <div
           class="seat-matrix-editor__scroll"
@@ -388,7 +451,6 @@ function reset() {
           class="seat-matrix-editor__panel"
         >
           <h2>{{ group.title }}</h2>
-
           <button
             v-for="action in group.actions"
             :key="action.label"
@@ -470,6 +532,12 @@ function reset() {
 
 .seat-matrix-editor__toolbar {
   align-items: center;
+}
+
+.seat-matrix-editor__history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .seat-matrix-editor__workspace {

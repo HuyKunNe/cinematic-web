@@ -6,16 +6,19 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { RoomLayoutElementInput } from './roomLayoutElementInput';
+import type { RoomLayoutMatrixInput } from './roomLayoutMatrixInput';
 import type { RoomLayoutSeatInput } from './roomLayoutSeatInput';
 
 /**
- * Geometry uses logical layout units.
- * x and y identify the unrotated top-left corner.
- * Rotation is around the rectangle center.
- * Positive rotationDegrees rotate clockwise in screen coordinates.
+ * Replaces draft content.
+ * Supply matrix for matrix layouts.
+ * Supply seats and elements for legacy geometry layouts.
+ * The two representations are mutually exclusive.
+ * expectedVersion refers to layout.version.
  */
 export interface ReplaceRoomLayoutContentRequest {
   expectedVersion: number;
-  seats: RoomLayoutSeatInput[];
-  elements: RoomLayoutElementInput[];
+  seats?: RoomLayoutSeatInput[];
+  elements?: RoomLayoutElementInput[];
+  matrix?: RoomLayoutMatrixInput;
 }

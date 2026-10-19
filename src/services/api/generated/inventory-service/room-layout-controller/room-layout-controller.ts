@@ -20,8 +20,9 @@ import { apiRequest } from '../../../../http/axios-instance';
 
   /**
  * Requires inventory:manage.
- * Returns layout metadata, seat snapshots and elements.
- * This response is for administration.
+ * Matrix layouts expose matrix with dimensions and occupied cells.
+ * Legacy layouts expose geometry in seats and elements.
+ * Matrix cells are independent of booking availability.
  * @summary Get room layout content
  */
 export const getRoomLayoutContent = (
@@ -34,10 +35,13 @@ export const getRoomLayoutContent = (
     }
   /**
  * Requires inventory:manage.
- * Replaces all seats and elements in a DRAFT layout.
- * Empty arrays clear the corresponding content.
- * expectedVersion must match layout.version, not layout.layoutVersion.
- * This operation does not publish or bind the layout to showtimes.
+ * Replaces content of a DRAFT layout.
+ * Matrix layouts accept expectedVersion and matrix.
+ * Legacy layouts accept expectedVersion, seats and elements.
+ * The two representations are mutually exclusive.
+ * expectedVersion refers to layout.version, not layoutVersion.
+ * Saving matrix content does not create or modify catalog seats.
+ * Legacy layouts cannot be converted in place.
  * @summary Replace draft room layout content
  */
 export const replaceRoomLayoutContent = (
@@ -67,9 +71,13 @@ export const getRoomLayoutsByRoom = (
     }
   /**
  * Creates an empty DRAFT layout.
- * The backend assigns the next layoutVersion for the room.
- * Canvas dimensions use logical layout units.
- * This operation does not publish or bind a layout to showtimes.
+ * Send only roomId to create an empty 6x6 matrix.
+ * An explicit matrix may specify rowCount and columnCount,
+ * but its seats array must be empty.
+ * Legacy canvasWidth and canvasHeight remain supported.
+ * Legacy dimensions and matrix are mutually exclusive.
+ * The backend assigns layoutVersion.
+ * This operation does not publish or bind the layout to showtimes.
  * @summary Create room layout draft
  */
 export const createRoomLayoutDraft = (

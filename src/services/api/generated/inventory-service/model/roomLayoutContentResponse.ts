@@ -6,17 +6,19 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { RoomLayoutElementPositionResponse } from './roomLayoutElementPositionResponse';
+import type { RoomLayoutMatrixResponse } from './roomLayoutMatrixResponse';
 import type { RoomLayoutResponse } from './roomLayoutResponse';
 import type { RoomLayoutSeatPositionResponse } from './roomLayoutSeatPositionResponse';
 
 /**
- * Geometry uses logical layout units.
- * x and y identify the unrotated top-left corner.
- * Rotation is around the rectangle center.
- * Positive rotationDegrees rotate clockwise in screen coordinates.
+ * Administration content of one layout version.
+ * Matrix layouts expose matrix.
+ * Legacy layouts expose geometry in seats and elements.
  */
 export interface RoomLayoutContentResponse {
   layout: RoomLayoutResponse;
   seats: RoomLayoutSeatPositionResponse[];
   elements: RoomLayoutElementPositionResponse[];
+  /** Present for matrix layouts; absent for legacy geometry layouts */
+  matrix?: RoomLayoutMatrixResponse;
 }
