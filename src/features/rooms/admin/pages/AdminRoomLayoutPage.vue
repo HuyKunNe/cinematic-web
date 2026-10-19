@@ -1,19 +1,32 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
+import type { RoomLayoutResponse } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
+import {
+  useAdminRoomMatrixContentQuery,
+  useAdminRoomMatrixLayoutsQuery,
+  useCreateAdminRoomMatrixDraftMutation,
+  useSaveAdminRoomMatrixMutation,
+} from '../api/admin-room-matrix-queries'
 import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
 import AdminSeatMatrixEditor from '../components/AdminSeatMatrixEditor.vue'
+import type { SeatMatrixDocument } from '../composables/use-admin-seat-matrix'
+import {
+  adminRoomMatrixKey,
+  readAdminRoomMatrix,
+  toAdminRoomMatrixRequest,
+  type AdminRoomMatrixDocument,
+} from '../mappers/admin-room-matrix.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
-import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
+import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
-const dirty = ref(false)
 
 const roomId = computed(() =>
   typeof route.params.roomId === 'string' ? route.params.roomId.toLowerCase() : '',
@@ -28,8 +41,15 @@ const canManage = computed(
 
 const context = useAdminRoomSeatContext(roomId, canManage)
 
-const current = computed(() =>
-  canManage.value && validRoom.value ? context.data.value : undefined,
+const current = computed(() => {
+  if (!canManage.value || !validRoom.value) return undefined
+
+  const value = context.data.value
+  return value?.room.id === roomId.value ? value : undefined
+})
+
+const ready = computed(
+  () => Boolean(current.value) && !context.isFetching.value && !context.isError.value,
 )
 
 const cinemaId = computed(() => {
@@ -38,8 +58,268 @@ const cinemaId = computed(() => {
   return isRoomSeatUuid(route.query.cinemaId) ? route.query.cinemaId.toLowerCase() : ''
 })
 
-function onMatrixChanged() {
-  dirty.value = true
+const pickedId = ref('')
+const queryLayoutId = ref('')
+const loadedLayout = ref<RoomLayoutResponse | null>(null)
+
+const initialDocument = ref<AdminRoomMatrixDocument | null>(null)
+const workingDocument = ref<AdminRoomMatrixDocument | null>(null)
+const baselineKey = ref('')
+const pendingInput = ref(false)
+
+const editor = ref<InstanceType<typeof AdminSeatMatrixEditor> | null>(null)
+const editorGeneration = ref(0)
+
+const opening = ref(false)
+const reloadRequired = ref(false)
+const creationBlocked = ref(false)
+const errorMessage = ref('')
+const notice = ref('')
+
+let scope = 0
+
+const versions = useAdminRoomMatrixLayoutsQuery(roomId, ready)
+
+// Chỉ đọc nội dung khi người dùng chọn mở hoặc tải lại.
+// Cache cập nhật sau khi lưu không tự nạp lại editor.
+const content = useAdminRoomMatrixContentQuery(roomId, queryLayoutId, false)
+
+const createDraft = useCreateAdminRoomMatrixDraftMutation()
+const saveMatrix = useSaveAdminRoomMatrixMutation()
+
+const layouts = computed(() => (current.value ? (versions.data.value ?? []) : []))
+
+const busy = computed(
+  () => opening.value || createDraft.isPending.value || saveMatrix.isPending.value,
+)
+
+const dirty = computed(() => {
+  if (pendingInput.value) return true
+  if (!workingDocument.value) return false
+
+  try {
+    return adminRoomMatrixKey(workingDocument.value) !== baselineKey.value
+  } catch {
+    return true
+  }
+})
+
+const canCreate = computed(
+  () =>
+    ready.value &&
+    !busy.value &&
+    !versions.isFetching.value &&
+    !versions.isError.value &&
+    !creationBlocked.value,
+)
+
+const canSave = computed(
+  () =>
+    ready.value &&
+    !busy.value &&
+    !reloadRequired.value &&
+    loadedLayout.value?.status === 'DRAFT' &&
+    Boolean(workingDocument.value) &&
+    dirty.value,
+)
+
+watch(
+  layouts,
+  (value) => {
+    if (!pickedId.value && value[0]) {
+      pickedId.value = value[0].id
+    }
+  },
+  { immediate: true },
+)
+
+function resetRoomState() {
+  scope += 1
+  pickedId.value = ''
+  queryLayoutId.value = ''
+  loadedLayout.value = null
+  initialDocument.value = null
+  workingDocument.value = null
+  baselineKey.value = ''
+  pendingInput.value = false
+  opening.value = false
+  reloadRequired.value = false
+  creationBlocked.value = false
+  errorMessage.value = ''
+  notice.value = ''
+}
+
+watch([roomId, canManage], resetRoomState, { flush: 'sync' })
+
+function confirmDiscard() {
+  return !dirty.value || window.confirm('Bỏ các thay đổi ma trận chưa lưu để tiếp tục?')
+}
+
+function onMatrixChanged(value: SeatMatrixDocument) {
+  workingDocument.value = value
+  notice.value = ''
+}
+
+function uncertainWrite(error: unknown) {
+  if (!isAdminRoomApiError(error)) return true
+
+  return error.status === null || error.status === 408 || error.status >= 500
+}
+
+async function loadVersion(layoutId: string) {
+  if (!ready.value || !isRoomSeatUuid(layoutId)) return
+
+  const requestedRoomId = roomId.value
+  const token = ++scope
+
+  opening.value = true
+  errorMessage.value = ''
+  notice.value = ''
+  queryLayoutId.value = layoutId
+
+  try {
+    await nextTick()
+
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    const result = await content.refetch({ throwOnError: true })
+
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    if (!result.data) {
+      throw new Error('Không nhận được nội dung sơ đồ.')
+    }
+
+    const document = readAdminRoomMatrix(result.data, requestedRoomId, layoutId)
+
+    loadedLayout.value = result.data.layout
+    pickedId.value = layoutId
+    initialDocument.value = document
+    workingDocument.value = document
+    baselineKey.value = document ? adminRoomMatrixKey(document) : ''
+    pendingInput.value = false
+    reloadRequired.value = false
+    editorGeneration.value += 1
+
+    notice.value = `Đã mở phiên bản ${result.data.layout.layoutVersion}.`
+  } catch (error) {
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    errorMessage.value = adminRoomErrorMessage(error, 'Không thể mở sơ đồ.')
+  } finally {
+    if (token === scope) opening.value = false
+  }
+}
+
+async function openVersion(layoutId: string) {
+  if (!ready.value || busy.value || !isRoomSeatUuid(layoutId)) return
+  if (!confirmDiscard()) return
+
+  await loadVersion(layoutId)
+}
+
+async function createVersion() {
+  if (!canCreate.value || !confirmDiscard()) return
+
+  const requestedRoomId = roomId.value
+  const token = scope
+
+  errorMessage.value = ''
+  notice.value = ''
+
+  try {
+    const created = await createDraft.mutateAsync(requestedRoomId)
+
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    // Nếu bước đọc nội dung lỗi, chọn mở lại ID vừa tạo;
+    // không tự gửi lại POST.
+    pickedId.value = created.id
+    await loadVersion(created.id)
+  } catch (error) {
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    creationBlocked.value = uncertainWrite(error)
+    errorMessage.value = adminRoomErrorMessage(error, 'Không thể tạo bản nháp.')
+  }
+}
+
+async function refreshVersions() {
+  if (!ready.value || busy.value || versions.isFetching.value) return
+
+  const requestedRoomId = roomId.value
+  const token = scope
+
+  errorMessage.value = ''
+
+  try {
+    await versions.refetch({ throwOnError: true })
+
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    creationBlocked.value = false
+    notice.value = 'Đã cập nhật danh sách phiên bản.'
+  } catch (error) {
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    errorMessage.value = adminRoomErrorMessage(error, 'Không thể tải danh sách phiên bản.')
+  }
+}
+
+async function saveDraft() {
+  if (!canSave.value || !loadedLayout.value) return
+
+  const document = editor.value?.prepareSave()
+  if (!document) return
+
+  workingDocument.value = document
+
+  const requestedRoomId = roomId.value
+  const requestedLayout = loadedLayout.value
+  const token = scope
+
+  let submittedKey: string
+
+  try {
+    toAdminRoomMatrixRequest(document, requestedLayout.version)
+    submittedKey = adminRoomMatrixKey(document)
+  } catch (error) {
+    errorMessage.value = adminRoomErrorMessage(error, 'Ma trận chưa hợp lệ.')
+    return
+  }
+
+  if (submittedKey === baselineKey.value) {
+    notice.value = 'Không có thay đổi cần lưu.'
+    return
+  }
+
+  errorMessage.value = ''
+  notice.value = ''
+
+  try {
+    const saved = await saveMatrix.mutateAsync({
+      roomId: requestedRoomId,
+      layoutId: requestedLayout.id,
+      expectedVersion: requestedLayout.version,
+      document,
+    })
+
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    loadedLayout.value = saved.layout
+    baselineKey.value = submittedKey
+    reloadRequired.value = false
+    notice.value = 'Đã lưu bản nháp.'
+
+    // Giữ nguyên editor và lịch sử undo/redo sau khi lưu.
+  } catch (error) {
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    reloadRequired.value =
+      uncertainWrite(error) || (isAdminRoomApiError(error) && error.status === 409)
+
+    errorMessage.value = adminRoomErrorMessage(error, 'Không thể lưu bản nháp.')
+  }
 }
 
 function backToRooms() {
@@ -60,7 +340,8 @@ function backToSeats() {
 }
 
 function confirmLeave() {
-  return !dirty.value || window.confirm('Rời trang và bỏ các thay đổi ma trận chưa lưu?')
+  if (busy.value) return false
+  return confirmDiscard()
 }
 
 function preventUnload(event: BeforeUnloadEvent) {
@@ -69,7 +350,7 @@ function preventUnload(event: BeforeUnloadEvent) {
 }
 
 watch(
-  dirty,
+  () => dirty.value || busy.value,
   (value) => {
     if (value) window.addEventListener('beforeunload', preventUnload)
     else window.removeEventListener('beforeunload', preventUnload)
@@ -77,11 +358,8 @@ watch(
   { flush: 'sync' },
 )
 
-watch(roomId, () => {
-  dirty.value = false
-})
-
 onBeforeUnmount(() => {
+  scope += 1
   window.removeEventListener('beforeunload', preventUnload)
 })
 
@@ -100,18 +378,31 @@ onBeforeRouteUpdate(confirmLeave)
         <p class="room-matrix-page__eyebrow">
           {{ current ? `${current.cinema.name} · ${current.room.name}` : 'Cấu hình sơ đồ phòng' }}
         </p>
+
         <h1 id="room-matrix-title">Thiết kế ma trận ghế</h1>
         <p>Tạo ghế và bố trí các hàng, cột trong sơ đồ phòng chiếu.</p>
       </div>
 
       <div class="room-matrix-page__actions">
-        <AppButton variant="secondary" @click="backToRooms"> Quay lại phòng </AppButton>
+        <AppButton variant="secondary" :disabled="busy" @click="backToRooms">
+          Quay lại phòng
+        </AppButton>
 
-        <AppButton v-if="validRoom && canManage" variant="secondary" @click="backToSeats">
+        <AppButton
+          v-if="validRoom && canManage"
+          variant="secondary"
+          :disabled="busy"
+          @click="backToSeats"
+        >
           Ghế của phòng
         </AppButton>
 
-        <AppButton variant="secondary" disabled title="Chức năng lưu ma trận chưa khả dụng">
+        <AppButton
+          variant="secondary"
+          :disabled="!canSave"
+          :loading="saveMatrix.isPending.value"
+          @click="saveDraft"
+        >
           Lưu nháp
         </AppButton>
 
@@ -132,8 +423,10 @@ onBeforeRouteUpdate(confirmLeave)
         <p class="room-matrix-page__error" role="alert">
           {{ adminRoomErrorMessage(context.error.value, 'Không thể tải thông tin phòng.') }}
         </p>
+
         <AppButton
           variant="secondary"
+          :disabled="busy"
           :loading="context.isFetching.value"
           @click="context.refetch()"
         >
@@ -142,18 +435,110 @@ onBeforeRouteUpdate(confirmLeave)
       </div>
 
       <template v-if="current">
-        <aside class="room-matrix-page__notice">
-          <strong>{{ dirty ? 'Có thay đổi chưa lưu' : 'Ma trận mới' }}</strong>
+        <div class="room-matrix-page__versions">
+          <label for="room-layout-version">Phiên bản sơ đồ</label>
+
+          <select
+            id="room-layout-version"
+            v-model="pickedId"
+            :disabled="!ready || busy || versions.isFetching.value"
+          >
+            <option value="" disabled>Chọn phiên bản</option>
+
+            <option v-for="layout in layouts" :key="layout.id" :value="layout.id">
+              Phiên bản {{ layout.layoutVersion }} ·
+              {{ layout.status === 'DRAFT' ? 'Bản nháp' : 'Đã xuất bản' }}
+            </option>
+          </select>
+
+          <div class="room-matrix-page__actions">
+            <AppButton
+              variant="secondary"
+              :disabled="!ready || busy || !pickedId"
+              @click="openVersion(pickedId)"
+            >
+              Mở phiên bản
+            </AppButton>
+
+            <AppButton
+              variant="secondary"
+              :disabled="!ready || busy"
+              :loading="versions.isFetching.value"
+              @click="refreshVersions"
+            >
+              Tải danh sách
+            </AppButton>
+
+            <AppButton
+              :disabled="!canCreate"
+              :loading="createDraft.isPending.value"
+              @click="createVersion"
+            >
+              Tạo bản nháp 6 × 6
+            </AppButton>
+          </div>
+        </div>
+
+        <p v-if="versions.isError.value" class="room-matrix-page__error" role="alert">
+          {{ adminRoomErrorMessage(versions.error.value, 'Không thể tải danh sách phiên bản.') }}
+        </p>
+
+        <p
+          v-else-if="!versions.isFetching.value && layouts.length === 0"
+          class="room-matrix-page__muted"
+        >
+          Phòng chưa có sơ đồ. Chọn “Tạo bản nháp 6 × 6” để bắt đầu.
+        </p>
+
+        <p v-if="errorMessage" class="room-matrix-page__error" role="alert">
+          {{ errorMessage }}
+        </p>
+
+        <p v-if="notice" class="room-matrix-page__muted" role="status">
+          {{ notice }}
+        </p>
+
+        <aside v-if="creationBlocked" class="room-matrix-page__notice">
+          <strong>Chưa xác nhận được kết quả tạo bản nháp</strong>
+          <p>Tải danh sách phiên bản và kiểm tra bản nháp vừa tạo trước khi tạo thêm.</p>
+        </aside>
+
+        <aside v-if="reloadRequired" class="room-matrix-page__notice">
+          <strong>Cần tải lại trước khi lưu tiếp</strong>
           <p>
-            Ma trận này đang được chỉnh trong trang hiện tại. Chức năng lưu và mở lại ma trận chưa
-            khả dụng. Các sơ đồ đã lưu trước đây chưa được nạp vào trình chỉnh sửa này.
+            Nội dung đang chỉnh được giữ trên trang. Mở lại phiên bản để đọc dữ liệu hiện tại từ máy
+            chủ; trang sẽ hỏi trước khi bỏ thay đổi chưa lưu.
+          </p>
+        </aside>
+
+        <p v-if="opening" class="room-matrix-page__muted" role="status">Đang mở sơ đồ…</p>
+
+        <aside v-if="loadedLayout" class="room-matrix-page__notice">
+          <strong>
+            Phiên bản {{ loadedLayout.layoutVersion }} ·
+            {{
+              loadedLayout.status === 'PUBLISHED'
+                ? 'Đã xuất bản — chỉ xem'
+                : dirty
+                  ? 'Có thay đổi chưa lưu'
+                  : 'Đã đồng bộ'
+            }}
+          </strong>
+
+          <p v-if="!initialDocument">
+            Phiên bản này dùng sơ đồ tọa độ cũ. Hãy tạo bản nháp ma trận mới để sử dụng trình chỉnh
+            sửa hiện tại.
           </p>
         </aside>
 
         <AdminSeatMatrixEditor
-          :key="roomId"
-          :disabled="context.isFetching.value || context.isError.value"
+          v-if="initialDocument && loadedLayout"
+          :key="`${roomId}:${editorGeneration}`"
+          ref="editor"
+          :initial-document="initialDocument"
+          :disabled="!ready || busy || loadedLayout.status !== 'DRAFT'"
           @change="onMatrixChanged"
+          @pending="pendingInput = $event"
         />
       </template>
 
@@ -234,5 +619,27 @@ onBeforeRouteUpdate(confirmLeave)
 
 .room-matrix-page__muted {
   color: var(--color-text-secondary);
+}
+
+.room-matrix-page__versions {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+}
+
+.room-matrix-page__versions select {
+  max-width: 100%;
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  font: inherit;
+}
+
+.room-matrix-page__versions select:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
 }
 </style>

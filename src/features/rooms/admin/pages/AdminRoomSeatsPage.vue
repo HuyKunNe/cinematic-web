@@ -89,10 +89,15 @@ const catalog = computed(() => {
 
 const selected = computed(() => {
   for (const row of catalog.value.matrix?.rows ?? []) {
-    const index = row.cells.findIndex((seat) => seat?.id === selectedId.value)
+    const cell = row.cells.find((item) => item.seat?.id === selectedId.value)
 
-    if (index >= 0) {
-      return { seat: row.cells[index]!, column: index + 1 }
+    if (cell?.seat) {
+      return {
+        seat: cell.seat,
+        column: cell.column + 1,
+        endColumn: cell.column + cell.span,
+        span: cell.span,
+      }
     }
   }
 
@@ -144,6 +149,10 @@ function typeLabel(type?: string) {
 
 function statusLabel(active?: boolean) {
   return active === true ? 'Đang hoạt động' : active === false ? 'Tạm ngưng' : '—'
+}
+
+function columnLabel(start: number, end: number) {
+  return start === end ? String(start) : `${start}–${end}`
 }
 
 async function changeActivity() {
@@ -350,7 +359,7 @@ async function changeActivity() {
             <header class="seatmap-panel-heading">
               <div>
                 <h2 id="seatmap-title">Ma trận ghế</h2>
-                <p id="seatmap-help">Chọn ghế để xem thông tin.</p>
+                <p id="seatmap-help">Chọn ghế để xem thông tin. Ghế đôi chiếm 2 ô liền nhau.</p>
               </div>
             </header>
 
@@ -422,7 +431,12 @@ async function changeActivity() {
                   <div class="seatmap-stage"><span>MÀN HÌNH</span></div>
 
                   <div v-for="row in catalog.matrix.rows" :key="row.label" class="seatmap-row">
-                    <div v-for="(seat, column) in row.cells" :key="column" class="seatmap-slot">
+                    <div
+                      v-for="{ seat, column, span } in row.cells"
+                      :key="seat?.id ?? `empty-${column}`"
+                      class="seatmap-slot"
+                      :class="{ 'is-couple': span === 2 }"
+                    >
                       <button
                         v-if="seat"
                         class="seatmap-cell"
@@ -437,9 +451,12 @@ async function changeActivity() {
                         }"
                         :disabled="busy"
                         :aria-pressed="selectedId === seat.id"
-                        :aria-label="`${seat.seatNumber}, hàng ${row.label}, cột hiển thị ${
-                          column + 1
-                        }, ${typeLabel(seat.seatType)}, ${statusLabel(seat.active)}`"
+                        :aria-label="`${seat.seatNumber}, hàng ${row.label}, cột hiển thị ${columnLabel(
+                          column + 1,
+                          column + span,
+                        )}, chiếm ${span} ô, ${typeLabel(seat.seatType)}, ${statusLabel(
+                          seat.active,
+                        )}`"
                         @click="selectedId = seat.id"
                       >
                         {{ seat.seatNumber }}
@@ -476,8 +493,12 @@ async function changeActivity() {
                 <dd>{{ selected.seat.rowLabel }}</dd>
               </div>
               <div>
-                <dt>Cột</dt>
-                <dd>{{ String(selected.column).padStart(2, '0') }}</dd>
+                <dt>Cột hiển thị</dt>
+                <dd>{{ columnLabel(selected.column, selected.endColumn) }}</dd>
+              </div>
+              <div>
+                <dt>Số ô chiếm</dt>
+                <dd>{{ selected.span }}</dd>
               </div>
               <div>
                 <dt>Loại ghế</dt>
@@ -509,8 +530,20 @@ async function changeActivity() {
               <h3 class="seatmap-details__subtitle">Thống kê ma trận</h3>
               <dl>
                 <div>
-                  <dt>Tổng số vị trí</dt>
+                  <dt>Số hàng</dt>
+                  <dd>{{ catalog.matrix.rows.length }}</dd>
+                </div>
+                <div>
+                  <dt>Số cột</dt>
+                  <dd>{{ catalog.matrix.columnCount }}</dd>
+                </div>
+                <div>
+                  <dt>Tổng số ô</dt>
                   <dd>{{ catalog.matrix.rows.length * catalog.matrix.columnCount }}</dd>
+                </div>
+                <div>
+                  <dt>Ô đã chiếm</dt>
+                  <dd>{{ catalog.matrix.occupiedCount }}</dd>
                 </div>
                 <div v-for="option in adminSeatTypeOptions" :key="option.value">
                   <dt>
@@ -544,3 +577,20 @@ async function changeActivity() {
     </template>
   </section>
 </template>
+
+<style scoped>
+:where([data-reference='admin-room-seats']) {
+  --seatmap-couple-span: 2;
+  --seatmap-couple-slot-width: calc(var(--seatmap-cell-width) * var(--seatmap-couple-span));
+  --seatmap-couple-seat-width: calc(var(--seatmap-couple-slot-width) - var(--seatmap-column-gap));
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-slot.is-couple {
+  grid-column: span var(--seatmap-couple-span);
+  width: var(--seatmap-couple-slot-width);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-cell.is-couple {
+  width: var(--seatmap-couple-seat-width);
+}
+</style>

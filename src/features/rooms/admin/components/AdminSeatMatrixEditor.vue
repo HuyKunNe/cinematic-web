@@ -10,6 +10,7 @@ import {
 const props = withDefaults(
   defineProps<{
     disabled?: boolean
+    initialDocument?: SeatMatrixDocument
   }>(),
   {
     disabled: false,
@@ -18,6 +19,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   change: [value: SeatMatrixDocument]
+  pending: [value: boolean]
 }>()
 
 type StructureAction = {
@@ -28,14 +30,17 @@ type StructureAction = {
   danger?: boolean
 }
 
-const matrix = useAdminSeatMatrix()
+const matrix = useAdminSeatMatrix(props.initialDocument)
 const { document, selection, selectedSeat, statistics, canUndo, canRedo } = matrix
 
 const prefix = useId()
 const table = ref<HTMLTableElement | null>(null)
 const drafts = ref<Record<string, string>>({})
 const fieldErrors = ref<Record<string, string>>({})
-const status = ref('Ma trận mới có 6 hàng, 6 cột và chưa có ghế.')
+const status = ref(
+  `Ma trận có ${statistics.value.rows} hàng, ` +
+    `${statistics.value.columns} cột và ${statistics.value.seats} ghế.`,
+)
 const error = ref('')
 
 const selectedTitle = computed(() => {
@@ -96,7 +101,15 @@ const structureGroups: {
   },
 ]
 
-watch(document, () => emit('change', matrix.snapshot()), { deep: true })
+watch(document, () => emit('change', matrix.snapshot()), { deep: true, flush: 'sync' })
+
+watch(
+  () =>
+    Object.values(drafts.value).some((value) => value.trim().length > 0) ||
+    Object.keys(fieldErrors.value).length > 0,
+  (value) => emit('pending', value),
+  { immediate: true, flush: 'sync' },
+)
 
 function cellKey(row: number, column: number) {
   return `${row}:${column}`
@@ -135,7 +148,6 @@ function commit(row: number, column: number) {
   const result = matrix.addSeat(row, column, raw)
 
   if (!result.ok) {
-    drafts.value[key] = ''
     fieldErrors.value[key] = result.message
     announce(result.message, true)
     return
@@ -255,6 +267,34 @@ function reset() {
       : 'Ma trận hiện tại đã là 6 × 6 trống.',
   )
 }
+
+function prepareSave(): SeatMatrixDocument | null {
+  if (props.disabled) return null
+
+  // Hoàn tất cả ô đang nhập, kể cả khi chưa blur hoặc nhấn Enter.
+  for (const key of Object.keys(drafts.value)) {
+    const [row, column] = key.split(':').map(Number)
+    commit(row!, column!)
+  }
+
+  const firstErrorKey = Object.keys(fieldErrors.value)[0]
+
+  if (firstErrorKey) {
+    const [row, column] = firstErrorKey.split(':').map(Number)
+
+    matrix.select(row!, column!)
+    announce(fieldErrors.value[firstErrorKey]!, true)
+    void focusSelected()
+
+    return null
+  }
+
+  return matrix.snapshot()
+}
+
+defineExpose({
+  prepareSave,
+})
 </script>
 
 <template>

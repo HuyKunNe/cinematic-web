@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import type { SeatResponseSeatType } from '@/services/api/generated/inventory-service/model/seatResponseSeatType'
 
 export type MatrixSeat = {
+  seatId?: string
   number: number
   seatType: SeatResponseSeatType
 }
@@ -76,8 +77,10 @@ function renumber(row: MatrixCell[]) {
   }
 }
 
-export function useAdminSeatMatrix() {
-  const document = ref<SeatMatrixDocument>(emptyDocument())
+export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
+  const document = ref<SeatMatrixDocument>(
+    initialDocument ? copyDocument(initialDocument) : emptyDocument(),
+  )
   const selection = ref<MatrixSelection>({ row: 0, column: 0 })
   const undoStack = ref<MatrixCheckpoint[]>([])
   const redoStack = ref<MatrixCheckpoint[]>([])
