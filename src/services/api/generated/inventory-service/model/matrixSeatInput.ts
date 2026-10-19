@@ -16,14 +16,17 @@ export interface MatrixSeatInput {
      */
   rowIndex: number;
   /**
+     * Zero-based starting column. COUPLE also occupies the next column in the same row.
      * @minimum 0
      * @maximum 99
      */
   columnIndex: number;
   /**
+     * Consecutive seat number within the row, starting at 1. COUPLE counts as one seat.
      * @minimum 1
      * @maximum 100
      */
   number: number;
+  /** Defaults to STANDARD. COUPLE occupies two columns; all other types occupy one. */
   seatType?: MatrixSeatInputSeatType;
 }

@@ -7,6 +7,9 @@
  */
 import type { MatrixSeatResponse } from './matrixSeatResponse';
 
+/**
+ * Sparse room matrix. Each seat appears once at its starting cell. COUPLE occupies two adjacent columns without an additional seat entry for the second cell.
+ */
 export interface RoomLayoutMatrixResponse {
   rowCount: number;
   columnCount: number;

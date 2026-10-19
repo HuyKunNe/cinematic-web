@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * COUPLE occupies two columns; all other types occupy one.
+ */
 export type MatrixSeatResponseSeatType = typeof MatrixSeatResponseSeatType[keyof typeof MatrixSeatResponseSeatType];
 
 

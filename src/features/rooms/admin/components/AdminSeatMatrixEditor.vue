@@ -218,11 +218,15 @@ async function focusSelected() {
     ?.focus()
 }
 
-async function selectRow(row: number) {
+async function selectCell(row: number, column: number) {
   if (props.disabled) return
 
-  matrix.select(row, selection.value.column)
+  matrix.select(row, column)
   await focusSelected()
+}
+
+async function selectRow(row: number) {
+  await selectCell(row, selection.value.column)
 }
 
 async function mutate(action: () => boolean, message: string) {
@@ -300,7 +304,7 @@ function changeType(event: Event) {
 
   announce(
     selectedSeat.value?.seatType === 'COUPLE'
-      ? `Ghế ${selectedTitle.value} đã chiếm 2 ô liền nhau.`
+      ? `Ghế ${selectedTitle.value} đã gộp 2 ô liền nhau.`
       : `Đã đổi loại ghế ${selectedTitle.value}.`,
   )
 }
@@ -397,7 +401,7 @@ defineExpose({
             <h2 :id="`${prefix}-title`">Ma trận ghế</h2>
             <p :id="`${prefix}-help`">
               Nhập số nguyên dương chưa dùng trong hàng vào ô trống. Ghế tự đánh số từ trái sang
-              phải, bỏ qua ô trống. Ghế đôi chiếm 2 ô liền nhau.
+              phải, bỏ qua ô trống. Ghế đôi gộp 2 ô liền nhau.
             </p>
           </div>
           <span class="seat-matrix-editor__badge">{{ statistics.seats }} ghế</span>
@@ -417,7 +421,7 @@ defineExpose({
 
             <table ref="table" :aria-describedby="`${prefix}-help ${prefix}-status`">
               <caption class="admin-visually-hidden">
-                Cột đầu là nhãn hàng. Ghế thường chiếm một ô, ghế đôi chiếm hai ô.
+                Cột đầu là nhãn hàng. Ghế thường chiếm một ô, ghế đôi gộp hai ô.
               </caption>
 
               <colgroup>
@@ -450,6 +454,7 @@ defineExpose({
                     :class="{
                       'is-selected': selection.row === rowIndex && selection.column === cell.column,
                     }"
+                    @click="selectCell(rowIndex, cell.column)"
                   >
                     <input
                       type="text"
@@ -623,8 +628,19 @@ defineExpose({
 
 <style scoped>
 .seat-matrix-editor {
-  --matrix-cell-size: var(--space-16);
-  --matrix-axis-size: var(--space-16);
+  /* Cùng kích thước với AdminRoomSeatsPage. */
+  --matrix-seat-width: 40px;
+  --matrix-seat-height: 30px;
+  --matrix-column-gap: 40px;
+  --matrix-row-gap: 40px;
+  --matrix-couple-span: 2;
+
+  --matrix-cell-width: calc(var(--matrix-seat-width) + var(--matrix-column-gap));
+  --matrix-cell-height: calc(var(--matrix-seat-height) + var(--matrix-row-gap));
+  --matrix-couple-width: calc(
+    var(--matrix-cell-width) * var(--matrix-couple-span) - var(--matrix-column-gap)
+  );
+  --matrix-axis-size: 40px;
   --matrix-edge-size: 6rem;
   --matrix-main-basis: 32rem;
   --matrix-inspector-size: 20rem;
@@ -632,7 +648,7 @@ defineExpose({
   --matrix-seat-tint: 12%;
   --matrix-screen-spacing: 0.14em;
   --matrix-table-width: calc(
-    var(--matrix-axis-size) + var(--matrix-cell-size) * var(--matrix-column-count)
+    var(--matrix-axis-size) + var(--matrix-cell-width) * var(--matrix-column-count)
   );
 
   display: grid;
@@ -772,16 +788,17 @@ defineExpose({
 }
 
 .seat-matrix-editor__seat-column {
-  width: var(--matrix-cell-size);
+  width: var(--matrix-cell-width);
 }
 
 .seat-matrix-editor th,
 .seat-matrix-editor td {
   box-sizing: border-box;
-  height: var(--matrix-cell-size);
-  padding: var(--space-2);
+  height: var(--matrix-cell-height);
+  padding: 0;
   border: var(--border-width-thin) solid var(--color-border);
   text-align: center;
+  vertical-align: middle;
 }
 
 .seat-matrix-editor th {
@@ -791,19 +808,32 @@ defineExpose({
   background: var(--color-surface);
 }
 
+.seat-matrix-editor td {
+  cursor: pointer;
+}
+
+/* Kích thước ghế độc lập với kích thước ô bố trí. */
 .seat-matrix-editor input {
+  display: block;
   box-sizing: border-box;
-  width: 100%;
+  width: var(--matrix-seat-width);
   min-width: 0;
-  min-height: var(--control-height-md);
+  height: var(--matrix-seat-height);
+  min-height: 0;
+  margin-inline: auto;
   padding: 0;
   border: var(--border-width-thin) dashed var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-text-primary);
   font: inherit;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   text-align: center;
+}
+
+/* Một td colspan=2, một input rộng 120px, không có đường chia ở giữa. */
+.seat-matrix-editor td[data-seat-type='COUPLE'] input {
+  width: var(--matrix-couple-width);
 }
 
 .seat-matrix-editor [data-seat-type='STANDARD'] {
@@ -847,6 +877,12 @@ defineExpose({
   background: var(--color-surface-raised);
   color: var(--color-text-primary);
   font: inherit;
+}
+
+.seat-matrix-editor th button {
+  width: 100%;
+  padding-inline: var(--space-1);
+  font-size: var(--font-size-xs);
 }
 
 .seat-matrix-editor select {

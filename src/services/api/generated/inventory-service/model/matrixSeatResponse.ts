@@ -11,7 +11,10 @@ export interface MatrixSeatResponse {
   /** Inventory seat identifier; null while the draft cell is unbound */
   seatId: string | null;
   rowIndex: number;
+  /** Zero-based starting column. COUPLE also occupies the next column in the same row. */
   columnIndex: number;
+  /** Consecutive seat number within the row. COUPLE counts as one seat. */
   number: number;
+  /** COUPLE occupies two columns; all other types occupy one. */
   seatType: MatrixSeatResponseSeatType;
 }

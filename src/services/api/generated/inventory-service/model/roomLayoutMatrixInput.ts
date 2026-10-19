@@ -7,6 +7,9 @@
  */
 import type { MatrixSeatInput } from './matrixSeatInput';
 
+/**
+ * Sparse room matrix. Each seat is represented once at its starting cell. COUPLE occupies two adjacent columns; other types occupy one. Do not submit an additional seat for the second COUPLE cell.
+ */
 export interface RoomLayoutMatrixInput {
   /**
      * @minimum 1
