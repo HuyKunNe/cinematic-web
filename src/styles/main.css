@@ -18,8 +18,6 @@
 @import './admin-movie-catalog.css';
 @import './admin-room-seats.css';
 @import './admin-room-seats-responsive.css';
-@import './admin-room-layout.css';
-@import './admin-room-layout-responsive.css';
 
 /* Navigation styles remain imported by their owning layouts. */
 @theme {
