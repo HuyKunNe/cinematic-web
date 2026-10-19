@@ -72,6 +72,7 @@ const selectedTitle = computed(() => {
 
 const structureGroups: {
   title: string
+  description?: string
   actions: StructureAction[]
 }[] = [
   {
@@ -100,6 +101,7 @@ const structureGroups: {
   },
   {
     title: 'Thao tác cột',
+    description: 'Xóa cột sẽ xóa cả ghế đôi đi qua cột đó trên mọi hàng.',
     actions: [
       {
         label: 'Chèn cột bên trái',
@@ -557,6 +559,13 @@ defineExpose({
 
           <button
             type="button"
+            :disabled="statistics.columns >= MATRIX_LIMITS.dimension"
+            @click="() => matrix.insertCell(selection.row, selection.column + selectedSpan)"
+          >
+            Chèn ô bên phải
+          </button>
+          <button
+            type="button"
             class="is-danger"
             :disabled="!selectedSeat || disabled"
             @click="
@@ -576,6 +585,9 @@ defineExpose({
           class="seat-matrix-editor__panel"
         >
           <h2>{{ group.title }}</h2>
+
+          <p v-if="group.description">{{ group.description }}</p>
+
           <button
             v-for="action in group.actions"
             :key="action.label"
@@ -586,10 +598,6 @@ defineExpose({
           >
             {{ action.label }}
           </button>
-
-          <p v-if="group.title === 'Thao tác cột'">
-            Xóa cột sẽ xóa cả ghế đôi đi qua cột đó trên mọi hàng.
-          </p>
         </section>
 
         <section class="seat-matrix-editor__panel">
@@ -628,13 +636,11 @@ defineExpose({
 
 <style scoped>
 .seat-matrix-editor {
-  /* Cùng kích thước với AdminRoomSeatsPage. */
   --matrix-seat-width: 40px;
   --matrix-seat-height: 30px;
   --matrix-column-gap: 40px;
   --matrix-row-gap: 40px;
   --matrix-couple-span: 2;
-
   --matrix-cell-width: calc(var(--matrix-seat-width) + var(--matrix-column-gap));
   --matrix-cell-height: calc(var(--matrix-seat-height) + var(--matrix-row-gap));
   --matrix-couple-width: calc(
@@ -812,7 +818,6 @@ defineExpose({
   cursor: pointer;
 }
 
-/* Kích thước ghế độc lập với kích thước ô bố trí. */
 .seat-matrix-editor input {
   display: block;
   box-sizing: border-box;
@@ -831,7 +836,6 @@ defineExpose({
   text-align: center;
 }
 
-/* Một td colspan=2, một input rộng 120px, không có đường chia ở giữa. */
 .seat-matrix-editor td[data-seat-type='COUPLE'] input {
   width: var(--matrix-couple-width);
 }
@@ -946,11 +950,11 @@ defineExpose({
   gap: var(--space-3);
 }
 
-.seat-matrix-editor dt {
-  color: var(--color-text-secondary);
-}
-
 .seat-matrix-editor dd {
   margin: 0;
+}
+
+.seat-matrix-editor dt {
+  color: var(--color-text-secondary);
 }
 </style>

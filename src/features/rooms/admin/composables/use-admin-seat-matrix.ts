@@ -7,8 +7,8 @@ export type MatrixSeat = {
   seatType: SeatResponseSeatType
 }
 
-// Ghế đôi được lưu ở ô bắt đầu.
-// Ô bên phải vẫn là null trong document, nhưng được ghế đôi chiếm.
+// Ghế đôi nằm tại ô bắt đầu.
+// Ô bên phải là null được dành chỗ cho cùng ghế.
 export type MatrixCell = MatrixSeat | null
 
 export type SeatMatrixDocument = {
@@ -407,6 +407,66 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     return commit(next)
   }
 
+  function insertCell(rowIndex: number, index: number) {
+    operationError.value = ''
+
+    if (
+      !Number.isInteger(rowIndex) ||
+      rowIndex < 0 ||
+      rowIndex >= document.value.rows.length ||
+      !Number.isInteger(index) ||
+      index < 0 ||
+      index > document.value.columns
+    ) {
+      return fail('Vị trí chèn ô không hợp lệ.')
+    }
+
+    const row = document.value.rows[rowIndex]!
+
+    if (index > 0 && row[index - 1]?.seatType === 'COUPLE') {
+      return fail('Không thể chèn ô giữa hai phần của ghế đôi.')
+    }
+
+    const lastColumn = document.value.columns - 1
+    const lastIsFree =
+      row[lastColumn] === null && matrixSeatOwnerColumn(row, lastColumn) === lastColumn
+
+    const needsColumn = index === document.value.columns || !lastIsFree
+
+    if (needsColumn && document.value.columns >= MATRIX_LIMITS.dimension) {
+      return fail(
+        'Không thể chèn ô vì cần thêm cột nhưng ma trận đã đủ 100 cột. ' +
+          'Hãy để trống ô cuối hàng trước.',
+      )
+    }
+
+    const next = snapshot()
+    const nextRow = next.rows[rowIndex]!
+
+    // Chỉ dịch nội dung của hàng đang chọn.
+    nextRow.splice(index, 0, null)
+
+    if (needsColumn) {
+      // Các hàng khác giữ nguyên vị trí ghế và được thêm ô trống cuối.
+      for (let currentRow = 0; currentRow < next.rows.length; currentRow += 1) {
+        if (currentRow !== rowIndex) next.rows[currentRow]!.push(null)
+      }
+
+      next.columns += 1
+    } else {
+      // Chỉ bỏ ô cuối khi chắc chắn đó là ô trống độc lập.
+      nextRow.pop()
+    }
+
+    renumber(nextRow)
+
+    const changed = commit(next, { row: rowIndex, column: index })
+
+    // Hàng toàn ô trống có thể không đổi nội dung,
+    // nhưng vẫn chọn ô vừa yêu cầu chèn và thông báo thành công.
+    return changed || !operationError.value
+  }
+
   function insertRow(index: number) {
     operationError.value = ''
 
@@ -488,7 +548,6 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     for (const row of next.rows) {
       const owner = matrixSeatOwnerColumn(row, index)
 
-      // Xóa toàn bộ ghế đôi nếu cột bị xóa đi qua một trong hai ô.
       if (row[owner]?.seatType === 'COUPLE') {
         row[owner] = null
       }
@@ -522,6 +581,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     addSeat,
     clearSelectedSeat,
     changeSelectedType,
+    insertCell,
     insertRow,
     deleteSelectedRow,
     insertColumn,
