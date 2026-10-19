@@ -350,7 +350,7 @@ async function changeActivity() {
             <header class="seatmap-panel-heading">
               <div>
                 <h2 id="seatmap-title">Ma trận ghế</h2>
-                <p>Chọn ghế để xem thông tin.</p>
+                <p id="seatmap-help">Chọn ghế để xem thông tin.</p>
               </div>
             </header>
 
@@ -403,10 +403,9 @@ async function changeActivity() {
             <div
               v-else
               class="seatmap-viewport"
-              :style="{ '--seatmap-columns': catalog.matrix.columnCount }"
+              :style="{ '--seatmap-column-count': catalog.matrix.columnCount }"
             >
               <div class="seatmap-axis" aria-hidden="true">
-                <div class="seatmap-axis-heading">Hàng</div>
                 <div v-for="row in catalog.matrix.rows" :key="row.label" class="seatmap-row-label">
                   {{ row.label }}
                 </div>
@@ -421,12 +420,6 @@ async function changeActivity() {
               >
                 <div class="seatmap-canvas-content">
                   <div class="seatmap-stage"><span>MÀN HÌNH</span></div>
-
-                  <div class="seatmap-columns" aria-hidden="true">
-                    <span v-for="column in catalog.matrix.columnCount" :key="column">
-                      {{ String(column).padStart(2, '0') }}
-                    </span>
-                  </div>
 
                   <div v-for="row in catalog.matrix.rows" :key="row.label" class="seatmap-row">
                     <div v-for="(seat, column) in row.cells" :key="column" class="seatmap-slot">
@@ -449,12 +442,7 @@ async function changeActivity() {
                         }, ${typeLabel(seat.seatType)}, ${statusLabel(seat.active)}`"
                         @click="selectedId = seat.id"
                       >
-                        {{
-                          seat.seatNumber.startsWith(row.label) &&
-                          /^\d+$/.test(seat.seatNumber.slice(row.label.length))
-                            ? seat.seatNumber.slice(row.label.length)
-                            : seat.seatNumber
-                        }}
+                        {{ seat.seatNumber }}
                       </button>
 
                       <span

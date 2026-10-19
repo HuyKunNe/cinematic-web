@@ -8,7 +8,8 @@
 import type { MatrixSeatInputSeatType } from './matrixSeatInputSeatType';
 
 export interface MatrixSeatInput {
-  seatId?: string;
+  /** Inventory seat identifier; null while the draft cell is unbound */
+  seatId?: string | null;
   /**
      * @minimum 0
      * @maximum 99

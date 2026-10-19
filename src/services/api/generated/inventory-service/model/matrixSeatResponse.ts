@@ -8,8 +8,8 @@
 import type { MatrixSeatResponseSeatType } from './matrixSeatResponseSeatType';
 
 export interface MatrixSeatResponse {
-  /** Null while the draft cell is not bound to an inventory seat */
-  seatId: string;
+  /** Inventory seat identifier; null while the draft cell is unbound */
+  seatId: string | null;
   rowIndex: number;
   columnIndex: number;
   number: number;

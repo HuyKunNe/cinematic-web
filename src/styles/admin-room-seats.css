@@ -5,7 +5,7 @@
   --seatmap-axis-width: 2.5rem;
   --seatmap-column-gap: 2.5rem;
   --seatmap-row-gap: 2.5rem;
-  --seatmap-column-count: 8;
+  --seatmap-column-count: 0;
   --seatmap-map-min-width: 42.5rem;
   --seatmap-stage-height: var(--space-2);
   --seatmap-stat-min-width: 10rem;
@@ -301,6 +301,7 @@
   color: var(--admin-text);
   font-size: var(--font-size-md);
 }
+
 :where([data-reference='admin-room-seats']) .seatmap-axis-title {
   margin: 0 0 var(--admin-space-2);
   color: var(--admin-text-subtle);
@@ -344,7 +345,6 @@
   --seatmap-row-gap: 40px;
   --seatmap-cell-width: calc(var(--seatmap-seat-width) + var(--seatmap-column-gap));
   --seatmap-cell-height: calc(var(--seatmap-seat-height) + var(--seatmap-row-gap));
-  --seatmap-column-heading-height: var(--control-height-sm);
   --seatmap-stage-label-height: calc(var(--font-size-xs) * var(--line-height-base));
   --seatmap-stage-offset: calc(
     var(--seatmap-stage-height) + var(--seatmap-stage-label-height) + var(--space-4)
@@ -482,22 +482,14 @@
   padding-top: calc(var(--space-4) + var(--border-width-thin) + var(--seatmap-stage-offset));
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-axis-heading,
 :where([data-reference='admin-room-seats']) .seatmap-row-label {
   display: grid;
+  height: var(--seatmap-cell-height);
   place-items: center;
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   overflow-wrap: anywhere;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-axis-heading {
-  height: var(--seatmap-column-heading-height);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-row-label {
-  height: var(--seatmap-cell-height);
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-scroll {
@@ -511,7 +503,7 @@
   justify-items: center;
   width: max(
     var(--seatmap-map-min-width),
-    calc(var(--seatmap-columns) * var(--seatmap-cell-width) + var(--seatmap-column-gap))
+    calc(var(--seatmap-column-count) * var(--seatmap-cell-width) + var(--seatmap-column-gap))
   );
   min-width: 100%;
 }
@@ -526,20 +518,10 @@
   height: var(--seatmap-stage-label-height);
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-columns,
 :where([data-reference='admin-room-seats']) .seatmap-row {
   display: grid;
-  grid-template-columns: repeat(var(--seatmap-columns), var(--seatmap-cell-width));
+  grid-template-columns: repeat(var(--seatmap-column-count), var(--seatmap-cell-width));
   width: max-content;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-columns {
-  height: var(--seatmap-column-heading-height);
-  align-items: center;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  text-align: center;
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-slot {
