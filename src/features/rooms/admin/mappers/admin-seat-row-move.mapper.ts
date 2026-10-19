@@ -121,29 +121,16 @@ function assertInside(content: RoomLayoutContentResponse, geometry: Geometry) {
   }
 }
 
-function assertOnGrid(geometry: Geometry, origin: { x: number; y: number }) {
-  if (
-    Math.abs(snap(geometry.x, origin.x, ADMIN_SEAT_MATRIX_STEP.x) - geometry.x) > EPSILON ||
-    Math.abs(snap(geometry.y, origin.y, ADMIN_SEAT_MATRIX_STEP.y) - geometry.y) > EPSILON ||
-    geometry.rotationDegrees !== 0
-  ) {
-    throw new Error('Ghế cần nằm thẳng và bám grid trước khi dịch.')
-  }
-}
-
 function validateSeats(
   content: RoomLayoutContentResponse,
   result: Map<string, Geometry>,
   changedIds: Set<string>,
-  origin: { x: number; y: number },
-  freeAnchor = false,
 ) {
   for (const seat of content.seats) {
     const geometry = result.get(seat.seatId)!
 
     if (changedIds.has(seat.seatId)) {
       assertInside(content, geometry)
-      if (!freeAnchor) assertOnGrid(geometry, origin)
     }
   }
 
@@ -158,12 +145,7 @@ function validateSeats(
 
       const otherGeometry = result.get(other.seatId)!
 
-      if (
-        overlaps(
-    geometry,
-    otherGeometry,
-        )
-      ) {
+      if (overlaps(geometry, otherGeometry)) {
         throw new Error('Các ghế thực sự chồng lên nhau sau khi dịch.')
       }
     }
@@ -172,8 +154,9 @@ function validateSeats(
 
     for (const element of content.elements) {
       if (element.kind === 'AISLE') continue
+
       if (overlaps(geometry, element.geometry)) {
-        throw new Error('Nhóm ghế sau khi dịch đè lên lối đi hoặc phần tử không gian.')
+        throw new Error('Nhóm ghế sau khi dịch đè lên màn hình hoặc lối ra.')
       }
     }
   }
@@ -391,6 +374,6 @@ export function moveSeatRows(plan: SeatRowMovePlan, target: Geometry): Map<strin
     }
   }
 
-  validateSeats(content, result, new Set(changed.keys()), origin, plan.freeAnchor)
+  validateSeats(content, result, new Set(changed.keys()))
   return changed
 }
