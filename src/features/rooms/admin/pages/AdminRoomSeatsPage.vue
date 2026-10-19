@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
@@ -11,7 +11,6 @@ import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
 import { isRoomSeatUuid, mapAdminSeatCatalog } from '../mappers/admin-seat-catalog.mapper'
 import { adminSeatTypeOptions } from '../schemas/admin-seat-range.schema'
 import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
-import AdminSeatRangeForm from '../components/AdminSeatRangeForm.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -25,10 +24,12 @@ const canManage = computed(
 const rawRoomId = computed(() =>
   typeof route.params.roomId === 'string' ? route.params.roomId : '',
 )
+
 const roomId = computed(() => rawRoomId.value.toLowerCase())
 const invalidRoomId = computed(() => Boolean(rawRoomId.value) && !isRoomSeatUuid(roomId.value))
 
 const context = useAdminRoomSeatContext(roomId, canManage)
+
 const current = computed(() =>
   canManage.value && !invalidRoomId.value ? context.data.value : undefined,
 )
@@ -40,23 +41,23 @@ const cinemaId = computed(() => {
 })
 
 const cinemas = useAdminRoomCinemaQuery(canManage)
+
 const rooms = useAdminRoomCatalogQuery(
   cinemaId,
   () => canManage.value && isRoomSeatUuid(cinemaId.value),
 )
+
 const seats = useAdminRoomSeatsQuery(
   roomId,
   () => canManage.value && context.isSuccess.value && Boolean(current.value),
 )
-const activity = useSetAdminSeatActivityMutation()
 
-const createOpen = ref(false)
-const createBusy = ref(false)
+const activity = useSetAdminSeatActivityMutation()
 const selectedId = ref('')
 const activityError = ref('')
 const activityMessage = ref('')
 
-const busy = computed(() => createBusy.value || activity.isPending.value)
+const busy = computed(() => activity.isPending.value)
 
 const ready = computed(
   () =>
@@ -89,17 +90,18 @@ const catalog = computed(() => {
 const selected = computed(() => {
   for (const row of catalog.value.matrix?.rows ?? []) {
     const index = row.cells.findIndex((seat) => seat?.id === selectedId.value)
+
     if (index >= 0) {
       return { seat: row.cells[index]!, column: index + 1 }
     }
   }
+
   return null
 })
 
 watch(
   roomId,
   () => {
-    createOpen.value = false
     selectedId.value = ''
     activityError.value = ''
     activityMessage.value = ''
@@ -112,6 +114,7 @@ onBeforeRouteUpdate(() => !busy.value)
 
 function changeCinema(event: Event) {
   if (busy.value) return
+
   const value = (event.target as HTMLSelectElement).value
   if (value && !isRoomSeatUuid(value)) return
 
@@ -124,6 +127,7 @@ function changeCinema(event: Event) {
 
 function changeRoom(event: Event) {
   if (busy.value) return
+
   const value = (event.target as HTMLSelectElement).value
   if (value && !isRoomSeatUuid(value)) return
 
@@ -142,16 +146,6 @@ function statusLabel(active?: boolean) {
   return active === true ? 'Đang hoạt động' : active === false ? 'Tạm ngưng' : '—'
 }
 
-async function toggleCreate() {
-  if (busy.value) return
-  createOpen.value = !createOpen.value
-
-  if (createOpen.value) {
-    await nextTick()
-    document.querySelector<HTMLElement>('.seatmap-create input')?.focus()
-  }
-}
-
 async function changeActivity() {
   const seat = selected.value?.seat
   if (!seat || !ready.value || busy.value || catalog.value.error) return
@@ -166,9 +160,9 @@ async function changeActivity() {
       active: !seat.active,
     })
 
-    activityMessage.value = `Đã ${
-      updated.active ? 'kích hoạt' : 'tạm ngưng'
-    } ghế ${updated.seatNumber || seat.seatNumber}.`
+    activityMessage.value =
+      `Đã ${updated.active ? 'kích hoạt' : 'tạm ngưng'} ` +
+      `ghế ${updated.seatNumber || seat.seatNumber}.`
   } catch (error) {
     activityError.value = adminRoomErrorMessage(error, 'Không thể cập nhật trạng thái ghế.')
   }
@@ -186,7 +180,7 @@ async function changeActivity() {
         <p class="seatmap-eyebrow">Cấu hình phòng chiếu</p>
         <h1 id="room-seats-title" tabindex="-1">Ma trận ghế của phòng</h1>
         <p class="seatmap-description">
-          Sắp xếp ghế theo hàng và cột. Màn hình, lối đi và cửa thoát hiểm được cấu hình riêng.
+          Xem danh mục ghế theo hàng và quản lý trạng thái từng ghế.
         </p>
       </div>
 
@@ -200,7 +194,7 @@ async function changeActivity() {
           })
         "
       >
-        Thiết kế không gian phòng
+        Thiết kế ma trận ghế
       </AppButton>
     </header>
 
@@ -335,7 +329,7 @@ async function changeActivity() {
           class="seatmap-feedback seatmap-muted"
           role="status"
         >
-          Phòng đang tạm ngưng. Có thể xem và đổi trạng thái ghế; chưa thể tạo dãy mới.
+          Phòng đang tạm ngưng. Có thể xem và đổi trạng thái ghế.
         </p>
 
         <p v-if="seats.isError.value" class="seatmap-feedback seatmap-error" role="alert">
@@ -359,42 +353,6 @@ async function changeActivity() {
                 <p>Chọn ghế để xem thông tin.</p>
               </div>
             </header>
-
-            <div class="seatmap-actions" role="group" aria-label="Thao tác ma trận">
-              <button
-                class="seatmap-action"
-                type="button"
-                :disabled="busy || !ready || current.room.active !== true || Boolean(catalog.error)"
-                :aria-expanded="createOpen"
-                aria-controls="seatmap-create-panel"
-                @click="toggleCreate"
-              >
-                {{ createOpen ? 'Đóng form tạo ghế' : '+ Thêm hàng' }}
-              </button>
-
-              <button
-                class="seatmap-action"
-                type="button"
-                disabled
-                title="Thêm cột chưa được triển khai."
-              >
-                + Thêm cột
-              </button>
-
-              <button
-                class="seatmap-action"
-                type="button"
-                :disabled="busy || seats.isFetching.value"
-                :aria-busy="seats.isFetching.value"
-                @click="seats.refetch()"
-              >
-                {{ seats.isFetching.value ? 'Đang tải…' : 'Tải lại ghế' }}
-              </button>
-            </div>
-
-            <p class="seatmap-instructions" id="seatmap-help">
-              Hiện đang hiển thị danh mục ghế theo hàng. Sắp xếp vị trí và thêm cột chưa khả dụng.
-            </p>
 
             <div class="seatmap-legend" aria-label="Chú giải">
               <span v-for="option in adminSeatTypeOptions" :key="option.value">
@@ -439,7 +397,7 @@ async function changeActivity() {
             </p>
 
             <p v-else-if="!catalog.matrix.seats.length" class="seatmap-muted" role="status">
-              Phòng chưa có ghế. Dùng “Thêm hàng” để tạo dãy ghế.
+              Phòng chưa có ghế trong danh mục.
             </p>
 
             <div
@@ -519,20 +477,6 @@ async function changeActivity() {
                 <p>Thông tin vị trí đang chọn.</p>
               </div>
             </header>
-
-            <div v-if="createOpen" id="seatmap-create-panel" class="seatmap-create-panel">
-              <AdminSeatRangeForm
-                :key="roomId"
-                :room-id="roomId"
-                :disabled="
-                  !ready ||
-                  current.room.active !== true ||
-                  activity.isPending.value ||
-                  Boolean(catalog.error)
-                "
-                @busy="createBusy = $event"
-              />
-            </div>
 
             <dl v-if="selected">
               <div>
