@@ -143,9 +143,7 @@ onBeforeRouteUpdate(confirmLeave)
 
       <template v-if="current">
         <aside class="room-matrix-page__notice">
-          <strong>
-            {{ dirty ? 'Có thay đổi chưa lưu' : 'Ma trận mới' }}
-          </strong>
+          <strong>{{ dirty ? 'Có thay đổi chưa lưu' : 'Ma trận mới' }}</strong>
           <p>
             Ma trận này đang được chỉnh trong trang hiện tại. Chức năng lưu và mở lại ma trận chưa
             khả dụng. Các sơ đồ đã lưu trước đây chưa được nạp vào trình chỉnh sửa này.
@@ -183,8 +181,8 @@ onBeforeRouteUpdate(confirmLeave)
 
 .room-matrix-page__heading h1 {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--font-size-display);
+  font-family: var(--font-family-display);
+  font-size: var(--admin-movies-heading-size);
   line-height: var(--line-height-heading);
 }
 
@@ -208,7 +206,7 @@ onBeforeRouteUpdate(confirmLeave)
 
 .room-matrix-page__notice {
   padding: var(--space-4);
-  border: var(--border-width) solid var(--color-border);
+  border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
 }

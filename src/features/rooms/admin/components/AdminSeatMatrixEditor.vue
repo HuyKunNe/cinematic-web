@@ -20,6 +20,14 @@ const emit = defineEmits<{
   change: [value: SeatMatrixDocument]
 }>()
 
+type StructureAction = {
+  label: string
+  message: string
+  run: () => boolean
+  unavailable?: () => boolean
+  danger?: boolean
+}
+
 const matrix = useAdminSeatMatrix()
 const { document, selection, selectedSeat, statistics } = matrix
 
@@ -38,10 +46,64 @@ const selectedTitle = computed(() => {
     : `${label} · ô ${selection.value.column + 1}`
 })
 
+const structureGroups: {
+  title: string
+  actions: StructureAction[]
+}[] = [
+  {
+    title: 'Thao tác hàng',
+    actions: [
+      {
+        label: 'Chèn hàng phía trên',
+        message: 'Đã chèn hàng phía trên và cập nhật nhãn hàng.',
+        run: () => matrix.insertRow(selection.value.row),
+      },
+      {
+        label: 'Chèn hàng phía dưới',
+        message: 'Đã chèn hàng phía dưới và cập nhật nhãn hàng.',
+        run: () => matrix.insertRow(selection.value.row + 1),
+      },
+      {
+        label: 'Xóa hàng đang chọn',
+        message: 'Đã xóa hàng cùng các ghế và cập nhật nhãn hàng.',
+        run: matrix.deleteSelectedRow,
+        unavailable: () => statistics.value.rows <= 1,
+        danger: true,
+      },
+    ],
+  },
+  {
+    title: 'Thao tác cột',
+    actions: [
+      {
+        label: 'Chèn cột bên trái',
+        message: 'Đã chèn cột bên trái trên tất cả hàng.',
+        run: () => matrix.insertColumn(selection.value.column),
+      },
+      {
+        label: 'Chèn cột bên phải',
+        message: 'Đã chèn cột bên phải trên tất cả hàng.',
+        run: () => matrix.insertColumn(selection.value.column + 1),
+      },
+      {
+        label: 'Xóa cột đang chọn',
+        message: 'Đã xóa cột trên tất cả hàng và đánh số lại ghế.',
+        run: matrix.deleteSelectedColumn,
+        unavailable: () => statistics.value.columns <= 1,
+        danger: true,
+      },
+    ],
+  },
+]
+
 watch(document, () => emit('change', matrix.snapshot()), { deep: true })
 
-function key(row: number, column: number) {
+function cellKey(row: number, column: number) {
   return `${row}:${column}`
+}
+
+function fieldErrorId(row: number, column: number) {
+  return `${prefix}-cell-error-${row}-${column}`
 }
 
 function announce(message: string, isError = false) {
@@ -49,42 +111,45 @@ function announce(message: string, isError = false) {
   status.value = isError ? '' : message
 }
 
-function readInput(event: Event) {
-  return (event.target as HTMLInputElement).value
-}
-
 function updateDraft(row: number, column: number, event: Event) {
   if (props.disabled) return
 
-  const cellKey = key(row, column)
-  drafts.value[cellKey] = readInput(event)
-  delete fieldErrors.value[cellKey]
+  const key = cellKey(row, column)
+  drafts.value[key] = (event.target as HTMLInputElement).value
+  delete fieldErrors.value[key]
   error.value = ''
 }
 
 function commit(row: number, column: number) {
   if (props.disabled) return
 
-  const cellKey = key(row, column)
-  const raw = drafts.value[cellKey]
+  const key = cellKey(row, column)
+  const raw = drafts.value[key]
 
   if (raw === undefined) return
 
   const result = matrix.addSeat(row, column, raw)
 
   if (!result.ok) {
-    drafts.value[cellKey] = ''
-    fieldErrors.value[cellKey] = result.message
+    drafts.value[key] = ''
+    fieldErrors.value[key] = result.message
     announce(result.message, true)
     return
   }
 
-  delete drafts.value[cellKey]
-  delete fieldErrors.value[cellKey]
+  delete drafts.value[key]
+  delete fieldErrors.value[key]
 
   if (result.changed) {
     announce(`Đã thêm ghế hàng ${matrixRowLabel(row)} và đánh số lại theo vị trí.`)
   }
+}
+
+function onEnter(event: KeyboardEvent, row: number, column: number) {
+  if (event.isComposing) return
+
+  event.preventDefault()
+  commit(row, column)
 }
 
 async function focusSelected() {
@@ -92,12 +157,14 @@ async function focusSelected() {
 
   table.value
     ?.querySelector<HTMLInputElement>(
-      `[data-cell="${key(selection.value.row, selection.value.column)}"]`,
+      `[data-cell="${cellKey(selection.value.row, selection.value.column)}"]`,
     )
     ?.focus()
 }
 
 async function selectRow(row: number) {
+  if (props.disabled) return
+
   matrix.select(row, selection.value.column)
   await focusSelected()
 }
@@ -109,6 +176,11 @@ async function mutate(action: () => boolean, message: string) {
   fieldErrors.value = {}
   announce(message)
   await focusSelected()
+}
+
+function runStructureAction(action: StructureAction) {
+  if (action.unavailable?.()) return
+  void mutate(action.run, action.message)
 }
 
 function changeType(event: Event) {
@@ -140,7 +212,7 @@ function reset() {
 
 <template>
   <fieldset class="seat-matrix-editor" :disabled="disabled">
-    <legend class="sr-only">Chỉnh sửa ma trận ghế</legend>
+    <legend class="admin-visually-hidden">Chỉnh sửa ma trận ghế</legend>
 
     <div class="seat-matrix-editor__toolbar">
       <button type="button" @click="reset">Tạo ma trận mới</button>
@@ -148,19 +220,25 @@ function reset() {
     </div>
 
     <div class="seat-matrix-editor__workspace">
-      <section class="seat-matrix-editor__panel">
-        <header>
-          <h2>Ma trận ghế</h2>
-          <p :id="`${prefix}-help`">
-            Nhập số nguyên dương chưa dùng trong hàng vào ô trống. Ghế tự đánh số liên tiếp từ trái
-            sang phải, bỏ qua ô trống.
-          </p>
+      <section
+        class="seat-matrix-editor__panel seat-matrix-editor__main"
+        :aria-labelledby="`${prefix}-title`"
+      >
+        <header class="seat-matrix-editor__heading">
+          <div>
+            <h2 :id="`${prefix}-title`">Ma trận ghế</h2>
+            <p :id="`${prefix}-help`">
+              Nhập số nguyên dương chưa dùng trong hàng vào ô trống. Ghế tự đánh số từ trái sang
+              phải, bỏ qua ô trống.
+            </p>
+          </div>
+          <span class="seat-matrix-editor__badge"> {{ statistics.seats }} ghế </span>
         </header>
 
         <p :id="`${prefix}-status`" role="status" aria-live="polite">
           {{ status }}
         </p>
-        <p v-if="error" :id="`${prefix}-error`" class="seat-matrix-editor__error" role="alert">
+        <p v-if="error" class="seat-matrix-editor__error" role="alert">
           {{ error }}
         </p>
 
@@ -174,7 +252,7 @@ function reset() {
             <div class="seat-matrix-editor__screen">MÀN HÌNH CHIẾU</div>
 
             <table ref="table" :aria-describedby="`${prefix}-help ${prefix}-status`">
-              <caption class="sr-only">
+              <caption class="admin-visually-hidden">
                 Cột đầu là nhãn hàng. Mỗi ô còn lại có thể trống hoặc chứa một ghế.
               </caption>
 
@@ -204,13 +282,13 @@ function reset() {
                       inputmode="numeric"
                       autocomplete="off"
                       :spellcheck="false"
-                      :data-cell="key(rowIndex, columnIndex)"
+                      :data-cell="cellKey(rowIndex, columnIndex)"
                       :readonly="Boolean(seat)"
-                      :value="drafts[key(rowIndex, columnIndex)] ?? seat?.number ?? ''"
-                      :aria-invalid="fieldErrors[key(rowIndex, columnIndex)] ? true : undefined"
+                      :value="drafts[cellKey(rowIndex, columnIndex)] ?? seat?.number ?? ''"
+                      :aria-invalid="fieldErrors[cellKey(rowIndex, columnIndex)] ? true : undefined"
                       :aria-describedby="
-                        fieldErrors[key(rowIndex, columnIndex)]
-                          ? `${prefix}-error`
+                        fieldErrors[cellKey(rowIndex, columnIndex)]
+                          ? fieldErrorId(rowIndex, columnIndex)
                           : `${prefix}-help`
                       "
                       :aria-label="
@@ -221,8 +299,16 @@ function reset() {
                       @focus="matrix.select(rowIndex, columnIndex)"
                       @input="updateDraft(rowIndex, columnIndex, $event)"
                       @blur="commit(rowIndex, columnIndex)"
-                      @keydown.enter.prevent="commit(rowIndex, columnIndex)"
+                      @keydown.enter="onEnter($event, rowIndex, columnIndex)"
                     />
+
+                    <span
+                      v-if="fieldErrors[cellKey(rowIndex, columnIndex)]"
+                      :id="fieldErrorId(rowIndex, columnIndex)"
+                      class="admin-visually-hidden"
+                    >
+                      {{ fieldErrors[cellKey(rowIndex, columnIndex)] }}
+                    </span>
                   </td>
                 </tr>
               </tbody>
@@ -238,7 +324,8 @@ function reset() {
                 )
               "
             >
-              ＋ Thêm cột
+              <span aria-hidden="true">＋</span>
+              Thêm cột
             </button>
 
             <button
@@ -246,18 +333,27 @@ function reset() {
               type="button"
               @click="mutate(() => matrix.insertRow(document.rows.length), 'Đã thêm hàng trống.')"
             >
-              ＋ Thêm hàng
+              <span aria-hidden="true">＋</span>
+              Thêm hàng
             </button>
           </div>
         </div>
 
-        <footer>{{ statistics.seats }} ghế · {{ statistics.empty }} ô trống</footer>
+        <footer>
+          <span>
+            {{ statistics.rows }} hàng · {{ statistics.columns }} cột · {{ statistics.empty }} ô
+            trống
+          </span>
+          <span>Tab để chọn ô · Enter để xác nhận</span>
+        </footer>
       </section>
 
-      <aside class="seat-matrix-editor__inspector">
+      <aside class="seat-matrix-editor__inspector" aria-label="Thuộc tính ma trận">
         <section class="seat-matrix-editor__panel">
           <h2>{{ selectedTitle }}</h2>
-          <p>{{ selectedSeat ? 'Đổi loại ghế hoặc xóa ghế trong ô.' : 'Ô này chưa có ghế.' }}</p>
+          <p>
+            {{ selectedSeat ? 'Đổi loại ghế hoặc xóa ghế trong ô.' : 'Ô này chưa có ghế.' }}
+          </p>
 
           <label :for="`${prefix}-type`">Loại ghế</label>
           <select
@@ -286,81 +382,22 @@ function reset() {
           </button>
         </section>
 
-        <section class="seat-matrix-editor__panel">
-          <h2>Thao tác hàng</h2>
+        <section
+          v-for="group in structureGroups"
+          :key="group.title"
+          class="seat-matrix-editor__panel"
+        >
+          <h2>{{ group.title }}</h2>
 
           <button
+            v-for="action in group.actions"
+            :key="action.label"
             type="button"
-            @click="
-              mutate(
-                () => matrix.insertRow(selection.row),
-                'Đã chèn hàng phía trên và cập nhật nhãn hàng.',
-              )
-            "
+            :class="{ 'is-danger': action.danger }"
+            :disabled="disabled || Boolean(action.unavailable?.())"
+            @click="runStructureAction(action)"
           >
-            Chèn hàng phía trên
-          </button>
-
-          <button
-            type="button"
-            @click="
-              mutate(
-                () => matrix.insertRow(selection.row + 1),
-                'Đã chèn hàng phía dưới và cập nhật nhãn hàng.',
-              )
-            "
-          >
-            Chèn hàng phía dưới
-          </button>
-
-          <button
-            type="button"
-            class="is-danger"
-            :disabled="statistics.rows <= 1 || disabled"
-            @click="
-              mutate(matrix.deleteSelectedRow, 'Đã xóa hàng cùng các ghế và cập nhật nhãn hàng.')
-            "
-          >
-            Xóa hàng đang chọn
-          </button>
-        </section>
-
-        <section class="seat-matrix-editor__panel">
-          <h2>Thao tác cột</h2>
-
-          <button
-            type="button"
-            @click="
-              mutate(
-                () => matrix.insertColumn(selection.column),
-                'Đã chèn cột bên trái trên tất cả hàng.',
-              )
-            "
-          >
-            Chèn cột bên trái
-          </button>
-
-          <button
-            type="button"
-            @click="
-              mutate(
-                () => matrix.insertColumn(selection.column + 1),
-                'Đã chèn cột bên phải trên tất cả hàng.',
-              )
-            "
-          >
-            Chèn cột bên phải
-          </button>
-
-          <button
-            type="button"
-            class="is-danger"
-            :disabled="statistics.columns <= 1 || disabled"
-            @click="
-              mutate(matrix.deleteSelectedColumn, 'Đã xóa cột trên tất cả hàng và đánh số lại ghế.')
-            "
-          >
-            Xóa cột đang chọn
+            {{ action.label }}
           </button>
         </section>
 
@@ -399,8 +436,9 @@ function reset() {
   --matrix-cell-size: var(--space-16);
   --matrix-axis-size: var(--space-16);
   --matrix-edge-size: 6rem;
+  --matrix-main-basis: 32rem;
   --matrix-inspector-size: 20rem;
-  --matrix-inspector-layer: 1;
+  --matrix-axis-layer: 1;
   --matrix-seat-tint: 12%;
   --matrix-screen-spacing: 0.14em;
 
@@ -414,18 +452,24 @@ function reset() {
 
 .seat-matrix-editor__toolbar,
 .seat-matrix-editor__panel {
+  min-width: 0;
   padding: var(--space-4);
-  border: var(--border-width) solid var(--color-border);
+  border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
 }
 
-.seat-matrix-editor__toolbar {
+.seat-matrix-editor__toolbar,
+.seat-matrix-editor__heading {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+.seat-matrix-editor__toolbar {
+  align-items: center;
 }
 
 .seat-matrix-editor__workspace {
@@ -435,9 +479,8 @@ function reset() {
   gap: var(--space-4);
 }
 
-.seat-matrix-editor__workspace > section {
-  flex: 1 1 var(--matrix-inspector-size);
-  min-width: 0;
+.seat-matrix-editor__main {
+  flex: 999 1 var(--matrix-main-basis);
 }
 
 .seat-matrix-editor__inspector {
@@ -459,22 +502,41 @@ function reset() {
 
 .seat-matrix-editor p,
 .seat-matrix-editor footer,
-.seat-matrix-editor label {
+.seat-matrix-editor label,
+.seat-matrix-editor__toolbar > span {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
+.seat-matrix-editor__heading p {
+  margin: var(--space-2) 0 0;
+}
+
+.seat-matrix-editor__badge {
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+}
+
 .seat-matrix-editor footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
   margin-top: var(--space-3);
 }
 
 .seat-matrix-editor__scroll {
-  overflow-x: auto;
   max-width: 100%;
+  overflow-x: auto;
   padding: var(--space-3);
-  border: var(--border-width) solid var(--color-border);
+  border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-background);
+  overscroll-behavior-inline: contain;
 }
 
 .seat-matrix-editor__frame {
@@ -482,13 +544,14 @@ function reset() {
   width: max-content;
   grid-template-columns: max-content var(--matrix-edge-size);
   gap: var(--space-3);
+  margin-inline: auto;
 }
 
 .seat-matrix-editor__screen {
   display: grid;
   grid-column: 1;
   grid-row: 1;
-  min-height: var(--control-height);
+  min-height: var(--control-height-md);
   place-items: center;
   margin-inline-start: var(--matrix-axis-size);
   border-top: var(--space-1) solid var(--color-primary);
@@ -508,22 +571,22 @@ function reset() {
   min-width: var(--matrix-cell-size);
   height: var(--matrix-cell-size);
   padding: var(--space-2);
-  border: var(--border-width) solid var(--color-border);
+  border: var(--border-width-thin) solid var(--color-border);
   text-align: center;
 }
 
 .seat-matrix-editor th {
   position: sticky;
   left: 0;
-  z-index: var(--matrix-inspector-layer);
+  z-index: var(--matrix-axis-layer);
   background: var(--color-surface);
 }
 
 .seat-matrix-editor input {
   width: calc(var(--matrix-cell-size) - var(--space-2) * 2);
-  min-height: var(--control-height);
+  min-height: var(--control-height-md);
   padding: 0;
-  border: var(--border-width) dashed var(--color-border);
+  border: var(--border-width-thin) dashed var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-text-primary);
@@ -555,6 +618,7 @@ function reset() {
     var(--matrix-seat-color) var(--matrix-seat-tint),
     var(--color-surface)
   );
+  cursor: pointer;
 }
 
 .seat-matrix-editor td.is-selected {
@@ -564,9 +628,9 @@ function reset() {
 
 .seat-matrix-editor button,
 .seat-matrix-editor select {
-  min-height: var(--control-height);
+  min-height: var(--control-height-md);
   padding: var(--space-2) var(--space-3);
-  border: var(--border-width) solid var(--color-border);
+  border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
   color: var(--color-text-primary);
@@ -587,8 +651,13 @@ function reset() {
 }
 
 .seat-matrix-editor__add-column {
+  display: flex;
   grid-column: 2;
   grid-row: 2;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
 }
 
 .seat-matrix-editor__add-row {
@@ -603,6 +672,7 @@ function reset() {
 }
 
 .seat-matrix-editor input[aria-invalid='true'] {
+  border-style: solid;
   border-color: var(--color-error);
 }
 
@@ -613,7 +683,7 @@ function reset() {
 
 .seat-matrix-editor :disabled {
   cursor: not-allowed;
-  opacity: var(--reference-disabled-opacity, 0.56);
+  opacity: var(--opacity-disabled);
 }
 
 .seat-matrix-editor dl {
