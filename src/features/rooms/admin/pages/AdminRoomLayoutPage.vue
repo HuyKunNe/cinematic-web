@@ -26,6 +26,7 @@ import {
 } from '../mappers/admin-room-matrix.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
+import { usePublishAdminRoomMatrixMutation } from '../api/admin-room-matrix-publication'
 
 const route = useRoute()
 const router = useRouter()
@@ -91,10 +92,16 @@ const content = useAdminRoomMatrixContentQuery(roomId, queryLayoutId, false)
 const createDraft = useCreateAdminRoomMatrixDraftMutation()
 const saveMatrix = useSaveAdminRoomMatrixMutation()
 
+const publishMatrix = usePublishAdminRoomMatrixMutation()
+
 const layouts = computed(() => (current.value ? (versions.data.value ?? []) : []))
 
 const busy = computed(
-  () => opening.value || createDraft.isPending.value || saveMatrix.isPending.value,
+  () =>
+    opening.value ||
+    createDraft.isPending.value ||
+    saveMatrix.isPending.value ||
+    publishMatrix.isPending.value,
 )
 
 const dirty = computed(() => {
@@ -127,6 +134,42 @@ const canSave = computed(
     Boolean(workingDocument.value) &&
     dirty.value,
 )
+
+const hasSeats = computed(
+  () => workingDocument.value?.rows.some((row) => row.some((seat) => seat !== null)) ?? false,
+)
+
+const canPublish = computed(
+  () =>
+    ready.value &&
+    !busy.value &&
+    !reloadRequired.value &&
+    !matrixConversionBlocked.value &&
+    loadedLayout.value?.status === 'DRAFT' &&
+    Boolean(workingDocument.value) &&
+    hasSeats.value &&
+    !dirty.value,
+)
+
+const publishHint = computed(() => {
+  if (loadedLayout.value?.status === 'PUBLISHED') {
+    return 'Phiên bản này đã xuất bản.'
+  }
+
+  if (reloadRequired.value) {
+    return 'Tải lại phiên bản trước khi xuất bản.'
+  }
+
+  if (dirty.value) {
+    return 'Lưu bản nháp trước khi xuất bản.'
+  }
+
+  if (!hasSeats.value) {
+    return 'Thêm và lưu ít nhất một ghế trước khi xuất bản.'
+  }
+
+  return 'Xuất bản phiên bản đã lưu.'
+})
 
 function resetRoomState() {
   scope += 1
@@ -177,11 +220,13 @@ function requiresLayoutReload(error: unknown) {
   ].includes(error.code ?? '')
 }
 
-async function loadVersion(layoutId: string) {
-  if (!ready.value || !isRoomSeatUuid(layoutId)) return
+async function loadVersion(layoutId: string, minimumLayout?: RoomLayoutResponse): Promise<boolean> {
+  if (!ready.value || !isRoomSeatUuid(layoutId)) return false
 
   const requestedRoomId = roomId.value
   const token = ++scope
+
+  const minimum = minimumLayout ?? (loadedLayout.value?.id === layoutId ? loadedLayout.value : null)
 
   opening.value = true
   errorMessage.value = ''
@@ -191,17 +236,42 @@ async function loadVersion(layoutId: string) {
   try {
     await nextTick()
 
-    if (token !== scope || requestedRoomId !== roomId.value) return
+    if (token !== scope || requestedRoomId !== roomId.value) return false
 
     const result = await content.refetch({ throwOnError: true })
 
-    if (token !== scope || requestedRoomId !== roomId.value) return
+    if (token !== scope || requestedRoomId !== roomId.value) return false
 
     if (!result.data) {
       throw new Error('Không nhận được nội dung sơ đồ.')
     }
 
     const storedDocument = readAdminRoomMatrix(result.data, requestedRoomId, layoutId)
+
+    if (
+      minimum &&
+      (result.data.layout.version < minimum.version ||
+        (minimum.status === 'PUBLISHED' && result.data.layout.status !== 'PUBLISHED'))
+    ) {
+      throw new Error('Nội dung trả về chưa khớp phiên bản hiện tại. Hãy tải lại.')
+    }
+
+    // minimumLayout được truyền sau khi publish ma trận thành công.
+    if (minimumLayout && storedDocument === null) {
+      throw new Error('Chưa nhận được nội dung ma trận đã xuất bản. Hãy tải lại.')
+    }
+
+    if (result.data.layout.status === 'PUBLISHED' && storedDocument) {
+      const containsSeats = storedDocument.rows.some((row) => row.some((seat) => seat !== null))
+
+      const allSeatsBound = storedDocument.rows.every((row) =>
+        row.every((seat) => seat === null || isRoomSeatUuid(seat.seatId)),
+      )
+
+      if (!containsSeats || !allSeatsBound) {
+        throw new Error('Ma trận đã xuất bản chưa có đầy đủ liên kết ghế. Hãy tải lại.')
+      }
+    }
 
     const useDefaultMatrix = storedDocument === null && result.data.layout.status === 'DRAFT'
 
@@ -234,10 +304,14 @@ async function loadVersion(layoutId: string) {
         ? `Đã mở phiên bản ${result.data.layout.layoutVersion} với ma trận mặc định 6 × 6.`
         : `Đã mở phiên bản ${result.data.layout.layoutVersion}.`
     }
+
+    return true
   } catch (error) {
-    if (token !== scope || requestedRoomId !== roomId.value) return
+    if (token !== scope || requestedRoomId !== roomId.value) return false
 
     errorMessage.value = adminRoomErrorMessage(error, 'Không thể mở sơ đồ.')
+
+    return false
   } finally {
     if (token === scope) opening.value = false
   }
@@ -437,6 +511,84 @@ async function saveDraft() {
   }
 }
 
+async function publishDraft() {
+  if (!canPublish.value || !loadedLayout.value) return
+
+  const requestedRoomId = roomId.value
+  const requestedLayout = loadedLayout.value
+  const token = scope
+
+  errorMessage.value = ''
+  notice.value = ''
+
+  try {
+    const document = editor.value?.prepareSave()
+    if (!document) return
+
+    workingDocument.value = document
+
+    const input = toAdminRoomMatrixRequest(document, requestedLayout.version)
+
+    if (!input.matrix || input.matrix.seats.length === 0) {
+      errorMessage.value = 'Thêm ít nhất một ghế trước khi xuất bản.'
+      return
+    }
+
+    if (adminRoomMatrixKey(document) !== baselineKey.value) {
+      notice.value = 'Có thay đổi chưa lưu. Lưu bản nháp trước khi xuất bản.'
+      return
+    }
+  } catch (error) {
+    errorMessage.value = adminRoomErrorMessage(error, 'Ma trận chưa hợp lệ.')
+    return
+  }
+
+  try {
+    const published = await publishMatrix.mutateAsync({
+      roomId: requestedRoomId,
+      layoutId: requestedLayout.id,
+      expectedVersion: requestedLayout.version,
+    })
+
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    // Ghi nhận trạng thái đã publish trước khi đọc lại content.
+    // Nếu GET thất bại, editor vẫn giữ trạng thái chỉ đọc.
+    loadedLayout.value = published
+    reloadRequired.value = true
+
+    const reloadScope = scope + 1
+    const reloaded = await loadVersion(published.id, published)
+
+    if (
+      reloadScope !== scope ||
+      requestedRoomId !== roomId.value ||
+      loadedLayout.value?.id !== published.id
+    ) {
+      return
+    }
+
+    notice.value = reloaded
+      ? `Đã xuất bản phiên bản ${published.layoutVersion}.`
+      : `Đã xuất bản phiên bản ${published.layoutVersion}, ` +
+        'nhưng chưa tải được nội dung mới. Chọn “Tải lại phiên bản” để tiếp tục.'
+  } catch (error) {
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    reloadRequired.value = requiresLayoutReload(error)
+
+    errorMessage.value =
+      isAdminRoomApiError(error) && error.code === 'INVENTORY_ROOM_LAYOUT_MATRIX_EMPTY'
+        ? 'Thêm và lưu ít nhất một ghế trước khi xuất bản.'
+        : adminRoomErrorMessage(error, 'Không thể xuất bản sơ đồ.')
+
+    if (uncertainWrite(error)) {
+      notice.value =
+        'Chưa xác nhận được kết quả xuất bản. ' + 'Tải lại phiên bản trước khi thử tiếp.'
+    }
+  }
+}
+
 async function onSaveKeyDown(event: KeyboardEvent) {
   if (
     event.isComposing ||
@@ -558,7 +710,14 @@ onBeforeRouteUpdate(confirmLeave)
           Lưu nháp
         </AppButton>
 
-        <AppButton disabled title="Chức năng xuất bản ma trận chưa khả dụng"> Xuất bản </AppButton>
+        <AppButton
+          :disabled="!canPublish"
+          :loading="publishMatrix.isPending.value"
+          :title="publishHint"
+          @click="publishDraft"
+        >
+          Xuất bản
+        </AppButton>
       </div>
     </header>
 
