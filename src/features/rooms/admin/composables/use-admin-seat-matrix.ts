@@ -490,6 +490,35 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     return changed || !operationError.value
   }
 
+  function deleteSelectedCell() {
+    operationError.value = ''
+
+    const { row: rowIndex, column } = selection.value
+
+    if (!validCell(rowIndex, column)) {
+      return fail('Ô được chọn không còn tồn tại.')
+    }
+
+    const next = snapshot()
+    const row = next.rows[rowIndex]!
+    const ownerColumn = matrixSeatOwnerColumn(row, column)
+    const span = matrixSeatSpan(row[ownerColumn])
+
+    // Xóa toàn bộ vùng đang chọn, kể cả hai ô của ghế đôi.
+    row.splice(ownerColumn, span)
+
+    // Bù đúng số ô ở cuối để giữ số cột và hình chữ nhật.
+    row.push(...emptyRow(span))
+    renumber(row)
+
+    const changed = commit(next, {
+      row: rowIndex,
+      column: ownerColumn,
+    })
+
+    return changed || !operationError.value
+  }
+
   function insertRow(index: number) {
     operationError.value = ''
 
@@ -605,6 +634,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     clearSelectedSeat,
     changeSelectedType,
     insertCell,
+    deleteSelectedCell,
     insertRow,
     deleteSelectedRow,
     insertColumn,
