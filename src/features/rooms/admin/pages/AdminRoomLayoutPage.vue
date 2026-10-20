@@ -28,6 +28,7 @@ import {
 } from '../mappers/admin-room-matrix.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
+import { readRoomLayoutLocation } from '../schemas/admin-room-layout-location'
 
 const route = useRoute()
 const router = useRouter()
@@ -38,6 +39,7 @@ const roomId = computed(() =>
 )
 
 const validRoom = computed(() => isRoomSeatUuid(roomId.value))
+const layoutLink = computed(() => readRoomLayoutLocation(route.query.layoutId))
 
 const canManage = computed(
   () =>
@@ -54,7 +56,11 @@ const current = computed(() => {
 })
 
 const ready = computed(
-  () => Boolean(current.value) && !context.isFetching.value && !context.isError.value,
+  () =>
+    Boolean(current.value) &&
+    !layoutLink.value.invalid &&
+    !context.isFetching.value &&
+    !context.isError.value,
 )
 
 const cinemaId = computed(() => {
@@ -83,6 +89,7 @@ const notice = ref('')
 const matrixConversionBlocked = ref(false)
 
 let scope = 0
+let handledLayoutLink = ''
 
 const versions = useAdminRoomMatrixLayoutsQuery(roomId, ready)
 
@@ -185,6 +192,7 @@ const publishHint = computed(() => {
 
 function resetRoomState() {
   scope += 1
+  handledLayoutLink = ''
   pickedId.value = ''
   queryLayoutId.value = ''
   loadedLayout.value = null
@@ -710,12 +718,17 @@ function backToRooms() {
 }
 
 function backToSeats() {
-  if (!validRoom.value) return
+  if (!validRoom.value || busy.value) return
+
+  const layoutId = loadedLayout.value?.status === 'PUBLISHED' ? loadedLayout.value.id : ''
 
   void router.push({
     name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
     params: { roomId: roomId.value },
-    query: cinemaId.value ? { cinemaId: cinemaId.value } : {},
+    query: {
+      ...(cinemaId.value ? { cinemaId: cinemaId.value } : {}),
+      ...(layoutId ? { layoutId } : {}),
+    },
   })
 }
 
@@ -742,6 +755,31 @@ onBeforeUnmount(() => {
   scope += 1
   window.removeEventListener('beforeunload', preventUnload)
 })
+
+watch(
+  [roomId, () => layoutLink.value.id, () => layoutLink.value.invalid, ready, busy],
+  () => {
+    const requestedId = layoutLink.value.id
+
+    if (!requestedId || layoutLink.value.invalid) {
+      handledLayoutLink = ''
+      return
+    }
+
+    if (!ready.value || busy.value) return
+
+    const key = `${roomId.value}:${requestedId}`
+
+    if (handledLayoutLink === key) return
+
+    // Đánh dấu trước khi tải để thay đổi busy không tạo vòng gọi lại.
+    // Nếu tải lỗi, người dùng vẫn có thể chọn lại từ dropdown.
+    handledLayoutLink = key
+
+    void loadVersion(requestedId)
+  },
+  { immediate: true },
+)
 
 onBeforeRouteLeave(confirmLeave)
 onBeforeRouteUpdate(confirmLeave)
@@ -804,6 +842,10 @@ onBeforeRouteUpdate(confirmLeave)
 
     <p v-else-if="!validRoom" class="room-matrix-page__error" role="alert">
       Mã phòng trong đường dẫn không hợp lệ.
+    </p>
+
+    <p v-else-if="layoutLink.invalid" class="room-matrix-page__error" role="alert">
+      Mã phiên bản trong liên kết không hợp lệ.
     </p>
 
     <template v-else>

@@ -12,6 +12,7 @@ import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
 import { adminSeatTypeOptions } from '../schemas/admin-seat-type-options'
 import { useAdminRoomMatrixLayoutsQuery } from '../api/admin-room-matrix-queries'
+import { readRoomLayoutLocation } from '../schemas/admin-room-layout-location'
 
 const route = useRoute()
 const router = useRouter()
@@ -51,7 +52,9 @@ const rooms = useAdminRoomCatalogQuery(
   () => canManage.value && isRoomSeatUuid(cinemaId.value),
 )
 
-const pickedLayoutId = ref('')
+const layoutLink = computed(() => readRoomLayoutLocation(route.query.layoutId))
+
+const pickedLayoutId = computed(() => layoutLink.value.id)
 
 const versions = useAdminRoomMatrixLayoutsQuery(
   roomId,
@@ -72,6 +75,7 @@ const seats = useAdminRoomSeatsQuery(
   roomId,
   () =>
     canManage.value &&
+    !layoutLink.value.invalid &&
     context.isSuccess.value &&
     !context.isFetching.value &&
     Boolean(current.value),
@@ -91,6 +95,7 @@ const matrix = computed(() => {
   const value = seats.data.value
 
   if (
+    layoutLink.value.invalid ||
     !current.value ||
     !value ||
     value.layout.roomId !== roomId.value ||
@@ -130,10 +135,9 @@ const selected = computed(() => {
 })
 
 watch(
-  [roomId, canManage],
+  [roomId, canManage, pickedLayoutId, () => layoutLink.value.invalid],
   () => {
     scope += 1
-    pickedLayoutId.value = ''
     selectedId.value = ''
     activityError.value = ''
     activityMessage.value = ''
@@ -179,20 +183,20 @@ function changeRoom(event: Event) {
   })
 }
 
-function changeVersion(event: Event) {
+async function changeVersion(event: Event) {
   const select = event.target
-
   if (!(select instanceof HTMLSelectElement)) return
 
   const requestedId = select.value
-  select.value = pickedLayoutId.value
+
+  select.value = layoutLink.value.invalid ? '__invalid__' : pickedLayoutId.value
 
   if (
     !current.value ||
     busy.value ||
     context.isFetching.value ||
     versions.isFetching.value ||
-    requestedId === pickedLayoutId.value
+    (requestedId === pickedLayoutId.value && !layoutLink.value.invalid)
   ) {
     return
   }
@@ -205,21 +209,41 @@ function changeVersion(event: Event) {
     return
   }
 
-  scope += 1
-  selectedId.value = ''
-  activityError.value = ''
-  activityMessage.value = ''
-  pickedLayoutId.value = requestedId
-  select.value = requestedId
+  const query = { ...route.query }
+
+  delete query.layoutId
+
+  if (requestedId) {
+    query.layoutId = requestedId
+  }
+
+  try {
+    await router.push({
+      name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
+      params: { roomId: roomId.value },
+      query,
+    })
+  } catch (error) {
+    activityError.value = adminRoomErrorMessage(error, 'Không thể chuyển phiên bản sơ đồ.')
+  } finally {
+    if (select.isConnected) {
+      select.value = layoutLink.value.invalid ? '__invalid__' : pickedLayoutId.value
+    }
+  }
 }
 
 function openLayout() {
-  if (!current.value || busy.value) return
+  if (!current.value || busy.value || layoutLink.value.invalid) return
+
+  const layoutId = matrix.value?.layout.id ?? pickedLayoutId.value
 
   void router.push({
     name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
     params: { roomId: roomId.value },
-    query: cinemaId.value ? { cinemaId: cinemaId.value } : {},
+    query: {
+      ...(cinemaId.value ? { cinemaId: cinemaId.value } : {}),
+      ...(layoutId ? { layoutId } : {}),
+    },
   })
 }
 
@@ -239,6 +263,7 @@ async function reloadSeats() {
   if (
     !canManage.value ||
     !current.value ||
+    layoutLink.value.invalid ||
     context.isFetching.value ||
     busy.value ||
     seats.isFetching.value ||
@@ -351,10 +376,14 @@ async function changeActivity() {
         <label class="seatmap-field">
           <span>Phiên bản sơ đồ</span>
           <select
-            :value="pickedLayoutId"
+            :value="layoutLink.invalid ? '__invalid__' : pickedLayoutId"
             :disabled="busy || !current || context.isFetching.value || versions.isFetching.value"
             @change="changeVersion"
           >
+            <option v-if="layoutLink.invalid" value="__invalid__" disabled>
+              Phiên bản trong liên kết không hợp lệ
+            </option>
+
             <option value="">Mới nhất đã xuất bản</option>
 
             <option
@@ -537,11 +566,13 @@ async function changeActivity() {
 
             <p v-if="!matrix" class="seatmap-muted" role="status">
               {{
-                seats.isError.value
-                  ? 'Chưa thể hiển thị sơ đồ. Chọn “Tải lại sơ đồ” để thử lại.'
-                  : seats.isFetching.value || seats.data.value === undefined
-                    ? 'Đang tải sơ đồ đã xuất bản…'
-                    : 'Phòng chưa có sơ đồ đã xuất bản. Mở trang thiết kế để tạo và xuất bản.'
+                layoutLink.invalid
+                  ? 'Chọn phiên bản hợp lệ để xem sơ đồ.'
+                  : seats.isError.value
+                    ? 'Chưa thể hiển thị sơ đồ. Chọn “Tải lại sơ đồ” để thử lại.'
+                    : seats.isFetching.value || seats.data.value === undefined
+                      ? 'Đang tải sơ đồ đã xuất bản…'
+                      : 'Phòng chưa có sơ đồ đã xuất bản. Mở trang thiết kế để tạo và xuất bản.'
               }}
             </p>
 
