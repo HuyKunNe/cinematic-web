@@ -563,6 +563,132 @@ async function onSpace(event: KeyboardEvent, rowIndex: number, columnIndex: numb
   }
 }
 
+async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: number) {
+  if (
+    props.disabled ||
+    event.isComposing ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.altKey ||
+    event.shiftKey ||
+    !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)
+  ) {
+    return
+  }
+
+  const source = event.currentTarget
+
+  if (!(source instanceof HTMLInputElement)) return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  // Giữ tại ô hiện tại nếu số hoặc loại ghế chưa hợp lệ.
+  if (!commit(rowIndex, columnIndex)) return
+
+  const row = document.value.rows[rowIndex]
+
+  if (!row) return
+
+  let targetRow = rowIndex
+  let targetColumn = columnIndex
+
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    const cells = renderedRow(row)
+    const currentIndex = cells.findIndex((cell) => cell.column === columnIndex)
+    const direction = event.key === 'ArrowLeft' ? -1 : 1
+    const target = cells[currentIndex + direction]
+
+    // Giữ tại biên hàng, không tự chuyển sang hàng khác.
+    if (currentIndex < 0 || !target) return
+
+    targetColumn = target.column
+  } else {
+    targetRow += event.key === 'ArrowUp' ? -1 : 1
+
+    const targetSeats = document.value.rows[targetRow]
+
+    if (!targetSeats) return
+
+    // Nếu cột đích thuộc phần thứ hai của ghế đôi,
+    // chuyển focus về ô bắt đầu của ghế đó.
+    const target = renderedRow(targetSeats).find(
+      (cell) => cell.column <= columnIndex && columnIndex < cell.column + cell.span,
+    )
+
+    if (!target) return
+
+    targetColumn = target.column
+  }
+
+  await nextTick()
+
+  // Không giành lại focus nếu người dùng đã chuyển nơi khác.
+  if (source.ownerDocument.activeElement !== source) return
+
+  const input = table.value?.querySelector<HTMLInputElement>(
+    `input[data-cell="${cellKey(targetRow, targetColumn)}"]`,
+  )
+
+  if (!input) return
+
+  matrix.select(targetRow, targetColumn)
+  input.focus()
+}
+
+async function onTab(event: KeyboardEvent, rowIndex: number, columnIndex: number) {
+  if (props.disabled || event.isComposing || event.ctrlKey || event.metaKey || event.altKey) {
+    return
+  }
+
+  const source = event.currentTarget
+
+  if (!(source instanceof HTMLInputElement)) return
+
+  // Xác nhận trước để danh sách ô phản ánh đúng colspan của ghế đôi.
+  if (!commit(rowIndex, columnIndex)) {
+    event.preventDefault()
+    event.stopPropagation()
+    return
+  }
+
+  const cells = document.value.rows.flatMap((row, rowIndex) =>
+    renderedRow(row).map((cell) => ({
+      row: rowIndex,
+      column: cell.column,
+    })),
+  )
+
+  const currentIndex = cells.findIndex(
+    (cell) => cell.row === rowIndex && cell.column === columnIndex,
+  )
+
+  if (currentIndex < 0) return
+
+  const direction = event.shiftKey ? -1 : 1
+  const target = cells[currentIndex + direction]
+
+  // Cho phép Tab thoát khỏi ma trận ở hai đầu.
+  if (!target) return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  await nextTick()
+
+  // Không giành lại focus nếu người dùng đã chuyển sang nơi khác.
+  if (source.ownerDocument.activeElement !== source) return
+
+  const input = table.value?.querySelector<HTMLInputElement>(
+    `input[data-cell="${cellKey(target.row, target.column)}"]`,
+  )
+
+  if (!input) return
+
+  matrix.select(target.row, target.column)
+  input.focus()
+}
+
 async function cancelSelectedDraft() {
   if (props.disabled || selectedSeat.value) return
 
@@ -903,6 +1029,8 @@ defineExpose({
                       @blur="onCellBlur($event, rowIndex, cell.column)"
                       @keydown.enter="onEnter($event, rowIndex, cell.column)"
                       @keydown.space="onSpace($event, rowIndex, cell.column)"
+                      @keydown.tab="onTab($event, rowIndex, cell.column)"
+                      @keydown="onArrowKey($event, rowIndex, cell.column)"
                     />
 
                     <span
@@ -949,7 +1077,7 @@ defineExpose({
             {{ statistics.rows }} hàng · {{ statistics.columns }} cột · {{ statistics.empty }} ô
             trống
           </span>
-          <span>Space để điền ghế · Tab sang ô tiếp theo · Enter để xác nhận</span>
+          <span> ↑ ↓ ← → di chuyển · Space điền ghế · Tab ô tiếp theo · Enter xác nhận </span>
         </footer>
       </section>
 
