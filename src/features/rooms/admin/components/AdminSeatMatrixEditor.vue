@@ -502,14 +502,49 @@ function commit(row: number, column: number) {
   return true
 }
 
-function onCellBlur(event: FocusEvent, row: number, column: number) {
-  if (event.relatedTarget === null) return
+async function onCellBlur(event: FocusEvent, row: number, column: number) {
+  const source = event.currentTarget
+  const destination = event.relatedTarget
 
-  if (event.relatedTarget instanceof Node && draftControls.value?.contains(event.relatedTarget)) {
+  if (destination === null) return
+
+  if (destination instanceof Node && draftControls.value?.contains(destination)) {
     return
   }
 
-  commit(row, column)
+  // Ghi nhận trước khi commit vì ô bên phải có thể bị gộp.
+  const destinationIsRightCell =
+    destination instanceof HTMLInputElement &&
+    table.value?.contains(destination) === true &&
+    destination.dataset.cell === cellKey(row, column + 1)
+
+  if (!commit(row, column)) return
+
+  if (
+    !destinationIsRightCell ||
+    !(source instanceof HTMLInputElement) ||
+    !(destination instanceof HTMLInputElement) ||
+    document.value.rows[row]?.[column]?.seatType !== 'COUPLE'
+  ) {
+    return
+  }
+
+  await nextTick()
+
+  if (props.disabled || destination.isConnected || !source.isConnected) {
+    return
+  }
+
+  const activeElement = source.ownerDocument.activeElement
+
+  // Không lấy lại focus nếu người dùng đã chọn điều khiển khác.
+  if (activeElement !== source.ownerDocument.body && activeElement !== source) {
+    return
+  }
+
+  matrix.select(row, column)
+  navigationColumn.value = column
+  source.focus()
 }
 
 function onCellFocus(row: number, column: number) {
