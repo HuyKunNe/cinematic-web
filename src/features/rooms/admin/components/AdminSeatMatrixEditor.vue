@@ -48,6 +48,8 @@ type PendingSeat = {
   seatType: MatrixSeat['seatType']
 }
 
+const ROW_DRAG_TYPE = 'application/x-cinema-matrix-row'
+
 const matrix = useAdminSeatMatrix(props.initialDocument)
 
 const {
@@ -65,8 +67,12 @@ const prefix = useId()
 const table = ref<HTMLTableElement | null>(null)
 const draftControls = ref<HTMLDivElement | null>(null)
 
+const draggedRow = ref<number | null>(null)
+const dropTargetRow = ref<number | null>(null)
+
 const drafts = ref<Record<string, string>>({})
 const draftTypes = ref<Record<string, MatrixSeat['seatType']>>({})
+const newSeatType = ref<MatrixSeat['seatType'] | null>(null)
 const fieldErrors = ref<Record<string, string>>({})
 
 const status = ref(
@@ -77,7 +83,9 @@ const error = ref('')
 
 const selectedKey = computed(() => cellKey(selection.value.row, selection.value.column))
 
-const selectedDraftType = computed(() => draftTypes.value[selectedKey.value] ?? 'STANDARD')
+const selectedDraftType = computed(
+  () => draftTypes.value[selectedKey.value] ?? newSeatType.value ?? 'STANDARD',
+)
 
 const hasPending = computed(
   () =>
@@ -107,7 +115,6 @@ const structureGroups: {
 }[] = [
   {
     title: 'Thao tác ô',
-    description: 'Xóa ô sẽ dịch phần còn lại của hàng sang trái và bù ô trống ở cuối.',
     actions: [
       {
         label: 'Chèn ô bên phải',
@@ -149,7 +156,6 @@ const structureGroups: {
   },
   {
     title: 'Thao tác cột',
-    description: 'Xóa cột sẽ xóa cả ghế đôi đi qua cột đó trên mọi hàng.',
     actions: [
       {
         label: 'Chèn cột bên trái',
@@ -174,15 +180,27 @@ const structureGroups: {
   },
 ]
 
-watch(document, () => emit('change', matrix.snapshot()), {
-  deep: true,
-  flush: 'sync',
-})
+watch(
+  document,
+  () => {
+    clearRowDrag()
+    emit('change', matrix.snapshot())
+  },
+  { deep: true, flush: 'sync' },
+)
 
 watch(hasPending, (value) => emit('pending', value), {
   immediate: true,
   flush: 'sync',
 })
+
+watch(
+  () => props.disabled,
+  (value) => {
+    if (value) clearRowDrag()
+  },
+  { flush: 'sync' },
+)
 
 function renderedRow(row: readonly MatrixCell[]): RenderedCell[] {
   const result: RenderedCell[] = []
@@ -217,6 +235,11 @@ function clearInputs() {
   fieldErrors.value = {}
 }
 
+function clearRowDrag() {
+  draggedRow.value = null
+  dropTargetRow.value = null
+}
+
 function pendingSeats(): PendingSeat[] {
   return Object.entries(drafts.value)
     .map(([key, raw]) => {
@@ -227,7 +250,7 @@ function pendingSeats(): PendingSeat[] {
         row: row!,
         column: column!,
         raw,
-        seatType: draftTypes.value[key] ?? 'STANDARD',
+        seatType: draftTypes.value[key] ?? newSeatType.value ?? 'STANDARD',
       }
     })
     .sort((a, b) => a.row - b.row || a.column - b.column)
@@ -281,12 +304,120 @@ function protectPending() {
   return true
 }
 
+function onRowDragStart(event: DragEvent, rowIndex: number) {
+  clearRowDrag()
+
+  if (props.disabled || statistics.value.rows < 2 || protectPending() || !event.dataTransfer) {
+    event.preventDefault()
+    return
+  }
+
+  event.stopPropagation()
+  matrix.select(rowIndex, selection.value.column)
+
+  draggedRow.value = rowIndex
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData(ROW_DRAG_TYPE, prefix)
+  event.dataTransfer.setData('text/plain', matrixRowLabel(rowIndex))
+
+  const rowElement =
+    event.currentTarget instanceof HTMLElement ? event.currentTarget.closest('tr') : null
+
+  if (rowElement) {
+    event.dataTransfer.setDragImage(rowElement, 0, rowElement.getBoundingClientRect().height / 2)
+  }
+
+  announce(`Đang kéo hàng ${matrixRowLabel(rowIndex)}.`)
+}
+
+function onRowDragOver(event: DragEvent, rowIndex: number) {
+  if (props.disabled || draggedRow.value === null || hasPending.value) return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+
+  dropTargetRow.value = rowIndex === draggedRow.value ? null : rowIndex
+}
+
+function onTableDragLeave(event: DragEvent) {
+  if (event.relatedTarget instanceof Node && table.value?.contains(event.relatedTarget)) {
+    return
+  }
+
+  dropTargetRow.value = null
+}
+
+function onRowDrop(event: DragEvent, rowIndex: number) {
+  const fromIndex = draggedRow.value
+  if (fromIndex === null) return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  const ownDrag = event.dataTransfer?.getData(ROW_DRAG_TYPE) === prefix
+  clearRowDrag()
+
+  if (props.disabled || !ownDrag || fromIndex === rowIndex) return
+
+  void mutate(
+    () => matrix.moveRow(fromIndex, rowIndex),
+    `Đã chuyển hàng ${matrixRowLabel(fromIndex)} đến vị trí ` +
+      `${matrixRowLabel(rowIndex)} và cập nhật nhãn hàng.`,
+  )
+}
+
+function onRowDragEnd() {
+  const cancelled = draggedRow.value !== null
+  clearRowDrag()
+
+  if (cancelled) {
+    announce('Đã kết thúc kéo hàng, vị trí không thay đổi.')
+  }
+}
+
+function onRowHandleKeyDown(event: KeyboardEvent, rowIndex: number) {
+  if (
+    props.disabled ||
+    event.isComposing ||
+    !event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    !['ArrowUp', 'ArrowDown'].includes(event.key)
+  ) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  const target = rowIndex + (event.key === 'ArrowUp' ? -1 : 1)
+  if (target < 0 || target >= statistics.value.rows) return
+
+  matrix.select(rowIndex, selection.value.column)
+
+  void mutate(
+    () => matrix.moveRow(rowIndex, target),
+    `Đã chuyển hàng đến vị trí ${matrixRowLabel(target)}.`,
+  )
+}
+
 function updateDraft(row: number, column: number, event: Event) {
   if (props.disabled) return
 
   const key = cellKey(row, column)
+  const raw = (event.target as HTMLInputElement).value
 
-  drafts.value[key] = (event.target as HTMLInputElement).value
+  drafts.value[key] = raw
+
+  if (raw.trim()) {
+    // Ghi nhận loại đang dùng khi bắt đầu nhập ô này.
+    draftTypes.value[key] ??= newSeatType.value ?? 'STANDARD'
+  } else {
+    delete draftTypes.value[key]
+  }
+
   delete fieldErrors.value[key]
   error.value = ''
 }
@@ -298,24 +429,31 @@ async function changeDraftType(event: Event) {
   const option = matrixSeatTypes.find((item) => item.value === target.value)
 
   if (!option) {
-    target.value = draftTypes.value[selectedKey.value] ?? ''
+    target.value = draftTypes.value[selectedKey.value] ?? newSeatType.value ?? ''
     return
   }
 
   const { row, column } = selection.value
   const key = cellKey(row, column)
 
-  draftTypes.value[key] = option.value
+  // Giữ lựa chọn cho các ô nhập tiếp theo.
+  newSeatType.value = option.value
   delete fieldErrors.value[key]
 
   if (!drafts.value[key]?.trim()) {
-    announce(`Loại ghế: ${option.label}. Nhập số trực tiếp trong ô ma trận.`)
+    delete draftTypes.value[key]
+
+    announce(`Các ghế nhập tiếp theo sẽ dùng loại ${option.label}.`)
     return
   }
 
-  if (commit(row, column)) await focusSelected()
-}
+  // Ô đã có số: áp dụng ngay loại vừa chọn.
+  draftTypes.value[key] = option.value
 
+  if (commit(row, column)) {
+    await focusSelected()
+  }
+}
 function commit(row: number, column: number) {
   if (props.disabled) return false
 
@@ -323,7 +461,7 @@ function commit(row: number, column: number) {
   const raw = drafts.value[key]
   if (raw === undefined) return true
 
-  const seatType = draftTypes.value[key] ?? 'STANDARD'
+  const seatType = draftTypes.value[key] ?? newSeatType.value ?? 'STANDARD'
   const overlapError = raw.trim() ? pendingCoupleError(row, column, seatType) : ''
 
   if (overlapError) {
@@ -380,6 +518,51 @@ function onEnter(event: KeyboardEvent, row: number, column: number) {
   commit(row, column)
 }
 
+async function onSpace(event: KeyboardEvent, rowIndex: number, columnIndex: number) {
+  if (
+    props.disabled ||
+    event.isComposing ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.altKey ||
+    event.shiftKey
+  ) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  // Giữ phím không tạo liên tiếp nhiều ghế.
+  if (event.repeat) return
+
+  const row = document.value.rows[rowIndex]
+
+  if (!row || columnIndex < 0 || columnIndex >= document.value.columns || row[columnIndex]) {
+    return
+  }
+
+  matrix.select(rowIndex, columnIndex)
+
+  // Không tạo ghế trong phần thứ hai của ghế đôi.
+  if (selection.value.column !== columnIndex) return
+
+  const key = cellKey(rowIndex, columnIndex)
+
+  // Giữ loại đã chọn cho ô hoặc loại đang dùng liên tiếp.
+  draftTypes.value[key] ??= selectedDraftType.value
+
+  if (!drafts.value[key]?.trim()) {
+    const nextNumber = row.reduce((count, seat) => count + (seat ? 1 : 0), 0) + 1
+
+    drafts.value[key] = String(nextNumber)
+  }
+
+  if (commit(rowIndex, columnIndex)) {
+    await focusSelected()
+  }
+}
+
 async function cancelSelectedDraft() {
   if (props.disabled || selectedSeat.value) return
 
@@ -394,7 +577,7 @@ async function cancelSelectedDraft() {
 }
 
 async function selectCell(row: number, column: number) {
-  if (props.disabled) return
+  if (props.disabled || draggedRow.value !== null) return
 
   matrix.select(row, column)
   await focusSelected()
@@ -407,6 +590,7 @@ async function selectRow(row: number) {
 async function mutate(action: () => boolean, message: string) {
   if (props.disabled || protectPending()) return
 
+  clearRowDrag()
   const changed = action()
 
   if (!changed) {
@@ -499,6 +683,7 @@ function reset() {
     return
   }
 
+  clearRowDrag()
   const changed = matrix.reset()
   clearInputs()
 
@@ -511,6 +696,8 @@ function reset() {
 
 function prepareSave(): SeatMatrixDocument | null {
   if (props.disabled) return null
+
+  clearRowDrag()
 
   const entries = pendingSeats()
   const preview = useAdminSeatMatrix(matrix.snapshot())
@@ -607,6 +794,11 @@ defineExpose({
           ô để xác nhận. Ghế đôi gộp hai ô liền nhau.
         </p>
 
+        <p :id="`${prefix}-row-drag-help`" class="admin-visually-hidden">
+          Kéo nhãn hàng để đổi thứ tự. Khi nhãn hàng được focus, dùng Alt và mũi tên lên hoặc xuống
+          để di chuyển hàng.
+        </p>
+
         <p :id="`${prefix}-status`" class="admin-visually-hidden" role="status" aria-live="polite">
           {{ status }}
         </p>
@@ -622,9 +814,13 @@ defineExpose({
           <div class="seat-matrix-editor__frame">
             <div class="seat-matrix-editor__screen">MÀN HÌNH CHIẾU</div>
 
-            <table ref="table" :aria-describedby="`${prefix}-help ${prefix}-status`">
+            <table
+              ref="table"
+              :aria-describedby="`${prefix}-help ${prefix}-status`"
+              @dragleave="onTableDragLeave"
+            >
               <caption class="admin-visually-hidden">
-                Cột đầu là nhãn hàng. Ghế thường chiếm một ô, ghế đôi gộp hai ô.
+                Cột đầu là nhãn hàng và điểm kéo hàng. Ghế thường chiếm một ô, ghế đôi gộp hai ô.
               </caption>
 
               <colgroup>
@@ -637,13 +833,32 @@ defineExpose({
               </colgroup>
 
               <tbody>
-                <tr v-for="(row, rowIndex) in document.rows" :key="rowIndex">
+                <tr
+                  v-for="(row, rowIndex) in document.rows"
+                  :key="rowIndex"
+                  :class="{
+                    'is-row-dragging': draggedRow === rowIndex,
+                    'is-row-drop-before':
+                      draggedRow !== null && dropTargetRow === rowIndex && rowIndex < draggedRow,
+                    'is-row-drop-after':
+                      draggedRow !== null && dropTargetRow === rowIndex && rowIndex > draggedRow,
+                  }"
+                  @dragover="onRowDragOver($event, rowIndex)"
+                  @drop="onRowDrop($event, rowIndex)"
+                >
                   <th scope="row">
                     <button
+                      class="seat-matrix-editor__row-handle"
                       type="button"
-                      :aria-label="`Chọn hàng ${matrixRowLabel(rowIndex)}`"
+                      :draggable="!disabled && statistics.rows > 1"
+                      :aria-label="`Chọn hoặc kéo hàng ${matrixRowLabel(rowIndex)}`"
+                      :aria-describedby="`${prefix}-row-drag-help`"
                       :aria-pressed="selection.row === rowIndex"
+                      title="Kéo để đổi thứ tự hàng · Alt + ↑/↓ để di chuyển"
                       @click="selectRow(rowIndex)"
+                      @keydown="onRowHandleKeyDown($event, rowIndex)"
+                      @dragstart="onRowDragStart($event, rowIndex)"
+                      @dragend="onRowDragEnd"
                     >
                       {{ matrixRowLabel(rowIndex) }}
                     </button>
@@ -687,6 +902,7 @@ defineExpose({
                       @input="updateDraft(rowIndex, cell.column, $event)"
                       @blur="onCellBlur($event, rowIndex, cell.column)"
                       @keydown.enter="onEnter($event, rowIndex, cell.column)"
+                      @keydown.space="onSpace($event, rowIndex, cell.column)"
                     />
 
                     <span
@@ -733,7 +949,7 @@ defineExpose({
             {{ statistics.rows }} hàng · {{ statistics.columns }} cột · {{ statistics.empty }} ô
             trống
           </span>
-          <span>Nhập số rồi chọn loại để áp dụng · Enter để xác nhận</span>
+          <span>Space để điền ghế · Tab sang ô tiếp theo · Enter để xác nhận</span>
         </footer>
       </section>
 
@@ -745,7 +961,7 @@ defineExpose({
             <label :for="`${prefix}-new-type`">Loại ghế</label>
             <select
               :id="`${prefix}-new-type`"
-              :value="draftTypes[selectedKey] ?? ''"
+              :value="draftTypes[selectedKey] ?? newSeatType ?? ''"
               :aria-describedby="`${prefix}-draft-help`"
               @change="changeDraftType"
             >
@@ -846,6 +1062,8 @@ defineExpose({
   --matrix-axis-layer: 1;
   --matrix-seat-tint: 12%;
   --matrix-screen-spacing: 0.14em;
+  --matrix-row-drop-line: var(--space-1);
+  --matrix-row-drag-opacity: var(--opacity-disabled);
   --matrix-table-width: calc(
     var(--matrix-axis-size) + var(--matrix-cell-width) * var(--matrix-column-count)
   );
@@ -989,6 +1207,18 @@ defineExpose({
   background: var(--color-surface);
 }
 
+.seat-matrix-editor tr.is-row-dragging {
+  opacity: var(--matrix-row-drag-opacity);
+}
+
+.seat-matrix-editor tr.is-row-drop-before > :is(th, td) {
+  box-shadow: inset 0 var(--matrix-row-drop-line) 0 var(--color-primary);
+}
+
+.seat-matrix-editor tr.is-row-drop-after > :is(th, td) {
+  box-shadow: inset 0 calc(var(--matrix-row-drop-line) * -1) 0 var(--color-primary);
+}
+
 .seat-matrix-editor td {
   cursor: pointer;
 }
@@ -1063,6 +1293,14 @@ defineExpose({
   width: 100%;
   padding-inline: var(--space-1);
   font-size: var(--font-size-xs);
+}
+
+.seat-matrix-editor .seat-matrix-editor__row-handle[draggable='true'] {
+  cursor: grab;
+}
+
+.seat-matrix-editor .seat-matrix-editor__row-handle[draggable='true']:active {
+  cursor: grabbing;
 }
 
 .seat-matrix-editor select {

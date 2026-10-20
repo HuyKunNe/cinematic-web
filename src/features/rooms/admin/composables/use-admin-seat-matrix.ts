@@ -343,13 +343,6 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
       }
     }
 
-    if (row.some((seat) => seat?.number === number)) {
-      return {
-        ok: false,
-        message: `Hàng ${matrixRowLabel(rowIndex)} đã có số ${number}.`,
-      }
-    }
-
     const option = matrixSeatTypes.find((item) => item.value === seatType)
 
     if (!option) {
@@ -384,9 +377,14 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
       seatType: option.value,
     }
 
+    // Chấp nhận số nhập bị trùng và tự chuẩn hóa toàn bộ hàng.
+    // Ghế được đánh số 1..n theo vị trí, bỏ qua ô trống.
     renumber(nextRow)
 
-    const changed = commit(next, { row: rowIndex, column: columnIndex })
+    const changed = commit(next, {
+      row: rowIndex,
+      column: columnIndex,
+    })
 
     if (!changed && operationError.value) {
       return { ok: false, message: operationError.value }
@@ -504,10 +502,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     const ownerColumn = matrixSeatOwnerColumn(row, column)
     const span = matrixSeatSpan(row[ownerColumn])
 
-    // Xóa toàn bộ vùng đang chọn, kể cả hai ô của ghế đôi.
     row.splice(ownerColumn, span)
-
-    // Bù đúng số ô ở cuối để giữ số cột và hình chữ nhật.
     row.push(...emptyRow(span))
     renumber(row)
 
@@ -517,6 +512,46 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     })
 
     return changed || !operationError.value
+  }
+
+  function moveRow(fromIndex: number, toIndex: number) {
+    operationError.value = ''
+
+    const rowCount = document.value.rows.length
+
+    if (
+      !Number.isInteger(fromIndex) ||
+      !Number.isInteger(toIndex) ||
+      fromIndex < 0 ||
+      fromIndex >= rowCount ||
+      toIndex < 0 ||
+      toIndex >= rowCount
+    ) {
+      return fail('Vị trí di chuyển hàng không hợp lệ.')
+    }
+
+    if (fromIndex === toIndex) return false
+
+    const next = snapshot()
+    const movedRow = next.rows.splice(fromIndex, 1)[0]!
+
+    // toIndex là vị trí cuối cùng của hàng sau khi di chuyển.
+    next.rows.splice(toIndex, 0, movedRow)
+
+    let selectedRow = selection.value.row
+
+    if (selectedRow === fromIndex) {
+      selectedRow = toIndex
+    } else if (fromIndex < toIndex && selectedRow > fromIndex && selectedRow <= toIndex) {
+      selectedRow -= 1
+    } else if (fromIndex > toIndex && selectedRow >= toIndex && selectedRow < fromIndex) {
+      selectedRow += 1
+    }
+
+    return commit(next, {
+      row: selectedRow,
+      column: selection.value.column,
+    })
   }
 
   function insertRow(index: number) {
@@ -635,6 +670,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     changeSelectedType,
     insertCell,
     deleteSelectedCell,
+    moveRow,
     insertRow,
     deleteSelectedRow,
     insertColumn,
