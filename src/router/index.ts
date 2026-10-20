@@ -20,7 +20,8 @@ const loadAdminReferencePage = () => import('../features/admin/pages/AdminRefere
 const loadAdminRoomSeatsPage = () => import('../features/rooms/admin/pages/AdminRoomSeatsPage.vue')
 const loadAdminRoomLayoutPage = () =>
   import('../features/rooms/admin/pages/AdminRoomLayoutPage.vue')
-
+const loadAdminShowtimesPage = () =>
+  import('../features/showtimes/admin/pages/AdminShowtimesPage.vue')
 const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.HOME,
@@ -230,8 +231,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_SHOWTIMES,
     name: ROUTE_NAMES.ADMIN_SHOWTIMES,
-    component: loadAdminReferencePage,
-    props: { module: 'showtimes' },
+    component: loadAdminShowtimesPage,
     meta: {
       layout: 'admin',
       title: 'Quản lý lịch chiếu',

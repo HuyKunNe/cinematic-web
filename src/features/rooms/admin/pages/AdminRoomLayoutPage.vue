@@ -199,6 +199,7 @@ function resetRoomState() {
   handledLayoutLink = ''
   pickedId.value = ''
   queryLayoutId.value = ''
+  failedLayoutId.value = ''
   loadedLayout.value = null
   initialDocument.value = null
   workingDocument.value = null
