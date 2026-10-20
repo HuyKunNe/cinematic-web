@@ -1,4 +1,5 @@
 export * from './cinema-controller/cinema-controller';
+export * from './cinema-pricing-policy-controller/cinema-pricing-policy-controller';
 export * from './room-controller/room-controller';
 export * from './room-layout-controller/room-layout-controller';
 export * from './seat-controller/seat-controller';
