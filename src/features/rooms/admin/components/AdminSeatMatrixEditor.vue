@@ -822,24 +822,43 @@ function onHistoryKeyDown(event: KeyboardEvent) {
     return
   }
 
-  if (
-    event.target.matches('input:not([readonly]), textarea, select') ||
-    event.target.isContentEditable
-  ) {
+  const target = event.target
+
+  if (target.matches('textarea, select') || target.isContentEditable) {
     return
+  }
+
+  if (target instanceof HTMLInputElement && !target.readOnly) {
+    const cell = target.dataset.cell
+    const isMatrixInput = cell !== undefined && table.value?.contains(target) === true
+
+    if (!isMatrixInput) return
+
+    // Có bản nhập, kể cả vừa xóa hết ký tự:
+    // giữ undo/redo văn bản của trình duyệt.
+    const hasTextDraft = Object.prototype.hasOwnProperty.call(drafts.value, cell)
+
+    if (hasTextDraft) return
   }
 
   const key = event.key.toLowerCase()
   let direction: 'undo' | 'redo' | null = null
 
-  if (key === 'z') direction = event.shiftKey ? 'redo' : 'undo'
-  else if (key === 'y' && !event.shiftKey) direction = 'redo'
+  if (key === 'z') {
+    direction = event.shiftKey ? 'redo' : 'undo'
+  } else if (key === 'y' && !event.shiftKey) {
+    direction = 'redo'
+  }
 
   if (!direction) return
-  if (direction === 'undo' ? !canUndo.value : !canRedo.value) return
+
+  const available = direction === 'undo' ? canUndo.value : canRedo.value
+
+  if (!available) return
 
   event.preventDefault()
   event.stopPropagation()
+
   void applyHistory(direction)
 }
 
