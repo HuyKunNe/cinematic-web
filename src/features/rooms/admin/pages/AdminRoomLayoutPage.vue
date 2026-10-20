@@ -29,6 +29,7 @@ import {
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
 import { readRoomLayoutLocation } from '../schemas/admin-room-layout-location'
+import type { LocationQuery } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -71,6 +72,7 @@ const cinemaId = computed(() => {
 
 const pickedId = ref('')
 const queryLayoutId = ref('')
+const failedLayoutId = ref('')
 const loadedLayout = ref<RoomLayoutResponse | null>(null)
 
 const initialDocument = ref<AdminRoomMatrixDocument | null>(null)
@@ -82,6 +84,7 @@ const editor = ref<InstanceType<typeof AdminSeatMatrixEditor> | null>(null)
 const editorGeneration = ref(0)
 
 const opening = ref(false)
+const syncingLocation = ref(false)
 const reloadRequired = ref(false)
 const creationBlocked = ref(false)
 const errorMessage = ref('')
@@ -108,6 +111,7 @@ const layouts = computed(() => (current.value ? (versions.data.value ?? []) : []
 const busy = computed(
   () =>
     opening.value ||
+    syncingLocation.value ||
     createDraft.isPending.value ||
     saveMatrix.isPending.value ||
     publishMatrix.isPending.value ||
@@ -201,6 +205,7 @@ function resetRoomState() {
   baselineKey.value = ''
   pendingInput.value = false
   opening.value = false
+  syncingLocation.value = false
   reloadRequired.value = false
   creationBlocked.value = false
   errorMessage.value = ''
@@ -240,17 +245,102 @@ function requiresLayoutReload(error: unknown) {
   ].includes(error.code ?? '')
 }
 
-async function loadVersion(layoutId: string, minimumLayout?: RoomLayoutResponse): Promise<boolean> {
+function layoutIndependentQueryKey(query: LocationQuery) {
+  return JSON.stringify(
+    Object.keys(query)
+      .filter((key) => key !== 'layoutId')
+      .sort()
+      .map((key) => [key, query[key]]),
+  )
+}
+
+async function syncLoadedVersionLocation(): Promise<boolean> {
+  const opened = loadedLayout.value
+
+  if (!opened || !canManage.value || !current.value || opened.roomId !== roomId.value) {
+    return false
+  }
+
+  if (!layoutLink.value.invalid && layoutLink.value.id === opened.id) {
+    return true
+  }
+
+  const requestedRoomId = roomId.value
+  const requestedPath = route.path
+  const token = scope
+
+  syncingLocation.value = true
+
+  try {
+    await router.replace({
+      path: requestedPath,
+      hash: route.hash,
+      query: {
+        ...route.query,
+        layoutId: opened.id,
+      },
+    })
+
+    if (token !== scope || requestedRoomId !== roomId.value) {
+      return false
+    }
+
+    const actual = readRoomLayoutLocation(route.query.layoutId)
+
+    if (route.path !== requestedPath || actual.invalid || actual.id !== opened.id) {
+      throw new Error('Không thể cập nhật liên kết của phiên bản đang mở.')
+    }
+
+    return true
+  } catch {
+    if (
+      token === scope &&
+      requestedRoomId === roomId.value &&
+      loadedLayout.value?.id === opened.id
+    ) {
+      errorMessage.value =
+        'Đã mở sơ đồ nhưng chưa cập nhật được liên kết. ' + 'Nội dung đang chỉnh được giữ nguyên.'
+    }
+
+    return false
+  } finally {
+    if (token === scope) {
+      // Nếu điều hướng không thành công, không để watcher tự mở lại
+      // phiên bản cũ còn nằm trên URL.
+      const actual = readRoomLayoutLocation(route.query.layoutId)
+
+      handledLayoutLink = !actual.invalid && actual.id ? `${roomId.value}:${actual.id}` : ''
+
+      syncingLocation.value = false
+    }
+  }
+}
+
+async function loadVersion(
+  layoutId: string,
+  minimumLayout?: RoomLayoutResponse,
+  requirePublishedMatrix = false,
+): Promise<boolean> {
   if (!ready.value || !isRoomSeatUuid(layoutId)) return false
 
   const requestedRoomId = roomId.value
   const token = ++scope
 
-  const minimum = minimumLayout ?? (loadedLayout.value?.id === layoutId ? loadedLayout.value : null)
+  const opened = loadedLayout.value?.id === layoutId ? loadedLayout.value : null
+  const listed = layouts.value.find((layout) => layout.id === layoutId)
+
+  // Chụp metadata trước khi bắt đầu request.
+  // So sánh với tất cả nguồn để danh sách cũ không hạ mức kiểm tra.
+  const knownLayouts = [minimumLayout, opened, listed]
+
+  // Một phiên bản đã mở bằng ma trận không được quay về dữ liệu legacy.
+  const matrixRequired =
+    requirePublishedMatrix || (opened?.status === 'PUBLISHED' && initialDocument.value !== null)
 
   opening.value = true
   errorMessage.value = ''
   notice.value = ''
+  failedLayoutId.value = ''
   queryLayoutId.value = layoutId
 
   try {
@@ -268,17 +358,24 @@ async function loadVersion(layoutId: string, minimumLayout?: RoomLayoutResponse)
 
     const storedDocument = readAdminRoomMatrix(result.data, requestedRoomId, layoutId)
 
-    if (
-      minimum &&
-      (result.data.layout.version < minimum.version ||
-        (minimum.status === 'PUBLISHED' && result.data.layout.status !== 'PUBLISHED'))
-    ) {
-      throw new Error('Nội dung trả về chưa khớp phiên bản hiện tại. Hãy tải lại.')
+    const receivedLayout = result.data.layout
+
+    const olderThanKnownLayout = knownLayouts.some(
+      (known) =>
+        known != null &&
+        (receivedLayout.version < known.version ||
+          (known.status === 'PUBLISHED' && receivedLayout.status !== 'PUBLISHED')),
+    )
+
+    if (olderThanKnownLayout) {
+      throw new Error(
+        'Nội dung trả về cũ hơn phiên bản trang đã nhận được. ' +
+          'Hãy tải lại phiên bản; nội dung đang mở vẫn được giữ nguyên.',
+      )
     }
 
-    // minimumLayout được truyền sau khi publish sơ đồ thành công.
-    if (minimumLayout && storedDocument === null) {
-      throw new Error('Chưa nhận được nội dung sơ đồ đã xuất bản. Hãy tải lại.')
+    if (matrixRequired && storedDocument === null) {
+      throw new Error('Chưa nhận được nội dung ma trận đã xuất bản. Hãy tải lại phiên bản.')
     }
 
     if (result.data.layout.status === 'PUBLISHED' && storedDocument) {
@@ -325,10 +422,13 @@ async function loadVersion(layoutId: string, minimumLayout?: RoomLayoutResponse)
         : `Đã mở phiên bản ${result.data.layout.layoutVersion}.`
     }
 
+    await syncLoadedVersionLocation()
+
     return true
   } catch (error) {
     if (token !== scope || requestedRoomId !== roomId.value) return false
 
+    failedLayoutId.value = layoutId
     errorMessage.value = adminRoomErrorMessage(error, 'Không thể mở sơ đồ.')
 
     return false
@@ -382,7 +482,7 @@ async function createVersion() {
 
     // Bản nháp vừa tạo đã được thêm vào danh sách.
     // Chỉ cập nhật lựa chọn sau khi đọc nội dung thành công.
-    await loadVersion(created.id)
+    await loadVersion(created.id, created)
   } catch (error) {
     if (token !== scope || requestedRoomId !== roomId.value) return
 
@@ -420,6 +520,7 @@ async function copyPublishedVersion() {
     loadedLayout.value = copied.content.layout
     pickedId.value = copied.content.layout.id
     queryLayoutId.value = copied.content.layout.id
+    failedLayoutId.value = ''
 
     initialDocument.value = copied.document
     workingDocument.value = copied.document
@@ -434,6 +535,7 @@ async function copyPublishedVersion() {
     notice.value =
       `Đã tạo bản nháp phiên bản ${copied.content.layout.layoutVersion} ` +
       `từ phiên bản ${source.layoutVersion}.`
+    await syncLoadedVersionLocation()
   } catch (error) {
     if (token !== scope || requestedRoomId !== roomId.value) return
 
@@ -523,23 +625,43 @@ async function onRefreshVersions() {
   const requestedRoomId = roomId.value
   const token = scope
   const openedId = loadedLayout.value?.id ?? ''
-  const shouldReopen = reloadRequired.value && openedId !== ''
+  const failedId = failedLayoutId.value
 
   const refreshed = await refreshVersions()
 
   if (
     !refreshed ||
-    !shouldReopen ||
     token !== scope ||
     requestedRoomId !== roomId.value ||
-    loadedLayout.value?.id !== openedId
+    (loadedLayout.value?.id ?? '') !== openedId ||
+    failedLayoutId.value !== failedId
   ) {
     return
   }
 
-  if (!refreshed.some((layout) => layout.id === openedId)) return
+  // Ưu tiên phiên bản vừa mở thất bại.
+  // Đọc reloadRequired sau khi cập nhật danh sách để nhận cả
+  // trường hợp danh sách vừa phát hiện phiên bản đã thay đổi.
+  const targetId = failedId || (reloadRequired.value ? openedId : '')
 
-  await openVersion(openedId)
+  if (!targetId) return
+
+  const targetExists = refreshed.some((layout) => layout.id === targetId)
+
+  if (!targetExists) {
+    errorMessage.value =
+      'Phiên bản cần mở không còn trong danh sách của phòng. ' + 'Hãy chọn một phiên bản khác.'
+
+    notice.value = loadedLayout.value
+      ? 'Nội dung đang mở và các thay đổi chưa lưu vẫn được giữ lại.'
+      : ''
+
+    return
+  }
+
+  // openVersion hỏi xác nhận nếu editor có thay đổi chưa lưu.
+  // Thử lại chỉ đọc nội dung, không tạo hoặc xuất bản lại.
+  await openVersion(targetId)
 }
 
 async function saveDraft() {
@@ -643,7 +765,7 @@ async function publishDraft() {
     reloadRequired.value = true
 
     const reloadScope = scope + 1
-    const reloaded = await loadVersion(published.id, published)
+    const reloaded = await loadVersion(published.id, published, true)
 
     if (
       reloadScope !== scope ||
@@ -770,19 +892,39 @@ watch(
 
     const key = `${roomId.value}:${requestedId}`
 
+    // URL vừa đồng bộ với editor hiện tại:
+    // không tải lại content hoặc khởi tạo lại lịch sử chỉnh sửa.
+    if (loadedLayout.value?.id === requestedId) {
+      handledLayoutLink = key
+      return
+    }
+
     if (handledLayoutLink === key) return
 
-    // Đánh dấu trước khi tải để thay đổi busy không tạo vòng gọi lại.
-    // Nếu tải lỗi, người dùng vẫn có thể chọn lại từ dropdown.
     handledLayoutLink = key
-
     void loadVersion(requestedId)
   },
   { immediate: true },
 )
 
 onBeforeRouteLeave(confirmLeave)
-onBeforeRouteUpdate(confirmLeave)
+onBeforeRouteUpdate((to, from) => {
+  const target = readRoomLayoutLocation(to.query.layoutId)
+
+  const onlySynchronizingCurrentLayout =
+    to.name === from.name &&
+    to.path === from.path &&
+    to.hash === from.hash &&
+    !target.invalid &&
+    target.id === loadedLayout.value?.id &&
+    layoutIndependentQueryKey(to.query) === layoutIndependentQueryKey(from.query)
+
+  if (onlySynchronizingCurrentLayout) {
+    return true
+  }
+
+  return confirmLeave()
+})
 </script>
 
 <template>
@@ -895,7 +1037,11 @@ onBeforeRouteUpdate(confirmLeave)
               :loading="versions.isFetching.value"
               @click="onRefreshVersions"
             >
-              {{ reloadRequired && loadedLayout ? 'Tải lại phiên bản' : 'Tải danh sách' }}
+              {{
+                failedLayoutId || (reloadRequired && loadedLayout)
+                  ? 'Tải lại phiên bản'
+                  : 'Tải danh sách'
+              }}
             </AppButton>
 
             <AppButton
