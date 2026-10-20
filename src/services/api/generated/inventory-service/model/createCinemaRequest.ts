@@ -22,4 +22,10 @@ export interface CreateCinemaRequest {
      * @maxLength 100
      */
   city: string;
+  /**
+     * Region-based time zone supported by the server. Optional during migration; omission leaves it unconfigured.
+     * @minLength 0
+     * @maxLength 64
+     */
+  timeZone?: string;
 }

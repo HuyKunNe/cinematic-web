@@ -23,4 +23,10 @@ export interface UpdateCinemaRequest {
      */
   city: string;
   active: boolean;
+  /**
+     * Region-based time zone supported by the server. Omission or null preserves the current value. Blank values are rejected.
+     * @minLength 0
+     * @maxLength 64
+     */
+  timeZone?: string;
 }
