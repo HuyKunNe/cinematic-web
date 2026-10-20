@@ -8,28 +8,53 @@ import { isAdminRoomApiError } from '../schemas/admin-room.schema'
 
 export const adminSeatKeys = {
   list: (roomId: string) => ['room-matrices', 'admin', roomId, 'published-seat-map'] as const,
+
+  version: (roomId: string, layoutId: string) =>
+    ['room-matrices', 'admin', roomId, 'published-seat-map', layoutId] as const,
 }
 
 export function useAdminRoomSeatsQuery(
   roomId: MaybeRefOrGetter<string>,
   enabled: MaybeRefOrGetter<boolean>,
+  layoutId: MaybeRefOrGetter<string> = '',
 ) {
   return useQuery({
-    queryKey: computed(() => adminSeatKeys.list(toValue(roomId))),
-    enabled: computed(() => toValue(enabled) && isRoomSeatUuid(toValue(roomId))),
+    queryKey: computed(() => adminSeatKeys.version(toValue(roomId), toValue(layoutId))),
+    enabled: computed(
+      () =>
+        toValue(enabled) &&
+        isRoomSeatUuid(toValue(roomId)) &&
+        (toValue(layoutId) === '' || isRoomSeatUuid(toValue(layoutId))),
+    ),
     queryFn: async ({ queryKey }) => {
       const requestedRoomId = queryKey[2]
+      const requestedLayoutId = queryKey[4]
+
+      if (
+        !isRoomSeatUuid(requestedRoomId) ||
+        (requestedLayoutId !== '' && !isRoomSeatUuid(requestedLayoutId))
+      ) {
+        throw new Error('Mã phòng hoặc phiên bản sơ đồ không hợp lệ.')
+      }
 
       try {
         const response = await getRoomPublishedSeatMap({
           roomId: requestedRoomId,
+          ...(requestedLayoutId ? { layoutId: requestedLayoutId } : {}),
         })
 
-        return mapAdminPublishedSeats(response, requestedRoomId)
+        const matrix = mapAdminPublishedSeats(response, requestedRoomId)
+
+        if (requestedLayoutId && matrix.layout.id !== requestedLayoutId) {
+          throw new Error('Sơ đồ trả về không đúng phiên bản đang chọn. Hãy tải lại.')
+        }
+
+        return matrix
       } catch (error) {
-        // Endpoint không chỉ định layoutId:
-        // mã lỗi này nghĩa là phòng chưa có phiên bản đã publish.
+        // Chỉ coi là chưa có sơ đồ khi đang yêu cầu bản mới nhất.
+        // Phiên bản được chọn cụ thể bị lỗi thì giữ nguyên lỗi đó.
         if (
+          !requestedLayoutId &&
           isAdminRoomApiError(error) &&
           error.status === 404 &&
           error.code === 'INVENTORY_ROOM_LAYOUT_NOT_FOUND'
@@ -40,6 +65,7 @@ export function useAdminRoomSeatsQuery(
         throw error
       }
     },
+    placeholderData: () => undefined,
     staleTime: 0,
     retry: false,
     refetchOnMount: 'always',
@@ -79,12 +105,10 @@ export function useSetAdminSeatActivityMutation() {
       return updated
     },
     retry: false,
-
-    // Đọc lại cả khi request thất bại vì máy chủ có thể đã xử lý.
     onSettled: (_data, _error, variables) =>
       queryClient.invalidateQueries({
+        // Bao gồm bản mới nhất và các phiên bản cụ thể.
         queryKey: adminSeatKeys.list(variables.roomId),
-        exact: true,
       }),
   })
 }

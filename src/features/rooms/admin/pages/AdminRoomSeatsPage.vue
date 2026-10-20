@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
-import { useAdminRoomCinemaQuery, useAdminRoomCatalogQuery } from '../api/admin-room-queries'
-import { useAdminRoomSeatsQuery, useSetAdminSeatActivityMutation } from '../api/admin-seat-queries'
+import { computed, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
+import { useAdminRoomCatalogQuery, useAdminRoomCinemaQuery } from '../api/admin-room-queries'
 import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
+import { useAdminRoomSeatsQuery, useSetAdminSeatActivityMutation } from '../api/admin-seat-queries'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
-import { adminSeatTypeOptions } from '../schemas/admin-seat-type-options'
 import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
+import { adminSeatTypeOptions } from '../schemas/admin-seat-type-options'
+import { useAdminRoomMatrixLayoutsQuery } from '../api/admin-room-matrix-queries'
 
 const route = useRoute()
 const router = useRouter()
@@ -50,6 +51,23 @@ const rooms = useAdminRoomCatalogQuery(
   () => canManage.value && isRoomSeatUuid(cinemaId.value),
 )
 
+const pickedLayoutId = ref('')
+
+const versions = useAdminRoomMatrixLayoutsQuery(
+  roomId,
+  () =>
+    canManage.value &&
+    context.isSuccess.value &&
+    !context.isFetching.value &&
+    Boolean(current.value),
+)
+
+const publishedVersions = computed(() =>
+  current.value
+    ? (versions.data.value ?? []).filter((layout) => layout.status === 'PUBLISHED')
+    : [],
+)
+
 const seats = useAdminRoomSeatsQuery(
   roomId,
   () =>
@@ -57,6 +75,7 @@ const seats = useAdminRoomSeatsQuery(
     context.isSuccess.value &&
     !context.isFetching.value &&
     Boolean(current.value),
+  pickedLayoutId,
 )
 
 const activity = useSetAdminSeatActivityMutation()
@@ -68,7 +87,20 @@ let scope = 0
 
 const busy = computed(() => activity.isPending.value)
 
-const matrix = computed(() => (current.value ? (seats.data.value ?? null) : null))
+const matrix = computed(() => {
+  const value = seats.data.value
+
+  if (
+    !current.value ||
+    !value ||
+    value.layout.roomId !== roomId.value ||
+    (pickedLayoutId.value && value.layout.id !== pickedLayoutId.value)
+  ) {
+    return null
+  }
+
+  return value
+})
 
 const ready = computed(
   () =>
@@ -101,6 +133,7 @@ watch(
   [roomId, canManage],
   () => {
     scope += 1
+    pickedLayoutId.value = ''
     selectedId.value = ''
     activityError.value = ''
     activityMessage.value = ''
@@ -146,6 +179,40 @@ function changeRoom(event: Event) {
   })
 }
 
+function changeVersion(event: Event) {
+  const select = event.target
+
+  if (!(select instanceof HTMLSelectElement)) return
+
+  const requestedId = select.value
+  select.value = pickedLayoutId.value
+
+  if (
+    !current.value ||
+    busy.value ||
+    context.isFetching.value ||
+    versions.isFetching.value ||
+    requestedId === pickedLayoutId.value
+  ) {
+    return
+  }
+
+  if (
+    requestedId !== '' &&
+    (!isRoomSeatUuid(requestedId) ||
+      !publishedVersions.value.some((layout) => layout.id === requestedId))
+  ) {
+    return
+  }
+
+  scope += 1
+  selectedId.value = ''
+  activityError.value = ''
+  activityMessage.value = ''
+  pickedLayoutId.value = requestedId
+  select.value = requestedId
+}
+
 function openLayout() {
   if (!current.value || busy.value) return
 
@@ -174,7 +241,8 @@ async function reloadSeats() {
     !current.value ||
     context.isFetching.value ||
     busy.value ||
-    seats.isFetching.value
+    seats.isFetching.value ||
+    versions.isFetching.value
   ) {
     return
   }
@@ -182,7 +250,7 @@ async function reloadSeats() {
   activityError.value = ''
   activityMessage.value = ''
 
-  await seats.refetch()
+  await Promise.allSettled([versions.refetch(), seats.refetch()])
 }
 
 async function changeActivity() {
@@ -280,16 +348,54 @@ async function changeActivity() {
           </select>
         </label>
 
+        <label class="seatmap-field">
+          <span>Phiên bản sơ đồ</span>
+          <select
+            :value="pickedLayoutId"
+            :disabled="busy || !current || context.isFetching.value || versions.isFetching.value"
+            @change="changeVersion"
+          >
+            <option value="">Mới nhất đã xuất bản</option>
+
+            <option
+              v-if="
+                pickedLayoutId && !publishedVersions.some((layout) => layout.id === pickedLayoutId)
+              "
+              :value="pickedLayoutId"
+              disabled
+            >
+              Phiên bản đang chọn · Không có trong danh sách
+            </option>
+
+            <option v-for="layout in publishedVersions" :key="layout.id" :value="layout.id">
+              Phiên bản {{ layout.layoutVersion }} · Đã xuất bản
+            </option>
+          </select>
+        </label>
+
         <AppButton
           variant="secondary"
-          :disabled="busy || !current || context.isFetching.value || seats.isFetching.value"
-          :loading="seats.isFetching.value"
+          :disabled="
+            busy ||
+            !current ||
+            context.isFetching.value ||
+            seats.isFetching.value ||
+            versions.isFetching.value
+          "
+          :loading="seats.isFetching.value || versions.isFetching.value"
           @click="reloadSeats"
         >
           Tải lại sơ đồ
         </AppButton>
       </section>
-
+      <p
+        v-if="current && versions.isError.value"
+        class="seatmap-feedback seatmap-error"
+        role="alert"
+      >
+        {{ adminRoomErrorMessage(versions.error.value, 'Không thể tải danh sách phiên bản.') }}
+        Chọn “Tải lại sơ đồ” để cập nhật danh sách.
+      </p>
       <div v-if="cinemas.isError.value" class="seatmap-feedback">
         <p class="seatmap-error" role="alert">
           {{ adminRoomErrorMessage(cinemas.error.value, 'Không thể tải danh sách rạp.') }}
