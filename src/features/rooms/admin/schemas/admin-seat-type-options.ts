@@ -18,7 +18,7 @@ export const adminSeatTypeOptions = [
   },
   {
     value: SeatResponseSeatType.ACCESSIBLE,
-    label: 'Ưu tiên',
+    label: 'ACCESSIBLE',
     capacity: 1,
   },
 ] as const

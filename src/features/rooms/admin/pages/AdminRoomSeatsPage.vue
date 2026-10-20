@@ -377,9 +377,9 @@ async function changeActivity() {
                 ></i>
                 {{
                   option.value === 'STANDARD'
-                    ? 'Ghế thường'
+                    ? 'STANDARD'
                     : option.value === 'VIP'
-                      ? 'Ghế VIP'
+                      ? 'VIP'
                       : option.label
                 }}
               </span>
