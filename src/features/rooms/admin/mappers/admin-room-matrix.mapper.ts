@@ -63,7 +63,7 @@ export function toAdminRoomMatrixRequest(
   expectedVersion: number,
 ): ReplaceRoomLayoutContentRequest {
   if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0) {
-    throw new Error('Version dùng để lưu ma trận không hợp lệ.')
+    throw new Error('Version dùng để lưu sơ đồ không hợp lệ.')
   }
 
   validateSeatMatrixDocument(document)
@@ -147,7 +147,7 @@ export function readAdminRoomMatrix(
     content.seats.length !== 0 ||
     content.elements.length !== 0
   ) {
-    throw new Error('Dữ liệu ma trận trả về không hợp lệ.')
+    throw new Error('Dữ liệu sơ đồ trả về không hợp lệ.')
   }
 
   const document: AdminRoomMatrixDocument = {
@@ -165,7 +165,7 @@ export function readAdminRoomMatrix(
       !Number.isSafeInteger(seat.number) ||
       !validSeatType(seat.seatType)
     ) {
-      throw new Error('Có ghế nằm ngoài ma trận hoặc có dữ liệu không hợp lệ.')
+      throw new Error('Có ghế nằm ngoài sơ đồ hoặc có dữ liệu không hợp lệ.')
     }
 
     const row = document.rows[seat.rowIndex]!

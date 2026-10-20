@@ -77,7 +77,7 @@ const fieldErrors = ref<Record<string, string>>({})
 const navigationColumn = ref<number | null>(null)
 
 const status = ref(
-  `Ma trận có ${statistics.value.rows} hàng, ` +
+  `Sơ đồ có ${statistics.value.rows} hàng, ` +
     `${statistics.value.columns} cột và ${statistics.value.seats} ghế.`,
 )
 const error = ref('')
@@ -297,7 +297,7 @@ function protectPending() {
   const first =
     pendingSeats().find((item) => item.raw.trim())?.key ?? Object.keys(fieldErrors.value)[0]
 
-  const message = 'Hãy xác nhận hoặc bỏ nhập ghế đang chờ trước khi thay đổi ma trận.'
+  const message = 'Hãy xác nhận hoặc bỏ nhập ghế đang chờ trước khi thay đổi sơ đồ.'
 
   if (first) focusPending(first, message)
   else announce(message, true)
@@ -956,7 +956,7 @@ function runStructureAction(action: StructureAction) {
 function applyHistory(direction: 'undo' | 'redo') {
   return mutate(
     direction === 'undo' ? matrix.undo : matrix.redo,
-    direction === 'undo' ? 'Đã hoàn tác thao tác ma trận.' : 'Đã làm lại thao tác ma trận.',
+    direction === 'undo' ? 'Đã hoàn tác thao tác sơ đồ.' : 'Đã làm lại thao tác sơ đồ.',
   )
 }
 
@@ -1042,7 +1042,7 @@ function reset() {
 
   if (
     (statistics.value.seats > 0 || hasPending.value) &&
-    !window.confirm('Tạo ma trận 6 × 6 trống và bỏ các ghế cùng dữ liệu đang nhập?')
+    !window.confirm('Tạo sơ đồ 6 × 6 trống và bỏ các ghế cùng dữ liệu đang nhập?')
   ) {
     return
   }
@@ -1053,8 +1053,8 @@ function reset() {
 
   announce(
     changed
-      ? 'Đã tạo ma trận mới. Có thể hoàn tác để khôi phục ma trận trước đó.'
-      : 'Ma trận hiện tại đã là 6 × 6 trống.',
+      ? 'Đã tạo sơ đồ mới. Có thể hoàn tác để khôi phục sơ đồ trước đó.'
+      : 'Sơ đồ hiện tại đã là 6 × 6 trống.',
   )
 }
 
@@ -1119,10 +1119,10 @@ defineExpose({
     :style="{ '--matrix-column-count': document.columns }"
     @keydown="onHistoryKeyDown"
   >
-    <legend class="admin-visually-hidden">Chỉnh sửa ma trận ghế</legend>
+    <legend class="admin-visually-hidden">Chỉnh sửa sơ đồ ghế</legend>
 
     <div class="seat-matrix-editor__toolbar">
-      <button type="button" @click="reset">Tạo ma trận mới</button>
+      <button type="button" @click="reset">Tạo sơ đồ mới</button>
 
       <div class="seat-matrix-editor__history" role="group" aria-label="Lịch sử chỉnh sửa">
         <button
@@ -1151,7 +1151,7 @@ defineExpose({
         class="seat-matrix-editor__panel seat-matrix-editor__main"
         :aria-labelledby="`${prefix}-title`"
       >
-        <h2 :id="`${prefix}-title`" class="admin-visually-hidden">Ma trận ghế</h2>
+        <h2 :id="`${prefix}-title`" class="admin-visually-hidden">Sơ đồ ghế</h2>
 
         <p :id="`${prefix}-help`" class="admin-visually-hidden">
           Nhập số trực tiếp trong ô trống rồi chọn loại ghế để áp dụng ngay. Có thể nhấn Enter trong
@@ -1172,7 +1172,7 @@ defineExpose({
         <div
           class="seat-matrix-editor__scroll"
           role="region"
-          aria-label="Ma trận ghế, có thể cuộn ngang"
+          aria-label="Sơ đồ ghế, có thể cuộn ngang"
           tabindex="0"
         >
           <div class="seat-matrix-editor__frame">
@@ -1320,7 +1320,7 @@ defineExpose({
         </footer>
       </section>
 
-      <aside class="seat-matrix-editor__inspector" aria-label="Thuộc tính ma trận">
+      <aside class="seat-matrix-editor__inspector" aria-label="Thuộc tính sơ đồ">
         <section class="seat-matrix-editor__panel">
           <h2>{{ selectedTitle }}</h2>
 
@@ -1342,7 +1342,7 @@ defineExpose({
               {{
                 selectedDraftType === 'COUPLE'
                   ? 'Chọn loại sau khi nhập số để áp dụng ngay. Ghế đôi cần thêm một ô trống bên phải.'
-                  : 'Nhập số trong ô ma trận rồi chọn loại ghế để áp dụng ngay.'
+                  : 'Nhập số trong ô sơ đồ rồi chọn loại ghế để áp dụng ngay.'
               }}
             </p>
 

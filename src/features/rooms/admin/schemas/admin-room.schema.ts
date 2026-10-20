@@ -27,7 +27,7 @@ export type AdminRoomField = keyof AdminRoomValues
 const layoutErrorMessages = new Map<string, string>([
   [
     'INVENTORY_ROOM_LAYOUT_DATA_INVALID',
-    'Ma trận chưa hợp lệ. Kiểm tra hàng, cột, số ghế và ô dành cho ghế đôi.',
+    'Sơ đồ chưa hợp lệ. Kiểm tra hàng, cột, số ghế và ô dành cho ghế đôi.',
   ],
   [
     'INVENTORY_ROOM_LAYOUT_SEAT_ROOM_MISMATCH',
@@ -52,11 +52,11 @@ const layoutErrorMessages = new Map<string, string>([
   ],
   [
     'INVENTORY_ROOM_LAYOUT_MATRIX_CONVERSION_REQUIRED',
-    'Phiên bản này dùng sơ đồ cũ. Hãy tạo bản nháp ma trận mới để tiếp tục.',
+    'Phiên bản này dùng sơ đồ cũ. Hãy tạo bản nháp sơ đồ mới để tiếp tục.',
   ],
   [
     'INVENTORY_ROOM_LAYOUT_MATRIX_PUBLICATION_PENDING',
-    'Chưa hỗ trợ xuất bản ma trận. Bạn vẫn có thể lưu bản nháp.',
+    'Chưa hỗ trợ xuất bản sơ đồ. Bạn vẫn có thể lưu bản nháp.',
   ],
 ])
 

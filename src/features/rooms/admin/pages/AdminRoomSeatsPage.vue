@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useAdminRoomCinemaQuery, useAdminRoomCatalogQuery } from '../api/admin-room-queries'
 import { useAdminRoomSeatsQuery, useSetAdminSeatActivityMutation } from '../api/admin-seat-queries'
 import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
-import { isRoomSeatUuid, mapAdminSeatCatalog } from '../mappers/admin-seat-catalog.mapper'
+import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminSeatTypeOptions } from '../schemas/admin-seat-type-options'
 import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
 
@@ -30,9 +30,12 @@ const invalidRoomId = computed(() => Boolean(rawRoomId.value) && !isRoomSeatUuid
 
 const context = useAdminRoomSeatContext(roomId, canManage)
 
-const current = computed(() =>
-  canManage.value && !invalidRoomId.value ? context.data.value : undefined,
-)
+const current = computed(() => {
+  if (!canManage.value || !isRoomSeatUuid(roomId.value)) return undefined
+
+  const value = context.data.value
+  return value?.room.id === roomId.value ? value : undefined
+})
 
 const cinemaId = computed(() => {
   if (current.value?.cinema.id) return current.value.cinema.id
@@ -49,7 +52,11 @@ const rooms = useAdminRoomCatalogQuery(
 
 const seats = useAdminRoomSeatsQuery(
   roomId,
-  () => canManage.value && context.isSuccess.value && Boolean(current.value),
+  () =>
+    canManage.value &&
+    context.isSuccess.value &&
+    !context.isFetching.value &&
+    Boolean(current.value),
 )
 
 const activity = useSetAdminSeatActivityMutation()
@@ -57,7 +64,11 @@ const selectedId = ref('')
 const activityError = ref('')
 const activityMessage = ref('')
 
+let scope = 0
+
 const busy = computed(() => activity.isPending.value)
+
+const matrix = computed(() => (current.value ? (seats.data.value ?? null) : null))
 
 const ready = computed(
   () =>
@@ -66,29 +77,12 @@ const ready = computed(
     context.isSuccess.value &&
     !context.isFetching.value &&
     seats.isSuccess.value &&
-    !seats.isFetching.value,
+    !seats.isFetching.value &&
+    Boolean(matrix.value),
 )
 
-const catalog = computed(() => {
-  if (!current.value || seats.data.value === undefined) {
-    return { matrix: null, error: '' }
-  }
-
-  try {
-    return {
-      matrix: mapAdminSeatCatalog(seats.data.value, roomId.value),
-      error: '',
-    }
-  } catch (error) {
-    return {
-      matrix: null,
-      error: adminRoomErrorMessage(error, 'Không thể đọc danh mục ghế.'),
-    }
-  }
-})
-
 const selected = computed(() => {
-  for (const row of catalog.value.matrix?.rows ?? []) {
+  for (const row of matrix.value?.rows ?? []) {
     const cell = row.cells.find((item) => item.seat?.id === selectedId.value)
 
     if (cell?.seat) {
@@ -96,7 +90,6 @@ const selected = computed(() => {
         seat: cell.seat,
         column: cell.column + 1,
         endColumn: cell.column + cell.span,
-        span: cell.span,
       }
     }
   }
@@ -105,8 +98,9 @@ const selected = computed(() => {
 })
 
 watch(
-  roomId,
+  [roomId, canManage],
   () => {
+    scope += 1
     selectedId.value = ''
     activityError.value = ''
     activityMessage.value = ''
@@ -114,13 +108,22 @@ watch(
   { flush: 'sync' },
 )
 
+watch(
+  () => matrix.value?.layout.id,
+  () => {
+    selectedId.value = ''
+    activityError.value = ''
+    activityMessage.value = ''
+  },
+)
+
 onBeforeRouteLeave(() => !busy.value)
 onBeforeRouteUpdate(() => !busy.value)
 
 function changeCinema(event: Event) {
-  if (busy.value) return
+  if (busy.value || !(event.target instanceof HTMLSelectElement)) return
 
-  const value = (event.target as HTMLSelectElement).value
+  const value = event.target.value
   if (value && !isRoomSeatUuid(value)) return
 
   void router.push({
@@ -131,14 +134,24 @@ function changeCinema(event: Event) {
 }
 
 function changeRoom(event: Event) {
-  if (busy.value) return
+  if (busy.value || !(event.target instanceof HTMLSelectElement)) return
 
-  const value = (event.target as HTMLSelectElement).value
+  const value = event.target.value
   if (value && !isRoomSeatUuid(value)) return
 
   void router.push({
     name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
     params: { roomId: value },
+    query: cinemaId.value ? { cinemaId: cinemaId.value } : {},
+  })
+}
+
+function openLayout() {
+  if (!current.value || busy.value) return
+
+  void router.push({
+    name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
+    params: { roomId: roomId.value },
     query: cinemaId.value ? { cinemaId: cinemaId.value } : {},
   })
 }
@@ -155,24 +168,49 @@ function columnLabel(start: number, end: number) {
   return start === end ? String(start) : `${start}–${end}`
 }
 
+async function reloadSeats() {
+  if (
+    !canManage.value ||
+    !current.value ||
+    context.isFetching.value ||
+    busy.value ||
+    seats.isFetching.value
+  ) {
+    return
+  }
+
+  activityError.value = ''
+  activityMessage.value = ''
+
+  await seats.refetch()
+}
+
 async function changeActivity() {
   const seat = selected.value?.seat
-  if (!seat || !ready.value || busy.value || catalog.value.error) return
+  if (!seat || !ready.value || busy.value) return
+
+  const requestedRoomId = roomId.value
+  const token = scope
 
   activityError.value = ''
   activityMessage.value = ''
 
   try {
     const updated = await activity.mutateAsync({
-      roomId: roomId.value,
+      roomId: requestedRoomId,
       seatId: seat.id,
       active: !seat.active,
     })
 
-    activityMessage.value =
-      `Đã ${updated.active ? 'kích hoạt' : 'tạm ngưng'} ` +
-      `ghế ${updated.seatNumber || seat.seatNumber}.`
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    const label =
+      matrix.value?.seats.find((item) => item.id === seat.id)?.seatNumber ?? seat.seatNumber
+
+    activityMessage.value = `Đã ${updated.active ? 'kích hoạt' : 'tạm ngưng'} ghế ${label}.`
   } catch (error) {
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
     activityError.value = adminRoomErrorMessage(error, 'Không thể cập nhật trạng thái ghế.')
   }
 }
@@ -187,23 +225,12 @@ async function changeActivity() {
     <header class="seatmap-heading">
       <div>
         <p class="seatmap-eyebrow">Cấu hình phòng chiếu</p>
-        <h1 id="room-seats-title" tabindex="-1">Ma trận ghế của phòng</h1>
-        <p class="seatmap-description">
-          Xem danh mục ghế theo hàng và quản lý trạng thái từng ghế.
-        </p>
+        <h1 id="room-seats-title" tabindex="-1">Sơ đồ ghế của phòng</h1>
+        <p class="seatmap-description">Xem sơ đồ đã xuất bản và quản lý trạng thái từng ghế.</p>
       </div>
 
-      <AppButton
-        :disabled="!canManage || !current || busy"
-        @click="
-          router.push({
-            name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
-            params: { roomId },
-            query: cinemaId ? { cinemaId } : {},
-          })
-        "
-      >
-        Thiết kế ma trận ghế
+      <AppButton :disabled="!canManage || !current || busy" @click="openLayout">
+        Thiết kế sơ đồ ghế
       </AppButton>
     </header>
 
@@ -252,6 +279,15 @@ async function changeActivity() {
             </option>
           </select>
         </label>
+
+        <AppButton
+          variant="secondary"
+          :disabled="busy || !current || context.isFetching.value || seats.isFetching.value"
+          :loading="seats.isFetching.value"
+          @click="reloadSeats"
+        >
+          Tải lại sơ đồ
+        </AppButton>
       </section>
 
       <div v-if="cinemas.isError.value" class="seatmap-feedback">
@@ -289,7 +325,7 @@ async function changeActivity() {
       </p>
 
       <p v-else-if="!roomId" class="seatmap-muted" role="status">
-        Chọn rạp và phòng để xem danh mục ghế.
+        Chọn rạp và phòng để xem sơ đồ đã xuất bản.
       </p>
 
       <div v-else-if="context.isError.value" class="seatmap-feedback">
@@ -321,7 +357,7 @@ async function changeActivity() {
           </article>
           <article class="seatmap-stat">
             <span>Tổng số ghế</span>
-            <strong>{{ catalog.matrix?.seats.length ?? '—' }}</strong>
+            <strong>{{ matrix?.seats.length ?? '—' }}</strong>
           </article>
           <article class="seatmap-stat">
             <span>Trạng thái</span>
@@ -342,24 +378,26 @@ async function changeActivity() {
         </p>
 
         <p v-if="seats.isError.value" class="seatmap-feedback seatmap-error" role="alert">
-          {{ adminRoomErrorMessage(seats.error.value, 'Không thể tải danh mục ghế.') }}
-          <template v-if="seats.data.value !== undefined">
+          {{ adminRoomErrorMessage(seats.error.value, 'Không thể tải sơ đồ đã xuất bản.') }}
+          <template v-if="matrix">
             Đang hiển thị dữ liệu từ lần tải trước; thao tác ghi bị khóa.
           </template>
         </p>
         <p v-else-if="seats.isFetching.value" class="seatmap-feedback seatmap-muted" role="status">
-          Đang cập nhật danh mục ghế…
-        </p>
-        <p v-if="catalog.error" class="seatmap-feedback seatmap-error" role="alert">
-          {{ catalog.error }}
+          Đang cập nhật sơ đồ đã xuất bản…
         </p>
 
         <div class="seatmap-layout">
           <section class="seatmap-panel" aria-labelledby="seatmap-title">
             <header class="seatmap-panel-heading">
               <div>
-                <h2 id="seatmap-title">Ma trận ghế</h2>
-                <p id="seatmap-help">Chọn ghế để xem thông tin. Ghế đôi chiếm 2 ô liền nhau.</p>
+                <h2 id="seatmap-title">Sơ đồ ghế</h2>
+                <p id="seatmap-help">
+                  <template v-if="matrix">
+                    Phiên bản {{ matrix.layout.layoutVersion }} · Đã xuất bản.
+                  </template>
+                  Chọn ghế để xem thông tin. Ghế đôi chiếm 2 ô liền nhau.
+                </p>
               </div>
             </header>
 
@@ -375,13 +413,7 @@ async function changeActivity() {
                   }"
                   aria-hidden="true"
                 ></i>
-                {{
-                  option.value === 'STANDARD'
-                    ? 'STANDARD'
-                    : option.value === 'VIP'
-                      ? 'VIP'
-                      : option.label
-                }}
+                {{ option.label }}
               </span>
               <span>
                 <i class="seatmap-legend__dot is-selected" aria-hidden="true"></i>
@@ -397,25 +429,23 @@ async function changeActivity() {
               </span>
             </div>
 
-            <p v-if="!catalog.matrix" class="seatmap-muted" role="status">
+            <p v-if="!matrix" class="seatmap-muted" role="status">
               {{
-                seats.isError.value || catalog.error
-                  ? 'Chưa thể hiển thị ma trận ghế.'
-                  : 'Đang tải danh mục ghế…'
+                seats.isError.value
+                  ? 'Chưa thể hiển thị sơ đồ. Chọn “Tải lại sơ đồ” để thử lại.'
+                  : seats.isFetching.value || seats.data.value === undefined
+                    ? 'Đang tải sơ đồ đã xuất bản…'
+                    : 'Phòng chưa có sơ đồ đã xuất bản. Mở trang thiết kế để tạo và xuất bản.'
               }}
-            </p>
-
-            <p v-else-if="!catalog.matrix.seats.length" class="seatmap-muted" role="status">
-              Phòng chưa có ghế trong danh mục.
             </p>
 
             <div
               v-else
               class="seatmap-viewport"
-              :style="{ '--seatmap-column-count': catalog.matrix.columnCount }"
+              :style="{ '--seatmap-column-count': matrix.columnCount }"
             >
               <div class="seatmap-axis" aria-hidden="true">
-                <div v-for="row in catalog.matrix.rows" :key="row.label" class="seatmap-row-label">
+                <div v-for="row in matrix.rows" :key="row.label" class="seatmap-row-label">
                   {{ row.label }}
                 </div>
               </div>
@@ -423,14 +453,14 @@ async function changeActivity() {
               <div
                 class="seatmap-scroll"
                 role="region"
-                aria-label="Ma trận ghế, có thể cuộn ngang"
+                aria-label="Sơ đồ ghế, có thể cuộn ngang"
                 aria-describedby="seatmap-help"
                 tabindex="0"
               >
                 <div class="seatmap-content">
                   <div class="seatmap-stage"><span>MÀN HÌNH</span></div>
 
-                  <div v-for="row in catalog.matrix.rows" :key="row.label" class="seatmap-row">
+                  <div v-for="row in matrix.rows" :key="row.label" class="seatmap-row">
                     <div
                       v-for="{ seat, column, span } in row.cells"
                       :key="seat?.id ?? `empty-${column}`"
@@ -501,6 +531,10 @@ async function changeActivity() {
                 <dd>{{ typeLabel(selected.seat.seatType) }}</dd>
               </div>
               <div>
+                <dt>Sức chứa</dt>
+                <dd>{{ selected.seat.capacity }}</dd>
+              </div>
+              <div>
                 <dt>Trạng thái</dt>
                 <dd>{{ statusLabel(selected.seat.active) }}</dd>
               </div>
@@ -510,7 +544,7 @@ async function changeActivity() {
             <AppButton
               v-if="selected"
               variant="secondary"
-              :disabled="busy || !ready || Boolean(catalog.error)"
+              :disabled="busy || !ready"
               :loading="activity.isPending.value"
               @click="changeActivity"
             >
@@ -522,57 +556,46 @@ async function changeActivity() {
             </p>
             <p v-if="activityMessage" role="status">{{ activityMessage }}</p>
 
-            <template v-if="catalog.matrix">
+            <template v-if="matrix">
               <h3 class="seatmap-details__subtitle">Thống kê</h3>
               <dl>
                 <div>
                   <dt>Số hàng</dt>
-                  <dd>{{ catalog.matrix.rows.length }}</dd>
+                  <dd>{{ matrix.rows.length }}</dd>
                 </div>
                 <div>
                   <dt>Số cột</dt>
-                  <dd>{{ catalog.matrix.columnCount }}</dd>
+                  <dd>{{ matrix.columnCount }}</dd>
                 </div>
                 <div>
                   <dt>Tổng số ô</dt>
-                  <dd>{{ catalog.matrix.rows.length * catalog.matrix.columnCount }}</dd>
+                  <dd>{{ matrix.rows.length * matrix.columnCount }}</dd>
                 </div>
                 <div>
                   <dt>Ô đã chiếm</dt>
-                  <dd>{{ catalog.matrix.occupiedCount }}</dd>
+                  <dd>{{ matrix.occupiedCount }}</dd>
                 </div>
                 <div v-for="option in adminSeatTypeOptions" :key="option.value">
-                  <dt>
-                    {{
-                      option.value === 'STANDARD'
-                        ? 'Ghế thường'
-                        : option.value === 'VIP'
-                          ? 'Ghế VIP'
-                          : option.label
-                    }}
-                  </dt>
+                  <dt>{{ option.label }}</dt>
                   <dd>
-                    {{
-                      catalog.matrix.seats.filter((seat) => seat.seatType === option.value).length
-                    }}
+                    {{ matrix.seats.filter((seat) => seat.seatType === option.value).length }}
                   </dd>
                 </div>
                 <div>
                   <dt>Ngừng sử dụng</dt>
-                  <dd>{{ catalog.matrix.inactiveCount }}</dd>
+                  <dd>{{ matrix.inactiveCount }}</dd>
                 </div>
                 <div>
                   <dt>Ô trống</dt>
-                  <dd>{{ catalog.matrix.emptyCount }}</dd>
+                  <dd>{{ matrix.emptyCount }}</dd>
                 </div>
                 <div>
                   <dt>Tổng số chỗ</dt>
-                  <dd>{{ catalog.matrix.capacity }}</dd>
+                  <dd>{{ matrix.capacity }}</dd>
                 </div>
-
                 <div>
                   <dt>Chỗ đang hoạt động</dt>
-                  <dd>{{ catalog.matrix.activeCapacity }}</dd>
+                  <dd>{{ matrix.activeCapacity }}</dd>
                 </div>
               </dl>
             </template>

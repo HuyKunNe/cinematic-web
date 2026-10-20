@@ -191,7 +191,7 @@ function resetRoomState() {
 watch([roomId, canManage], resetRoomState, { flush: 'sync' })
 
 function confirmDiscard() {
-  return !dirty.value || window.confirm('Bỏ các thay đổi ma trận chưa lưu để tiếp tục?')
+  return !dirty.value || window.confirm('Bỏ các thay đổi sơ đồ chưa lưu để tiếp tục?')
 }
 
 function onMatrixChanged(value: SeatMatrixDocument) {
@@ -256,9 +256,9 @@ async function loadVersion(layoutId: string, minimumLayout?: RoomLayoutResponse)
       throw new Error('Nội dung trả về chưa khớp phiên bản hiện tại. Hãy tải lại.')
     }
 
-    // minimumLayout được truyền sau khi publish ma trận thành công.
+    // minimumLayout được truyền sau khi publish sơ đồ thành công.
     if (minimumLayout && storedDocument === null) {
-      throw new Error('Chưa nhận được nội dung ma trận đã xuất bản. Hãy tải lại.')
+      throw new Error('Chưa nhận được nội dung sơ đồ đã xuất bản. Hãy tải lại.')
     }
 
     if (result.data.layout.status === 'PUBLISHED' && storedDocument) {
@@ -269,7 +269,7 @@ async function loadVersion(layoutId: string, minimumLayout?: RoomLayoutResponse)
       )
 
       if (!containsSeats || !allSeatsBound) {
-        throw new Error('Ma trận đã xuất bản chưa có đầy đủ liên kết ghế. Hãy tải lại.')
+        throw new Error('Sơ đồ đã xuất bản chưa có đầy đủ liên kết ghế. Hãy tải lại.')
       }
     }
 
@@ -297,11 +297,11 @@ async function loadVersion(layoutId: string, minimumLayout?: RoomLayoutResponse)
     if (conversionBlocked) {
       notice.value =
         'Phiên bản này có sơ đồ cũ đã chứa dữ liệu. ' +
-        'Ma trận 6 × 6 đang hiển thị chỉ là bản xem trước. ' +
-        'Hãy tạo bản nháp mới để thiết kế ma trận.'
+        'Sơ đồ 6 × 6 đang hiển thị chỉ là bản xem trước. ' +
+        'Hãy tạo bản nháp mới để thiết kế sơ đồ.'
     } else {
       notice.value = useDefaultMatrix
-        ? `Đã mở phiên bản ${result.data.layout.layoutVersion} với ma trận mặc định 6 × 6.`
+        ? `Đã mở phiên bản ${result.data.layout.layoutVersion} với sơ đồ mặc định 6 × 6.`
         : `Đã mở phiên bản ${result.data.layout.layoutVersion}.`
     }
 
@@ -475,7 +475,7 @@ async function saveDraft() {
     toAdminRoomMatrixRequest(document, requestedLayout.version)
     submittedKey = adminRoomMatrixKey(document)
   } catch (error) {
-    errorMessage.value = adminRoomErrorMessage(error, 'Ma trận chưa hợp lệ.')
+    errorMessage.value = adminRoomErrorMessage(error, 'Sơ đồ chưa hợp lệ.')
     return
   }
 
@@ -539,7 +539,7 @@ async function publishDraft() {
       return
     }
   } catch (error) {
-    errorMessage.value = adminRoomErrorMessage(error, 'Ma trận chưa hợp lệ.')
+    errorMessage.value = adminRoomErrorMessage(error, 'Sơ đồ chưa hợp lệ.')
     return
   }
 
@@ -683,7 +683,7 @@ onBeforeRouteUpdate(confirmLeave)
           {{ current ? `${current.cinema.name} · ${current.room.name}` : 'Cấu hình sơ đồ phòng' }}
         </p>
 
-        <h1 id="room-matrix-title">Thiết kế ma trận ghế</h1>
+        <h1 id="room-matrix-title">Thiết kế sơ đồ ghế</h1>
         <p>Tạo ghế và bố trí các hàng, cột trong sơ đồ phòng chiếu.</p>
       </div>
 

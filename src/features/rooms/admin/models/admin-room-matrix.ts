@@ -147,7 +147,7 @@ export function deleteMatrixRow(matrix: RoomMatrix, index: number) {
   getRow(matrix, index)
 
   if (matrix.rows.length <= 1) {
-    throw new Error('Ma trận phải có ít nhất một hàng.')
+    throw new Error('Sơ đồ phải có ít nhất một hàng.')
   }
 
   matrix.rows.splice(index, 1)
@@ -168,7 +168,7 @@ export function deleteMatrixColumn(matrix: RoomMatrix, index: number) {
   requireInteger(index, 0, matrix.columnCount - 1)
 
   if (matrix.columnCount <= 1) {
-    throw new Error('Ma trận phải có ít nhất một cột.')
+    throw new Error('Sơ đồ phải có ít nhất một cột.')
   }
 
   for (const row of matrix.rows) {

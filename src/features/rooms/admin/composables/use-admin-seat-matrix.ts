@@ -79,7 +79,7 @@ export function validateSeatMatrixDocument(input: SeatMatrixDocument) {
     input.rows.length < 1 ||
     input.rows.length > MATRIX_LIMITS.dimension
   ) {
-    throw new Error('Ma trận phải có từ 1 đến 100 hàng và cột.')
+    throw new Error('Sơ đồ phải có từ 1 đến 100 hàng và cột.')
   }
 
   let seatCount = 0
@@ -127,7 +127,7 @@ export function validateSeatMatrixDocument(input: SeatMatrixDocument) {
       seatCount += 1
 
       if (seatCount > MATRIX_LIMITS.seats) {
-        throw new Error('Ma trận chỉ hỗ trợ tối đa 2.500 ghế.')
+        throw new Error('Sơ đồ chỉ hỗ trợ tối đa 2.500 ghế.')
       }
     }
   }
@@ -259,7 +259,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     try {
       validateSeatMatrixDocument(next)
     } catch (error) {
-      return fail(error instanceof Error ? error.message : 'Ma trận sau thao tác không hợp lệ.')
+      return fail(error instanceof Error ? error.message : 'Sơ đồ sau thao tác không hợp lệ.')
     }
 
     if (JSON.stringify(next) === JSON.stringify(document.value)) {
@@ -370,7 +370,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     }
 
     if (statistics.value.seats >= MATRIX_LIMITS.seats) {
-      return { ok: false, message: 'Ma trận chỉ hỗ trợ tối đa 2.500 ghế.' }
+      return { ok: false, message: 'Sơ đồ chỉ hỗ trợ tối đa 2.500 ghế.' }
     }
 
     const next = snapshot()
@@ -466,7 +466,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
 
     if (needsColumn && document.value.columns >= MATRIX_LIMITS.dimension) {
       return fail(
-        'Không thể chèn ô vì cần thêm cột nhưng ma trận đã đủ 100 cột. ' +
+        'Không thể chèn ô vì cần thêm cột nhưng sơ đồ đã đủ 100 cột. ' +
           'Hãy để trống ô cuối hàng trước.',
       )
     }
@@ -566,7 +566,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     }
 
     if (document.value.rows.length >= MATRIX_LIMITS.dimension) {
-      return fail('Ma trận chỉ hỗ trợ tối đa 100 hàng.')
+      return fail('Sơ đồ chỉ hỗ trợ tối đa 100 hàng.')
     }
 
     const next = snapshot()
@@ -579,7 +579,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     operationError.value = ''
 
     if (document.value.rows.length <= 1) {
-      return fail('Ma trận phải còn ít nhất một hàng.')
+      return fail('Sơ đồ phải còn ít nhất một hàng.')
     }
 
     const next = snapshot()
@@ -600,7 +600,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     }
 
     if (document.value.columns >= MATRIX_LIMITS.dimension) {
-      return fail('Ma trận chỉ hỗ trợ tối đa 100 cột.')
+      return fail('Sơ đồ chỉ hỗ trợ tối đa 100 cột.')
     }
 
     const affectedRow = document.value.rows.findIndex(
@@ -630,7 +630,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
     operationError.value = ''
 
     if (document.value.columns <= 1) {
-      return fail('Ma trận phải còn ít nhất một cột.')
+      return fail('Sơ đồ phải còn ít nhất một cột.')
     }
 
     const next = snapshot()

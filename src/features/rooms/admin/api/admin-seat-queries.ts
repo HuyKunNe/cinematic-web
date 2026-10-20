@@ -1,25 +1,45 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import {
-  getManagedSeats,
-  getById1,
-  update1,
-} from '@/services/api/generated/inventory-service/seat-controller/seat-controller'
-import type { SeatResponse } from '@/services/api/generated/inventory-service/model'
-import { UpdateSeatRequestSeatType } from '@/services/api/generated/inventory-service/model'
+import { getRoomPublishedSeatMap } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
+import { updateSeatActiveState } from '@/services/api/generated/inventory-service/seat-controller/seat-controller'
+import { mapAdminPublishedSeats } from '../mappers/admin-published-seat-map.mapper'
+import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
+import { isAdminRoomApiError } from '../schemas/admin-room.schema'
 
 export const adminSeatKeys = {
-  list: (roomId: string) => ['seats', 'admin', 'room', roomId, 'management', 'all'] as const,
+  list: (roomId: string) => ['room-matrices', 'admin', roomId, 'published-seat-map'] as const,
 }
 
 export function useAdminRoomSeatsQuery(
   roomId: MaybeRefOrGetter<string>,
   enabled: MaybeRefOrGetter<boolean>,
 ) {
-  return useQuery<SeatResponse[], unknown, SeatResponse[], ReturnType<typeof adminSeatKeys.list>>({
+  return useQuery({
     queryKey: computed(() => adminSeatKeys.list(toValue(roomId))),
-    queryFn: ({ queryKey }) => getManagedSeats({ roomId: queryKey[3] }),
-    enabled: computed(() => toValue(enabled) && Boolean(toValue(roomId))),
+    enabled: computed(() => toValue(enabled) && isRoomSeatUuid(toValue(roomId))),
+    queryFn: async ({ queryKey }) => {
+      const requestedRoomId = queryKey[2]
+
+      try {
+        const response = await getRoomPublishedSeatMap({
+          roomId: requestedRoomId,
+        })
+
+        return mapAdminPublishedSeats(response, requestedRoomId)
+      } catch (error) {
+        // Endpoint không chỉ định layoutId:
+        // mã lỗi này nghĩa là phòng chưa có phiên bản đã publish.
+        if (
+          isAdminRoomApiError(error) &&
+          error.status === 404 &&
+          error.code === 'INVENTORY_ROOM_LAYOUT_NOT_FOUND'
+        ) {
+          return null
+        }
+
+        throw error
+      }
+    },
     staleTime: 0,
     retry: false,
     refetchOnMount: 'always',
@@ -36,60 +56,35 @@ type SetSeatActivityVariables = {
 export function useSetAdminSeatActivityMutation() {
   const queryClient = useQueryClient()
 
-  return useMutation<SeatResponse, unknown, SetSeatActivityVariables>({
-    mutationFn: async ({ roomId, seatId, active }) => {
-      const current = await getById1(seatId)
-
-      const seatType = Object.values(UpdateSeatRequestSeatType).find(
-        (value) => value === current?.seatType,
-      )
-
-      if (
-        !current ||
-        current.id !== seatId ||
-        current.roomId !== roomId ||
-        typeof current.active !== 'boolean' ||
-        typeof current.seatNumber !== 'string' ||
-        !current.seatNumber.trim() ||
-        typeof current.rowLabel !== 'string' ||
-        !current.rowLabel.trim() ||
-        !seatType
-      ) {
-        throw new Error('Thông tin ghế không hợp lệ. Hãy tải lại danh sách.')
+  return useMutation({
+    mutationFn: async ({ roomId, seatId, active }: SetSeatActivityVariables) => {
+      if (!isRoomSeatUuid(roomId) || !isRoomSeatUuid(seatId) || typeof active !== 'boolean') {
+        throw new Error('Thông tin ghế cần cập nhật không hợp lệ.')
       }
 
-      if (current.active === active) return current
-
-      const updated = await update1(seatId, {
-        seatNumber: current.seatNumber,
-        rowLabel: current.rowLabel,
-        seatType,
+      const updated = await updateSeatActiveState(seatId, {
+        roomId,
         active,
       })
 
       if (
         !updated ||
-        updated.id !== seatId ||
+        updated.seatId !== seatId ||
         updated.roomId !== roomId ||
-        updated.active !== active ||
-        updated.seatType !== seatType ||
-        updated.seatNumber !== current.seatNumber ||
-        updated.rowLabel !== current.rowLabel
+        updated.active !== active
       ) {
-        throw new Error('Không thể xác nhận kết quả cập nhật ghế. ' + 'Hãy kiểm tra lại danh sách.')
+        throw new Error('Chưa xác nhận được kết quả cập nhật ghế. Hãy tải lại sơ đồ.')
       }
 
       return updated
     },
-
     retry: false,
 
-    // Đọc lại dữ liệu cả khi thành công hoặc gặp lỗi:
-    // request có thể đã được xử lý trước khi mất phản hồi.
-    onSettled: () =>
+    // Đọc lại cả khi request thất bại vì máy chủ có thể đã xử lý.
+    onSettled: (_data, _error, variables) =>
       queryClient.invalidateQueries({
-        predicate: ({ queryKey }) =>
-          ['seats', 'rooms', 'showtimes', 'booking', 'home'].includes(String(queryKey[0])),
+        queryKey: adminSeatKeys.list(variables.roomId),
+        exact: true,
       }),
   })
 }
