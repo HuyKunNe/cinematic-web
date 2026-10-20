@@ -14,7 +14,10 @@ import {
 } from '../api/admin-room-matrix-queries'
 import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
 import AdminSeatMatrixEditor from '../components/AdminSeatMatrixEditor.vue'
-import type { SeatMatrixDocument } from '../composables/use-admin-seat-matrix'
+import {
+  createEmptySeatMatrix,
+  type SeatMatrixDocument,
+} from '../composables/use-admin-seat-matrix'
 import {
   adminRoomMatrixKey,
   readAdminRoomMatrix,
@@ -195,7 +198,11 @@ async function loadVersion(layoutId: string) {
       throw new Error('Không nhận được nội dung sơ đồ.')
     }
 
-    const document = readAdminRoomMatrix(result.data, requestedRoomId, layoutId)
+    const storedDocument = readAdminRoomMatrix(result.data, requestedRoomId, layoutId)
+
+    const useDefaultMatrix = storedDocument === null && result.data.layout.status === 'DRAFT'
+
+    const document = useDefaultMatrix ? createEmptySeatMatrix() : storedDocument
 
     loadedLayout.value = result.data.layout
     pickedId.value = layoutId
@@ -206,7 +213,9 @@ async function loadVersion(layoutId: string) {
     reloadRequired.value = false
     editorGeneration.value += 1
 
-    notice.value = `Đã mở phiên bản ${result.data.layout.layoutVersion}.`
+    notice.value = useDefaultMatrix
+      ? `Đã mở phiên bản ${result.data.layout.layoutVersion} với ma trận mặc định 6 × 6.`
+      : `Đã mở phiên bản ${result.data.layout.layoutVersion}.`
   } catch (error) {
     if (token !== scope || requestedRoomId !== roomId.value) return
 

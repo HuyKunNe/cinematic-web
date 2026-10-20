@@ -136,7 +136,7 @@ function emptyRow(columns: number): MatrixCell[] {
   return Array.from({ length: columns }, () => null)
 }
 
-function emptyDocument(): SeatMatrixDocument {
+export function createEmptySeatMatrix(): SeatMatrixDocument {
   return {
     columns: 6,
     rows: Array.from({ length: 6 }, () => emptyRow(6)),
@@ -159,7 +159,7 @@ function renumber(row: MatrixCell[]) {
 }
 
 export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
-  const initial = initialDocument ?? emptyDocument()
+  const initial = initialDocument ?? createEmptySeatMatrix()
   validateSeatMatrixDocument(initial)
 
   const document = ref<SeatMatrixDocument>(copyDocument(initial))
@@ -299,7 +299,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
   }
 
   function reset() {
-    return commit(emptyDocument(), { row: 0, column: 0 })
+    return commit(createEmptySeatMatrix(), { row: 0, column: 0 })
   }
 
   function addSeat(
