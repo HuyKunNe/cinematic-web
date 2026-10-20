@@ -9,7 +9,7 @@ import { useAdminRoomCinemaQuery, useAdminRoomCatalogQuery } from '../api/admin-
 import { useAdminRoomSeatsQuery, useSetAdminSeatActivityMutation } from '../api/admin-seat-queries'
 import { useAdminRoomSeatContext } from '../api/admin-room-seat-context'
 import { isRoomSeatUuid, mapAdminSeatCatalog } from '../mappers/admin-seat-catalog.mapper'
-import { adminSeatTypeOptions } from '../schemas/admin-seat-range.schema'
+import { adminSeatTypeOptions } from '../schemas/admin-seat-type-options'
 import { adminRoomErrorMessage } from '../schemas/admin-room.schema'
 
 const route = useRoute()

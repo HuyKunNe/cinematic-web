@@ -1,15 +1,11 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
-  createRange,
   getManagedSeats,
   getById1,
   update1,
 } from '@/services/api/generated/inventory-service/seat-controller/seat-controller'
-import type {
-  CreateSeatRangeRequest,
-  SeatResponse,
-} from '@/services/api/generated/inventory-service/model'
+import type { SeatResponse } from '@/services/api/generated/inventory-service/model'
 import { UpdateSeatRequestSeatType } from '@/services/api/generated/inventory-service/model'
 
 export const adminSeatKeys = {
@@ -31,24 +27,6 @@ export function useAdminRoomSeatsQuery(
   })
 }
 
-type CreateSeatRangeVariables = {
-  roomId: string
-  input: CreateSeatRangeRequest
-}
-
-export function useCreateAdminSeatRangeMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation<SeatResponse[], unknown, CreateSeatRangeVariables>({
-    mutationFn: ({ roomId, input }) => createRange(input, { roomId }),
-    retry: false,
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        predicate: ({ queryKey }) =>
-          ['seats', 'rooms', 'showtimes', 'booking', 'home'].includes(String(queryKey[0])),
-      }),
-  })
-}
 type SetSeatActivityVariables = {
   roomId: string
   seatId: string

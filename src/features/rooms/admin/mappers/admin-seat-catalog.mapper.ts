@@ -1,5 +1,5 @@
 import type { SeatResponse } from '@/services/api/generated/inventory-service/model'
-import { adminSeatTypeOptions } from '../schemas/admin-seat-range.schema'
+import { adminSeatTypeOptions } from '../schemas/admin-seat-type-options'
 
 export type ManagedSeat = SeatResponse & {
   id: string

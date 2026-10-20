@@ -577,36 +577,6 @@
   margin: 0 0 var(--space-4);
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-create-panel {
-  margin-bottom: var(--space-4);
-  padding-bottom: var(--space-4);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-create {
-  display: grid;
-  gap: var(--space-3);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-create h2 {
-  margin: 0;
-  font-size: var(--font-size-md);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-create fieldset {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-3);
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-create .seatmap-field {
-  min-width: 0;
-}
-
 :where([data-reference='admin-room-seats']) :disabled {
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
