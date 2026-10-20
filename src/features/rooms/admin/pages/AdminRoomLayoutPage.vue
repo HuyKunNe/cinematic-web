@@ -208,7 +208,7 @@ async function loadVersion(layoutId: string) {
     pickedId.value = layoutId
     initialDocument.value = document
     workingDocument.value = document
-    baselineKey.value = document ? adminRoomMatrixKey(document) : ''
+    baselineKey.value = storedDocument ? adminRoomMatrixKey(storedDocument) : ''
     pendingInput.value = false
     reloadRequired.value = false
     editorGeneration.value += 1
