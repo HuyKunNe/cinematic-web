@@ -661,7 +661,6 @@ async function onTab(event: KeyboardEvent, rowIndex: number, columnIndex: number
 
   if (!(source instanceof HTMLInputElement)) return
 
-  // Xác nhận trước để danh sách ô phản ánh đúng colspan của ghế đôi.
   if (!commit(rowIndex, columnIndex)) {
     event.preventDefault()
     event.stopPropagation()
@@ -684,16 +683,34 @@ async function onTab(event: KeyboardEvent, rowIndex: number, columnIndex: number
   const direction = event.shiftKey ? -1 : 1
   const target = cells[currentIndex + direction]
 
-  // Cho phép Tab thoát khỏi ma trận ở hai đầu.
-  if (!target) return
+  // Shift+Tab ở ô đầu vẫn dùng thứ tự focus của trình duyệt.
+  if (!target && direction === -1) return
 
   event.preventDefault()
   event.stopPropagation()
 
   await nextTick()
 
-  // Không giành lại focus nếu người dùng đã chuyển sang nơi khác.
-  if (source.ownerDocument.activeElement !== source) return
+  if (props.disabled || source.ownerDocument.activeElement !== source) {
+    return
+  }
+
+  if (!target) {
+    // Sau ô cuối: chuyển đến điều khiển khả dụng tiếp theo.
+    // Đợi render xong để tránh focus vào input vừa bị gộp.
+    const editor = table.value?.closest('fieldset')
+
+    const nextControl = editor?.querySelector<HTMLElement>(
+      [
+        '.seat-matrix-editor__add-column:enabled',
+        '.seat-matrix-editor__add-row:enabled',
+        '.seat-matrix-editor__inspector select:enabled',
+      ].join(', '),
+    )
+
+    nextControl?.focus()
+    return
+  }
 
   const input = table.value?.querySelector<HTMLInputElement>(
     `input[data-cell="${cellKey(target.row, target.column)}"]`,
