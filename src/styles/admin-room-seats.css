@@ -17,6 +17,7 @@
   --seatmap-premium-tint: 18%;
   --seatmap-blocked-tint: 20%;
   --seatmap-stage-letter-spacing: 0.18em;
+  --seatmap-scroll-padding: var(--space-4);
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-toolbar,
@@ -40,17 +41,7 @@
   min-width: var(--seatmap-stat-min-width);
   gap: var(--admin-space-2);
   color: var(--admin-text-muted);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-field select {
-  width: 100%;
-  padding-inline: var(--admin-space-3);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-preview-note {
-  margin-left: auto;
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-stat {
@@ -132,13 +123,6 @@
   outline-offset: var(--space-1);
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-instructions {
-  margin-block: var(--admin-space-3);
-  color: var(--admin-text-muted);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-body);
-}
-
 :where([data-reference='admin-room-seats']) .seatmap-legend {
   display: flex;
   flex-wrap: wrap;
@@ -163,10 +147,11 @@
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-scroll {
-  display: grid;
-  justify-items: center;
+  display: block;
+  min-width: 0;
   overflow-x: auto;
-  padding: var(--admin-space-4);
+  overscroll-behavior-x: contain;
+  padding: var(--seatmap-scroll-padding);
   border: var(--admin-border-width) solid var(--admin-border);
   border-radius: var(--admin-card-radius);
   background: var(--admin-bg);
@@ -175,44 +160,15 @@
 :where([data-reference='admin-room-seats']) .seatmap-stage {
   display: grid;
   width: 100%;
-  min-width: var(--seatmap-map-min-width);
+  min-width: 0;
   min-height: var(--seatmap-stage-height);
   place-items: center;
   margin: 0 auto var(--admin-space-4);
   border-top: var(--seatmap-stage-height) solid var(--admin-accent);
   color: var(--admin-text-subtle);
   font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
   letter-spacing: var(--seatmap-stage-letter-spacing);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-matrix {
-  min-width: var(--seatmap-map-min-width);
-  margin-inline: auto;
-  border-collapse: separate;
-  border-spacing: var(--seatmap-column-gap) var(--seatmap-row-gap);
-  color: var(--admin-text-muted);
-  text-align: center;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-matrix th {
-  width: var(--seatmap-seat-width);
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-matrix th:first-child {
-  width: var(--seatmap-axis-width);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-matrix tbody th {
-  color: var(--admin-text-muted);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-matrix td {
-  width: var(--seatmap-seat-width);
-  height: var(--seatmap-seat-height);
-  padding: 0;
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-cell {
@@ -298,17 +254,6 @@
   font-size: var(--font-size-md);
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-axis-title {
-  margin: 0 0 var(--admin-space-2);
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-matrix .seatmap-row-axis-spacer {
-  width: var(--seatmap-axis-width);
-}
-
 /* Adapt the reference page to the existing Vue application. */
 :where([data-reference='admin-room-seats']) {
   --admin-bg: var(--color-background);
@@ -388,10 +333,6 @@
 
 :where([data-reference='admin-room-seats']) .seatmap-heading > .app-button {
   white-space: nowrap;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-field {
-  font-size: var(--font-size-sm);
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-field input,
@@ -475,7 +416,9 @@
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-axis {
-  padding-top: calc(var(--space-4) + var(--border-width-thin) + var(--seatmap-stage-offset));
+  padding-top: calc(
+    var(--seatmap-scroll-padding) + var(--admin-border-width) + var(--seatmap-stage-offset)
+  );
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-row-label {
@@ -486,27 +429,6 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   overflow-wrap: anywhere;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-scroll {
-  display: block;
-  min-width: 0;
-  overscroll-behavior-x: contain;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-canvas-content {
-  display: grid;
-  justify-items: center;
-  width: max(
-    var(--seatmap-map-min-width),
-    calc(var(--seatmap-column-count) * var(--seatmap-cell-width) + var(--seatmap-column-gap))
-  );
-  min-width: 100%;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-stage {
-  min-width: 0;
-  line-height: var(--line-height-base);
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-stage > span {

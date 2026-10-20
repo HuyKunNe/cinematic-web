@@ -1,11 +1,11 @@
 import { SeatResponseSeatType } from '@/services/api/generated/inventory-service/model'
 
 export const adminSeatTypeOptions = [
-  { value: SeatResponseSeatType.STANDARD, label: 'Tiêu chuẩn' },
+  { value: SeatResponseSeatType.STANDARD, label: 'STANDARD' },
   { value: SeatResponseSeatType.VIP, label: 'VIP' },
-  { value: SeatResponseSeatType.COUPLE, label: 'Ghế đôi' },
+  { value: SeatResponseSeatType.COUPLE, label: 'COUPLE' },
   {
     value: SeatResponseSeatType.ACCESSIBLE,
-    label: 'Hỗ trợ tiếp cận',
+    label: 'Ưu tiên',
   },
 ] as const

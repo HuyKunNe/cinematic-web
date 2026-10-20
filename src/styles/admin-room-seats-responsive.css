@@ -5,6 +5,10 @@
 }
 
 @variant admin-reference-mobile {
+  :where([data-reference='admin-room-seats']) {
+    --seatmap-scroll-padding: var(--space-2);
+  }
+
   :where([data-reference='admin-room-seats']) .seatmap-heading {
     flex-direction: column;
     align-items: flex-start;
@@ -30,14 +34,6 @@
 
   :where([data-reference='admin-room-seats']) .seatmap-stat {
     min-width: 0;
-  }
-
-  :where([data-reference='admin-room-seats']) .seatmap-scroll {
-    padding: var(--space-2);
-  }
-
-  :where([data-reference='admin-room-seats']) .seatmap-axis {
-    padding-top: calc(var(--space-2) + var(--border-width-thin) + var(--seatmap-stage-offset));
   }
 
   :where([data-reference='admin-room-seats']) .seatmap-actions {
