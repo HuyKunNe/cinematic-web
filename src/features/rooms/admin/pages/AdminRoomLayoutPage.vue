@@ -438,20 +438,19 @@ onBeforeRouteUpdate(confirmLeave)
         <div class="room-matrix-page__versions">
           <label for="room-layout-version">Phiên bản sơ đồ</label>
 
-          <select
-            id="room-layout-version"
-            v-model="pickedId"
-            :disabled="!ready || busy || versions.isFetching.value"
-          >
-            <option value="" disabled>Chọn phiên bản</option>
-
-            <option v-for="layout in layouts" :key="layout.id" :value="layout.id">
-              Phiên bản {{ layout.layoutVersion }} ·
-              {{ layout.status === 'DRAFT' ? 'Bản nháp' : 'Đã xuất bản' }}
-            </option>
-          </select>
-
           <div class="room-matrix-page__actions">
+            <select
+              id="room-layout-version"
+              v-model="pickedId"
+              :disabled="!ready || busy || versions.isFetching.value"
+            >
+              <option value="" disabled>Chọn phiên bản</option>
+
+              <option v-for="layout in layouts" :key="layout.id" :value="layout.id">
+                Phiên bản {{ layout.layoutVersion }} ·
+                {{ layout.status === 'DRAFT' ? 'Bản nháp' : 'Đã xuất bản' }}
+              </option>
+            </select>
             <AppButton
               variant="secondary"
               :disabled="!ready || busy || !pickedId"
@@ -474,7 +473,7 @@ onBeforeRouteUpdate(confirmLeave)
               :loading="createDraft.isPending.value"
               @click="createVersion"
             >
-              Tạo bản nháp 6 × 6
+              Tạo bản nháp
             </AppButton>
           </div>
         </div>
@@ -487,7 +486,7 @@ onBeforeRouteUpdate(confirmLeave)
           v-else-if="!versions.isFetching.value && layouts.length === 0"
           class="room-matrix-page__muted"
         >
-          Phòng chưa có sơ đồ. Chọn “Tạo bản nháp 6 × 6” để bắt đầu.
+          Phòng chưa có sơ đồ. Chọn “Tạo bản nháp” để bắt đầu.
         </p>
 
         <p v-if="errorMessage" class="room-matrix-page__error" role="alert">
@@ -512,24 +511,6 @@ onBeforeRouteUpdate(confirmLeave)
         </aside>
 
         <p v-if="opening" class="room-matrix-page__muted" role="status">Đang mở sơ đồ…</p>
-
-        <aside v-if="loadedLayout" class="room-matrix-page__notice">
-          <strong>
-            Phiên bản {{ loadedLayout.layoutVersion }} ·
-            {{
-              loadedLayout.status === 'PUBLISHED'
-                ? 'Đã xuất bản — chỉ xem'
-                : dirty
-                  ? 'Có thay đổi chưa lưu'
-                  : 'Đã đồng bộ'
-            }}
-          </strong>
-
-          <p v-if="!initialDocument">
-            Phiên bản này dùng sơ đồ tọa độ cũ. Hãy tạo bản nháp ma trận mới để sử dụng trình chỉnh
-            sửa hiện tại.
-          </p>
-        </aside>
 
         <AdminSeatMatrixEditor
           v-if="initialDocument && loadedLayout"

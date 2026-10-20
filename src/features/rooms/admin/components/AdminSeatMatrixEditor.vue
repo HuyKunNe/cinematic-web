@@ -378,30 +378,57 @@ function onRowDragEnd() {
   }
 }
 
-function onRowHandleKeyDown(event: KeyboardEvent, rowIndex: number) {
+async function onRowHandleKeyDown(event: KeyboardEvent, rowIndex: number) {
   if (
     props.disabled ||
     event.isComposing ||
     !event.altKey ||
     event.ctrlKey ||
     event.metaKey ||
+    event.shiftKey ||
     !['ArrowUp', 'ArrowDown'].includes(event.key)
   ) {
     return
   }
 
+  const source = event.currentTarget
+
+  if (!(source instanceof HTMLButtonElement)) return
+
   event.preventDefault()
   event.stopPropagation()
 
-  const target = rowIndex + (event.key === 'ArrowUp' ? -1 : 1)
-  if (target < 0 || target >= statistics.value.rows) return
+  const targetRow = rowIndex + (event.key === 'ArrowUp' ? -1 : 1)
 
+  if (targetRow < 0 || targetRow >= statistics.value.rows) return
+  if (protectPending()) return
+
+  clearRowDrag()
   matrix.select(rowIndex, selection.value.column)
 
-  void mutate(
-    () => matrix.moveRow(rowIndex, target),
-    `Đã chuyển hàng đến vị trí ${matrixRowLabel(target)}.`,
+  if (!matrix.moveRow(rowIndex, targetRow)) {
+    if (operationError.value) {
+      announce(operationError.value, true)
+    }
+
+    return
+  }
+
+  clearInputs()
+  announce(`Đã chuyển hàng đến vị trí ${matrixRowLabel(targetRow)}.`)
+
+  await nextTick()
+
+  // Giữ lựa chọn focus mới nếu người dùng đã chuyển nơi khác.
+  if (props.disabled || source.ownerDocument.activeElement !== source) {
+    return
+  }
+
+  const handle = table.value?.querySelector<HTMLButtonElement>(
+    `button[data-row-handle="${targetRow}"]`,
   )
+
+  handle?.focus()
 }
 
 function updateDraft(row: number, column: number, event: Event) {
@@ -1065,6 +1092,7 @@ defineExpose({
                     <button
                       class="seat-matrix-editor__row-handle"
                       type="button"
+                      :data-row-handle="rowIndex"
                       :draggable="!disabled && statistics.rows > 1"
                       :aria-label="`Chọn hoặc kéo hàng ${matrixRowLabel(rowIndex)}`"
                       :aria-describedby="`${prefix}-row-drag-help`"
