@@ -9,13 +9,15 @@ import type {
   CinemaHolidayDatesResponse,
   CinemaPricingPolicyContentResponse,
   CinemaPricingPolicyResponse,
+  CinemaPricingPolicyReviewResponse,
   CinemaSurchargesResponse,
   CreateCinemaPricingPolicyRequest,
   PreviewDraftBasePriceRequest,
   PreviewDraftBasePriceResponse,
   ReplaceCinemaHolidayDatesRequest,
   ReplaceCinemaPricingPolicyContentRequest,
-  ReplaceCinemaSurchargesRequest
+  ReplaceCinemaSurchargesRequest,
+  ReviewCinemaPricingPolicyRequest
 } from '../model';
 
 import { apiRequest } from '../../../../http/axios-instance';
@@ -97,7 +99,11 @@ export const replaceCinemaPricingPolicyHolidayDates = (
     }
   /**
  * Requires inventory:manage.
- * @summary Get pricing policy metadata and base price rules
+ * Returns policy metadata, base price rules, holiday dates
+ * and surcharge rules from one consistent policy version.
+ * This operation does not validate publication readiness
+ * or evaluate prices.
+ * @summary Get complete pricing policy content
  */
 export const getCinemaPricingPolicyContent = (
     cinemaId: string,
@@ -109,12 +115,14 @@ export const getCinemaPricingPolicyContent = (
       );
     }
   /**
- * Requires inventory:manage.
- * expectedVersion refers to policy.version, not policyVersion.
- * Replaces every base price rule; an empty array clears the draft.
- * Rule IDs are regenerated.
- * Published policies cannot be modified.
- * This operation does not publish or evaluate ticket prices.
+ *  Requires inventory:manage.
+ *  expectedVersion refers to policy.version, not policyVersion.
+ *  Replaces every base price rule; an empty rules array clears only the base price rules.
+ *  Holiday dates and surcharge rules are preserved.
+ *  Rule IDs are regenerated.
+ *  Published policies cannot be modified.
+ *  Returns the complete policy content after saving.
+ *  This operation does not publish or evaluate ticket prices.
  * @summary Replace all base price rules of a draft
  */
 export const replaceCinemaPricingPolicyContent = (
@@ -157,6 +165,30 @@ export const createCinemaPricingPolicyDraft = (
       {url: `/api/v1/cinemas/${cinemaId}/pricing-policies`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createCinemaPricingPolicyRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * expectedVersion refers to policy.version, not policyVersion.
+ * Returns errors and warnings without modifying the policy.
+ *
+ * Equal-priority overlaps are potential conflicts, not proven
+ * highest-priority ambiguities.
+ * Full price coverage and customer eligibility are not verified.
+ * publicationValidated is always false.
+ * A report without errors does not authorize publication.
+ * @summary Review selected configuration issues of a draft policy
+ */
+export const reviewDraftCinemaPricingPolicy = (
+    cinemaId: string,
+    policyId: string,
+    reviewCinemaPricingPolicyRequest: ReviewCinemaPricingPolicyRequest,
+ ) => {
+      return apiRequest<CinemaPricingPolicyReviewResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/review`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: reviewCinemaPricingPolicyRequest
     },
       );
     }
@@ -207,5 +239,6 @@ export type GetCinemaPricingPolicyContentResult = NonNullable<Awaited<ReturnType
 export type ReplaceCinemaPricingPolicyContentResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyContent>>>
 export type GetCinemaPricingPoliciesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicies>>>
 export type CreateCinemaPricingPolicyDraftResult = NonNullable<Awaited<ReturnType<typeof createCinemaPricingPolicyDraft>>>
+export type ReviewDraftCinemaPricingPolicyResult = NonNullable<Awaited<ReturnType<typeof reviewDraftCinemaPricingPolicy>>>
 export type PreviewDraftCinemaBasePriceResult = NonNullable<Awaited<ReturnType<typeof previewDraftCinemaBasePrice>>>
 export type GetCinemaPricingPolicyByIdResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyById>>>

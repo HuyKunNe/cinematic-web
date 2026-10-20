@@ -14,6 +14,7 @@ import {
   type ShowtimeDraftValues,
 } from '../schemas/admin-showtime-create.schema'
 import { showtimeErrorMessage } from '../schemas/admin-showtime.schema'
+import AdminShowtimePublishedLayout from '../components/AdminShowtimePublishedLayout.vue'
 
 const auth = useAuthStore()
 
@@ -382,36 +383,11 @@ async function reloadOptions() {
         </div>
 
         <aside class="showtime-create__column" aria-label="Cấu hình áp dụng">
-          <section
-            class="admin-reference__panel showtime-create__panel"
-            aria-labelledby="showtime-layout-title"
-          >
-            <h2 id="showtime-layout-title">Sơ đồ ghế áp dụng</h2>
-
-            <p class="admin-reference__description" role="status">
-              {{
-                selectedRoom
-                  ? 'Chức năng xác nhận sơ đồ sẽ gắn cho suất chiếu chưa sẵn sàng.'
-                  : 'Chọn rạp và phòng trước.'
-              }}
-            </p>
-
-            <p v-if="selectedRoom" class="admin-reference__description">
-              Phòng đang chọn: {{ selectedRoom.name }}.
-            </p>
-
-            <RouterLink
-              v-if="selectedRoom && canViewInventory"
-              class="admin-reference__link-button showtime-create__link"
-              :to="{
-                name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
-                params: { roomId: selectedRoom.id },
-                query: { cinemaId: form.cinemaId },
-              }"
-            >
-              Xem sơ đồ hiện tại của phòng
-            </RouterLink>
-          </section>
+          <AdminShowtimePublishedLayout
+            :room-id="selectedRoom?.id ?? ''"
+            :room-name="selectedRoom?.name ?? ''"
+            :can-read="canManage && canViewInventory"
+          />
 
           <section
             class="admin-reference__panel showtime-create__panel"

@@ -6,9 +6,13 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CinemaPricingPolicyResponse } from './cinemaPricingPolicyResponse';
+import type { HolidayDateResponse } from './holidayDateResponse';
 import type { RuleResponse } from './ruleResponse';
+import type { SurchargeResponse } from './surchargeResponse';
 
 export interface CinemaPricingPolicyContentResponse {
   policy?: CinemaPricingPolicyResponse;
   rules?: RuleResponse[];
+  holidayDates?: HolidayDateResponse[];
+  surcharges?: SurchargeResponse[];
 }
