@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chọn ghế và loại vé | Cinema</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="public-shell">
+    <header class="public-header"><a class="public-brand" href="#">CINEMA</a><nav class="public-nav" aria-label="Điều hướng"><a href="#">Phim</a><a href="#">Rạp</a><a href="#">Ưu đãi</a></nav><a class="button button-sm" href="#">Đăng nhập</a></header>
+    <main class="public-content">
+      <nav class="stepper" aria-label="Các bước đặt vé"><span class="step"><span class="step-number">1</span>Chọn suất</span><span class="step step-active"><span class="step-number">2</span>Chọn ghế và loại vé</span><span class="step"><span class="step-number">3</span>Thanh toán</span></nav>
+      <section class="movie-strip"><div class="movie-poster" aria-label="Poster phim mẫu">2D</div><div class="movie-meta"><strong>Hành tinh bí ẩn</strong><span>Parkcity Hanoi · Phòng 03 · Thứ Bảy, 24/10 · 18:30</span><span>2D · 132 phút · Phụ đề tiếng Việt</span></div><span class="badge badge-success">Còn ghế</span></section>
+      <div class="booking-layout">
+        <section class="panel">
+          <div class="panel-heading"><div><h2>Chọn ghế</h2><p>Chọn ghế, sau đó gán nhóm vé cho từng ghế.</p></div><span class="badge badge-primary">Đã chọn 2 ghế</span></div>
+          <div class="panel-body">
+            <div class="screen-label">MÀN HÌNH</div>
+            <div class="seat-map-wrap"><table class="seat-map" aria-label="Sơ đồ ghế phòng chiếu"><tbody>
+              <tr><th class="seat-row-label" scope="row">A</th><td><button class="seat" aria-label="Ghế A1">1</button></td><td><button class="seat" aria-label="Ghế A2">2</button></td><td><button class="seat seat-selected" aria-label="Ghế A3 đã chọn">3</button></td><td><button class="seat seat-selected" aria-label="Ghế A4 đã chọn">4</button></td><td class="seat-spacer"></td><td><button class="seat">5</button></td><td><button class="seat seat-occupied" disabled>6</button></td><td><button class="seat">7</button></td><td><button class="seat">8</button></td></tr>
+              <tr><th class="seat-row-label" scope="row">B</th><td><button class="seat">1</button></td><td><button class="seat">2</button></td><td><button class="seat">3</button></td><td><button class="seat">4</button></td><td class="seat-spacer"></td><td><button class="seat seat-couple">5</button></td><td><button class="seat seat-couple">6</button></td><td><button class="seat">7</button></td><td><button class="seat">8</button></td></tr>
+              <tr><th class="seat-row-label" scope="row">C</th><td><button class="seat">1</button></td><td><button class="seat">2</button></td><td><button class="seat">3</button></td><td><button class="seat">4</button></td><td class="seat-spacer"></td><td><button class="seat">5</button></td><td><button class="seat">6</button></td><td><button class="seat">7</button></td><td><button class="seat">8</button></td></tr>
+              <tr><th class="seat-row-label" scope="row">D</th><td><button class="seat seat-accessible" aria-label="Ghế tiếp cận D1">1</button></td><td><button class="seat">2</button></td><td><button class="seat">3</button></td><td><button class="seat">4</button></td><td class="seat-spacer"></td><td><button class="seat">5</button></td><td><button class="seat">6</button></td><td><button class="seat">7</button></td><td><button class="seat">8</button></td></tr>
+              <tr><th class="seat-row-label" scope="row">E</th><td><button class="seat">1</button></td><td><button class="seat">2</button></td><td><button class="seat">3</button></td><td><button class="seat">4</button></td><td class="seat-spacer"></td><td><button class="seat">5</button></td><td><button class="seat">6</button></td><td><button class="seat">7</button></td><td><button class="seat">8</button></td></tr>
+            </tbody></table></div>
+            <div class="legend"><span class="legend-item"><span class="legend-swatch"></span>Còn trống</span><span class="legend-item"><span class="legend-swatch selected"></span>Đang chọn</span><span class="legend-item"><span class="legend-swatch occupied"></span>Đã bán</span><span class="legend-item"><span class="legend-swatch couple"></span>Ghế đôi · có phụ thu</span></div>
+          </div>
+        </section>
+        <aside class="panel sticky-summary">
+          <div class="panel-heading"><div><h2>Loại vé và báo giá</h2><p>Chọn nhóm vé phù hợp; có thể cần xuất trình giấy tờ.</p></div><span class="badge badge-primary">2 ghế</span></div>
+          <div class="panel-body">
+            <div class="ticket-row"><div class="ticket-seat"><strong>Ghế A3 · Standard</strong><span>Giá cơ bản cuối tuần 18:00–22:00: 79.000 ₫</span></div><div class="field"><label for="ticket-a3">Nhóm vé</label><select class="control" id="ticket-a3"><option>Người lớn</option><option>Trên 55 tuổi</option><option>HSSV / U22 / Giáo viên</option><option>Trẻ em</option></select></div></div>
+            <div class="ticket-row"><div class="ticket-seat"><strong>Ghế A4 · Standard</strong><span>Giá cơ bản cuối tuần 18:00–22:00: 49.000 ₫</span></div><div class="field"><label for="ticket-a4">Nhóm vé</label><select class="control" id="ticket-a4"><option>HSSV / U22 / Giáo viên</option><option>Người lớn</option><option>Trên 55 tuổi</option><option>Trẻ em</option></select></div></div>
+            <div class="callout"><span>ⓘ</span><span>Vé ưu đãi cần đáp ứng điều kiện. Backend xác minh thành viên, giấy tờ hoặc độ tuổi theo chính sách.</span></div>
+            <div class="price-list"><div class="price-row"><span>Giá vé cơ bản</span><strong>128.000 ₫</strong></div><div class="price-row"><span>Phụ thu ghế</span><strong>0 ₫</strong></div><div class="price-row"><span>Phụ thu phim / định dạng</span><strong>0 ₫</strong></div></div>
+            <div class="total-row"><span>Tổng tạm tính</span><strong>128.000 ₫</strong></div>
+            <p class="footer-hint">Giá minh họa. Backend trả báo giá chính thức theo policy version của suất chiếu.</p>
+            <button class="button button-primary" type="button">Tiếp tục thanh toán</button>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
