@@ -74,6 +74,7 @@ const drafts = ref<Record<string, string>>({})
 const draftTypes = ref<Record<string, MatrixSeat['seatType']>>({})
 const newSeatType = ref<MatrixSeat['seatType'] | null>(null)
 const fieldErrors = ref<Record<string, string>>({})
+const navigationColumn = ref<number | null>(null)
 
 const status = ref(
   `Ma trận có ${statistics.value.rows} hàng, ` +
@@ -511,6 +512,11 @@ function onCellBlur(event: FocusEvent, row: number, column: number) {
   commit(row, column)
 }
 
+function onCellFocus(row: number, column: number) {
+  navigationColumn.value = column
+  matrix.select(row, column)
+}
+
 function onEnter(event: KeyboardEvent, row: number, column: number) {
   if (event.isComposing) return
 
@@ -583,38 +589,45 @@ async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: n
   event.preventDefault()
   event.stopPropagation()
 
-  // Giữ tại ô hiện tại nếu số hoặc loại ghế chưa hợp lệ.
   if (!commit(rowIndex, columnIndex)) return
 
   const row = document.value.rows[rowIndex]
 
   if (!row) return
 
+  const vertical = event.key === 'ArrowUp' || event.key === 'ArrowDown'
+
+  // Giữ cột vật lý ban đầu khi đi dọc qua ghế đôi.
+  const preferredColumn = Math.min(
+    Math.max(navigationColumn.value ?? columnIndex, 0),
+    document.value.columns - 1,
+  )
+
   let targetRow = rowIndex
   let targetColumn = columnIndex
 
-  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-    const cells = renderedRow(row)
-    const currentIndex = cells.findIndex((cell) => cell.column === columnIndex)
-    const direction = event.key === 'ArrowLeft' ? -1 : 1
-    const target = cells[currentIndex + direction]
-
-    // Giữ tại biên hàng, không tự chuyển sang hàng khác.
-    if (currentIndex < 0 || !target) return
-
-    targetColumn = target.column
-  } else {
+  if (vertical) {
     targetRow += event.key === 'ArrowUp' ? -1 : 1
 
     const targetSeats = document.value.rows[targetRow]
 
     if (!targetSeats) return
 
-    // Nếu cột đích thuộc phần thứ hai của ghế đôi,
-    // chuyển focus về ô bắt đầu của ghế đó.
     const target = renderedRow(targetSeats).find(
-      (cell) => cell.column <= columnIndex && columnIndex < cell.column + cell.span,
+      (cell) => cell.column <= preferredColumn && preferredColumn < cell.column + cell.span,
     )
+
+    if (!target) return
+
+    targetColumn = target.column
+  } else {
+    const cells = renderedRow(row)
+    const currentIndex = cells.findIndex((cell) => cell.column === columnIndex)
+
+    if (currentIndex < 0) return
+
+    const direction = event.key === 'ArrowLeft' ? -1 : 1
+    const target = cells[currentIndex + direction]
 
     if (!target) return
 
@@ -623,7 +636,6 @@ async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: n
 
   await nextTick()
 
-  // Không giành lại focus nếu người dùng đã chuyển nơi khác.
   if (source.ownerDocument.activeElement !== source) return
 
   const input = table.value?.querySelector<HTMLInputElement>(
@@ -634,6 +646,10 @@ async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: n
 
   matrix.select(targetRow, targetColumn)
   input.focus()
+
+  // onCellFocus chạy khi focus đổi. Khôi phục cột mong muốn
+  // sau đó để lần nhấn ↑/↓ tiếp theo không bị lệch.
+  navigationColumn.value = vertical ? preferredColumn : targetColumn
 }
 
 async function onTab(event: KeyboardEvent, rowIndex: number, columnIndex: number) {
@@ -706,6 +722,8 @@ async function selectCell(row: number, column: number) {
   if (props.disabled || draggedRow.value !== null) return
 
   matrix.select(row, column)
+  navigationColumn.value = selection.value.column
+
   await focusSelected()
 }
 
@@ -1024,7 +1042,7 @@ defineExpose({
                             }, chiếm ${cell.span} ô`
                           : `Ô trống hàng ${matrixRowLabel(rowIndex)}, vị trí ${cell.column + 1}`
                       "
-                      @focus="matrix.select(rowIndex, cell.column)"
+                      @focus="onCellFocus(rowIndex, cell.column)"
                       @input="updateDraft(rowIndex, cell.column, $event)"
                       @blur="onCellBlur($event, rowIndex, cell.column)"
                       @keydown.enter="onEnter($event, rowIndex, cell.column)"
@@ -1113,11 +1131,6 @@ defineExpose({
           </div>
 
           <template v-else>
-            <p>
-              Ghế này chiếm {{ selectedSpan }} ô.
-              {{ selectedSpan === 2 ? 'Xóa ghế sẽ để lại hai ô trống.' : 'Có thể đổi loại ghế.' }}
-            </p>
-
             <label :for="`${prefix}-type`">Loại ghế</label>
             <select
               :id="`${prefix}-type`"
