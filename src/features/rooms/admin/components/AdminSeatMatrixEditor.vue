@@ -632,14 +632,15 @@ async function onSpace(event: KeyboardEvent, rowIndex: number, columnIndex: numb
 }
 
 async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: number) {
+  const boundaryKey = event.key === 'Home' || event.key === 'End'
+
   if (
     props.disabled ||
     event.isComposing ||
-    event.ctrlKey ||
-    event.metaKey ||
     event.altKey ||
     event.shiftKey ||
-    !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)
+    ((event.ctrlKey || event.metaKey) && !boundaryKey) ||
+    !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)
   ) {
     return
   }
@@ -659,7 +660,6 @@ async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: n
 
   const vertical = event.key === 'ArrowUp' || event.key === 'ArrowDown'
 
-  // Giữ cột vật lý ban đầu khi đi dọc qua ghế đôi.
   const preferredColumn = Math.min(
     Math.max(navigationColumn.value ?? columnIndex, 0),
     document.value.columns - 1,
@@ -668,7 +668,24 @@ async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: n
   let targetRow = rowIndex
   let targetColumn = columnIndex
 
-  if (vertical) {
+  if (boundaryKey) {
+    const atStart = event.key === 'Home'
+
+    if (event.ctrlKey || event.metaKey) {
+      targetRow = atStart ? 0 : document.value.rows.length - 1
+    }
+
+    const targetSeats = document.value.rows[targetRow]
+
+    if (!targetSeats) return
+
+    const cells = renderedRow(targetSeats)
+    const target = atStart ? cells[0] : cells[cells.length - 1]
+
+    if (!target) return
+
+    targetColumn = target.column
+  } else if (vertical) {
     targetRow += event.key === 'ArrowUp' ? -1 : 1
 
     const targetSeats = document.value.rows[targetRow]
@@ -698,7 +715,9 @@ async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: n
 
   await nextTick()
 
-  if (source.ownerDocument.activeElement !== source) return
+  if (props.disabled || source.ownerDocument.activeElement !== source) {
+    return
+  }
 
   const input = table.value?.querySelector<HTMLInputElement>(
     `input[data-cell="${cellKey(targetRow, targetColumn)}"]`,
@@ -709,8 +728,6 @@ async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: n
   matrix.select(targetRow, targetColumn)
   input.focus()
 
-  // onCellFocus chạy khi focus đổi. Khôi phục cột mong muốn
-  // sau đó để lần nhấn ↑/↓ tiếp theo không bị lệch.
   navigationColumn.value = vertical ? preferredColumn : targetColumn
 }
 
@@ -808,6 +825,55 @@ async function onTab(event: KeyboardEvent, rowIndex: number, columnIndex: number
 
   matrix.select(target.row, target.column)
   input.focus()
+}
+
+async function onDeleteSeat(event: KeyboardEvent, row: number, column: number) {
+  if (
+    props.disabled ||
+    event.isComposing ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.altKey ||
+    event.shiftKey
+  ) {
+    return
+  }
+
+  const seat = document.value.rows[row]?.[column]
+
+  // Ô đang nhập số tiếp tục dùng Delete của input.
+  if (!seat) return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (event.repeat) return
+
+  matrix.select(row, column)
+
+  await mutate(matrix.clearSelectedSeat, 'Đã xóa ghế, giữ nguyên các ô trống và đánh số lại hàng.')
+}
+
+async function onCellKeyDown(event: KeyboardEvent, row: number, column: number) {
+  switch (event.key) {
+    case 'Enter':
+      return onEnter(event, row, column)
+
+    case ' ':
+      return onSpace(event, row, column)
+
+    case 'Tab':
+      return onTab(event, row, column)
+
+    case 'Escape':
+      return onEscape(event, row, column)
+
+    case 'Delete':
+      return onDeleteSeat(event, row, column)
+
+    default:
+      return onArrowKey(event, row, column)
+  }
 }
 
 async function onEscape(event: KeyboardEvent, row: number, column: number) {
@@ -1200,11 +1266,7 @@ defineExpose({
                       @focus="onCellFocus(rowIndex, cell.column)"
                       @input="updateDraft(rowIndex, cell.column, $event)"
                       @blur="onCellBlur($event, rowIndex, cell.column)"
-                      @keydown.enter="onEnter($event, rowIndex, cell.column)"
-                      @keydown.space="onSpace($event, rowIndex, cell.column)"
-                      @keydown.tab="onTab($event, rowIndex, cell.column)"
-                      @keydown.esc="onEscape($event, rowIndex, cell.column)"
-                      @keydown="onArrowKey($event, rowIndex, cell.column)"
+                      @keydown="onCellKeyDown($event, rowIndex, cell.column)"
                     />
 
                     <span
@@ -1251,7 +1313,10 @@ defineExpose({
             {{ statistics.rows }} hàng · {{ statistics.columns }} cột · {{ statistics.seats }} ghế ·
             {{ statistics.capacity }} chỗ · {{ statistics.empty }} ô trống
           </span>
-          <span> ↑ ↓ ← → di chuyển · Space điền ghế · Tab ô tiếp theo · Enter xác nhận </span>
+          <span>
+            ↑ ↓ ← → di chuyển · Space điền ghế · Tab ô tiếp theo · Enter xác nhận · Delete xóa ghế ·
+            Esc bỏ nhập
+          </span>
         </footer>
       </section>
 

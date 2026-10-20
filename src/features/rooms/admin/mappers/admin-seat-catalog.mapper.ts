@@ -6,6 +6,7 @@ export type ManagedSeat = SeatResponse & {
   roomId: string
   seatNumber: string
   rowLabel: string
+  seatType: NonNullable<SeatResponse['seatType']>
   active: boolean
 }
 
@@ -71,15 +72,24 @@ export function mapAdminSeatCatalog(
   input: readonly SeatResponse[],
   roomId: string,
 ): SeatCatalogMatrix {
+  if (!isRoomSeatUuid(roomId) || !Array.isArray(input)) {
+    throw new Error('Không thể đọc danh mục ghế của phòng. Hãy tải lại dữ liệu.')
+  }
+
   const ids = new Set<string>()
   const seats: ManagedSeat[] = []
 
   for (const seat of input) {
     if (
+      !seat ||
+      typeof seat !== 'object' ||
+      Array.isArray(seat) ||
       !isRoomSeatUuid(seat.id) ||
       seat.roomId !== roomId ||
-      !seat.seatNumber?.trim() ||
-      !seat.rowLabel?.trim() ||
+      typeof seat.seatNumber !== 'string' ||
+      !seat.seatNumber.trim() ||
+      typeof seat.rowLabel !== 'string' ||
+      !seat.rowLabel.trim() ||
       typeof seat.active !== 'boolean' ||
       !adminSeatTypeOptions.some((option) => option.value === seat.seatType) ||
       ids.has(seat.id)

@@ -497,10 +497,6 @@ async function changeActivity() {
                 <dd>{{ columnLabel(selected.column, selected.endColumn) }}</dd>
               </div>
               <div>
-                <dt>Số ô chiếm</dt>
-                <dd>{{ selected.span }}</dd>
-              </div>
-              <div>
                 <dt>Loại ghế</dt>
                 <dd>{{ typeLabel(selected.seat.seatType) }}</dd>
               </div>
@@ -527,7 +523,7 @@ async function changeActivity() {
             <p v-if="activityMessage" role="status">{{ activityMessage }}</p>
 
             <template v-if="catalog.matrix">
-              <h3 class="seatmap-details__subtitle">Thống kê ma trận</h3>
+              <h3 class="seatmap-details__subtitle">Thống kê</h3>
               <dl>
                 <div>
                   <dt>Số hàng</dt>
