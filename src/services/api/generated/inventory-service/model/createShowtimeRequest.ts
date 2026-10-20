@@ -13,6 +13,6 @@ export interface CreateShowtimeRequest {
   endsAt: string;
   /** @minimum 0.01 */
   basePrice: number;
-  /** Optional published layout belonging to roomId. When omitted, the existing active-seat generation is used. */
+  /** Published layout belonging to roomId. Required when the room has a published matrix layout. Otherwise omission retains legacy catalog generation. The server does not automatically select a layout. */
   roomLayoutId?: string;
 }

@@ -8,6 +8,9 @@
 import type { ShowtimeSeatMapSeatResponseSeatType } from './showtimeSeatMapSeatResponseSeatType';
 import type { ShowtimeSeatMapSeatResponseStatus } from './showtimeSeatMapSeatResponseStatus';
 
+/**
+ * One inventory seat. COUPLE appears once and occupies two columns. Missing cells are empty spaces, not seats.
+ */
 export interface ShowtimeSeatMapSeatResponse {
   seatId: string;
   /** ShowSeat identifier; null when ShowSeat is missing. */
@@ -16,10 +19,15 @@ export interface ShowtimeSeatMapSeatResponse {
   rowLabel: string;
   seatType: ShowtimeSeatMapSeatResponseSeatType;
   capacity: number;
+  /** Legacy geometry; null for matrix layouts. */
   x: number;
+  /** Legacy geometry; null for matrix layouts. */
   y: number;
+  /** Legacy geometry; null for matrix layouts. */
   width: number;
+  /** Legacy geometry; null for matrix layouts. */
   height: number;
+  /** Legacy geometry; null for matrix layouts. */
   rotationDegrees: number;
   /** Price from ShowSeat; null when ShowSeat is missing. */
   price: number | null;
@@ -27,4 +35,12 @@ export interface ShowtimeSeatMapSeatResponse {
   /** Stored ShowSeat status; null when ShowSeat is missing. */
   status: ShowtimeSeatMapSeatResponseStatus;
   selectable: boolean;
+  /** Zero-based matrix row; null for legacy layouts. */
+  rowIndex: number;
+  /** Zero-based starting column; null for legacy layouts. */
+  columnIndex: number;
+  /** Consecutive seat number within the row; null for legacy layouts. */
+  number: number;
+  /** Occupied columns: COUPLE=2, other types=1. Null for legacy layouts. */
+  columnSpan: number;
 }

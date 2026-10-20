@@ -48,21 +48,29 @@ import { apiRequest } from '../../../../http/axios-instance';
   /**
  * Requires showtime:manage.
  *
- * roomLayoutId is optional.
- * When provided, it must identify a PUBLISHED layout of roomId.
- * Seats are generated from that layout after validating its snapshots.
+ * When roomLayoutId is supplied, it must identify a
+ * PUBLISHED layout belonging to roomId.
+ * Seats are generated from that layout's snapshots.
  * Active seats start AVAILABLE; inactive seats start UNAVAILABLE.
  *
- * When omitted, existing active-seat generation is retained.
- * Seat prices are calculated from basePrice using SeatPricingPolicy.
+ * roomLayoutId is required when the room has any
+ * PUBLISHED matrix layout.
+ * Omitting it in that case returns
+ * INVENTORY_SHOWTIME_LAYOUT_REQUIRED.
  *
- * The layout cannot be changed after creation.
+ * When the room has no published matrix layout,
+ * omission retains legacy active-catalog-seat generation.
+ *
+ * The server does not automatically select the latest layout.
+ * Seat prices are calculated from basePrice using SeatPricingPolicy.
+ * The pinned layout cannot be changed after creation.
+ * Existing showtimes are not migrated by this operation.
  * @summary Create a showtime and generate its seats
  */
 export const create = (
     createShowtimeRequest: CreateShowtimeRequest,
  ) => {
-      return apiRequest<ShowtimeResponse>(
+      return apiRequest<unknown>(
       {url: `/api/v1/showtimes`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createShowtimeRequest

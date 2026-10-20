@@ -12,7 +12,9 @@ import type {
   CreateSeatRequest,
   GetActiveSeatsParams,
   GetManagedSeatsParams,
+  SeatActiveStateResponse,
   SeatResponse,
+  UpdateSeatActiveRequest,
   UpdateSeatRequest
 } from '../model';
 
@@ -73,8 +75,40 @@ import { apiRequest } from '../../../../http/axios-instance';
       );
     }
   /**
- * Omit active to include both active and inactive seats.
- * @summary List seats for inventory management
+ * Requires inventory:manage.
+ * Supports both legacy catalog and layout-managed seats.
+ * The seat must belong to the supplied roomId.
+ *
+ * Sets active to the requested value.
+ * Repeating the same request leaves the same active state.
+ *
+ * Does not require or modify seat numbers, row labels or types.
+ * Does not modify layout cells or published snapshots.
+ * The active state belongs to the physical seat and is shared
+ * by every layout referencing the same seatId.
+ *
+ * Does not change existing ShowSeat statuses or bookings.
+ * For newly generated show seats, the existing generation
+ * rules use the inventory seat's active state.
+ *
+ * Reload the published room matrix after a successful update.
+ * @summary Update only the inventory seat active state
+ */
+export const updateSeatActiveState = (
+    seatId: string,
+    updateSeatActiveRequest: UpdateSeatActiveRequest,
+ ) => {
+      return apiRequest<SeatActiveStateResponse>(
+      {url: `/api/v1/seats/${seatId}/active`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: updateSeatActiveRequest
+    },
+      );
+    }
+  /**
+ * Omit active to include both active and inactive catalog seats.
+ * Layout-managed seats are read from the published room matrix API.
+ * @summary List legacy catalog seats for inventory management
  */
 export const getManagedSeats = (
     params: GetManagedSeatsParams,
@@ -90,4 +124,5 @@ export type Update1Result = NonNullable<Awaited<ReturnType<typeof update1>>>
 export type GetActiveSeatsResult = NonNullable<Awaited<ReturnType<typeof getActiveSeats>>>
 export type Create1Result = NonNullable<Awaited<ReturnType<typeof create1>>>
 export type CreateRangeResult = NonNullable<Awaited<ReturnType<typeof createRange>>>
+export type UpdateSeatActiveStateResult = NonNullable<Awaited<ReturnType<typeof updateSeatActiveState>>>
 export type GetManagedSeatsResult = NonNullable<Awaited<ReturnType<typeof getManagedSeats>>>

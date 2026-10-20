@@ -6,12 +6,15 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  CopyPublishedRoomLayoutRequest,
   CreateRoomLayoutRequest,
   GetRoomLayoutsByRoomParams,
+  GetRoomPublishedSeatMapParams,
   PublishRoomLayoutRequest,
   ReplaceRoomLayoutContentRequest,
   RoomLayoutContentResponse,
-  RoomLayoutResponse
+  RoomLayoutResponse,
+  RoomPublishedSeatMapResponse
 } from '../model';
 
 import { apiRequest } from '../../../../http/axios-instance';
@@ -93,10 +96,28 @@ export const createRoomLayoutDraft = (
   /**
  * Requires inventory:manage.
  * expectedVersion must match the current version field.
- * Requires at least one seat and one SCREEN.
- * Validates rotated geometry inside the canvas.
- * Rejects seat-seat and seat-element overlaps.
- * Publishes this layout version without binding it to showtimes.
+ *
+ * Matrix layouts:
+ * - require at least one seat.
+ * - validate dimensions, consecutive numbering and occupied cells.
+ * - COUPLE occupies two adjacent columns.
+ * - preserve every supplied seatId after checking its room.
+ * - create an inventory seat for each unbound cell.
+ * - never infer seat identity from its display number.
+ * - do not require a stored SCREEN element.
+ * - do not modify metadata of existing inventory seats.
+ *
+ * Legacy layouts:
+ * - require at least one seat and one SCREEN.
+ * - validate rotated geometry inside the canvas.
+ * - reject seat-seat and seat-element overlaps.
+ *
+ * Seat binding and publication share one transaction.
+ * Published layouts cannot be modified.
+ * Publication does not change existing showtimes.
+ *
+ * The response contains layout metadata.
+ * Reload layout content after publication to obtain bound seatIds.
  * @summary Publish a validated room layout
  */
 export const publishRoomLayout = (
@@ -111,6 +132,36 @@ export const publishRoomLayout = (
       );
     }
   /**
+ * Requires inventory:manage.
+ * The source must be a PUBLISHED matrix layout.
+ * expectedVersion refers to the source version field,
+ * not layoutVersion.
+ *
+ * Creates a new DRAFT in the same room.
+ * Copies matrix dimensions, positions, numbers and seat types.
+ * Preserves every inventory seatId.
+ * Creates new layout-cell records without creating inventory seats.
+ *
+ * The backend allocates the next room layoutVersion.
+ * The source layout and existing showtimes remain unchanged.
+ * Returns the complete content of the new draft.
+ *
+ * Legacy geometry layouts are not converted by this operation.
+ * Repeating a successful request creates another draft.
+ * @summary Create a draft from a published matrix layout
+ */
+export const createRoomLayoutDraftFromPublished = (
+    layoutId: string,
+    copyPublishedRoomLayoutRequest: CopyPublishedRoomLayoutRequest,
+ ) => {
+      return apiRequest<RoomLayoutContentResponse>(
+      {url: `/api/v1/room-layouts/${layoutId}/drafts`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: copyPublishedRoomLayoutRequest
+    },
+      );
+    }
+  /**
  * @summary Get room layout metadata
  */
 export const getRoomLayoutById = (
@@ -121,9 +172,45 @@ export const getRoomLayoutById = (
     },
       );
     }
+  /**
+ * Requires inventory:manage.
+ *
+ * roomId is required.
+ * When layoutId is supplied, it must belong to roomId
+ * and identify a PUBLISHED matrix layout.
+ *
+ * When layoutId is omitted, selects the PUBLISHED layout
+ * with the greatest layoutVersion in the room.
+ * Draft layouts do not affect this selection.
+ * A legacy geometry layout is rejected rather than converted.
+ *
+ * Matrix dimensions preserve empty rows and columns.
+ * Seat positions, numbers and types come from layout cells.
+ * Active state comes from the inventory seat.
+ *
+ * Each COUPLE seat appears once at its starting cell
+ * with columnSpan=2 and capacity=2.
+ * Missing cells are empty spaces, not inventory seats.
+ * Display the screen above the matrix.
+ *
+ * This API does not return prices or booking availability.
+ * It does not change any showtime's pinned layout.
+ * @summary Get a published room matrix for administration
+ */
+export const getRoomPublishedSeatMap = (
+    params: GetRoomPublishedSeatMapParams,
+ ) => {
+      return apiRequest<RoomPublishedSeatMapResponse>(
+      {url: `/api/v1/room-layouts/published-seat-map`, method: 'GET',
+        params
+    },
+      );
+    }
   export type GetRoomLayoutContentResult = NonNullable<Awaited<ReturnType<typeof getRoomLayoutContent>>>
 export type ReplaceRoomLayoutContentResult = NonNullable<Awaited<ReturnType<typeof replaceRoomLayoutContent>>>
 export type GetRoomLayoutsByRoomResult = NonNullable<Awaited<ReturnType<typeof getRoomLayoutsByRoom>>>
 export type CreateRoomLayoutDraftResult = NonNullable<Awaited<ReturnType<typeof createRoomLayoutDraft>>>
 export type PublishRoomLayoutResult = NonNullable<Awaited<ReturnType<typeof publishRoomLayout>>>
+export type CreateRoomLayoutDraftFromPublishedResult = NonNullable<Awaited<ReturnType<typeof createRoomLayoutDraftFromPublished>>>
 export type GetRoomLayoutByIdResult = NonNullable<Awaited<ReturnType<typeof getRoomLayoutById>>>
+export type GetRoomPublishedSeatMapResult = NonNullable<Awaited<ReturnType<typeof getRoomPublishedSeatMap>>>
