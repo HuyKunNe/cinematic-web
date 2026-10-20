@@ -38,6 +38,29 @@ export function isRoomSeatUuid(value: unknown): value is string {
 
 const collator = new Intl.Collator('vi', { numeric: true })
 
+function compareRowLabels(left: string, right: string): number {
+  const leftIsMatrixLabel = /^[A-Z]+$/.test(left)
+  const rightIsMatrixLabel = /^[A-Z]+$/.test(right)
+
+  // Nhãn hàng chuẩn A…Z, AA… đứng trước các nhãn khác.
+  if (leftIsMatrixLabel !== rightIsMatrixLabel) {
+    return leftIsMatrixLabel ? -1 : 1
+  }
+
+  if (leftIsMatrixLabel && rightIsMatrixLabel) {
+    // Với nhãn cùng độ dài, thứ tự chữ cũng là thứ tự hàng.
+    if (left.length !== right.length) {
+      return left.length - right.length
+    }
+
+    if (left === right) return 0
+
+    return left < right ? -1 : 1
+  }
+
+  return collator.compare(left, right)
+}
+
 function seatColumnSpan(seat: ManagedSeat): 1 | 2 {
   return seat.seatType === 'COUPLE' ? 2 : 1
 }
@@ -68,7 +91,7 @@ export function mapAdminSeatCatalog(
 
   seats.sort(
     (a, b) =>
-      collator.compare(a.rowLabel, b.rowLabel) ||
+      compareRowLabels(a.rowLabel, b.rowLabel) ||
       collator.compare(a.seatNumber, b.seatNumber) ||
       a.id.localeCompare(b.id),
   )

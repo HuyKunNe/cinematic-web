@@ -61,11 +61,13 @@ export function useSetAdminSeatActivityMutation() {
   return useMutation<SeatResponse, unknown, SetSeatActivityVariables>({
     mutationFn: async ({ roomId, seatId, active }) => {
       const current = await getById1(seatId)
+
       const seatType = Object.values(UpdateSeatRequestSeatType).find(
-        (value) => value === current.seatType,
+        (value) => value === current?.seatType,
       )
 
       if (
+        !current ||
         current.id !== seatId ||
         current.roomId !== roomId ||
         typeof current.active !== 'boolean' ||
@@ -80,20 +82,36 @@ export function useSetAdminSeatActivityMutation() {
 
       if (current.active === active) return current
 
-      return update1(seatId, {
+      const updated = await update1(seatId, {
         seatNumber: current.seatNumber,
         rowLabel: current.rowLabel,
         seatType,
         active,
       })
+
+      if (
+        !updated ||
+        updated.id !== seatId ||
+        updated.roomId !== roomId ||
+        updated.active !== active ||
+        updated.seatType !== seatType ||
+        updated.seatNumber !== current.seatNumber ||
+        updated.rowLabel !== current.rowLabel
+      ) {
+        throw new Error('Không thể xác nhận kết quả cập nhật ghế. ' + 'Hãy kiểm tra lại danh sách.')
+      }
+
+      return updated
     },
+
     retry: false,
-    onSuccess: () =>
+
+    // Đọc lại dữ liệu cả khi thành công hoặc gặp lỗi:
+    // request có thể đã được xử lý trước khi mất phản hồi.
+    onSettled: () =>
       queryClient.invalidateQueries({
         predicate: ({ queryKey }) =>
-          ['seats', 'rooms', 'showtimes', 'booking', 'home'].includes(
-            String(queryKey[0]),
-          ),
+          ['seats', 'rooms', 'showtimes', 'booking', 'home'].includes(String(queryKey[0])),
       }),
   })
 }

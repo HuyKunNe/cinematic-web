@@ -714,6 +714,45 @@ async function onArrowKey(event: KeyboardEvent, rowIndex: number, columnIndex: n
   navigationColumn.value = vertical ? preferredColumn : targetColumn
 }
 
+function findTabTarget(
+  rowIndex: number,
+  columnIndex: number,
+  direction: -1 | 1,
+): { row: number; column: number } | null {
+  const row = document.value.rows[rowIndex]
+
+  if (!row) return null
+
+  const cells = renderedRow(row)
+  const currentIndex = cells.findIndex((cell) => cell.column === columnIndex)
+
+  if (currentIndex < 0) return null
+
+  const nextCell = cells[currentIndex + direction]
+
+  if (nextCell) {
+    return {
+      row: rowIndex,
+      column: nextCell.column,
+    }
+  }
+
+  const adjacentRowIndex = rowIndex + direction
+  const adjacentRow = document.value.rows[adjacentRowIndex]
+
+  if (!adjacentRow) return null
+
+  const adjacentCells = renderedRow(adjacentRow)
+  const edgeCell = direction === 1 ? adjacentCells[0] : adjacentCells[adjacentCells.length - 1]
+
+  if (!edgeCell) return null
+
+  return {
+    row: adjacentRowIndex,
+    column: edgeCell.column,
+  }
+}
+
 async function onTab(event: KeyboardEvent, rowIndex: number, columnIndex: number) {
   if (props.disabled || event.isComposing || event.ctrlKey || event.metaKey || event.altKey) {
     return
@@ -729,21 +768,8 @@ async function onTab(event: KeyboardEvent, rowIndex: number, columnIndex: number
     return
   }
 
-  const cells = document.value.rows.flatMap((row, rowIndex) =>
-    renderedRow(row).map((cell) => ({
-      row: rowIndex,
-      column: cell.column,
-    })),
-  )
-
-  const currentIndex = cells.findIndex(
-    (cell) => cell.row === rowIndex && cell.column === columnIndex,
-  )
-
-  if (currentIndex < 0) return
-
   const direction = event.shiftKey ? -1 : 1
-  const target = cells[currentIndex + direction]
+  const target = findTabTarget(rowIndex, columnIndex, direction)
 
   // Shift+Tab ở ô đầu vẫn dùng thứ tự focus của trình duyệt.
   if (!target && direction === -1) return
@@ -782,6 +808,36 @@ async function onTab(event: KeyboardEvent, rowIndex: number, columnIndex: number
 
   matrix.select(target.row, target.column)
   input.focus()
+}
+
+async function onEscape(event: KeyboardEvent, row: number, column: number) {
+  if (
+    props.disabled ||
+    event.isComposing ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.altKey ||
+    event.shiftKey ||
+    document.value.rows[row]?.[column]
+  ) {
+    return
+  }
+
+  const key = cellKey(row, column)
+
+  // Tính cả bản nhập vừa bị xóa hết ký tự.
+  const hasDraft =
+    Object.prototype.hasOwnProperty.call(drafts.value, key) ||
+    draftTypes.value[key] !== undefined ||
+    fieldErrors.value[key] !== undefined
+
+  if (!hasDraft) return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  matrix.select(row, column)
+  await cancelSelectedDraft()
 }
 
 async function cancelSelectedDraft() {
@@ -1147,6 +1203,7 @@ defineExpose({
                       @keydown.enter="onEnter($event, rowIndex, cell.column)"
                       @keydown.space="onSpace($event, rowIndex, cell.column)"
                       @keydown.tab="onTab($event, rowIndex, cell.column)"
+                      @keydown.esc="onEscape($event, rowIndex, cell.column)"
                       @keydown="onArrowKey($event, rowIndex, cell.column)"
                     />
 
