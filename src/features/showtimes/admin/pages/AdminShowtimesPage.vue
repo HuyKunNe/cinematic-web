@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
@@ -11,13 +9,14 @@ import {
   getCinemaDateKey,
   getCinemaDayRange,
 } from '@/utils/cinema-time'
+import { computed, ref, watch } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import { useAdminShowtimeMoviesQuery, useAdminShowtimesQuery } from '../api/admin-showtime-queries'
 import {
   showtimeErrorMessage,
   showtimeStatusLabels,
   showtimeStatusOptions,
 } from '../schemas/admin-showtime.schema'
-
 const PAGE_SIZE = 20
 const DAY_MILLISECONDS = 24 * 60 * 60 * 1000
 
@@ -31,7 +30,14 @@ function today() {
   return getCinemaDateKey(new Date().toISOString())
 }
 
-const date = ref(today())
+const route = useRoute()
+
+const linkedDate =
+  typeof route.query.date === 'string' && getCinemaDayRange(route.query.date) !== null
+    ? route.query.date
+    : today()
+
+const date = ref(linkedDate)
 const search = ref('')
 const cinemaId = ref('')
 const roomId = ref('')

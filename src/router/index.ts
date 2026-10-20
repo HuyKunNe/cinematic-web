@@ -22,6 +22,8 @@ const loadAdminRoomLayoutPage = () =>
   import('../features/rooms/admin/pages/AdminRoomLayoutPage.vue')
 const loadAdminShowtimesPage = () =>
   import('../features/showtimes/admin/pages/AdminShowtimesPage.vue')
+const loadAdminShowtimeCreatePage = () =>
+  import('../features/showtimes/admin/pages/AdminShowtimeCreatePage.vue')
 const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.HOME,
@@ -268,8 +270,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_SHOWTIME_CREATE,
     name: ROUTE_NAMES.ADMIN_SHOWTIME_CREATE,
-    component: loadAdminReferencePage,
-    props: { module: 'showtime-form' },
+    component: loadAdminShowtimeCreatePage,
     meta: {
       layout: 'admin',
       title: 'Tạo suất chiếu',
