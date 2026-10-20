@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { RoomLayoutResponse } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
+import { useCopyAdminRoomMatrixDraftMutation } from '../api/admin-room-matrix-copy.ts'
+import { usePublishAdminRoomMatrixMutation } from '../api/admin-room-matrix-publication'
 import {
   useAdminRoomMatrixContentQuery,
   useAdminRoomMatrixLayoutsQuery,
@@ -26,7 +28,6 @@ import {
 } from '../mappers/admin-room-matrix.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
-import { usePublishAdminRoomMatrixMutation } from '../api/admin-room-matrix-publication'
 
 const route = useRoute()
 const router = useRouter()
@@ -93,6 +94,7 @@ const createDraft = useCreateAdminRoomMatrixDraftMutation()
 const saveMatrix = useSaveAdminRoomMatrixMutation()
 
 const publishMatrix = usePublishAdminRoomMatrixMutation()
+const copyDraft = useCopyAdminRoomMatrixDraftMutation()
 
 const layouts = computed(() => (current.value ? (versions.data.value ?? []) : []))
 
@@ -101,7 +103,8 @@ const busy = computed(
     opening.value ||
     createDraft.isPending.value ||
     saveMatrix.isPending.value ||
-    publishMatrix.isPending.value,
+    publishMatrix.isPending.value ||
+    copyDraft.isPending.value,
 )
 
 const dirty = computed(() => {
@@ -122,6 +125,15 @@ const canCreate = computed(
     !versions.isFetching.value &&
     !versions.isError.value &&
     !creationBlocked.value,
+)
+
+const canCopyPublished = computed(
+  () =>
+    canCreate.value &&
+    !reloadRequired.value &&
+    !dirty.value &&
+    loadedLayout.value?.status === 'PUBLISHED' &&
+    Boolean(initialDocument.value),
 )
 
 const canSave = computed(
@@ -368,6 +380,71 @@ async function createVersion() {
 
     creationBlocked.value = uncertainWrite(error)
     errorMessage.value = adminRoomErrorMessage(error, 'Không thể tạo bản nháp.')
+  }
+}
+
+async function copyPublishedVersion() {
+  if (!canCopyPublished.value || !loadedLayout.value || !initialDocument.value) {
+    return
+  }
+
+  const requestedRoomId = roomId.value
+  const source = loadedLayout.value
+  const document = initialDocument.value
+  const token = scope
+
+  errorMessage.value = ''
+  notice.value = ''
+
+  try {
+    const copied = await copyDraft.mutateAsync({
+      roomId: requestedRoomId,
+      source,
+      document,
+    })
+
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    // API đã trả đầy đủ content được kiểm tra.
+    // Mở trực tiếp bản sao, không cần thêm một GET.
+    scope += 1
+
+    loadedLayout.value = copied.content.layout
+    pickedId.value = copied.content.layout.id
+    queryLayoutId.value = copied.content.layout.id
+
+    initialDocument.value = copied.document
+    workingDocument.value = copied.document
+    baselineKey.value = adminRoomMatrixKey(copied.document)
+
+    pendingInput.value = false
+    reloadRequired.value = false
+    matrixConversionBlocked.value = false
+    creationBlocked.value = false
+    editorGeneration.value += 1
+
+    notice.value =
+      `Đã tạo bản nháp phiên bản ${copied.content.layout.layoutVersion} ` +
+      `từ phiên bản ${source.layoutVersion}.`
+  } catch (error) {
+    if (token !== scope || requestedRoomId !== roomId.value) return
+
+    creationBlocked.value = uncertainWrite(error)
+
+    if (requiresLayoutReload(error)) {
+      reloadRequired.value = true
+    }
+
+    errorMessage.value = adminRoomErrorMessage(
+      error,
+      'Không thể tạo bản nháp từ phiên bản đã xuất bản.',
+    )
+
+    if (creationBlocked.value) {
+      notice.value =
+        'Chưa xác nhận được kết quả tạo bản sao. ' +
+        'Tải danh sách phiên bản và kiểm tra trước khi tạo thêm.'
+    }
   }
 }
 
@@ -784,7 +861,17 @@ onBeforeRouteUpdate(confirmLeave)
               :loading="createDraft.isPending.value"
               @click="createVersion"
             >
-              Tạo bản nháp
+              Tạo bản nháp trống
+            </AppButton>
+
+            <AppButton
+              v-if="loadedLayout?.status === 'PUBLISHED' && initialDocument"
+              variant="secondary"
+              :disabled="!canCopyPublished"
+              :loading="copyDraft.isPending.value"
+              @click="copyPublishedVersion"
+            >
+              Tạo bản nháp từ phiên bản này
             </AppButton>
           </div>
         </div>
