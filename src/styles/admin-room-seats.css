@@ -16,7 +16,6 @@
   --seatmap-legend-dot-size: 0.75rem;
   --seatmap-premium-tint: 18%;
   --seatmap-blocked-tint: 20%;
-  --seatmap-source-opacity: 0.64;
   --seatmap-stage-letter-spacing: 0.18em;
 }
 
@@ -114,6 +113,16 @@
 :where([data-reference='admin-room-seats']) .seatmap-action:hover {
   border-color: var(--admin-accent);
   background: var(--admin-surface-hover);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-content {
+  display: grid;
+  justify-items: center;
+  width: max(
+    var(--seatmap-map-min-width),
+    calc(var(--seatmap-column-count) * var(--seatmap-cell-width) + var(--seatmap-column-gap))
+  );
+  min-width: 100%;
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-action:focus-visible,
@@ -222,11 +231,7 @@
 }
 
 :where([data-reference='admin-room-seats']) button.seatmap-cell {
-  cursor: grab;
-}
-
-:where([data-reference='admin-room-seats']) button.seatmap-cell:active {
-  cursor: grabbing;
+  cursor: pointer;
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-cell.is-standard,
@@ -259,15 +264,6 @@
   border-color: var(--admin-focus);
   color: var(--admin-bg);
   background: var(--admin-focus);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-drag-source {
-  opacity: var(--seatmap-source-opacity);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-drop-target {
-  outline: var(--focus-ring-width) dashed var(--admin-accent);
-  outline-offset: var(--space-1);
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-cell--empty,
@@ -531,11 +527,6 @@
   height: var(--seatmap-cell-height);
 }
 
-:where([data-reference='admin-room-seats']) button.seatmap-cell,
-:where([data-reference='admin-room-seats']) button.seatmap-cell:active {
-  cursor: pointer;
-}
-
 :where([data-reference='admin-room-seats']) .seatmap-cell.is-couple,
 :where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-couple {
   border-color: var(--color-primary);
@@ -585,4 +576,19 @@
 :where([data-reference='admin-room-seats']) .seatmap-action:hover:disabled {
   border-color: var(--admin-border);
   background: var(--admin-surface-raised);
+}
+
+:where([data-reference='admin-room-seats']) {
+  --seatmap-couple-span: 2;
+  --seatmap-couple-slot-width: calc(var(--seatmap-cell-width) * var(--seatmap-couple-span));
+  --seatmap-couple-seat-width: calc(var(--seatmap-couple-slot-width) - var(--seatmap-column-gap));
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-slot.is-couple {
+  grid-column: span var(--seatmap-couple-span);
+  width: var(--seatmap-couple-slot-width);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-cell.is-couple {
+  width: var(--seatmap-couple-seat-width);
 }

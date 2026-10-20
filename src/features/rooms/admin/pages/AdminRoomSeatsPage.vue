@@ -427,7 +427,7 @@ async function changeActivity() {
                 aria-describedby="seatmap-help"
                 tabindex="0"
               >
-                <div class="seatmap-canvas-content">
+                <div class="seatmap-content">
                   <div class="seatmap-stage"><span>MÀN HÌNH</span></div>
 
                   <div v-for="row in catalog.matrix.rows" :key="row.label" class="seatmap-row">
@@ -577,20 +577,3 @@ async function changeActivity() {
     </template>
   </section>
 </template>
-
-<style scoped>
-:where([data-reference='admin-room-seats']) {
-  --seatmap-couple-span: 2;
-  --seatmap-couple-slot-width: calc(var(--seatmap-cell-width) * var(--seatmap-couple-span));
-  --seatmap-couple-seat-width: calc(var(--seatmap-couple-slot-width) - var(--seatmap-column-gap));
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-slot.is-couple {
-  grid-column: span var(--seatmap-couple-span);
-  width: var(--seatmap-couple-slot-width);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-couple {
-  width: var(--seatmap-couple-seat-width);
-}
-</style>
