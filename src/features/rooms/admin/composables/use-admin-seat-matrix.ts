@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import type { SeatResponseSeatType } from '@/services/api/generated/inventory-service/model/seatResponseSeatType'
+import { adminSeatCapacity } from '../schemas/admin-seat-type-options'
 
 export type MatrixSeat = {
   seatId?: string
@@ -182,6 +183,7 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
       rows: document.value.rows.length,
       columns: document.value.columns,
       seats: 0,
+      capacity: 0,
       occupied: 0,
       empty: 0,
       STANDARD: 0,
@@ -195,12 +197,14 @@ export function useAdminSeatMatrix(initialDocument?: SeatMatrixDocument) {
         if (!seat) continue
 
         counts.seats += 1
+        counts.capacity += adminSeatCapacity(seat.seatType)
         counts.occupied += matrixSeatSpan(seat)
         counts[seat.seatType] += 1
       }
     }
 
     counts.empty = counts.rows * counts.columns - counts.occupied
+
     return counts
   })
 

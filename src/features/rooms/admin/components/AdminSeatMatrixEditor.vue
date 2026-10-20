@@ -1248,8 +1248,8 @@ defineExpose({
 
         <footer>
           <span>
-            {{ statistics.rows }} hàng · {{ statistics.columns }} cột · {{ statistics.empty }} ô
-            trống
+            {{ statistics.rows }} hàng · {{ statistics.columns }} cột · {{ statistics.seats }} ghế ·
+            {{ statistics.capacity }} chỗ · {{ statistics.empty }} ô trống
           </span>
           <span> ↑ ↓ ← → di chuyển · Space điền ghế · Tab ô tiếp theo · Enter xác nhận </span>
         </footer>

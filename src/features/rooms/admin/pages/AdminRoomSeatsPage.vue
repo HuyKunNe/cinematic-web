@@ -569,6 +569,15 @@ async function changeActivity() {
                   <dt>Ô trống</dt>
                   <dd>{{ catalog.matrix.emptyCount }}</dd>
                 </div>
+                <div>
+                  <dt>Tổng số chỗ</dt>
+                  <dd>{{ catalog.matrix.capacity }}</dd>
+                </div>
+
+                <div>
+                  <dt>Chỗ đang hoạt động</dt>
+                  <dd>{{ catalog.matrix.activeCapacity }}</dd>
+                </div>
               </dl>
             </template>
           </aside>

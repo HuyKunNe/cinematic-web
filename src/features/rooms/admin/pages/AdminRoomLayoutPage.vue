@@ -78,6 +78,7 @@ const reloadRequired = ref(false)
 const creationBlocked = ref(false)
 const errorMessage = ref('')
 const notice = ref('')
+const matrixConversionBlocked = ref(false)
 
 let scope = 0
 
@@ -121,6 +122,7 @@ const canSave = computed(
     ready.value &&
     !busy.value &&
     !reloadRequired.value &&
+    !matrixConversionBlocked.value &&
     loadedLayout.value?.status === 'DRAFT' &&
     Boolean(workingDocument.value) &&
     dirty.value,
@@ -140,6 +142,7 @@ function resetRoomState() {
   creationBlocked.value = false
   errorMessage.value = ''
   notice.value = ''
+  matrixConversionBlocked.value = false
 }
 
 watch([roomId, canManage], resetRoomState, { flush: 'sync' })
@@ -202,20 +205,35 @@ async function loadVersion(layoutId: string) {
 
     const useDefaultMatrix = storedDocument === null && result.data.layout.status === 'DRAFT'
 
+    const conversionBlocked =
+      useDefaultMatrix && (result.data.seats.length > 0 || result.data.elements.length > 0)
+
     const document = useDefaultMatrix ? createEmptySeatMatrix() : storedDocument
+
+    const defaultNeedsSaving = useDefaultMatrix && !conversionBlocked
 
     loadedLayout.value = result.data.layout
     pickedId.value = layoutId
     initialDocument.value = document
     workingDocument.value = document
-    baselineKey.value = storedDocument ? adminRoomMatrixKey(storedDocument) : ''
+    matrixConversionBlocked.value = conversionBlocked
+
+    baselineKey.value = document && !defaultNeedsSaving ? adminRoomMatrixKey(document) : ''
+
     pendingInput.value = false
     reloadRequired.value = false
     editorGeneration.value += 1
 
-    notice.value = useDefaultMatrix
-      ? `Đã mở phiên bản ${result.data.layout.layoutVersion} với ma trận mặc định 6 × 6.`
-      : `Đã mở phiên bản ${result.data.layout.layoutVersion}.`
+    if (conversionBlocked) {
+      notice.value =
+        'Phiên bản này có sơ đồ cũ đã chứa dữ liệu. ' +
+        'Ma trận 6 × 6 đang hiển thị chỉ là bản xem trước. ' +
+        'Hãy tạo bản nháp mới để thiết kế ma trận.'
+    } else {
+      notice.value = useDefaultMatrix
+        ? `Đã mở phiên bản ${result.data.layout.layoutVersion} với ma trận mặc định 6 × 6.`
+        : `Đã mở phiên bản ${result.data.layout.layoutVersion}.`
+    }
   } catch (error) {
     if (token !== scope || requestedRoomId !== roomId.value) return
 
@@ -611,7 +629,7 @@ onBeforeRouteUpdate(confirmLeave)
           :key="`${roomId}:${editorGeneration}`"
           ref="editor"
           :initial-document="initialDocument"
-          :disabled="!ready || busy || loadedLayout.status !== 'DRAFT'"
+          :disabled="!ready || busy || matrixConversionBlocked || loadedLayout.status !== 'DRAFT'"
           @change="onMatrixChanged"
           @pending="pendingInput = $event"
         />

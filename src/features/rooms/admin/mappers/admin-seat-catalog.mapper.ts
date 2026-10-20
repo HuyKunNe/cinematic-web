@@ -1,5 +1,5 @@
 import type { SeatResponse } from '@/services/api/generated/inventory-service/model'
-import { adminSeatTypeOptions } from '../schemas/admin-seat-type-options'
+import { adminSeatCapacity, adminSeatTypeOptions } from '../schemas/admin-seat-type-options'
 
 export type ManagedSeat = SeatResponse & {
   id: string
@@ -27,6 +27,8 @@ export interface SeatCatalogMatrix {
   occupiedCount: number
   emptyCount: number
   inactiveCount: number
+  capacity: number
+  activeCapacity: number
 }
 
 export function isRoomSeatUuid(value: unknown): value is string {
@@ -146,6 +148,18 @@ export function mapAdminSeatCatalog(
 
     rows.push({ label, cells })
   }
+  let capacity = 0
+  let activeCapacity = 0
+
+  for (const seat of seats) {
+    const seatCapacity = adminSeatCapacity(seat.seatType)
+
+    capacity += seatCapacity
+
+    if (seat.active) {
+      activeCapacity += seatCapacity
+    }
+  }
 
   return {
     rows,
@@ -154,5 +168,7 @@ export function mapAdminSeatCatalog(
     occupiedCount,
     emptyCount: rows.length * columnCount - occupiedCount,
     inactiveCount: seats.filter((seat) => !seat.active).length,
+    capacity,
+    activeCapacity,
   }
 }
