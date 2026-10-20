@@ -1,260 +1,4 @@
-/* Nội dung trang; shell và responsive do stylesheet dùng chung sở hữu. */
-:where([data-reference='admin-room-seats']) {
-  --seatmap-seat-width: 2.5rem;
-  --seatmap-seat-height: 1.875rem;
-  --seatmap-axis-width: 2.5rem;
-  --seatmap-column-gap: 2.5rem;
-  --seatmap-row-gap: 2.5rem;
-  --seatmap-column-count: 0;
-  --seatmap-map-min-width: 42.5rem;
-  --seatmap-stage-height: var(--space-2);
-  --seatmap-stat-min-width: 10rem;
-  --seatmap-panel-gap: var(--space-4);
-  --seatmap-details-min-width: 15rem;
-  --seatmap-details-max-width: 20rem;
-  --seatmap-seat-radius: var(--radius-sm);
-  --seatmap-legend-dot-size: 0.75rem;
-  --seatmap-premium-tint: 18%;
-  --seatmap-blocked-tint: 20%;
-  --seatmap-stage-letter-spacing: 0.18em;
-  --seatmap-scroll-padding: var(--space-4);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-toolbar,
-:where([data-reference='admin-room-seats']) .seatmap-summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
-  gap: var(--admin-space-3);
-  margin-bottom: var(--admin-space-4);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-toolbar {
-  padding: var(--admin-space-4);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--admin-card-radius);
-  background: var(--admin-surface);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-field {
-  display: grid;
-  min-width: var(--seatmap-stat-min-width);
-  gap: var(--admin-space-2);
-  color: var(--admin-text-muted);
-  font-size: var(--font-size-sm);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-stat {
-  display: grid;
-  min-width: var(--seatmap-stat-min-width);
-  flex: 1 1 var(--seatmap-stat-min-width);
-  gap: var(--admin-space-2);
-  padding: var(--admin-space-4);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--admin-card-radius);
-  background: var(--admin-surface);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-stat > span,
-:where([data-reference='admin-room-seats']) .seatmap-details dt {
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-stat strong,
-:where([data-reference='admin-room-seats']) .seatmap-details dd {
-  color: var(--admin-text);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-layout {
-  display: grid;
-  grid-template-columns:
-    minmax(0, 1fr)
-    minmax(var(--seatmap-details-min-width), var(--seatmap-details-max-width));
-  gap: var(--seatmap-panel-gap);
-  align-items: start;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-panel,
-:where([data-reference='admin-room-seats']) .seatmap-details {
-  min-width: 0;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--admin-space-2);
-  margin-block: var(--admin-space-4);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-action {
-  min-height: var(--admin-control-height);
-  padding-inline: var(--admin-space-3);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--admin-control-radius);
-  color: var(--admin-text);
-  background: var(--admin-surface-raised);
-  font: inherit;
-  cursor: pointer;
-  transition:
-    background var(--admin-transition),
-    border-color var(--admin-transition);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-action:hover {
-  border-color: var(--admin-accent);
-  background: var(--admin-surface-hover);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-content {
-  display: grid;
-  justify-items: center;
-  width: max(
-    var(--seatmap-map-min-width),
-    calc(var(--seatmap-column-count) * var(--seatmap-cell-width) + var(--seatmap-column-gap))
-  );
-  min-width: 100%;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-action:focus-visible,
-:where([data-reference='admin-room-seats']) .seatmap-cell:focus-visible,
-:where([data-reference='admin-room-seats']) .seatmap-scroll:focus-visible {
-  outline: var(--focus-ring-width) solid var(--admin-focus);
-  outline-offset: var(--space-1);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--admin-space-3);
-  margin-block: var(--admin-space-4);
-  color: var(--admin-text-muted);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-legend > span {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--admin-space-2);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-legend__dot {
-  width: var(--seatmap-legend-dot-size);
-  height: var(--seatmap-legend-dot-size);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--radius-xs);
-  background: var(--admin-surface-raised);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-scroll {
-  display: block;
-  min-width: 0;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  padding: var(--seatmap-scroll-padding);
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--admin-card-radius);
-  background: var(--admin-bg);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-stage {
-  display: grid;
-  width: 100%;
-  min-width: 0;
-  min-height: var(--seatmap-stage-height);
-  place-items: center;
-  margin: 0 auto var(--admin-space-4);
-  border-top: var(--seatmap-stage-height) solid var(--admin-accent);
-  color: var(--admin-text-subtle);
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-base);
-  letter-spacing: var(--seatmap-stage-letter-spacing);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell {
-  display: grid;
-  width: var(--seatmap-seat-width);
-  height: var(--seatmap-seat-height);
-  box-sizing: border-box;
-  place-items: center;
-  padding: 0;
-  border: var(--admin-border-width) solid var(--admin-border);
-  border-radius: var(--seatmap-seat-radius);
-  color: var(--admin-text);
-  background: var(--admin-surface-raised);
-  font: inherit;
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference='admin-room-seats']) button.seatmap-cell {
-  cursor: pointer;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-standard,
-:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-standard {
-  border-color: var(--admin-success);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-premium,
-:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-premium {
-  border-color: var(--admin-accent);
-  background: color-mix(
-    in srgb,
-    var(--admin-accent) var(--seatmap-premium-tint),
-    var(--admin-surface)
-  );
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-blocked,
-:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-blocked {
-  border-color: var(--admin-danger);
-  background: color-mix(
-    in srgb,
-    var(--admin-danger) var(--seatmap-blocked-tint),
-    var(--admin-surface)
-  );
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-selected,
-:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-selected {
-  border-color: var(--admin-focus);
-  color: var(--admin-bg);
-  background: var(--admin-focus);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell--empty,
-:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-empty {
-  border-style: dashed;
-  border-color: var(--admin-border);
-  background: transparent;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-details dl {
-  display: grid;
-  gap: var(--admin-space-3);
-  margin: var(--admin-space-4) 0;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-details dl > div {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--admin-space-3);
-  padding-bottom: var(--admin-space-3);
-  border-bottom: var(--admin-border-width) solid var(--admin-border);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-details dd {
-  margin: 0;
-  text-align: right;
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-details__subtitle {
-  margin-block: var(--admin-space-6) var(--admin-space-2);
-  color: var(--admin-text);
-  font-size: var(--font-size-md);
-}
-
-/* Adapt the reference page to the existing Vue application. */
+/* Token của trang, ánh xạ từ hệ thống Admin hiện có. */
 :where([data-reference='admin-room-seats']) {
   --admin-bg: var(--color-background);
   --admin-surface: var(--color-surface);
@@ -282,16 +26,36 @@
 
   --seatmap-seat-width: 40px;
   --seatmap-seat-height: 30px;
+  --seatmap-axis-width: 2.5rem;
   --seatmap-column-gap: 40px;
   --seatmap-row-gap: 40px;
+  --seatmap-column-count: 0;
+  --seatmap-map-min-width: 42.5rem;
+  --seatmap-stage-height: var(--space-2);
+  --seatmap-stat-min-width: 10rem;
+  --seatmap-panel-gap: var(--space-4);
+  --seatmap-details-min-width: 15rem;
+  --seatmap-details-max-width: 20rem;
+  --seatmap-seat-radius: var(--radius-sm);
+  --seatmap-legend-dot-size: 0.75rem;
+  --seatmap-premium-tint: 18%;
+  --seatmap-blocked-tint: 20%;
+  --seatmap-stage-letter-spacing: 0.18em;
+  --seatmap-scroll-padding: var(--space-4);
+
   --seatmap-cell-width: calc(var(--seatmap-seat-width) + var(--seatmap-column-gap));
   --seatmap-cell-height: calc(var(--seatmap-seat-height) + var(--seatmap-row-gap));
   --seatmap-stage-label-height: calc(var(--font-size-xs) * var(--line-height-base));
   --seatmap-stage-offset: calc(
     var(--seatmap-stage-height) + var(--seatmap-stage-label-height) + var(--space-4)
   );
+
+  --seatmap-couple-span: 2;
+  --seatmap-couple-slot-width: calc(var(--seatmap-cell-width) * var(--seatmap-couple-span));
+  --seatmap-couple-seat-width: calc(var(--seatmap-couple-slot-width) - var(--seatmap-column-gap));
 }
 
+/* Tiêu đề trang. */
 :where([data-reference='admin-room-seats']).room-seats-page {
   min-width: 0;
   font-family: var(--font-family-base);
@@ -335,6 +99,31 @@
   white-space: nowrap;
 }
 
+/* Bộ chọn phòng và thống kê. */
+:where([data-reference='admin-room-seats']) .seatmap-toolbar,
+:where([data-reference='admin-room-seats']) .seatmap-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--admin-space-3);
+  margin-bottom: var(--admin-space-4);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-toolbar {
+  padding: var(--admin-space-4);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--admin-card-radius);
+  background: var(--admin-surface);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-field {
+  display: grid;
+  min-width: var(--seatmap-stat-min-width);
+  gap: var(--admin-space-2);
+  color: var(--admin-text-muted);
+  font-size: var(--font-size-sm);
+}
+
 :where([data-reference='admin-room-seats']) .seatmap-field input,
 :where([data-reference='admin-room-seats']) .seatmap-field select {
   width: 100%;
@@ -352,37 +141,26 @@
   border-color: var(--color-error);
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-panel {
-  min-width: 0;
-  padding: var(--space-5);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--admin-reference-panel-shadow);
+:where([data-reference='admin-room-seats']) .seatmap-stat {
+  display: grid;
+  min-width: var(--seatmap-stat-min-width);
+  flex: 1 1 var(--seatmap-stat-min-width);
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-4);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--admin-card-radius);
+  background: var(--admin-surface);
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-panel-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-panel-heading h2 {
-  margin: 0;
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-panel-heading p {
-  margin: var(--space-1) 0 0;
-  color: var(--color-text-secondary);
+:where([data-reference='admin-room-seats']) .seatmap-stat > span,
+:where([data-reference='admin-room-seats']) .seatmap-details dt {
+  color: var(--admin-text-subtle);
   font-size: var(--font-size-xs);
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-stat strong {
+:where([data-reference='admin-room-seats']) .seatmap-stat strong,
+:where([data-reference='admin-room-seats']) .seatmap-details dd {
+  color: var(--admin-text);
   overflow-wrap: anywhere;
 }
 
@@ -409,6 +187,108 @@
   color: var(--color-warning);
 }
 
+/* Panel và thao tác. */
+:where([data-reference='admin-room-seats']) .seatmap-layout {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(var(--seatmap-details-min-width), var(--seatmap-details-max-width));
+  gap: var(--seatmap-panel-gap);
+  align-items: start;
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-panel {
+  min-width: 0;
+  padding: var(--space-5);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--admin-reference-panel-shadow);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-details {
+  min-width: 0;
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-panel-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-panel-heading h2 {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-panel-heading p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--admin-space-2);
+  margin-block: var(--admin-space-4);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-action {
+  min-height: var(--admin-control-height);
+  padding-inline: var(--admin-space-3);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--admin-control-radius);
+  color: var(--admin-text);
+  background: var(--admin-surface-raised);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background var(--admin-transition),
+    border-color var(--admin-transition);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-action:hover {
+  border-color: var(--admin-accent);
+  background: var(--admin-surface-hover);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-action:focus-visible,
+:where([data-reference='admin-room-seats']) .seatmap-cell:focus-visible,
+:where([data-reference='admin-room-seats']) .seatmap-scroll:focus-visible {
+  outline: var(--focus-ring-width) solid var(--admin-focus);
+  outline-offset: var(--space-1);
+}
+
+/* Chú giải. */
+:where([data-reference='admin-room-seats']) .seatmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--admin-space-3);
+  margin-block: var(--admin-space-4);
+  color: var(--admin-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-space-2);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-legend__dot {
+  width: var(--seatmap-legend-dot-size);
+  height: var(--seatmap-legend-dot-size);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--radius-xs);
+  background: var(--admin-surface-raised);
+}
+
+/* Vùng hiển thị sơ đồ. */
 :where([data-reference='admin-room-seats']) .seatmap-viewport {
   display: grid;
   grid-template-columns: var(--seatmap-axis-width) minmax(0, 1fr);
@@ -431,6 +311,41 @@
   overflow-wrap: anywhere;
 }
 
+:where([data-reference='admin-room-seats']) .seatmap-scroll {
+  display: block;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: var(--seatmap-scroll-padding);
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--admin-card-radius);
+  background: var(--admin-bg);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-content {
+  display: grid;
+  justify-items: center;
+  width: max(
+    var(--seatmap-map-min-width),
+    calc(var(--seatmap-column-count) * var(--seatmap-cell-width) + var(--seatmap-column-gap))
+  );
+  min-width: 100%;
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-stage {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--seatmap-stage-height);
+  place-items: center;
+  margin: 0 auto var(--admin-space-4);
+  border-top: var(--seatmap-stage-height) solid var(--admin-accent);
+  color: var(--admin-text-subtle);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
+  letter-spacing: var(--seatmap-stage-letter-spacing);
+}
+
 :where([data-reference='admin-room-seats']) .seatmap-stage > span {
   display: block;
   height: var(--seatmap-stage-label-height);
@@ -449,10 +364,54 @@
   height: var(--seatmap-cell-height);
 }
 
+:where([data-reference='admin-room-seats']) .seatmap-slot.is-couple {
+  grid-column: span var(--seatmap-couple-span);
+  width: var(--seatmap-couple-slot-width);
+}
+
+/* Ghế và loại ghế. */
+:where([data-reference='admin-room-seats']) .seatmap-cell {
+  display: grid;
+  width: var(--seatmap-seat-width);
+  height: var(--seatmap-seat-height);
+  box-sizing: border-box;
+  place-items: center;
+  padding: 0;
+  border: var(--admin-border-width) solid var(--admin-border);
+  border-radius: var(--seatmap-seat-radius);
+  color: var(--admin-text);
+  background: var(--admin-surface-raised);
+  font: inherit;
+  font-size: var(--font-size-xs);
+}
+
+:where([data-reference='admin-room-seats']) button.seatmap-cell {
+  cursor: pointer;
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-cell.is-standard,
+:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-standard {
+  border-color: var(--admin-success);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-cell.is-premium,
+:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-premium {
+  border-color: var(--admin-accent);
+  background: color-mix(
+    in srgb,
+    var(--admin-accent) var(--seatmap-premium-tint),
+    var(--admin-surface)
+  );
+}
+
 :where([data-reference='admin-room-seats']) .seatmap-cell.is-couple,
 :where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-couple {
   border-color: var(--color-primary);
   border-width: var(--border-width-strong);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-cell.is-couple {
+  width: var(--seatmap-couple-seat-width);
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-cell.is-accessible,
@@ -461,16 +420,55 @@
   border-style: double;
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-blocked {
-  border-color: var(--color-error);
+/* Trạng thái được áp dụng sau kiểu ghế. */
+:where([data-reference='admin-room-seats']) .seatmap-cell.is-blocked,
+:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-blocked {
+  border-color: var(--admin-danger);
+  background: color-mix(
+    in srgb,
+    var(--admin-danger) var(--seatmap-blocked-tint),
+    var(--admin-surface)
+  );
 }
 
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-selected {
-  border-color: var(--color-focus);
+:where([data-reference='admin-room-seats']) .seatmap-cell.is-selected,
+:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-selected {
+  border-color: var(--admin-focus);
+  color: var(--admin-bg);
+  background: var(--admin-focus);
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-cell--empty,
+:where([data-reference='admin-room-seats']) .seatmap-legend__dot.is-empty {
+  border-style: dashed;
+  border-color: var(--admin-border);
+  background: transparent;
+}
+
+/* Chi tiết và thông báo. */
+:where([data-reference='admin-room-seats']) .seatmap-details dl {
+  display: grid;
+  gap: var(--admin-space-3);
+  margin: var(--admin-space-4) 0;
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-details dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--admin-space-3);
+  padding-bottom: var(--admin-space-3);
+  border-bottom: var(--admin-border-width) solid var(--admin-border);
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-details dd {
-  overflow-wrap: anywhere;
+  margin: 0;
+  text-align: right;
+}
+
+:where([data-reference='admin-room-seats']) .seatmap-details__subtitle {
+  margin-block: var(--admin-space-6) var(--admin-space-2);
+  color: var(--admin-text);
+  font-size: var(--font-size-md);
 }
 
 :where([data-reference='admin-room-seats']) .seatmap-muted {
@@ -498,19 +496,4 @@
 :where([data-reference='admin-room-seats']) .seatmap-action:hover:disabled {
   border-color: var(--admin-border);
   background: var(--admin-surface-raised);
-}
-
-:where([data-reference='admin-room-seats']) {
-  --seatmap-couple-span: 2;
-  --seatmap-couple-slot-width: calc(var(--seatmap-cell-width) * var(--seatmap-couple-span));
-  --seatmap-couple-seat-width: calc(var(--seatmap-couple-slot-width) - var(--seatmap-column-gap));
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-slot.is-couple {
-  grid-column: span var(--seatmap-couple-span);
-  width: var(--seatmap-couple-slot-width);
-}
-
-:where([data-reference='admin-room-seats']) .seatmap-cell.is-couple {
-  width: var(--seatmap-couple-seat-width);
 }

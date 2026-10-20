@@ -24,6 +24,42 @@ export const adminRoomSchema = z.object({
 export type AdminRoomValues = z.infer<typeof adminRoomSchema>
 export type AdminRoomField = keyof AdminRoomValues
 
+const layoutErrorMessages = new Map<string, string>([
+  [
+    'INVENTORY_ROOM_LAYOUT_DATA_INVALID',
+    'Ma trận chưa hợp lệ. Kiểm tra hàng, cột, số ghế và ô dành cho ghế đôi.',
+  ],
+  [
+    'INVENTORY_ROOM_LAYOUT_SEAT_ROOM_MISMATCH',
+    'Có ghế trong sơ đồ không thuộc phòng đang chỉnh sửa.',
+  ],
+  [
+    'INVENTORY_ROOM_LAYOUT_NOT_DRAFT',
+    'Phiên bản này không còn là bản nháp. Mở lại để xem trạng thái hiện tại.',
+  ],
+  [
+    'INVENTORY_ROOM_LAYOUT_NOT_FOUND',
+    'Phiên bản sơ đồ không còn tồn tại. Hãy tải lại danh sách phiên bản.',
+  ],
+  ['INVENTORY_ROOM_LAYOUT_VERSION_EXHAUSTED', 'Phòng đã đạt giới hạn phiên bản sơ đồ.'],
+  [
+    'INVENTORY_ROOM_LAYOUT_VERSION_CONFLICT',
+    'Sơ đồ đã được cập nhật. Mở lại phiên bản trước khi lưu tiếp.',
+  ],
+  [
+    'INVENTORY_ROOM_LAYOUT_DUPLICATE_SEAT',
+    'Một ghế trong danh mục đang được liên kết với nhiều vị trí trong sơ đồ.',
+  ],
+  [
+    'INVENTORY_ROOM_LAYOUT_MATRIX_CONVERSION_REQUIRED',
+    'Phiên bản này dùng sơ đồ cũ. Hãy tạo bản nháp ma trận mới để tiếp tục.',
+  ],
+  [
+    'INVENTORY_ROOM_LAYOUT_MATRIX_PUBLICATION_PENDING',
+    'Chưa hỗ trợ xuất bản ma trận. Bạn vẫn có thể lưu bản nháp.',
+  ],
+])
+
 export function createAdminRoomValues(room?: RoomResponse): AdminRoomValues {
   const type = adminRoomSchema.shape.roomType.safeParse(room?.roomType)
 
@@ -66,13 +102,21 @@ export function isAdminRoomApiError(error: unknown): error is ApiError {
 }
 
 export function adminRoomErrorMessage(error: unknown, fallback = 'Không thể tải thông tin phòng.') {
-  if (isAdminRoomApiError(error)) {
-    if (error.status === 401) return 'Phiên đăng nhập đã hết hạn.'
-    if (error.status === 403) return 'Không đủ quyền quản lý phòng.'
-    if (error.status === 404) return 'Rạp hoặc phòng không còn tồn tại.'
-    if (error.status === null) return 'Không thể kết nối dịch vụ.'
-    return error.message || fallback
+  if (!isAdminRoomApiError(error)) {
+    return error instanceof Error ? error.message : fallback
   }
 
-  return error instanceof Error ? error.message : fallback
+  if (error.status === 401) return 'Phiên đăng nhập đã hết hạn.'
+  if (error.status === 403) return 'Không đủ quyền quản lý phòng.'
+  if (error.status === null) return 'Không thể kết nối dịch vụ.'
+
+  const layoutMessage = error.code ? layoutErrorMessages.get(error.code) : undefined
+
+  if (layoutMessage) return layoutMessage
+
+  if (error.status === 404) {
+    return 'Rạp hoặc phòng không còn tồn tại.'
+  }
+
+  return error.message || fallback
 }

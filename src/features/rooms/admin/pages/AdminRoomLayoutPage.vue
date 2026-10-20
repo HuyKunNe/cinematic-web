@@ -123,16 +123,6 @@ const canSave = computed(
     dirty.value,
 )
 
-watch(
-  layouts,
-  (value) => {
-    if (!pickedId.value && value[0]) {
-      pickedId.value = value[0].id
-    }
-  },
-  { immediate: true },
-)
-
 function resetRoomState() {
   scope += 1
   pickedId.value = ''
@@ -164,6 +154,21 @@ function uncertainWrite(error: unknown) {
   if (!isAdminRoomApiError(error)) return true
 
   return error.status === null || error.status === 408 || error.status >= 500
+}
+
+function requiresLayoutReload(error: unknown) {
+  if (!isAdminRoomApiError(error)) return true
+
+  if (uncertainWrite(error) || error.status === 404 || error.status === 409) {
+    return true
+  }
+
+  return [
+    'INVENTORY_ROOM_LAYOUT_NOT_FOUND',
+    'INVENTORY_ROOM_LAYOUT_NOT_DRAFT',
+    'INVENTORY_ROOM_LAYOUT_VERSION_CONFLICT',
+    'INVENTORY_ROOM_LAYOUT_MATRIX_CONVERSION_REQUIRED',
+  ].includes(error.code ?? '')
 }
 
 async function loadVersion(layoutId: string) {
@@ -218,6 +223,28 @@ async function openVersion(layoutId: string) {
   await loadVersion(layoutId)
 }
 
+async function onVersionChange(event: Event) {
+  const select = event.target
+
+  if (!(select instanceof HTMLSelectElement)) return
+
+  const requestedId = select.value
+
+  // Giữ dropdown khớp với nội dung hiện tại cho đến khi mở thành công.
+  select.value = pickedId.value
+
+  if (!ready.value || busy.value || versions.isFetching.value || !isRoomSeatUuid(requestedId)) {
+    return
+  }
+
+  await openVersion(requestedId)
+
+  // Bao gồm trường hợp hủy xác nhận hoặc tải phiên bản thất bại.
+  if (select.isConnected) {
+    select.value = pickedId.value
+  }
+}
+
 async function createVersion() {
   if (!canCreate.value || !confirmDiscard()) return
 
@@ -232,9 +259,8 @@ async function createVersion() {
 
     if (token !== scope || requestedRoomId !== roomId.value) return
 
-    // Nếu bước đọc nội dung lỗi, chọn mở lại ID vừa tạo;
-    // không tự gửi lại POST.
-    pickedId.value = created.id
+    // Bản nháp vừa tạo đã được thêm vào danh sách.
+    // Chỉ cập nhật lựa chọn sau khi đọc nội dung thành công.
     await loadVersion(created.id)
   } catch (error) {
     if (token !== scope || requestedRoomId !== roomId.value) return
@@ -251,13 +277,41 @@ async function refreshVersions() {
   const token = scope
 
   errorMessage.value = ''
+  notice.value = ''
 
   try {
-    await versions.refetch({ throwOnError: true })
+    const result = await versions.refetch({ throwOnError: true })
 
     if (token !== scope || requestedRoomId !== roomId.value) return
 
+    if (!result.data) {
+      throw new Error('Không nhận được danh sách phiên bản.')
+    }
+
     creationBlocked.value = false
+
+    // Không đối chiếu giữa lúc đang mở hoặc lưu một phiên bản.
+    const opened = loadedLayout.value
+
+    if (opened && !busy.value) {
+      const latest = result.data.find((layout) => layout.id === opened.id)
+
+      if (!latest) {
+        reloadRequired.value = true
+        notice.value =
+          'Phiên bản đang mở không còn trong danh sách. ' +
+          'Nội dung đang chỉnh vẫn được giữ trên trang.'
+        return
+      }
+
+      if (latest.version > opened.version || latest.status !== opened.status) {
+        reloadRequired.value = true
+        notice.value =
+          'Phiên bản đang mở đã thay đổi trên máy chủ. ' + 'Mở lại phiên bản trước khi lưu tiếp.'
+        return
+      }
+    }
+
     notice.value = 'Đã cập nhật danh sách phiên bản.'
   } catch (error) {
     if (token !== scope || requestedRoomId !== roomId.value) return
@@ -315,9 +369,7 @@ async function saveDraft() {
   } catch (error) {
     if (token !== scope || requestedRoomId !== roomId.value) return
 
-    reloadRequired.value =
-      uncertainWrite(error) || (isAdminRoomApiError(error) && error.status === 409)
-
+    reloadRequired.value = requiresLayoutReload(error)
     errorMessage.value = adminRoomErrorMessage(error, 'Không thể lưu bản nháp.')
   }
 }
@@ -478,8 +530,9 @@ onBeforeRouteUpdate(confirmLeave)
           <div class="room-matrix-page__actions">
             <select
               id="room-layout-version"
-              v-model="pickedId"
+              :value="pickedId"
               :disabled="!ready || busy || versions.isFetching.value"
+              @change="onVersionChange"
             >
               <option value="" disabled>Chọn phiên bản</option>
 
@@ -488,21 +541,16 @@ onBeforeRouteUpdate(confirmLeave)
                 {{ layout.status === 'DRAFT' ? 'Bản nháp' : 'Đã xuất bản' }}
               </option>
             </select>
-            <AppButton
-              variant="secondary"
-              :disabled="!ready || busy || !pickedId"
-              @click="openVersion(pickedId)"
-            >
-              Mở phiên bản
-            </AppButton>
 
             <AppButton
               variant="secondary"
-              :disabled="!ready || busy"
+              :disabled="!ready || busy || versions.isFetching.value"
               :loading="versions.isFetching.value"
-              @click="refreshVersions"
+              @click="
+                reloadRequired && loadedLayout ? openVersion(loadedLayout.id) : refreshVersions()
+              "
             >
-              Tải danh sách
+              {{ reloadRequired && loadedLayout ? 'Tải lại phiên bản' : 'Tải danh sách' }}
             </AppButton>
 
             <AppButton
