@@ -322,6 +322,42 @@ async function saveDraft() {
   }
 }
 
+async function onSaveKeyDown(event: KeyboardEvent) {
+  if (
+    event.isComposing ||
+    event.altKey ||
+    event.shiftKey ||
+    !(event.ctrlKey || event.metaKey) ||
+    event.key.toLowerCase() !== 's'
+  ) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (event.repeat || !canSave.value) return
+
+  const source = event.target
+  const requestedLayoutId = loadedLayout.value?.id
+
+  await saveDraft()
+  await nextTick()
+
+  // Editor bị vô hiệu hóa trong lúc lưu có thể làm mất focus.
+  // Khôi phục khi người dùng vẫn ở phiên bản hiện tại
+  // và chưa chuyển focus sang điều khiển khác.
+  if (
+    source instanceof HTMLElement &&
+    source.isConnected &&
+    !source.matches(':disabled') &&
+    loadedLayout.value?.id === requestedLayoutId &&
+    source.ownerDocument.activeElement === source.ownerDocument.body
+  ) {
+    source.focus()
+  }
+}
+
 function backToRooms() {
   void router.push({
     name: ROUTE_NAMES.ADMIN_ROOMS,
@@ -372,6 +408,7 @@ onBeforeRouteUpdate(confirmLeave)
     class="room-matrix-page"
     data-reference="admin-room-layout"
     aria-labelledby="room-matrix-title"
+    @keydown="onSaveKeyDown"
   >
     <header class="room-matrix-page__heading">
       <div>
