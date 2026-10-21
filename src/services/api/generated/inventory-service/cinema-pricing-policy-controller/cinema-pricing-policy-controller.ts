@@ -14,6 +14,7 @@ import type {
   CinemaPricingPolicyContentResponse,
   CinemaPricingPolicyResponse,
   CinemaPricingPolicyReviewResponse,
+  CinemaPricingSaleScopesResponse,
   CinemaPricingSeatTypesResponse,
   CinemaPricingTicketCategoriesResponse,
   CinemaSurchargesResponse,
@@ -27,6 +28,7 @@ import type {
   ReplaceCinemaFareMatrixRequest,
   ReplaceCinemaHolidayDatesRequest,
   ReplaceCinemaPricingPolicyContentRequest,
+  ReplaceCinemaPricingSaleScopesRequest,
   ReplaceCinemaPricingSeatTypesRequest,
   ReplaceCinemaPricingTicketCategoriesRequest,
   ReplaceCinemaSurchargesRequest,
@@ -162,6 +164,40 @@ export const replaceCinemaPricingSeatTypes = (
       {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/seat-types`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: replaceCinemaPricingSeatTypesRequest
+    },
+      );
+    }
+  /**
+ * @summary Get declared sale scopes of a V2 pricing policy
+ */
+export const getCinemaPricingSaleScopes = (
+    cinemaId: string,
+    policyId: string,
+ ) => {
+      return apiRequest<CinemaPricingSaleScopesResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/sale-scopes`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * expectedVersion refers to policy.version, not policyVersion.
+ * Replaces all sale scopes. An empty array clears the catalog.
+ * IDs are regenerated. Duplicate codes or dimension tuples are rejected.
+ * References are reviewed separately; incomplete drafts may be saved.
+ * Fare rules and other catalogs are preserved.
+ * Does not validate full coverage or authorize publication.
+ * @summary Replace sale scopes of a V2 draft
+ */
+export const replaceCinemaPricingSaleScopes = (
+    cinemaId: string,
+    policyId: string,
+    replaceCinemaPricingSaleScopesRequest: ReplaceCinemaPricingSaleScopesRequest,
+ ) => {
+      return apiRequest<CinemaPricingSaleScopesResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/sale-scopes`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: replaceCinemaPricingSaleScopesRequest
     },
       );
     }
@@ -511,6 +547,8 @@ export type GetCinemaPricingPolicySurchargesResult = NonNullable<Awaited<ReturnT
 export type ReplaceCinemaPricingPolicySurchargesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicySurcharges>>>
 export type GetCinemaPricingSeatTypesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingSeatTypes>>>
 export type ReplaceCinemaPricingSeatTypesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingSeatTypes>>>
+export type GetCinemaPricingSaleScopesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingSaleScopes>>>
+export type ReplaceCinemaPricingSaleScopesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingSaleScopes>>>
 export type GetCinemaPricingPolicyHolidayDatesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyHolidayDates>>>
 export type ReplaceCinemaPricingPolicyHolidayDatesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyHolidayDates>>>
 export type GetCinemaPricingPolicyFareMatrixResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyFareMatrix>>>

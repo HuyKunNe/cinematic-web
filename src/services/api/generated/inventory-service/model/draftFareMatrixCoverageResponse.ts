@@ -21,6 +21,7 @@ export interface DraftFareMatrixCoverageResponse {
   referenceContext?: MatrixPreviewContext;
   fromMinute?: number;
   toMinute?: number;
+  hasSaleSegments?: boolean;
   hasGaps?: boolean;
   hasAmbiguities?: boolean;
   hasUnconfirmedUnits?: boolean;

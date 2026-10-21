@@ -2,21 +2,32 @@
 
 - Service: inventory-service
 - Source URL: http://localhost:8083/v3/api-docs
-- Backend commit: <commit chứa thay đổi schema seat-map>
-- Working tree: clean
-- Exported at: <thời điểm export kèm timezone>
-- OpenAPI version: <giá trị field openapi trong JSON>
+- Backend source revision reviewed: 22dfdc130bec4939ed6613ab01ed1b37f0e616da
+- Runtime revision declared by operator: 22dfdc130bec4939ed6613ab01ed1b37f0e616da
+- Exported at (UTC): 2026-10-21T08:02:43.2951354+00:00
+- OpenAPI version: 3.1.0
 
 ## Scope
 
-Snapshot được export từ Inventory Service đang chạy từ commit nêu trên.
-Đã review schema của GET /api/v1/showtimes/{showtimeId}/seat-map.
+Exported from the locally running Inventory Service.
 
-showSeatId, price và status của từng seat là required và nullable.
-Các field còn lại của seat là required.
-label của layout element là optional.
+Checked operation IDs:
+- getCinemaPricingSaleScopes
+- replaceCinemaPricingSaleScopes
+- getCinemaPricingPolicyFareMatrix
+- previewDraftCinemaFareMatrix
+
+Checked contract markers:
+- PreviewDraftFareMatrixRequest contains simulatedReleaseDate.
+- PreviewDraftFareMatrixRequest does not contain simulatedFirstShowing.
+- The specification contains NOT_FOR_SALE.
 
 ## Limitations
 
-Không xác nhận các endpoint khác chỉ từ việc lưu snapshot này.
-Không bao gồm R28 Notification.
+The export script checks contract markers, not runtime build provenance.
+The operator must ensure the running service uses the declared revision.
+
+Draft simulation is not operational showtime pricing preview.
+It does not produce a booking quote or authorize publication.
+Sale scopes do not certify full-policy coverage.
+No tests, lint, type checking or build were run by this export.

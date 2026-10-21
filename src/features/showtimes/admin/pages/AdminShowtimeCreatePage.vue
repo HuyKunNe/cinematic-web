@@ -62,8 +62,19 @@ const loadingOptions = computed(
   () => cinemas.isFetching.value || movies.isFetching.value || rooms.isFetching.value,
 )
 
+const catalogError = computed(() => cinemas.error.value ?? movies.error.value ?? rooms.error.value)
+
 const now = useNow({
   scheduler: (update) => useIntervalFn(update, 1_000),
+})
+
+const startsLocal = computed({
+  get: () => (form.date && form.startTime ? `${form.date}T${form.startTime}` : ''),
+  set: (value: string) => {
+    const [date = '', time = ''] = value.split('T')
+    form.date = date
+    form.startTime = time.slice(0, 5)
+  },
 })
 
 const startsAt = computed(() => localToInstant(`${form.date}T${form.startTime}`))
@@ -81,10 +92,10 @@ const estimatedEnd = computed(() => {
 
   if (!Number.isFinite(end.getTime())) return ''
 
-  return instantToLocal(end.toISOString()).replace('T', ' ')
+  return instantToLocal(end.toISOString())
 })
 
-const previewContextReady = computed(
+const baseContextReady = computed(
   () =>
     canManage.value &&
     Boolean(selectedCinema.value) &&
@@ -99,19 +110,29 @@ const pricingStatus = computed(() => {
     return 'Đang tải thông tin rạp, phòng và phim.'
   }
 
+  if (catalogError.value) {
+    return showtimeErrorMessage(
+      catalogError.value,
+      'Không thể tải đầy đủ lựa chọn. Chọn “Tải lại lựa chọn” để thử lại.',
+    )
+  }
+
   if (timingError.value) {
     return 'Điều chỉnh ngày và giờ bắt đầu trước khi tiếp tục.'
   }
 
-  return previewContextReady.value
-    ? 'Chức năng xem trước giá theo chính sách rạp chưa sẵn sàng.'
-    : 'Chọn rạp, phòng, phim, ngày và giờ để chuẩn bị xem giá.'
+  if (!baseContextReady.value) {
+    return 'Chọn rạp, phim, phòng và thời gian bắt đầu để chuẩn bị xem giá.'
+  }
+
+  return 'Chưa có API preview giá vận hành phù hợp để hiển thị giá cho suất chiếu này.'
 })
 
 const choiceFields = computed(() => [
   {
     key: 'cinemaId' as const,
     label: 'Rạp',
+    wide: true,
     options: (cinemas.data.value ?? []).map((item) => ({
       value: item.id,
       label: item.name,
@@ -124,8 +145,24 @@ const choiceFields = computed(() => [
     empty: 'Chưa có rạp đang hoạt động.',
   },
   {
+    key: 'movieId' as const,
+    label: 'Phim',
+    wide: true,
+    options: (movies.data.value ?? []).map((item) => ({
+      value: item.id,
+      label: item.durationMinutes ? `${item.title} — ${item.durationMinutes} phút` : item.title,
+    })),
+    loading: movies.isFetching.value,
+    success: movies.isSuccess.value,
+    error: movies.error.value,
+    disabled: movies.isFetching.value || movies.isError.value,
+    context: true,
+    empty: 'Chưa có phim phù hợp trong danh mục.',
+  },
+  {
     key: 'roomId' as const,
     label: 'Phòng',
+    wide: false,
     options: selectedCinema.value
       ? (rooms.data.value ?? []).map((item) => ({
           value: item.id,
@@ -139,30 +176,7 @@ const choiceFields = computed(() => [
     context: Boolean(selectedCinema.value),
     empty: 'Rạp chưa có phòng đang hoạt động.',
   },
-  {
-    key: 'movieId' as const,
-    label: 'Phim',
-    options: (movies.data.value ?? []).map((item) => ({
-      value: item.id,
-      label: item.title,
-    })),
-    loading: movies.isFetching.value,
-    success: movies.isSuccess.value,
-    error: movies.error.value,
-    disabled: movies.isFetching.value || movies.isError.value,
-    context: true,
-    empty: 'Chưa có phim phù hợp trong danh mục.',
-  },
 ])
-
-const ticketCategoryLabels = [
-  'Người lớn',
-  'Trên 55 tuổi',
-  'HSSV / U22 / Giáo viên',
-  'Trẻ em',
-] as const
-
-const surchargeLabels = ['Ghế đôi', 'Phim bom tấn', 'Định dạng đặc biệt'] as const
 
 const dirty = computed(() => JSON.stringify(form) !== initialKey)
 
@@ -202,7 +216,6 @@ onBeforeUnmount(() => {
 async function reloadOptions() {
   if (!canManage.value || loadingOptions.value) return
 
-  // Ghi nhận trước khi refetch làm selectedCinema tạm thời thành undefined.
   const shouldReloadRooms = Boolean(selectedCinema.value)
 
   const requests: Promise<unknown>[] = [cinemas.refetch(), movies.refetch()]
@@ -221,16 +234,24 @@ async function reloadOptions() {
     data-reference="admin-showtime-form"
     aria-labelledby="showtime-create-title"
   >
-    <header class="admin-reference__heading">
+    <header class="admin-reference__heading showtime-create__heading">
       <div>
-        <p class="admin-reference__eyebrow">Lịch vận hành</p>
+        <p class="admin-reference__eyebrow">Lịch chiếu</p>
         <h1 id="showtime-create-title" tabindex="-1">Tạo suất chiếu</h1>
-        <p class="admin-reference__description">Chọn rạp, phòng, phim và thời gian chiếu.</p>
+        <p class="admin-reference__description">
+          Chọn rạp, phim, phòng và thời gian. Giá vé được lấy từ chính sách của rạp.
+        </p>
       </div>
 
-      <RouterLink class="admin-reference__link-button" :to="{ name: ROUTE_NAMES.ADMIN_SHOWTIMES }">
-        Quay lại danh sách
-      </RouterLink>
+      <AppButton
+        v-if="canManage"
+        type="button"
+        variant="secondary"
+        disabled
+        aria-describedby="showtime-policy-help"
+      >
+        Xem chính sách giá
+      </AppButton>
     </header>
 
     <p v-if="!canManage" class="showtime-create__error" role="alert">
@@ -238,275 +259,271 @@ async function reloadOptions() {
     </p>
 
     <template v-else>
-      <p id="showtime-capability-note" class="admin-reference__note">
-        Chức năng xem trước giá và tạo suất chiếu theo chính sách rạp đang được cập nhật. Bạn có thể
-        chọn thông tin lịch chiếu; hiện chưa thể lưu.
+      <p id="showtime-policy-help" class="admin-visually-hidden">
+        Trang quản lý chính sách giá chưa sẵn sàng.
       </p>
 
-      <form class="admin-reference__form-layout" @submit.prevent>
-        <div class="showtime-create__column">
+      <form class="showtime-create__layout" @submit.prevent>
+        <div class="showtime-create__main">
           <section
             class="admin-reference__panel showtime-create__panel"
             aria-labelledby="showtime-info-title"
           >
-            <h2 id="showtime-info-title">Thông tin suất chiếu</h2>
-            <p class="admin-reference__description">
-              Các trường có dấu * là bắt buộc. Thời gian theo giờ Việt Nam.
-            </p>
+            <header class="showtime-create__panel-heading">
+              <div>
+                <h2 id="showtime-info-title">Thông tin suất chiếu</h2>
+                <p>Trường có dấu * là bắt buộc.</p>
+              </div>
 
-            <fieldset class="admin-reference__form-fields showtime-create__fields">
-              <legend class="admin-visually-hidden">Thông tin lịch chiếu</legend>
+              <span class="showtime-create__badge">Chưa kiểm tra lịch</span>
+            </header>
 
-              <label
-                v-for="field in choiceFields"
-                :key="field.key"
-                class="admin-reference__field"
-                :class="{ 'is-wide': field.key === 'movieId' }"
-              >
-                <span>{{ field.label }} *</span>
-                <select
-                  v-model="form[field.key]"
-                  class="admin-reference__input"
-                  required
-                  :disabled="field.disabled"
-                  :aria-describedby="`${field.key}-feedback`"
+            <div class="showtime-create__panel-body">
+              <fieldset class="showtime-create__fields">
+                <legend class="admin-visually-hidden">Thông tin lịch chiếu</legend>
+
+                <label
+                  v-for="field in choiceFields"
+                  :key="field.key"
+                  class="admin-reference__field"
+                  :class="{ 'showtime-create__field-wide': field.wide }"
                 >
-                  <option value="">
-                    {{ field.loading ? 'Đang tải…' : `Chọn ${field.label.toLowerCase()}` }}
-                  </option>
-                  <option v-for="option in field.options" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
+                  <span>{{ field.label }} *</span>
 
-                <span
-                  :id="`${field.key}-feedback`"
-                  :class="{ 'showtime-create__error': Boolean(field.error) }"
-                  :role="field.error ? 'alert' : 'status'"
+                  <select
+                    v-model="form[field.key]"
+                    class="admin-reference__input"
+                    required
+                    :disabled="field.disabled"
+                    :aria-describedby="`${field.key}-feedback`"
+                  >
+                    <option value="">
+                      {{ field.loading ? 'Đang tải…' : `Chọn ${field.label.toLowerCase()}` }}
+                    </option>
+
+                    <option
+                      v-for="option in field.options"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
+
+                  <span
+                    :id="`${field.key}-feedback`"
+                    :class="{ 'showtime-create__error': Boolean(field.error) }"
+                    :role="field.error ? 'alert' : 'status'"
+                  >
+                    <template v-if="field.loading">Đang tải lựa chọn…</template>
+
+                    <template v-else-if="field.error">
+                      {{ showtimeErrorMessage(field.error, 'Không thể tải lựa chọn.') }}
+                      Chọn “Tải lại lựa chọn” để thử lại.
+                    </template>
+
+                    <template v-else-if="!field.context">Chọn rạp trước.</template>
+
+                    <template v-else-if="field.success && field.options.length === 0">
+                      {{ field.empty }}
+                    </template>
+                  </span>
+                </label>
+
+                <label class="admin-reference__field">
+                  <span>Định dạng suất chiếu *</span>
+
+                  <select
+                    class="admin-reference__input"
+                    disabled
+                    aria-describedby="showtime-format-help"
+                  >
+                    <option value="">Chưa có lựa chọn từ hệ thống</option>
+                  </select>
+                </label>
+
+                <label class="admin-reference__field">
+                  <span>Bắt đầu *</span>
+
+                  <input
+                    v-model="startsLocal"
+                    class="admin-reference__input"
+                    type="datetime-local"
+                    step="60"
+                    required
+                    :aria-invalid="Boolean(timingError)"
+                    aria-describedby="showtime-time-feedback showtime-time-help"
+                  />
+                </label>
+
+                <label class="admin-reference__field">
+                  <span>Kết thúc dự kiến</span>
+
+                  <input
+                    class="admin-reference__input"
+                    type="datetime-local"
+                    readonly
+                    :value="estimatedEnd"
+                    aria-describedby="showtime-end-help"
+                  />
+
+                  <span id="showtime-end-help" class="showtime-create__hint">
+                    {{
+                      selectedMovie && !selectedMovie.durationMinutes
+                        ? 'Phim chưa có thời lượng để ước tính kết thúc.'
+                        : 'Ước tính theo thời lượng phim; chưa gồm thời gian đệm của rạp.'
+                    }}
+                  </span>
+                </label>
+
+                <div
+                  id="showtime-format-help"
+                  class="showtime-create__notice showtime-create__field-wide"
                 >
-                  <template v-if="field.loading">Đang tải lựa chọn…</template>
-                  <template v-else-if="field.error">
-                    {{ showtimeErrorMessage(field.error, 'Không thể tải lựa chọn.') }}
-                    Chọn “Tải lại lựa chọn” để thử lại.
-                  </template>
-                  <template v-else-if="!field.context">Chọn rạp trước.</template>
-                  <template v-else-if="field.success && field.options.length === 0">
-                    {{ field.empty }}
-                  </template>
-                </span>
-              </label>
+                  Định dạng suất chiếu gồm loại trải nghiệm và phiên bản nội dung. Lựa chọn phải
+                  được hệ thống xác nhận phù hợp với phòng và phim; hiện chưa có dữ liệu để chọn.
+                </div>
+              </fieldset>
 
-              <label class="admin-reference__field">
-                <span>Ngày chiếu *</span>
-                <input
-                  v-model="form.date"
-                  class="admin-reference__input"
-                  type="date"
-                  required
-                  :aria-invalid="Boolean(timingError)"
-                  aria-describedby="showtime-time-feedback"
-                />
-              </label>
+              <p id="showtime-time-feedback" class="showtime-create__error" role="status">
+                {{ timingError }}
+              </p>
 
-              <label class="admin-reference__field">
-                <span>Giờ bắt đầu *</span>
-                <input
-                  v-model="form.startTime"
-                  class="admin-reference__input"
-                  type="time"
-                  step="60"
-                  required
-                  :aria-invalid="Boolean(timingError)"
-                  aria-describedby="showtime-time-feedback"
-                />
-              </label>
+              <p id="showtime-time-help" class="showtime-create__hint">
+                Thời gian theo giờ Việt Nam. Lịch trống của phòng chưa được xác nhận.
+              </p>
 
-              <label class="admin-reference__field">
-                <span>Thời lượng phim</span>
-                <input
-                  class="admin-reference__input"
-                  type="text"
-                  readonly
-                  :value="
-                    selectedMovie?.durationMinutes
-                      ? `${selectedMovie.durationMinutes} phút`
-                      : 'Chưa có thời lượng'
-                  "
-                />
-              </label>
+              <p id="showtime-submit-help" class="showtime-create__hint">
+                Hiện chưa thể lưu. Luồng tạo suất chiếu đang chờ hệ thống xác nhận định dạng, chính
+                sách giá và phiên bản sơ đồ áp dụng.
+              </p>
 
-              <label class="admin-reference__field">
-                <span>Kết thúc dự kiến</span>
-                <input
-                  class="admin-reference__input"
-                  type="text"
-                  readonly
-                  :value="estimatedEnd || 'Chưa đủ thông tin'"
-                  aria-describedby="showtime-end-help"
-                />
-              </label>
-            </fieldset>
+              <footer class="showtime-create__actions">
+                <AppButton
+                  type="button"
+                  variant="secondary"
+                  :disabled="loadingOptions"
+                  :loading="loadingOptions"
+                  @click="reloadOptions"
+                >
+                  Tải lại lựa chọn
+                </AppButton>
 
-            <p id="showtime-time-feedback" class="showtime-create__error" role="status">
-              {{ timingError }}
-            </p>
+                <RouterLink
+                  class="admin-reference__link-button"
+                  :to="{ name: ROUTE_NAMES.ADMIN_SHOWTIMES }"
+                >
+                  Hủy
+                </RouterLink>
 
-            <p id="showtime-end-help" class="admin-reference__description">
-              Kết thúc dự kiến chỉ dựa trên thời lượng phim. Lịch trống của phòng và thời gian chính
-              thức chưa được xác nhận.
-            </p>
-
-            <footer class="admin-reference__form-actions">
-              <AppButton
-                type="button"
-                variant="secondary"
-                :disabled="loadingOptions"
-                :loading="loadingOptions"
-                @click="reloadOptions"
-              >
-                Tải lại lựa chọn
-              </AppButton>
-            </footer>
+                <AppButton type="submit" disabled aria-describedby="showtime-submit-help">
+                  Tạo suất chiếu
+                </AppButton>
+              </footer>
+            </div>
           </section>
 
-          <section
-            class="admin-reference__panel showtime-create__panel"
-            aria-labelledby="showtime-pricing-title"
-          >
-            <h2 id="showtime-pricing-title">Giá vé dự kiến</h2>
-
-            <p class="admin-reference__description" role="status">
-              {{ pricingStatus }}
-            </p>
-
-            <table class="showtime-create__prices">
-              <caption class="admin-visually-hidden">
-                Giá theo nhóm vé; chưa có dữ liệu giá được xác nhận
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Nhóm vé</th>
-                  <th scope="col">Giá dự kiến</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="label in ticketCategoryLabels" :key="label">
-                  <th scope="row">{{ label }}</th>
-                  <td>Chưa có dữ liệu</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <p class="admin-reference__description">
-              Giá cuối cùng được xác nhận khi lấy báo giá hoặc đặt vé.
-            </p>
-          </section>
-        </div>
-
-        <aside class="showtime-create__column" aria-label="Cấu hình áp dụng">
           <AdminShowtimePublishedLayout
             :room-id="selectedRoom?.id ?? ''"
             :room-name="selectedRoom?.name ?? ''"
             :can-read="canManage && canViewInventory"
           />
+        </div>
 
+        <aside aria-label="Xem trước chính sách giá">
           <section
             class="admin-reference__panel showtime-create__panel"
-            aria-labelledby="showtime-surcharges-title"
+            aria-labelledby="showtime-pricing-title"
           >
-            <h2 id="showtime-surcharges-title">Phụ thu có thể áp dụng</h2>
-
-            <dl class="showtime-create__surcharges">
-              <div v-for="label in surchargeLabels" :key="label">
-                <dt>{{ label }}</dt>
-                <dd>Chưa có dữ liệu</dd>
+            <header class="showtime-create__panel-heading">
+              <div>
+                <p class="admin-reference__eyebrow">Preview từ Backend</p>
+                <h2 id="showtime-pricing-title">Giá vé dự kiến</h2>
+                <p>Giá phụ thuộc ngày, giờ, nhóm vé và loại ghế.</p>
               </div>
-            </dl>
 
-            <p class="admin-reference__description">
-              Mức phụ thu, đơn vị tính và điều kiện cộng dồn cần theo chính sách của rạp.
-            </p>
-          </section>
+              <span class="showtime-create__badge">Chưa xác nhận policy</span>
+            </header>
 
-          <section
-            class="admin-reference__panel showtime-create__panel"
-            aria-label="Tạo suất chiếu"
-          >
-            <AppButton type="submit" disabled aria-describedby="showtime-capability-note">
-              Tạo suất chiếu
-            </AppButton>
+            <div class="showtime-create__panel-body">
+              <dl class="showtime-create__summary">
+                <div>
+                  <dt>Ngày được phân loại</dt>
+                  <dd>Chưa có dữ liệu</dd>
+                </div>
+
+                <div>
+                  <dt>Khung giờ</dt>
+                  <dd>Chưa có dữ liệu</dd>
+                </div>
+
+                <div>
+                  <dt>Rạp</dt>
+                  <dd>{{ selectedCinema?.name ?? 'Chưa chọn' }}</dd>
+                </div>
+
+                <div>
+                  <dt>Tiền tệ</dt>
+                  <dd>Chưa xác nhận</dd>
+                </div>
+
+                <div>
+                  <dt>Định dạng</dt>
+                  <dd>Chưa xác nhận</dd>
+                </div>
+              </dl>
+
+              <p
+                class="showtime-create__notice"
+                :class="{ 'showtime-create__error': Boolean(catalogError) }"
+                :role="catalogError ? 'alert' : 'status'"
+              >
+                {{ pricingStatus }}
+              </p>
+
+              <div
+                class="showtime-create__table-scroll"
+                role="region"
+                aria-label="Bảng giá vé dự kiến"
+                tabindex="0"
+              >
+                <table class="showtime-create__prices">
+                  <caption class="admin-visually-hidden">
+                    Giá từ chính sách của rạp theo nhóm vé và loại ghế
+                  </caption>
+
+                  <thead>
+                    <tr>
+                      <th scope="col">Nhóm vé</th>
+                      <th scope="col">Ghế</th>
+                      <th scope="col">Giá tham khảo</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr>
+                      <td colspan="3">Chưa có dữ liệu giá được xác nhận.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="showtime-create__notice">
+                <strong>Phụ thu</strong>
+                <p>
+                  Chưa có dữ liệu phụ thu áp dụng cho suất chiếu. Mức tiền, đơn vị tính và điều kiện
+                  cộng dồn sẽ được hiển thị theo chính sách từ hệ thống.
+                </p>
+              </div>
+
+              <p class="showtime-create__hint">
+                Giá preview chỉ mang tính tham khảo. Giá cuối cùng được Backend xác nhận khi lấy báo
+                giá hoặc đặt vé.
+              </p>
+            </div>
           </section>
         </aside>
       </form>
     </template>
   </section>
 </template>
-
-<style scoped>
-[data-reference='admin-showtime-form'] .showtime-create__column {
-  display: grid;
-  min-width: 0;
-  gap: var(--space-5);
-  align-content: start;
-}
-
-[data-reference='admin-showtime-form'] .showtime-create__panel {
-  padding: var(--space-5);
-}
-
-[data-reference='admin-showtime-form'] h2 {
-  margin: 0;
-  font-size: var(--font-size-lg);
-}
-
-[data-reference='admin-showtime-form'] .showtime-create__fields {
-  margin-top: var(--space-4);
-}
-
-[data-reference='admin-showtime-form'] .showtime-create__error {
-  color: var(--color-error);
-}
-
-[data-reference='admin-showtime-form'] [aria-invalid='true'] {
-  border-color: var(--color-error);
-}
-
-[data-reference='admin-showtime-form'] .showtime-create__prices {
-  width: 100%;
-  margin-top: var(--space-4);
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-}
-
-[data-reference='admin-showtime-form'] .showtime-create__prices :is(th, td) {
-  padding: var(--space-3);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-regular);
-  text-align: left;
-}
-
-[data-reference='admin-showtime-form'] .showtime-create__surcharges {
-  display: grid;
-  gap: var(--space-3);
-  margin: var(--space-4) 0 0;
-}
-
-[data-reference='admin-showtime-form'] .showtime-create__surcharges > div {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-2);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-}
-
-[data-reference='admin-showtime-form'] .showtime-create__surcharges dd {
-  margin: 0;
-}
-
-[data-reference='admin-showtime-form'] :is(input, select, button, a, [tabindex]):focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus);
-  outline-offset: var(--space-1);
-}
-</style>

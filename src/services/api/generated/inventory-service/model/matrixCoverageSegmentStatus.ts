@@ -10,6 +10,7 @@ export type MatrixCoverageSegmentStatus = typeof MatrixCoverageSegmentStatus[key
 
 
 export const MatrixCoverageSegmentStatus = {
+  NOT_FOR_SALE: 'NOT_FOR_SALE',
   MATCHED: 'MATCHED',
   GAP: 'GAP',
   AMBIGUOUS: 'AMBIGUOUS',
