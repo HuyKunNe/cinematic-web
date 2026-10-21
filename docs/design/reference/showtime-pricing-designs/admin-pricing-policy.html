@@ -3,64 +3,184 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Mockup cấu hình chính sách giá vé theo ma trận rạp, định dạng và nhóm vé.">
   <title>Chính sách giá vé | Cinema Admin</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Điều hướng quản trị">
-      <a class="brand" href="#"><span class="brand-mark">C</span><span><span class="brand-name">CINEMA</span><span class="brand-caption">Quản trị hệ thống</span></span></a>
-      <nav class="nav-group" aria-label="Menu chính"><p class="nav-label">Vận hành</p><ul class="nav-list">
-        <li><a class="nav-link" href="#"><span class="nav-icon">▦</span>Tổng quan</a></li><li><a class="nav-link" href="#"><span class="nav-icon">▣</span>Phim</a></li><li><a class="nav-link" href="#"><span class="nav-icon">▤</span>Phòng chiếu</a></li><li><a class="nav-link" href="admin-showtime-create.html"><span class="nav-icon">◷</span>Suất chiếu</a></li><li><a class="nav-link" href="#"><span class="nav-icon">▧</span>Đặt vé</a></li>
-      </ul></nav>
-      <div class="sidebar-bottom nav-group"><p class="nav-label">Cấu hình</p><a class="nav-link" href="#" aria-current="page"><span class="nav-icon">₫</span>Chính sách giá</a></div>
+      <a class="brand" href="index.html" aria-label="Cinema Admin, trang mockup">
+        <span class="brand-mark" aria-hidden="true">C</span>
+        <span><span class="brand-name">CINEMA</span><span class="brand-caption">Quản trị hệ thống</span></span>
+      </a>
+      <nav aria-label="Menu chính">
+        <div class="nav-group">
+          <p class="nav-label">Vận hành</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="#"><span class="nav-icon" aria-hidden="true">▦</span>Tổng quan</a></li>
+            <li><a class="nav-link" href="#"><span class="nav-icon" aria-hidden="true">▣</span>Phim</a></li>
+            <li><a class="nav-link" href="#"><span class="nav-icon" aria-hidden="true">▤</span>Phòng chiếu</a></li>
+            <li><a class="nav-link" href="admin-showtime-create.html"><span class="nav-icon" aria-hidden="true">◷</span>Suất chiếu</a></li>
+          </ul>
+        </div>
+        <div class="nav-group">
+          <p class="nav-label">Cấu hình</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="#"><span class="nav-icon" aria-hidden="true">♧</span>Rạp &amp; phòng</a></li>
+            <li><a class="nav-link" href="#" aria-current="page"><span class="nav-icon" aria-hidden="true">₫</span>Chính sách giá</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="sidebar-footer"><p class="nav-label">Tài khoản</p><a class="nav-link" href="#"><span class="nav-icon" aria-hidden="true">⚙</span>Cài đặt</a></div>
     </aside>
+
     <div class="main-area">
-      <header class="topbar"><div class="breadcrumbs">Quản trị <span>/</span> Cấu hình rạp <span>/</span> <strong>Chính sách giá</strong></div><div class="user-chip"><span>Quản trị viên</span><span class="avatar">AD</span></div></header>
-      <main>
-        <div class="page-heading"><div><p class="eyebrow">Cấu hình kinh doanh</p><h1>Chính sách giá vé</h1><p class="page-description">Thiết lập giá theo ngày, khung giờ và nhóm vé. Mỗi lần xuất bản tạo phiên bản mới để giữ lịch sử suất chiếu.</p></div><div class="toolbar"><button class="button" type="button">Xem lịch sử</button><button class="button button-primary" type="button">＋ Tạo phiên bản mới</button></div></div>
-        <section class="panel">
-          <div class="panel-heading"><div><h2>Cinema Parkcity Hanoi</h2><p>Chính sách đang áp dụng: phiên bản 3 · Hiệu lực từ 01/10/2026</p></div><span class="badge badge-success">Đang xuất bản</span></div>
+      <header class="topbar">
+        <div class="breadcrumbs">Quản trị <span aria-hidden="true">/</span> Cấu hình <span aria-hidden="true">/</span> <strong>Chính sách giá</strong></div>
+        <div class="topbar-user"><span>Quản trị viên</span><span class="avatar" aria-hidden="true">AD</span></div>
+      </header>
+
+      <main class="page">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">Quản lý giá vé</p>
+            <h1>Chính sách giá</h1>
+            <p class="page-description">Cấu hình ma trận theo định dạng phim, nhóm ngày, khung giờ, nhóm vé và loại ghế. Mỗi rạp quản lý phiên bản giá riêng.</p>
+          </div>
+          <div class="button-row">
+            <button class="button" type="button">Lưu bản nháp</button>
+            <button class="button button-primary" type="button">Kiểm tra &amp; xuất bản</button>
+          </div>
+        </div>
+
+        <section class="stat-grid" aria-label="Trạng thái chính sách">
+          <article class="stat-card"><span class="stat-label">Rạp đang chỉnh sửa</span><span class="stat-value">CGV Landmark</span><span class="tiny muted">Mã cấu hình: CGV-LM-01</span></article>
+          <article class="stat-card"><span class="stat-label">Phiên bản nháp</span><span class="stat-value">v4</span><span class="tiny muted">Chưa xuất bản</span></article>
+          <article class="stat-card"><span class="stat-label">Đang có hiệu lực</span><span class="stat-value">v3</span><span class="tiny muted">Từ 01/09/2026</span></article>
+          <article class="stat-card"><span class="stat-label">Ô cần xác nhận</span><span class="stat-value">2</span><span class="tiny muted">Không thể xuất bản</span></article>
+        </section>
+
+        <section class="panel mt-5" aria-labelledby="policy-meta-title">
+          <div class="panel-header"><div><h2 id="policy-meta-title">Thông tin policy</h2><p>Giá thuộc rạp và phiên bản; không nhập giá cố định trên suất chiếu.</p></div><span class="badge badge-warning"><span class="status-dot"></span> Bản nháp</span></div>
           <div class="panel-body">
-            <div class="callout"><span>ⓘ</span><span>Dữ liệu mẫu theo ảnh tham khảo. Xác nhận ngày áp dụng, điều kiện ưu đãi và quy tắc phụ thu trước khi publish.</span></div>
-            <div class="table-wrap"><table class="rate-table">
-              <thead><tr><th>Ngày / khung giờ</th><th>Người lớn</th><th>Trên 55 tuổi</th><th>HSSV / U22 / GV</th><th>Trẻ em</th></tr></thead>
-              <tbody>
-                <tr><td><span class="row-title">Trong tuần · 10:00–18:00</span><span class="row-subtitle">Thứ 3, 4, 5 · giá thường</span></td><td><strong>69.000 ₫</strong></td><td><strong>55.000 ₫</strong></td><td><strong>49.000 ₫</strong></td><td><strong>49.000 ₫</strong></td></tr>
-                <tr><td><span class="row-title">Trong tuần · 18:00–22:00</span><span class="row-subtitle">Thứ 3, 4, 5 · giá thường</span></td><td><strong>75.000 ₫</strong></td><td><strong>55.000 ₫</strong></td><td><strong>49.000 ₫</strong></td><td><strong>49.000 ₫</strong></td></tr>
-                <tr><td><span class="row-title">Cuối tuần · 10:00–18:00</span><span class="row-subtitle">Thứ 6, 7, Chủ nhật</span></td><td><strong>75.000 ₫</strong></td><td><strong>55.000 ₫</strong></td><td><strong>49.000 ₫</strong></td><td><strong>49.000 ₫</strong></td></tr>
-                <tr><td><span class="row-title">Cuối tuần · 18:00–22:00</span><span class="row-subtitle">Thứ 6, 7, Chủ nhật</span></td><td><strong>79.000 ₫</strong></td><td><strong>55.000 ₫</strong></td><td><strong>49.000 ₫</strong></td><td><strong>49.000 ₫</strong></td></tr>
-                <tr><td><span class="row-title">Lễ / Tết · cả ngày</span><span class="row-subtitle">Theo lịch nghỉ lễ cấu hình cho rạp</span></td><td><strong>89.000 ₫</strong></td><td><strong>89.000 ₫</strong></td><td><strong>89.000 ₫</strong></td><td><strong>65.000 ₫</strong></td></tr>
-              </tbody>
-            </table></div>
-            <div class="panel-footer"><p class="footer-hint">Trẻ dưới 0,7 m miễn phí khi ngồi cùng phụ huynh. Thời gian tính theo múi giờ rạp.</p><div class="toolbar"><button class="button" type="button">Chỉnh sửa bản nháp</button><button class="button button-primary" type="button">Xuất bản phiên bản 3</button></div></div>
+            <div class="field-grid field-grid-3">
+              <div class="field"><label for="cinema">Rạp áp dụng</label><select class="control" id="cinema"><option>CGV Landmark</option><option>CGV Royal City</option></select></div>
+              <div class="field"><label for="currency">Đơn vị tiền</label><input class="control" id="currency" value="VND (₫)" readonly></div>
+              <div class="field"><label for="effective">Ngày bắt đầu hiệu lực</label><input class="control" id="effective" type="date" value="2026-11-01"></div>
+            </div>
+            <div class="inline-alert inline-alert-info"><span aria-hidden="true">ⓘ</span><span><strong>Policy mẫu:</strong> Bảng trong trang này được chép từ ảnh có nhãn CGV để minh họa UI. Xác nhận phạm vi rạp, ngày hiệu lực và các ô đang cảnh báo trước khi nhập dữ liệu thật.</span></div>
           </div>
         </section>
-        <div class="config-grid">
-          <section class="panel">
-            <div class="panel-heading"><div><h2>Ưu đãi theo lịch</h2><p>Chọn một giá cơ bản theo rule ưu tiên.</p></div><button class="button button-sm" type="button">＋ Thêm ưu đãi</button></div>
+
+        <section class="panel mt-5" aria-labelledby="matrix-title">
+          <div class="panel-header"><div><h2 id="matrix-title">Ma trận giá vé</h2><p>Chọn định dạng để chuyển tới phần cấu hình. Các bảng bên dưới đang được mở như một bản review.</p></div><span class="badge">Tiền tệ: VND</span></div>
+          <div class="panel-body">
+            <nav class="segmented" aria-label="Đi tới định dạng giá">
+              <a class="segment" href="#format-2d">2D</a>
+              <a class="segment" href="#format-3d">3D</a>
+              <a class="segment" href="#format-4dx">4DX</a>
+              <a class="segment" href="#format-imax">IMAX</a>
+              <a class="segment" href="#premium">Premium Cinema</a>
+            </nav>
+            <div class="inline-alert"><span aria-hidden="true">⚠</span><span><strong>2 giá cần nghiệp vụ xác nhận:</strong> ghế VIP và Sweetbox 3D vào cuối tuần, 17:00–21:30 đều đọc là 200.000 ₫ từ ảnh. Chưa xuất bản policy khi cảnh báo còn mở.</span></div>
+          </div>
+        </section>
+
+        <div class="section-stack mt-5">
+          <section class="panel policy-section" id="format-2d" aria-labelledby="heading-2d">
+            <div class="panel-header"><div><p class="eyebrow">Định dạng</p><h2 id="heading-2d">2D tiêu chuẩn</h2><p>Giá cơ bản theo nhóm khách và điều kiện giờ. Phụ thu được quản lý riêng bên dưới.</p></div><span class="badge badge-primary">2D</span></div>
             <div class="panel-body">
-              <div class="price-row"><span><strong>C’Monday</strong><span class="row-subtitle">Thứ Hai · mọi đối tượng</span></span><strong>45.000 ₫</strong></div>
-              <div class="price-row"><span><strong>C’Member</strong><span class="row-subtitle">Thứ Tư · C’Member mua tại rạp/app/web</span></span><strong>45.000 ₫</strong></div>
-              <div class="price-row"><span><strong>C’Ten · Happy Hour</strong><span class="row-subtitle">Trước 10:00 / từ 22:00 · loại trừ Lễ/Tết</span></span><strong>49.000 ₫</strong></div>
-              <div class="callout callout-info"><span>!</span><span>Cần cấu hình độ ưu tiên khi ưu đãi trùng giờ. Giá lễ/Tết trong mẫu loại trừ Happy Hour.</span></div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead><tr><th>Nhóm ngày</th><th>Nhóm vé / điều kiện</th><th>Khung giờ</th><th class="numeric">Giá cơ bản</th><th>Ghi chú</th></tr></thead>
+                  <tbody>
+                    <tr><td>Thứ Hai, Ba, Năm</td><td>Trẻ em / CGV Young</td><td>Cả ngày theo bảng</td><td class="numeric cell-price">60.000 ₫</td><td>Điều kiện thành viên / tuổi</td></tr>
+                    <tr><td>Thứ Hai, Ba, Năm</td><td>Học sinh, sinh viên, người cao tuổi</td><td>Trước 12:00 / suất đầu tiên</td><td class="numeric cell-price">70.000 ₫</td><td>Matinee</td></tr>
+                    <tr><td>Thứ Hai, Ba, Năm</td><td>Người lớn</td><td>Từ 12:00</td><td class="numeric cell-price">85.000 ₫</td><td>—</td></tr>
+                    <tr><td>Thứ Tư</td><td>Nhóm vé theo chương trình Thứ Tư Vui Vẻ</td><td>Cả ngày theo bảng</td><td class="numeric cell-price">75.000 ₫</td><td>Định nghĩa eligible category cần xác nhận</td></tr>
+                    <tr><td>Thứ Sáu, Bảy, CN, lễ</td><td>Trẻ em / CGV Young</td><td>Trước 17:00</td><td class="numeric cell-price">70.000 ₫</td><td>—</td></tr>
+                    <tr><td>Thứ Sáu, Bảy, CN, lễ</td><td>Học sinh, sinh viên, người cao tuổi</td><td>Trước 17:00</td><td class="numeric cell-price">80.000 ₫</td><td>—</td></tr>
+                    <tr><td>Thứ Sáu, Bảy, CN, lễ</td><td>Người lớn</td><td>Cả ngày theo bảng</td><td class="numeric cell-price">105.000 ₫</td><td>—</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <section class="matrix-card" id="premium" aria-labelledby="premium-title">
+                <h3 id="premium-title">Premium Cinema</h3>
+                <div class="table-wrap"><table class="data-table"><thead><tr><th>Định dạng nội dung</th><th>Nhóm ngày</th><th class="numeric">Giá vé</th></tr></thead><tbody><tr><td>2D Premium</td><td>Thứ Hai, Ba, Năm</td><td class="numeric cell-price">180.000 ₫</td></tr><tr><td>2D Premium</td><td>Thứ Sáu, Bảy, CN, lễ</td><td class="numeric cell-price">230.000 ₫</td></tr><tr><td>3D Premium</td><td>Thứ Hai, Ba, Năm</td><td class="numeric cell-price">230.000 ₫</td></tr><tr><td>3D Premium</td><td>Thứ Sáu, Bảy, CN, lễ</td><td class="numeric cell-price">270.000 ₫</td></tr></tbody></table></div>
+                <p class="matrix-note">Ảnh không nêu giá Premium Cinema ngày Thứ Tư. Không tự nội suy ô còn thiếu.</p>
+              </section>
+              <section class="matrix-card" aria-labelledby="surcharge-2d-title">
+                <h3 id="surcharge-2d-title">Phụ thu 2D</h3>
+                <div class="table-wrap"><table class="data-table"><thead><tr><th>Điều kiện</th><th class="numeric">Mức cộng thêm</th><th>Đơn vị / áp dụng</th></tr></thead><tbody><tr><td>Ghế VIP</td><td class="numeric cell-price">+5.000 ₫</td><td>Cần xác nhận phạm vi ghế Premium</td></tr><tr><td>Phim bom tấn</td><td class="numeric cell-price">+5.000 ₫</td><td>Cần xác nhận điều kiện và cộng dồn</td></tr><tr><td>Sweetbox</td><td class="numeric cell-price">+25.000 ₫</td><td>Cần xác nhận tính trên vé hay cặp ghế</td></tr></tbody></table></div>
+              </section>
             </div>
           </section>
-          <section class="panel">
-            <div class="panel-heading"><div><h2>Phụ thu</h2><p>Áp dụng sau giá cơ bản theo nhóm vé.</p></div><button class="button button-sm" type="button">＋ Thêm phụ thu</button></div>
+
+          <section class="panel policy-section" id="format-3d" aria-labelledby="heading-3d">
+            <div class="panel-header"><div><p class="eyebrow">Định dạng</p><h2 id="heading-3d">3D tiêu chuẩn</h2><p>Người lớn theo seat type; vé ưu đãi có bảng điều kiện riêng.</p></div><span class="badge badge-primary">3D</span></div>
             <div class="panel-body">
-              <div class="surcharge-grid">
-                <article class="surcharge-card"><strong>Ghế đôi</strong><span>SeatType: COUPLE</span><strong>+10.000 ₫</strong></article>
-                <article class="surcharge-card"><strong>Phim bom tấn</strong><span>Thuộc tính phim</span><strong>+5.000 ₫</strong></article>
-                <article class="surcharge-card"><strong>Định dạng đặc biệt</strong><span>Format suất chiếu</span><strong>+5.000 ₫</strong></article>
+              <div class="section-heading"><div><h3>Người lớn · giá theo loại ghế</h3><p>Giá trong ô là giá cuối cho tổ hợp nhóm ngày, giờ và ghế.</p></div><span class="badge">VND</span></div>
+              <div class="table-wrap">
+                <table class="matrix-table">
+                  <thead>
+                    <tr><th class="sticky-col" rowspan="2">Loại ghế</th><th class="group-heading" colspan="4">Thứ Hai, Ba, Năm</th><th class="group-heading" rowspan="2">Thứ Tư<br>cả ngày</th><th class="group-heading" colspan="4">Thứ Sáu, Bảy, CN, lễ</th></tr>
+                    <tr><th>Trước 12:00</th><th>12:00–17:00</th><th>17:00–21:30</th><th>Sau 21:30</th><th>Trước 12:00</th><th>12:00–17:00</th><th>17:00–21:30</th><th>Sau 21:30</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="sticky-col row-label">Ghế thường</td><td class="cell-price">90.000 ₫</td><td class="cell-price">110.000 ₫</td><td class="cell-price">130.000 ₫</td><td class="cell-price">110.000 ₫</td><td class="cell-price">100.000 ₫</td><td class="cell-price">110.000 ₫</td><td class="cell-price">130.000 ₫</td><td class="cell-price">150.000 ₫</td><td class="cell-price">130.000 ₫</td></tr>
+                    <tr><td class="sticky-col row-label">Ghế VIP</td><td class="cell-price">100.000 ₫</td><td class="cell-price">120.000 ₫</td><td class="cell-price">140.000 ₫</td><td class="cell-price">120.000 ₫</td><td class="cell-price">100.000 ₫</td><td class="cell-price">120.000 ₫</td><td class="cell-price">140.000 ₫</td><td class="cell-price">200.000 ₫*</td><td class="cell-price">140.000 ₫</td></tr>
+                    <tr><td class="sticky-col row-label">Sweetbox</td><td class="cell-price">120.000 ₫</td><td class="cell-price">150.000 ₫</td><td class="cell-price">170.000 ₫</td><td class="cell-price">150.000 ₫</td><td class="cell-price">120.000 ₫</td><td class="cell-price">140.000 ₫</td><td class="cell-price">170.000 ₫</td><td class="cell-price">200.000 ₫*</td><td class="cell-price">170.000 ₫</td></tr>
+                  </tbody>
+                </table>
               </div>
-              <div class="field-grid">
-                <div class="field"><label>Phụ thu được cộng dồn</label><div class="toggle-line"><span class="field-hint">Phim bom tấn + định dạng</span><span class="toggle toggle-on" aria-hidden="true"></span></div></div>
-                <div class="field"><label>Đơn vị phụ thu ghế đôi</label><select class="control"><option>Cần xác nhận: mỗi ghế hoặc mỗi cặp</option></select></div>
-              </div>
+              <p class="matrix-note">* Hai ô cuối tuần 17:00–21:30 đọc là 200.000 ₫ trên ảnh; yêu cầu xác nhận nghiệp vụ trước khi xuất bản.</p>
+              <div class="section-heading"><div><h3>Nhóm vé ưu đãi 3D</h3><p>Áp dụng cho ghế thường/VIP theo nội dung bảng; Sweetbox cộng thêm riêng.</p></div></div>
+              <div class="table-wrap"><table class="data-table"><thead><tr><th>Nhóm vé</th><th>Thứ Hai, Ba, Năm</th><th>Thứ Tư Vui Vẻ</th><th>Thứ Sáu, Bảy, CN, lễ</th><th>Phạm vi giờ</th></tr></thead><tbody><tr><td>Học sinh, sinh viên, người cao tuổi</td><td class="cell-price">90.000 ₫</td><td class="cell-price">100.000 ₫</td><td class="cell-price">110.000 ₫</td><td>Trước 17:00, trừ chương trình Thứ Tư</td></tr><tr><td>Trẻ em, CGV Young</td><td class="cell-price">80.000 ₫</td><td class="cell-price">100.000 ₫</td><td class="cell-price">100.000 ₫</td><td>Trước 17:00, trừ chương trình Thứ Tư</td></tr></tbody></table></div>
+              <div class="inline-alert"><span aria-hidden="true">ⓘ</span><span>Ưu đãi 3D: Sweetbox <strong>+20.000 ₫</strong>. Xác nhận đơn vị tính và liệu VIP có cùng giá ghế thường trước khi nhập.</span></div>
+            </div>
+          </section>
+
+          <section class="panel policy-section" id="format-4dx" aria-labelledby="heading-4dx">
+            <div class="panel-header"><div><p class="eyebrow">Định dạng</p><h2 id="heading-4dx">4DX</h2><p>Giá phân biệt phiên bản nội dung 2D và 3D.</p></div><span class="badge badge-primary">4DX</span></div>
+            <div class="panel-body">
+              <div class="table-wrap"><table class="matrix-table"><thead><tr><th class="sticky-col">Nội dung</th><th>Nhóm ngày</th><th>Trước 12:00</th><th>12:00–17:00</th><th>17:00–21:30</th><th>Sau 21:30</th></tr></thead><tbody>
+                <tr><td class="sticky-col row-label">Phim 3D</td><td>Thứ Hai, Ba, Năm</td><td class="cell-price">160.000 ₫</td><td class="cell-price">190.000 ₫</td><td class="cell-price">210.000 ₫</td><td class="cell-price">190.000 ₫</td></tr>
+                <tr><td class="sticky-col row-label">Phim 3D</td><td>Thứ Tư Vui Vẻ</td><td class="cell-price" colspan="4">170.000 ₫ · cả ngày</td></tr>
+                <tr><td class="sticky-col row-label">Phim 3D</td><td>Thứ Sáu, Bảy, CN, lễ</td><td class="cell-price">180.000 ₫</td><td class="cell-price">210.000 ₫</td><td class="cell-price">270.000 ₫</td><td class="cell-price">210.000 ₫</td></tr>
+                <tr><td class="sticky-col row-label">Phim 2D</td><td>Thứ Hai, Ba, Năm</td><td class="cell-price">150.000 ₫</td><td class="cell-price">160.000 ₫</td><td class="cell-price">180.000 ₫</td><td class="cell-price">160.000 ₫</td></tr>
+                <tr><td class="sticky-col row-label">Phim 2D</td><td>Thứ Tư Vui Vẻ</td><td class="cell-price" colspan="4">150.000 ₫ · cả ngày</td></tr>
+                <tr><td class="sticky-col row-label">Phim 2D</td><td>Thứ Sáu, Bảy, CN, lễ</td><td class="cell-price">170.000 ₫</td><td class="cell-price">180.000 ₫</td><td class="cell-price">200.000 ₫</td><td class="cell-price">180.000 ₫</td></tr>
+              </tbody></table></div>
+            </div>
+          </section>
+
+          <section class="panel policy-section" id="format-imax" aria-labelledby="heading-imax">
+            <div class="panel-header"><div><p class="eyebrow">Định dạng</p><h2 id="heading-imax">IMAX</h2><p>Khung giờ có cờ suất chiếu đầu tiên riêng.</p></div><span class="badge badge-primary">IMAX</span></div>
+            <div class="panel-body">
+              <div class="table-wrap"><table class="data-table"><thead><tr><th>Nội dung</th><th>Nhóm ngày</th><th>Suất chiếu đầu tiên</th><th>Trước 17:00</th><th>Sau 17:00</th></tr></thead><tbody>
+                <tr><td>Phim 3D</td><td>Thứ Hai, Ba, Tư, Năm</td><td class="cell-price">120.000 ₫</td><td class="cell-price">150.000 ₫</td><td class="cell-price">180.000 ₫</td></tr>
+                <tr><td>Phim 3D</td><td>Thứ Sáu, Bảy, CN, lễ</td><td class="cell-price">140.000 ₫</td><td class="cell-price">190.000 ₫</td><td class="cell-price">250.000 ₫</td></tr>
+                <tr><td>Phim 2D</td><td>Thứ Hai, Ba, Tư, Năm</td><td class="cell-price">100.000 ₫</td><td class="cell-price">120.000 ₫</td><td class="cell-price">140.000 ₫</td></tr>
+                <tr><td>Phim 2D</td><td>Thứ Sáu, Bảy, CN, lễ</td><td class="cell-price">120.000 ₫</td><td class="cell-price">150.000 ₫</td><td class="cell-price">180.000 ₫</td></tr>
+              </tbody></table></div>
+              <p class="matrix-note">API cần trả `isFirstShowing` đã được xác định server-side; FE không tự suy ra suất chiếu đầu.</p>
             </div>
           </section>
         </div>
+
+        <section class="panel mt-5" aria-labelledby="validation-title">
+          <div class="panel-header"><div><h2 id="validation-title">Kiểm tra trước khi xuất bản</h2><p>BE phải xác nhận tính đầy đủ và không chồng lấn của ma trận.</p></div><span class="badge badge-danger">Có lỗi chặn</span></div>
+          <div class="panel-body">
+            <ul class="small muted">
+              <li>Giá Premium Cinema ngày Thứ Tư chưa được cung cấp.</li>
+              <li>Hai ô VIP/Sweetbox 3D cuối tuần 17:00–21:30 cần xác nhận.</li>
+              <li>Chưa xác định phạm vi/đơn vị của phụ thu Sweetbox và phim bom tấn.</li>
+              <li>Chưa có ngày hiệu lực và lịch lễ thực tế cho rạp.</li>
+            </ul>
+            <div class="form-actions"><a class="button" href="index.html">Về danh sách mockup</a><button class="button button-primary" type="button" disabled>Xuất bản policy</button></div>
+          </div>
+        </section>
       </main>
     </div>
   </div>

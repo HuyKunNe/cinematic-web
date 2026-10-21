@@ -3,31 +3,61 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Showtime and pricing designs</title>
+  <meta name="description" content="Bộ mockup HTML/CSS cập nhật theo bảng giá vé nhiều định dạng và nhóm khách.">
+  <title>Showtime &amp; Pricing UI | Mockup</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main>
-    <div class="page-heading">
-      <div>
-        <p class="eyebrow">Static UI proposal</p>
-        <h1>Suất chiếu và giá vé</h1>
-        <p class="page-description">Ba mockup cho luồng cấu hình giá, tạo suất chiếu và mua vé. Chọn một trang để mở bản thiết kế.</p>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="Cinema mockups">
+        <span class="brand-mark" aria-hidden="true">C</span>
+        <span><span class="brand-name">CINEMA UI</span><span class="brand-caption">Suất chiếu &amp; giá vé</span></span>
+      </a>
+      <span class="badge badge-warning">Static HTML/CSS prototype</span>
+    </header>
+    <main class="page">
+      <div class="page-heading">
+        <div><p class="eyebrow">Showtime pricing redesign</p><h1>Bảng giá nhiều chiều</h1><p class="page-description">Thiết kế lại các màn hình chịu ảnh hưởng khi giá phụ thuộc vào rạp, định dạng trải nghiệm, phiên bản phim, nhóm ngày, khung giờ, nhóm vé và loại ghế.</p></div>
       </div>
-      <span class="badge badge-warning">Dữ liệu giá mẫu</span>
-    </div>
-    <div class="config-grid">
-      <a class="panel" href="admin-showtime-create.html">
-        <div class="panel-body"><span class="badge badge-primary">Admin</span><h2>Tạo suất chiếu</h2><p class="page-description">Tạo lịch, xem sơ đồ áp dụng và preview giá theo khung giờ/nhóm vé.</p><span class="button button-primary">Mở thiết kế →</span></div>
-      </a>
-      <a class="panel" href="admin-pricing-policy.html">
-        <div class="panel-body"><span class="badge badge-primary">Admin</span><h2>Chính sách giá vé</h2><p class="page-description">Cấu hình giá cơ bản, ưu đãi theo lịch và phụ thu cho từng rạp.</p><span class="button button-primary">Mở thiết kế →</span></div>
-      </a>
-      <a class="panel" href="customer-ticket-selection.html">
-        <div class="panel-body"><span class="badge badge-success">Customer</span><h2>Chọn ghế và loại vé</h2><p class="page-description">Chọn ghế, gán nhóm vé và xem tổng tiền tạm tính.</p><span class="button button-primary">Mở thiết kế →</span></div>
-      </a>
-    </div>
-    <p class="footer-hint">Các trang chỉ là mockup HTML/CSS, chưa kết nối API. Mức giá cần được cấu hình theo rạp và xác nhận với nghiệp vụ.</p>
-  </main>
+
+      <div class="inline-alert inline-alert-info mt-5"><span aria-hidden="true">ⓘ</span><span>Ảnh tham khảo có nhãn CGV. Đây là mockup để minh họa cấu trúc UI, không khẳng định giá áp dụng cho repo/project. Không ghi các mức giá này thành dữ liệu production nếu chưa được nghiệp vụ xác nhận.</span></div>
+
+      <section class="design-grid mt-5" aria-label="Các trang mockup">
+        <a class="design-card" href="admin-pricing-policy.html">
+          <span class="badge badge-primary">Admin · 01</span>
+          <h2>Chính sách giá</h2>
+          <p>Ma trận giá cho 2D, 3D, 4DX, IMAX và Premium Cinema; các phụ thu/ưu đãi tách riêng; có cảnh báo các ô cần xác minh.</p>
+          <span class="button">Mở trang cấu hình giá <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="design-card" href="admin-showtime-create.html">
+          <span class="badge badge-primary">Admin · 02</span>
+          <h2>Tạo suất chiếu</h2>
+          <p>Không nhập basePrice. Hiển thị layout PUBLISHED và preview giá theo metadata của suất chiếu.</p>
+          <span class="button">Mở form suất chiếu <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="design-card" href="customer-ticket-selection.html">
+          <span class="badge badge-primary">Customer · 03</span>
+          <h2>Chọn loại vé</h2>
+          <p>Chọn ticket category cho từng ghế; seat type đến từ seat map; tổng tiền lấy từ quote Backend.</p>
+          <span class="button">Mở màn hình chọn vé <span aria-hidden="true">→</span></span>
+        </a>
+      </section>
+
+      <section class="panel mt-5" aria-labelledby="rules-title">
+        <div class="panel-header"><div><h2 id="rules-title">Nguyên tắc thiết kế</h2><p>Áp dụng khi chuyển mockup sang FE Vue.</p></div><span class="badge badge-success">Token hóa kích thước &amp; màu</span></div>
+        <div class="panel-body">
+          <ol class="step-list">
+            <li><strong>Giá theo policy của rạp:</strong> mỗi policy có version và ngày hiệu lực.</li>
+            <li><strong>Định dạng tách rõ:</strong> trải nghiệm 4DX/IMAX, nội dung 2D/3D, loại ghế và nhóm vé là các chiều riêng.</li>
+            <li><strong>Backend tính tiền:</strong> FE chỉ trình bày fare preview/quote; không tự cộng phụ thu.</li>
+            <li><strong>Responsive:</strong> bảng giá rộng cuộn ngang, có sticky cột nhãn và focus keyboard.</li>
+            <li><strong>CSS variables:</strong> màu, spacing, width, height, control, typography và radius tập trung trong `styles.css`. Breakpoint trong `@media` giữ trực tiếp vì CSS không cho dùng custom property ở điều kiện media phổ biến.</li>
+          </ol>
+        </div>
+      </section>
+      <p class="footer-note">Mockup tĩnh, không gọi API và không lưu dữ liệu.</p>
+    </main>
+  </div>
 </body>
 </html>
