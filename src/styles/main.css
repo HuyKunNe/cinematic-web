@@ -18,7 +18,7 @@
 @import './admin-movie-catalog.css';
 @import './admin-room-seats.css';
 @import './admin-room-seats-responsive.css';
-
+@import './admin-showtime-create.css';
 /* Navigation styles remain imported by their owning layouts. */
 @theme {
   --breakpoint-md: 48rem;
@@ -43,3 +43,6 @@
 @custom-variant admin-reference-mobile (@media (max-width: 48rem));
 @custom-variant admin-movies-narrow (@media (max-width: 30rem));
 @custom-variant admin-seats-stacked (@media (max-width: 64rem));
+@custom-variant admin-showtime-compact (@media (max-width: 72rem));
+@custom-variant admin-showtime-stack (@media (max-width: 56rem));
+@custom-variant admin-showtime-mobile (@media (max-width: 38rem));

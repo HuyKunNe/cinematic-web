@@ -6,16 +6,29 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  CheckDraftBasePriceCoverageRequest,
+  CheckDraftFareMatrixCoverageRequest,
+  CinemaFareMatrixResponse,
+  CinemaFareMatrixReviewResponse,
   CinemaHolidayDatesResponse,
   CinemaPricingPolicyContentResponse,
   CinemaPricingPolicyResponse,
   CinemaPricingPolicyReviewResponse,
+  CinemaPricingSeatTypesResponse,
+  CinemaPricingTicketCategoriesResponse,
   CinemaSurchargesResponse,
   CreateCinemaPricingPolicyRequest,
+  DraftBasePriceCoverageResponse,
+  DraftFareMatrixCoverageResponse,
   PreviewDraftBasePriceRequest,
   PreviewDraftBasePriceResponse,
+  PreviewDraftFareMatrixRequest,
+  PreviewDraftFareMatrixResponse,
+  ReplaceCinemaFareMatrixRequest,
   ReplaceCinemaHolidayDatesRequest,
   ReplaceCinemaPricingPolicyContentRequest,
+  ReplaceCinemaPricingSeatTypesRequest,
+  ReplaceCinemaPricingTicketCategoriesRequest,
   ReplaceCinemaSurchargesRequest,
   ReviewCinemaPricingPolicyRequest
 } from '../model';
@@ -26,13 +39,56 @@ import { apiRequest } from '../../../../http/axios-instance';
 
   /**
  * Requires inventory:manage.
+ * Supports FARE_MATRIX_V2 policies only.
+ * Returns stored category definitions and policy metadata.
+ * Does not verify customer eligibility or publication readiness.
+ * @summary Get ticket category definitions of a pricing policy
+ */
+export const getCinemaPricingTicketCategories = (
+    cinemaId: string,
+    policyId: string,
+ ) => {
+      return apiRequest<CinemaPricingTicketCategoriesResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/ticket-categories`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * Supports FARE_MATRIX_V2 drafts only.
+ * expectedVersion refers to policy.version, not policyVersion.
+ * Replaces the complete category catalog.
+ * An empty array clears the catalog.
+ * Category IDs are regenerated.
+ * Returns the catalog with updated policy metadata.
+ *
+ * Fare rules, dimensions and holiday dates are preserved.
+ * Category references in fare rules are not checked by this operation.
+ * Eligibility rule codes are declarations, not verification results.
+ * Does not evaluate prices or authorize publication.
+ * @summary Replace ticket categories of a draft pricing policy
+ */
+export const replaceCinemaPricingTicketCategories = (
+    cinemaId: string,
+    policyId: string,
+    replaceCinemaPricingTicketCategoriesRequest: ReplaceCinemaPricingTicketCategoriesRequest,
+ ) => {
+      return apiRequest<CinemaPricingTicketCategoriesResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/ticket-categories`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: replaceCinemaPricingTicketCategoriesRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
  * @summary Get pricing policy surcharge rules
  */
 export const getCinemaPricingPolicySurcharges = (
     cinemaId: string,
     policyId: string,
  ) => {
-      return apiRequest<CinemaSurchargesResponse>(
+      return apiRequest<unknown>(
       {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/surcharges`, method: 'GET'
     },
       );
@@ -59,6 +115,53 @@ export const replaceCinemaPricingPolicySurcharges = (
       {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/surcharges`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: replaceCinemaSurchargesRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * Supports FARE_MATRIX_V2 policies only.
+ * Returns stored definitions ordered by code.
+ * Does not validate fares or publication readiness.
+ * @summary Get pricing seat definitions and physical mappings
+ */
+export const getCinemaPricingSeatTypes = (
+    cinemaId: string,
+    policyId: string,
+ ) => {
+      return apiRequest<CinemaPricingSeatTypesResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/seat-types`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * Supports FARE_MATRIX_V2 drafts only.
+ * expectedVersion refers to policy.version, not policyVersion.
+ * Replaces the entire seat type catalog.
+ * An empty array clears the catalog.
+ * Definition IDs are regenerated.
+ *
+ * Codes must be unique after normalization.
+ * Each physical seat type may map to at most one pricing code.
+ * UNCONFIRMED requires a null physicalSeatType.
+ * CONFIRMED requires a non-null physicalSeatType.
+ *
+ * Fare rules, categories, dimensions and holidays are preserved.
+ * Fare rule references are not checked by this operation.
+ * A confirmed mapping does not confirm fare units,
+ * pair charging, surcharge rules or publication readiness.
+ * @summary Replace pricing seat definitions of a draft policy
+ */
+export const replaceCinemaPricingSeatTypes = (
+    cinemaId: string,
+    policyId: string,
+    replaceCinemaPricingSeatTypesRequest: ReplaceCinemaPricingSeatTypesRequest,
+ ) => {
+      return apiRequest<CinemaPricingSeatTypesResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/seat-types`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: replaceCinemaPricingSeatTypesRequest
     },
       );
     }
@@ -99,6 +202,56 @@ export const replaceCinemaPricingPolicyHolidayDates = (
     }
   /**
  * Requires inventory:manage.
+ * Supports FARE_MATRIX_V2 policies only.
+ * Returns policy metadata, day groups, time bands,
+ * fare rules and policy holiday dates.
+ * amountVnd is an integer VND amount encoded as a decimal string.
+ * policy.version is the optimistic-lock token;
+ * policy.policyVersion is the business policy version.
+ * Empty arrays represent missing configuration, not free tickets.
+ * Does not evaluate fares, verify eligibility,
+ * validate publication readiness or produce a booking quote.
+ * Does not include a V2 surcharge model.
+ * @summary Get stored cinema fare matrix configuration
+ */
+export const getCinemaPricingPolicyFareMatrix = (
+    cinemaId: string,
+    policyId: string,
+ ) => {
+      return apiRequest<CinemaFareMatrixResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/fare-matrix`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * Supports VND FARE_MATRIX_V2 drafts only.
+ * expectedVersion refers to policy.version, not policyVersion.
+ * Atomically replaces all day groups, time bands and fare rules.
+ * All three arrays are required; empty arrays clear those sections.
+ * Each fare must reference dimension codes from this request.
+ * Dimension and fare IDs are regenerated.
+ * Holiday dates are preserved.
+ * amountVnd must be a canonical integer VND JSON string.
+ * Returns updated policy metadata with the new lock version.
+ * Does not validate matrix coverage, overlaps, eligibility,
+ * publication readiness or booking prices.
+ * @summary Replace a draft cinema fare matrix
+ */
+export const replaceCinemaPricingPolicyFareMatrix = (
+    cinemaId: string,
+    policyId: string,
+    replaceCinemaFareMatrixRequest: ReplaceCinemaFareMatrixRequest,
+ ) => {
+      return apiRequest<CinemaPricingPolicyResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/fare-matrix`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: replaceCinemaFareMatrixRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
  * Returns policy metadata, base price rules, holiday dates
  * and surcharge rules from one consistent policy version.
  * This operation does not validate publication readiness
@@ -109,7 +262,7 @@ export const getCinemaPricingPolicyContent = (
     cinemaId: string,
     policyId: string,
  ) => {
-      return apiRequest<CinemaPricingPolicyContentResponse>(
+      return apiRequest<unknown>(
       {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/content`, method: 'GET'
     },
       );
@@ -194,6 +347,101 @@ export const reviewDraftCinemaPricingPolicy = (
     }
   /**
  * Requires inventory:manage.
+ * Supports FARE_MATRIX_V2 drafts only.
+ * expectedVersion refers to policy.version, not policyVersion.
+ *
+ * Reviews required data, fare units, effective periods,
+ * unused dimensions, holiday configuration and ticket categories.
+ * Reports empty category catalogs, unconfirmed category eligibility
+ * and fares referencing unknown category codes.
+ * Unused categories and unverified eligibility rules produce warnings.
+ *
+ * Returns at most 200 issues.
+ * hasErrors includes errors beyond the response limit.
+ *
+ * Does not evaluate full policy coverage, highest-priority ambiguities,
+ * category sale scope, eligibility rule implementations,
+ * customer evidence, surcharge behavior or business confirmation.
+ * publicationValidated is always false.
+ * A report without errors does not authorize publication.
+ * Does not modify the policy.
+ * @summary Review selected configuration issues of a draft fare matrix
+ */
+export const reviewDraftCinemaFareMatrix = (
+    cinemaId: string,
+    policyId: string,
+    reviewCinemaPricingPolicyRequest: ReviewCinemaPricingPolicyRequest,
+ ) => {
+      return apiRequest<CinemaFareMatrixReviewResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/fare-matrix/review`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: reviewCinemaPricingPolicyRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * Supports VND FARE_MATRIX_V2 drafts only.
+ * expectedVersion refers to policy.version, not policyVersion.
+ * Uses the policy time zone and holiday calendar.
+ *
+ * First-showing and eligibility inputs are hypothetical.
+ * Room, movie, physical seat compatibility and customer
+ * eligibility are not verified.
+ *
+ * Returns MATCHED, GAP or AMBIGUOUS with highest-priority winners.
+ * Equal-priority winners remain ambiguous even when amounts match.
+ * MATCHED does not confirm the fare unit or publication readiness.
+ *
+ * Does not calculate additional surcharges, produce a booking
+ * quote, authorize payment or modify stored configuration.
+ * @summary Simulate one fare selection using a draft matrix
+ */
+export const previewDraftCinemaFareMatrix = (
+    cinemaId: string,
+    policyId: string,
+    previewDraftFareMatrixRequest: PreviewDraftFareMatrixRequest,
+ ) => {
+      return apiRequest<PreviewDraftFareMatrixResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/fare-matrix/preview`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: previewDraftFareMatrixRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * Supports VND FARE_MATRIX_V2 drafts only.
+ * scenario.expectedVersion refers to policy.version.
+ * scenario.startsAt selects the date in the policy time zone.
+ * fromMinute and toMinute define a half-open local clock window.
+ *
+ * All other scenario conditions remain fixed across the window.
+ * First-showing and eligibility inputs are hypothetical.
+ * Returns MATCHED, GAP or AMBIGUOUS segments.
+ * Equal-priority winners remain ambiguous even when prices match.
+ * Flags cover the complete analysis; at most 200 merged segments return.
+ *
+ * This is local wall-clock analysis, not validated scheduling instants.
+ * Does not establish full policy coverage or publication readiness.
+ * Does not verify eligibility, calculate additional surcharges,
+ * produce a booking quote or modify stored data.
+ * @summary Analyze draft fare coverage within one local-day window
+ */
+export const checkDraftCinemaFareMatrixCoverage = (
+    cinemaId: string,
+    policyId: string,
+    checkDraftFareMatrixCoverageRequest: CheckDraftFareMatrixCoverageRequest,
+ ) => {
+      return apiRequest<DraftFareMatrixCoverageResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/fare-matrix/coverage`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: checkDraftFareMatrixCoverageRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
  * The policy must be DRAFT.
  * expectedVersion refers to policy.version, not policyVersion.
  *
@@ -220,6 +468,32 @@ export const previewDraftCinemaBasePrice = (
     }
   /**
  * Requires inventory:manage.
+ * expectedVersion refers to policy.version.
+ * startsAt identifies the local date in the policy time zone.
+ * fromMinute and toMinute define a half-open local-time window.
+ *
+ * Returns MATCHED, GAP or AMBIGUOUS intervals.
+ * Membership and channel inputs are hypothetical.
+ * Surcharges and customer eligibility are not evaluated.
+ * This is wall-clock rule analysis, not a list of valid scheduling instants.
+ * publicationValidated is always false.
+ * No policy data is modified.
+ * @summary Analyze draft base prices within one local-day window
+ */
+export const checkDraftBasePriceCoverage = (
+    cinemaId: string,
+    policyId: string,
+    checkDraftBasePriceCoverageRequest: CheckDraftBasePriceCoverageRequest,
+ ) => {
+      return apiRequest<DraftBasePriceCoverageResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/base-price-coverage`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: checkDraftBasePriceCoverageRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
  * @summary Get cinema pricing policy metadata
  */
 export const getCinemaPricingPolicyById = (
@@ -231,14 +505,24 @@ export const getCinemaPricingPolicyById = (
     },
       );
     }
-  export type GetCinemaPricingPolicySurchargesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicySurcharges>>>
+  export type GetCinemaPricingTicketCategoriesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingTicketCategories>>>
+export type ReplaceCinemaPricingTicketCategoriesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingTicketCategories>>>
+export type GetCinemaPricingPolicySurchargesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicySurcharges>>>
 export type ReplaceCinemaPricingPolicySurchargesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicySurcharges>>>
+export type GetCinemaPricingSeatTypesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingSeatTypes>>>
+export type ReplaceCinemaPricingSeatTypesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingSeatTypes>>>
 export type GetCinemaPricingPolicyHolidayDatesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyHolidayDates>>>
 export type ReplaceCinemaPricingPolicyHolidayDatesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyHolidayDates>>>
+export type GetCinemaPricingPolicyFareMatrixResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyFareMatrix>>>
+export type ReplaceCinemaPricingPolicyFareMatrixResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyFareMatrix>>>
 export type GetCinemaPricingPolicyContentResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyContent>>>
 export type ReplaceCinemaPricingPolicyContentResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyContent>>>
 export type GetCinemaPricingPoliciesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicies>>>
 export type CreateCinemaPricingPolicyDraftResult = NonNullable<Awaited<ReturnType<typeof createCinemaPricingPolicyDraft>>>
 export type ReviewDraftCinemaPricingPolicyResult = NonNullable<Awaited<ReturnType<typeof reviewDraftCinemaPricingPolicy>>>
+export type ReviewDraftCinemaFareMatrixResult = NonNullable<Awaited<ReturnType<typeof reviewDraftCinemaFareMatrix>>>
+export type PreviewDraftCinemaFareMatrixResult = NonNullable<Awaited<ReturnType<typeof previewDraftCinemaFareMatrix>>>
+export type CheckDraftCinemaFareMatrixCoverageResult = NonNullable<Awaited<ReturnType<typeof checkDraftCinemaFareMatrixCoverage>>>
 export type PreviewDraftCinemaBasePriceResult = NonNullable<Awaited<ReturnType<typeof previewDraftCinemaBasePrice>>>
+export type CheckDraftBasePriceCoverageResult = NonNullable<Awaited<ReturnType<typeof checkDraftBasePriceCoverage>>>
 export type GetCinemaPricingPolicyByIdResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyById>>>

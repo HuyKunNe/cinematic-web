@@ -5,6 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
+import type { CreateCinemaPricingPolicyRequestPricingModel } from './createCinemaPricingPolicyRequestPricingModel';
 
 export interface CreateCinemaPricingPolicyRequest {
   /**
@@ -16,4 +17,6 @@ export interface CreateCinemaPricingPolicyRequest {
   effectiveFrom: string;
   /** Exclusive ending local date. Null means no ending date. */
   effectiveTo?: string;
+  /** Immutable pricing model. Omission or null retains BASE_RULES_V1 compatibility. FARE_MATRIX_V2 creates metadata only until its rule APIs are implemented. */
+  pricingModel?: CreateCinemaPricingPolicyRequestPricingModel;
 }

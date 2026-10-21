@@ -23,6 +23,34 @@ export function instantToLocal(value: string): string {
   return date && time ? `${date}T${time}` : ''
 }
 
+/**
+ * Kiểm tra riêng điều kiện thời gian thay đổi theo đồng hồ.
+ * Trường còn trống được xử lý bằng required và showtimeDraftSchema.
+ */
+export function getShowtimeStartError(
+  date: string,
+  startTime: string,
+  nowMilliseconds: number,
+): string {
+  if (!date || !startTime) return ''
+
+  const startsAt = localToInstant(`${date}T${startTime}`)
+
+  if (!startsAt) {
+    return 'Ngày hoặc giờ bắt đầu không hợp lệ.'
+  }
+
+  if (!Number.isFinite(nowMilliseconds)) {
+    return 'Không xác định được thời gian hiện tại. Vui lòng tải lại trang.'
+  }
+
+  if (Date.parse(startsAt) <= nowMilliseconds) {
+    return 'Giờ bắt đầu phải sau thời điểm hiện tại, theo giờ Việt Nam.'
+  }
+
+  return ''
+}
+
 export const showtimeDraftSchema = z
   .object({
     cinemaId: z.string().uuid('Chọn rạp.'),

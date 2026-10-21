@@ -23,7 +23,6 @@ const layout = computed(() => {
   }
 
   const value = query.data.value
-
   return value?.roomId === props.roomId ? value : null
 })
 
@@ -35,133 +34,72 @@ function reload() {
 
 <template>
   <section
-    class="admin-reference__panel showtime-published-layout"
+    class="admin-reference__panel showtime-create__panel"
     aria-labelledby="showtime-layout-title"
   >
-    <h2 id="showtime-layout-title">Sơ đồ PUBLISHED hiện tại</h2>
+    <header class="showtime-create__panel-heading">
+      <div>
+        <h2 id="showtime-layout-title">Sơ đồ ghế của phòng</h2>
+      </div>
 
-    <p v-if="!roomId" class="admin-reference__description">Chọn rạp và phòng để xem sơ đồ.</p>
+      <span v-if="layout" class="showtime-create__badge showtime-create__badge--success">
+        Đã xuất bản
+      </span>
+    </header>
 
-    <p v-else-if="!canRead" class="admin-reference__description">
-      Bạn chưa có quyền xem sơ đồ phòng. Việc xác nhận sơ đồ cho suất chiếu chưa sẵn sàng.
-    </p>
+    <div class="showtime-create__panel-body">
+      <p v-if="!roomId" class="showtime-create__hint">Chọn rạp và phòng để xem sơ đồ.</p>
 
-    <template v-else>
-      <p
-        v-if="query.isPending.value || query.isFetching.value"
-        class="admin-reference__description"
-        role="status"
-      >
-        Đang tải sơ đồ đã xuất bản…
-      </p>
+      <p v-else-if="!canRead" class="showtime-create__hint">Bạn chưa có quyền xem sơ đồ phòng.</p>
 
-      <p v-else-if="query.isError.value" class="showtime-published-layout__error" role="alert">
-        {{ showtimeErrorMessage(query.error.value, 'Không thể đọc sơ đồ của phòng. Hãy tải lại.') }}
-      </p>
-
-      <template v-else-if="layout">
-        <p class="admin-reference__description">{{ roomName }} · Đã xuất bản</p>
-
-        <dl>
-          <div>
-            <dt>Phiên bản</dt>
-            <dd>{{ layout.layoutVersion }}</dd>
-          </div>
-          <div>
-            <dt>Ma trận</dt>
-            <dd>{{ layout.rows }} hàng × {{ layout.columns }} cột</dd>
-          </div>
-          <div>
-            <dt>Tổng số ghế</dt>
-            <dd>{{ layout.seats }}</dd>
-          </div>
-          <div>
-            <dt>Sức chứa theo sơ đồ</dt>
-            <dd>{{ layout.capacity }} chỗ</dd>
-          </div>
-          <div>
-            <dt>Số loại ghế</dt>
-            <dd>{{ layout.seatTypes }}</dd>
-          </div>
-        </dl>
-
-        <p class="admin-reference__description">
-          Đây là sơ đồ đã xuất bản mới nhất của phòng tại lần tải này. Chưa xác nhận phiên bản sẽ
-          được gắn khi tạo suất chiếu.
+      <template v-else>
+        <p
+          v-if="query.isPending.value || query.isFetching.value"
+          class="showtime-create__hint"
+          role="status"
+        >
+          Đang tải sơ đồ đã xuất bản…
         </p>
 
-        <RouterLink
-          class="admin-reference__link-button showtime-published-layout__link"
-          :to="{
-            name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
-            params: { roomId: layout.roomId },
-            query: { layoutId: layout.id },
-          }"
-        >
-          Xem phiên bản sơ đồ này
-        </RouterLink>
+        <p v-else-if="query.isError.value" class="showtime-create__error" role="alert">
+          {{
+            showtimeErrorMessage(query.error.value, 'Không thể đọc sơ đồ của phòng. Hãy tải lại.')
+          }}
+        </p>
+
+        <template v-else-if="layout">
+          <div class="showtime-create__layout-summary">
+            <span class="showtime-create__layout-icon" aria-hidden="true"> ▦ </span>
+
+            <div>
+              <strong>{{ roomName }} · v{{ layout.layoutVersion }}</strong>
+              <p class="showtime-create__hint">
+                {{ layout.seats }} ghế · {{ layout.capacity }} chỗ · {{ layout.seatTypes }} loại ghế
+              </p>
+            </div>
+          </div>
+
+          <p class="showtime-create__hint">
+            Đang hiển thị sơ đồ đã xuất bản của phòng. Chưa xác nhận phiên bản sẽ được gắn khi tạo
+            suất chiếu.
+          </p>
+
+          <RouterLink
+            class="admin-reference__link-button"
+            :to="{
+              name: ROUTE_NAMES.ADMIN_ROOM_SEATS,
+              params: { roomId: layout.roomId },
+              query: { layoutId: layout.id },
+            }"
+          >
+            Xem phiên bản sơ đồ này
+          </RouterLink>
+        </template>
+
+        <p v-else class="showtime-create__hint" role="status">
+          Phòng chưa có sơ đồ PUBLISHED để hiển thị.
+        </p>
       </template>
-
-      <p v-else class="admin-reference__description" role="status">
-        Phòng chưa có sơ đồ PUBLISHED để hiển thị.
-      </p>
-
-      <footer class="admin-reference__form-actions">
-        <AppButton
-          type="button"
-          variant="secondary"
-          :disabled="query.isFetching.value"
-          :loading="query.isFetching.value"
-          @click="reload"
-        >
-          Tải lại sơ đồ
-        </AppButton>
-      </footer>
-    </template>
+    </div>
   </section>
 </template>
-
-<style scoped>
-[data-reference='admin-showtime-form'] .showtime-published-layout {
-  min-width: 0;
-  padding: var(--space-5);
-}
-
-[data-reference='admin-showtime-form'] .showtime-published-layout h2 {
-  margin: 0;
-  font-size: var(--font-size-lg);
-}
-
-[data-reference='admin-showtime-form'] .showtime-published-layout dl {
-  display: grid;
-  gap: var(--space-3);
-  margin: var(--space-4) 0;
-}
-
-[data-reference='admin-showtime-form'] .showtime-published-layout dl > div {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-2);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-}
-
-[data-reference='admin-showtime-form'] .showtime-published-layout dd {
-  margin: 0;
-  color: var(--color-text-primary);
-}
-
-[data-reference='admin-showtime-form'] .showtime-published-layout__error {
-  color: var(--color-error);
-}
-
-[data-reference='admin-showtime-form'] .showtime-published-layout__link {
-  margin-top: var(--space-4);
-}
-
-[data-reference='admin-showtime-form'] .showtime-published-layout :is(button, a):focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus);
-  outline-offset: var(--space-1);
-}
-</style>

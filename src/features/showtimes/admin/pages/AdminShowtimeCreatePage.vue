@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, watch } from 'vue'
+import { useIntervalFn, useNow } from '@vueuse/core'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
@@ -8,6 +9,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { getCinemaDateKey } from '@/utils/cinema-time'
 import { useShowtimeCreationOptions } from '../api/admin-showtime-create'
 import {
+  getShowtimeStartError,
   instantToLocal,
   localToInstant,
   showtimeDraftSchema,
@@ -60,10 +62,14 @@ const loadingOptions = computed(
   () => cinemas.isFetching.value || movies.isFetching.value || rooms.isFetching.value,
 )
 
+const now = useNow({
+  scheduler: (update) => useIntervalFn(update, 1_000),
+})
+
 const startsAt = computed(() => localToInstant(`${form.date}T${form.startTime}`))
 
 const timingError = computed(() =>
-  form.date && form.startTime && !startsAt.value ? 'Ngày hoặc giờ bắt đầu không hợp lệ.' : '',
+  getShowtimeStartError(form.date, form.startTime, now.value.getTime()),
 )
 
 const estimatedEnd = computed(() => {
@@ -84,8 +90,23 @@ const previewContextReady = computed(
     Boolean(selectedCinema.value) &&
     Boolean(selectedRoom.value) &&
     Boolean(selectedMovie.value) &&
-    showtimeDraftSchema.safeParse(form).success,
+    showtimeDraftSchema.safeParse(form).success &&
+    !timingError.value,
 )
+
+const pricingStatus = computed(() => {
+  if (loadingOptions.value) {
+    return 'Đang tải thông tin rạp, phòng và phim.'
+  }
+
+  if (timingError.value) {
+    return 'Điều chỉnh ngày và giờ bắt đầu trước khi tiếp tục.'
+  }
+
+  return previewContextReady.value
+    ? 'Chức năng xem trước giá theo chính sách rạp chưa sẵn sàng.'
+    : 'Chọn rạp, phòng, phim, ngày và giờ để chuẩn bị xem giá.'
+})
 
 const choiceFields = computed(() => [
   {
@@ -181,9 +202,12 @@ onBeforeUnmount(() => {
 async function reloadOptions() {
   if (!canManage.value || loadingOptions.value) return
 
+  // Ghi nhận trước khi refetch làm selectedCinema tạm thời thành undefined.
+  const shouldReloadRooms = Boolean(selectedCinema.value)
+
   const requests: Promise<unknown>[] = [cinemas.refetch(), movies.refetch()]
 
-  if (selectedCinema.value) {
+  if (shouldReloadRooms) {
     requests.push(rooms.refetch())
   }
 
@@ -265,7 +289,7 @@ async function reloadOptions() {
                     {{ showtimeErrorMessage(field.error, 'Không thể tải lựa chọn.') }}
                     Chọn “Tải lại lựa chọn” để thử lại.
                   </template>
-                  <template v-else-if="!field.context"> Chọn rạp trước. </template>
+                  <template v-else-if="!field.context">Chọn rạp trước.</template>
                   <template v-else-if="field.success && field.options.length === 0">
                     {{ field.empty }}
                   </template>
@@ -279,6 +303,7 @@ async function reloadOptions() {
                   class="admin-reference__input"
                   type="date"
                   required
+                  :aria-invalid="Boolean(timingError)"
                   aria-describedby="showtime-time-feedback"
                 />
               </label>
@@ -351,11 +376,7 @@ async function reloadOptions() {
             <h2 id="showtime-pricing-title">Giá vé dự kiến</h2>
 
             <p class="admin-reference__description" role="status">
-              {{
-                previewContextReady
-                  ? 'Chức năng xem trước giá theo chính sách rạp chưa sẵn sàng.'
-                  : 'Chọn rạp, phòng, phim, ngày và giờ để chuẩn bị xem giá.'
-              }}
+              {{ pricingStatus }}
             </p>
 
             <table class="showtime-create__prices">
@@ -438,8 +459,7 @@ async function reloadOptions() {
   font-size: var(--font-size-lg);
 }
 
-[data-reference='admin-showtime-form'] .showtime-create__fields,
-[data-reference='admin-showtime-form'] .showtime-create__link {
+[data-reference='admin-showtime-form'] .showtime-create__fields {
   margin-top: var(--space-4);
 }
 

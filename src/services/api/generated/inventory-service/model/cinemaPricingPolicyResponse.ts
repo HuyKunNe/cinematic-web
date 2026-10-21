@@ -5,6 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
+import type { CinemaPricingPolicyResponsePricingModel } from './cinemaPricingPolicyResponsePricingModel';
 import type { CinemaPricingPolicyResponseStatus } from './cinemaPricingPolicyResponseStatus';
 
 export interface CinemaPricingPolicyResponse {
@@ -12,9 +13,11 @@ export interface CinemaPricingPolicyResponse {
   cinemaId?: string;
   /** Business policy version within this cinema. */
   policyVersion?: number;
-  /** Optimistic-lock version, separate from policyVersion. */
+  /** Optimistic-lock version. */
   version?: number;
   status?: CinemaPricingPolicyResponseStatus;
+  /** Immutable pricing model, separate from both version fields. */
+  pricingModel: CinemaPricingPolicyResponsePricingModel;
   currency?: string;
   timeZone?: string;
   effectiveFrom?: string;
