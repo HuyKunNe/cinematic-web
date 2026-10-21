@@ -243,15 +243,13 @@ async function reloadOptions() {
         </p>
       </div>
 
-      <AppButton
-        v-if="canManage"
-        type="button"
-        variant="secondary"
-        disabled
-        aria-describedby="showtime-policy-help"
+      <RouterLink
+        v-if="canManage && canViewInventory"
+        class="admin-reference__link-button"
+        :to="{ name: ROUTE_NAMES.ADMIN_PRICING_POLICY }"
       >
         Xem chính sách giá
-      </AppButton>
+      </RouterLink>
     </header>
 
     <p v-if="!canManage" class="showtime-create__error" role="alert">
@@ -259,10 +257,6 @@ async function reloadOptions() {
     </p>
 
     <template v-else>
-      <p id="showtime-policy-help" class="admin-visually-hidden">
-        Trang quản lý chính sách giá chưa sẵn sàng.
-      </p>
-
       <form class="showtime-create__layout" @submit.prevent>
         <div class="showtime-create__main">
           <section
