@@ -25,6 +25,8 @@ export interface DraftFareMatrixCoverageResponse {
   hasGaps?: boolean;
   hasAmbiguities?: boolean;
   hasUnconfirmedUnits?: boolean;
+  hasSurchargeAmbiguities?: boolean;
+  hasUnresolvedSurcharges?: boolean;
   segmentsTruncated?: boolean;
   segments?: MatrixCoverageSegment[];
 }

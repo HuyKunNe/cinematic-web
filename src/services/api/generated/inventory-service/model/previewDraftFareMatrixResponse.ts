@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CinemaPricingPolicyResponse } from './cinemaPricingPolicyResponse';
+import type { DraftFareSurchargeEvaluationResponse } from './draftFareSurchargeEvaluationResponse';
 import type { MatrixFareRuleResponse } from './matrixFareRuleResponse';
 import type { MatrixPreviewContext } from './matrixPreviewContext';
 import type { PreviewDraftFareMatrixResponseStatus } from './previewDraftFareMatrixResponseStatus';
@@ -15,7 +16,7 @@ export interface PreviewDraftFareMatrixResponse {
   simulation?: boolean;
   /** Always false. */
   eligibilityVerified?: boolean;
-  /** Always false. No additional surcharge calculation is performed. */
+  /** True only when fare and additional amounts were calculated for one fare unit. */
   additionalSurchargesEvaluated?: boolean;
   /** Always false. */
   bookingQuote?: boolean;
@@ -25,4 +26,5 @@ export interface PreviewDraftFareMatrixResponse {
   resolved?: MatrixPreviewContext;
   status?: PreviewDraftFareMatrixResponseStatus;
   winners?: MatrixFareRuleResponse[];
+  surchargeEvaluation?: DraftFareSurchargeEvaluationResponse;
 }

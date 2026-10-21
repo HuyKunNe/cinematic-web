@@ -5,6 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
+import type { DraftFareSurchargeEvaluationResponse } from './draftFareSurchargeEvaluationResponse';
 import type { MatrixCoverageSegmentStatus } from './matrixCoverageSegmentStatus';
 import type { MatrixFareRuleResponse } from './matrixFareRuleResponse';
 
@@ -13,4 +14,5 @@ export interface MatrixCoverageSegment {
   toMinute?: number;
   status?: MatrixCoverageSegmentStatus;
   winningRules?: MatrixFareRuleResponse[];
+  surchargeEvaluation?: DraftFareSurchargeEvaluationResponse;
 }

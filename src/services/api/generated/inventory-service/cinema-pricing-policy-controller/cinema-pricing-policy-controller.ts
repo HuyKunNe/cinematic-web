@@ -10,6 +10,7 @@ import type {
   CheckDraftFareMatrixCoverageRequest,
   CinemaFareMatrixResponse,
   CinemaFareMatrixReviewResponse,
+  CinemaFareSurchargesResponse,
   CinemaHolidayDatesResponse,
   CinemaPricingPolicyContentResponse,
   CinemaPricingPolicyResponse,
@@ -26,13 +27,15 @@ import type {
   PreviewDraftFareMatrixRequest,
   PreviewDraftFareMatrixResponse,
   ReplaceCinemaFareMatrixRequest,
+  ReplaceCinemaFareSurchargesRequest,
   ReplaceCinemaHolidayDatesRequest,
   ReplaceCinemaPricingPolicyContentRequest,
   ReplaceCinemaPricingSaleScopesRequest,
   ReplaceCinemaPricingSeatTypesRequest,
   ReplaceCinemaPricingTicketCategoriesRequest,
   ReplaceCinemaSurchargesRequest,
-  ReviewCinemaPricingPolicyRequest
+  ReviewCinemaPricingPolicyRequest,
+  ValidateDraftFareMatrixResponse
 } from '../model';
 
 import { apiRequest } from '../../../../http/axios-instance';
@@ -287,6 +290,44 @@ export const replaceCinemaPricingPolicyFareMatrix = (
       );
     }
   /**
+ * @summary Get V2 fare surcharge configuration
+ */
+export const getCinemaFareSurcharges = (
+    cinemaId: string,
+    policyId: string,
+ ) => {
+      return apiRequest<CinemaFareSurchargesResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/fare-matrix/surcharges`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * expectedVersion refers to policy.version, not policyVersion.
+ * Replaces the mode and complete surcharge list.
+ * NONE requires an empty list.
+ * UNCONFIRMED may be stored while editing a draft.
+ * Rule IDs are regenerated.
+ *
+ * Amounts are integer VND strings.
+ * Fare references are reviewed separately.
+ * Movie attribute and eligibility codes are declarations.
+ * Does not calculate prices, verify conditions or authorize publication.
+ * @summary Replace V2 draft fare surcharge configuration
+ */
+export const replaceCinemaFareSurcharges = (
+    cinemaId: string,
+    policyId: string,
+    replaceCinemaFareSurchargesRequest: ReplaceCinemaFareSurchargesRequest,
+ ) => {
+      return apiRequest<CinemaFareSurchargesResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/fare-matrix/surcharges`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: replaceCinemaFareSurchargesRequest
+    },
+      );
+    }
+  /**
  * Requires inventory:manage.
  * Returns policy metadata, base price rules, holiday dates
  * and surcharge rules from one consistent policy version.
@@ -376,6 +417,43 @@ export const reviewDraftCinemaPricingPolicy = (
  ) => {
       return apiRequest<CinemaPricingPolicyReviewResponse>(
       {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/review`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: reviewCinemaPricingPolicyRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * Supports FARE_MATRIX_V2 drafts only.
+ * expectedVersion refers to policy.version, not policyVersion.
+ *
+ * Runs configuration review first.
+ * Checks declared sale scopes across the policy effective period,
+ * known holidays, weekdays, time boundaries and screening conditions.
+ *
+ * Eligibility codes are independent positive predicates.
+ * The current algorithm supports one required code per fare,
+ * together with the category's required code.
+ * It does not verify real customer eligibility or compatibility
+ * between eligibility codes.
+ *
+ * Returns at most 200 matrix findings.
+ * COMPLETE means analysis finished, not necessarily valid.
+ * ANALYSIS_LIMIT_REACHED never produces matrixValid=true.
+ * Finding counts cover findings discovered before analysis stops.
+ *
+ * publicationValidated is always false.
+ * Does not evaluate surcharges, publish policies, create quotes,
+ * validate scheduling instants or modify stored data.
+ * @summary Validate draft fare coverage and priority determinism
+ */
+export const validateDraftCinemaFareMatrix = (
+    cinemaId: string,
+    policyId: string,
+    reviewCinemaPricingPolicyRequest: ReviewCinemaPricingPolicyRequest,
+ ) => {
+      return apiRequest<ValidateDraftFareMatrixResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/fare-matrix/validate`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: reviewCinemaPricingPolicyRequest
     },
@@ -553,11 +631,14 @@ export type GetCinemaPricingPolicyHolidayDatesResult = NonNullable<Awaited<Retur
 export type ReplaceCinemaPricingPolicyHolidayDatesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyHolidayDates>>>
 export type GetCinemaPricingPolicyFareMatrixResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyFareMatrix>>>
 export type ReplaceCinemaPricingPolicyFareMatrixResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyFareMatrix>>>
+export type GetCinemaFareSurchargesResult = NonNullable<Awaited<ReturnType<typeof getCinemaFareSurcharges>>>
+export type ReplaceCinemaFareSurchargesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaFareSurcharges>>>
 export type GetCinemaPricingPolicyContentResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyContent>>>
 export type ReplaceCinemaPricingPolicyContentResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyContent>>>
 export type GetCinemaPricingPoliciesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicies>>>
 export type CreateCinemaPricingPolicyDraftResult = NonNullable<Awaited<ReturnType<typeof createCinemaPricingPolicyDraft>>>
 export type ReviewDraftCinemaPricingPolicyResult = NonNullable<Awaited<ReturnType<typeof reviewDraftCinemaPricingPolicy>>>
+export type ValidateDraftCinemaFareMatrixResult = NonNullable<Awaited<ReturnType<typeof validateDraftCinemaFareMatrix>>>
 export type ReviewDraftCinemaFareMatrixResult = NonNullable<Awaited<ReturnType<typeof reviewDraftCinemaFareMatrix>>>
 export type PreviewDraftCinemaFareMatrixResult = NonNullable<Awaited<ReturnType<typeof previewDraftCinemaFareMatrix>>>
 export type CheckDraftCinemaFareMatrixCoverageResult = NonNullable<Awaited<ReturnType<typeof checkDraftCinemaFareMatrixCoverage>>>

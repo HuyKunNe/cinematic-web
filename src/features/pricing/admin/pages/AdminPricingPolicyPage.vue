@@ -6,6 +6,8 @@ import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
 import { pricingErrorMessage, useAdminPricingQueries } from '../api/admin-pricing-queries'
+import AdminPricingMatrix from '../components/AdminPricingMatrix.vue'
+import AdminPricingDraftCreate from '../components/AdminPricingDraftCreate.vue'
 
 const auth = useAuthStore()
 
@@ -107,7 +109,7 @@ async function reload() {
           <div>
             <h2 id="pricing-meta-title">Thông tin policy</h2>
             <p class="admin-reference__description">
-              Chọn rạp và phiên bản để xem thông tin. Trang hiện chỉ đọc.
+              Chọn phiên bản để xem thông tin hoặc tạo một bản nháp mới.
             </p>
           </div>
 
@@ -250,6 +252,32 @@ async function reload() {
           cụ thể. Trang này chưa đánh giá giá vé, coverage, điều kiện ưu đãi hoặc khả năng mở bán.
         </p>
       </section>
+      <AdminPricingMatrix
+        v-if="selectedPolicy?.pricingModel === 'FARE_MATRIX_V2'"
+        :key="`${selectedPolicy.id}:${selectedPolicy.version}`"
+        :cinema-id="selectedPolicy.cinemaId"
+        :policy-id="selectedPolicy.id"
+        :version="selectedPolicy.version"
+        :can-read="canRead"
+      />
+
+      <AdminPricingDraftCreate
+        v-if="cinemaId"
+        :key="cinemaId"
+        :cinema-id="cinemaId"
+        :can-create="
+          canRead &&
+          Boolean(selectedCinema) &&
+          policies.isSuccess.value &&
+          !policies.isFetching.value
+        "
+        @created="policyId = $event.cinemaId === cinemaId ? $event.id : policyId"
+      />
+
+      <p v-else-if="selectedPolicy" class="pricing-policy__notice" role="status">
+        Phiên bản này dùng mô hình BASE_RULES_V1. Bảng ma trận FARE_MATRIX_V2 không áp dụng cho
+        phiên bản này.
+      </p>
     </template>
   </section>
 </template>
