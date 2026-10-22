@@ -9,6 +9,7 @@ import AdminPricingCategoriesEditor from '../components/AdminPricingCategoriesEd
 import AdminPricingMatrix from '../components/AdminPricingMatrix.vue'
 import AdminPricingDraftCreate from '../components/AdminPricingDraftCreate.vue'
 import AdminPricingSeatTypes from '../components/AdminPricingSeatTypes.vue'
+import AdminPricingDimensions from '../components/AdminPricingDimensions.vue'
 
 const auth = useAuthStore()
 
@@ -22,6 +23,7 @@ const policyId = ref('')
 const policyCinemaId = ref('')
 const categoryLocked = ref(false)
 const seatLocked = ref(false)
+const dimensionLocked = ref(false)
 const creating = ref(false)
 const reloading = ref(false)
 const notice = ref('')
@@ -64,7 +66,9 @@ const loading = computed(
   () => reloading.value || cinemas.isFetching.value || policies.isFetching.value,
 )
 
-const contextLocked = computed(() => categoryLocked.value || seatLocked.value || creating.value)
+const contextLocked = computed(
+  () => categoryLocked.value || seatLocked.value || dimensionLocked.value || creating.value,
+)
 
 const currentStep = computed(() => {
   if (!selectedPolicy.value) return 1
@@ -123,6 +127,26 @@ async function onSeatSaved() {
   if (canRead.value && selectedCinema.value && policyCinemaId.value === selectedCinema.value.id) {
     await policies.refetch()
   }
+}
+
+function onDimensionLocked(value: boolean) {
+  dimensionLocked.value = value
+  if (value) notice.value = ''
+}
+
+async function onDimensionSaved() {
+  dimensionLocked.value = false
+  notice.value = 'Đã lưu cấu hình ngày và khung giờ.'
+
+  if (canRead.value && selectedCinema.value && policyCinemaId.value === selectedCinema.value.id) {
+    await policies.refetch()
+  }
+}
+
+async function onDimensionReload() {
+  dimensionLocked.value = false
+  notice.value = ''
+  await reload()
 }
 
 async function onSeatReload() {
@@ -322,9 +346,11 @@ function onDraftCreated(draft: CreatedPricingDraft) {
               ? 'Lưu hoặc hủy thay đổi loại vé trước khi chuyển rạp hay bản giá.'
               : seatLocked
                 ? 'Lưu hoặc hủy thông tin loại ghế trước khi chuyển rạp hay bản giá.'
-                : creating
-                  ? 'Đang tạo bản giá mới…'
-                  : ''
+                : dimensionLocked
+                  ? 'Lưu hoặc hủy cấu hình ngày và giờ trước khi chuyển rạp hay bản giá.'
+                  : creating
+                    ? 'Đang tạo bản giá mới…'
+                    : ''
           }}
         </p>
 
@@ -340,7 +366,7 @@ function onDraftCreated(draft: CreatedPricingDraft) {
         <AdminPricingDraftCreate
           :key="selectedCinema.id"
           :cinema-id="selectedCinema.id"
-          :can-create="canRead && !categoryLocked && !seatLocked && !loading"
+          :can-create="canRead && !categoryLocked && !seatLocked && !dimensionLocked && !loading"
           @busy="creating = $event"
           @created="onDraftCreated"
           @cancel="showCreate = false"
@@ -362,7 +388,7 @@ function onDraftCreated(draft: CreatedPricingDraft) {
           :policy-id="selectedPolicy.id"
           :version="selectedPolicy.version"
           :can-read="canRead"
-          :can-edit="!creating && !seatLocked"
+          :can-edit="!creating && !seatLocked && !dimensionLocked"
           :selected-code="selectedTicket?.code ?? ''"
           @selected="selectedTicket = $event"
           @locked="onCategoryLocked"
@@ -385,10 +411,21 @@ function onDraftCreated(draft: CreatedPricingDraft) {
               :policy-id="selectedPolicy.id"
               :version="selectedPolicy.version"
               :can-read="canRead"
-              :can-edit="!creating && !categoryLocked"
+              :can-edit="!creating && !categoryLocked && !dimensionLocked"
               @locked="onSeatLocked"
               @saved="onSeatSaved"
               @reload="onSeatReload"
+            />
+
+            <AdminPricingDimensions
+              :cinema-id="selectedPolicy.cinemaId"
+              :policy-id="selectedPolicy.id"
+              :version="selectedPolicy.version"
+              :can-read="canRead"
+              :can-edit="!creating && !categoryLocked && !seatLocked"
+              @locked="onDimensionLocked"
+              @saved="onDimensionSaved"
+              @reload="onDimensionReload"
             />
           </template>
         </AdminPricingMatrix>

@@ -23,7 +23,7 @@ export interface CreateCinemaRequest {
      */
   city: string;
   /**
-     * Region-based time zone supported by the server. Optional during migration; omission leaves it unconfigured.
+     * Region-based time zone supported by the server. Omission or null defaults to Asia/Ho_Chi_Minh when creating a cinema. Blank or unsupported values are rejected.
      * @minLength 0
      * @maxLength 64
      */

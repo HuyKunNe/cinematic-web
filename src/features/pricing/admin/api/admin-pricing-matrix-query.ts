@@ -9,6 +9,8 @@ import { MatrixFareRuleResponseExperienceType } from '@/services/api/generated/i
 import { MatrixFareRuleResponseContentFormat } from '@/services/api/generated/inventory-service/model/matrixFareRuleResponseContentFormat'
 import { MatrixFareRuleResponseFareUnit } from '@/services/api/generated/inventory-service/model/matrixFareRuleResponseFareUnit'
 import { MatrixFareRuleResponseAdvanceScreeningCondition } from '@/services/api/generated/inventory-service/model/matrixFareRuleResponseAdvanceScreeningCondition'
+import { DayGroupInputDaysOfWeekItem } from '@/services/api/generated/inventory-service/model/dayGroupInputDaysOfWeekItem'
+import { CinemaPricingPolicyResponseStatus } from '@/services/api/generated/inventory-service/model/cinemaPricingPolicyResponseStatus'
 
 const uuid = z.string().uuid()
 const code = z.string().trim().min(1)
@@ -17,6 +19,7 @@ const policySchema = z.object({
   id: uuid,
   cinemaId: uuid,
   version: z.number().int().nonnegative(),
+  status: z.nativeEnum(CinemaPricingPolicyResponseStatus),
   pricingModel: z.literal('FARE_MATRIX_V2'),
   currency: code,
   timeZone: code,
@@ -24,7 +27,15 @@ const policySchema = z.object({
 
 const matrixSchema = z.object({
   policy: policySchema,
-  dayGroups: z.array(z.object({ id: uuid, code, name: code })),
+  dayGroups: z.array(
+    z.object({
+      id: uuid,
+      code,
+      name: code,
+      daysOfWeek: z.array(z.nativeEnum(DayGroupInputDaysOfWeekItem)).max(7),
+      includesHolidays: z.boolean(),
+    }),
+  ),
   timeBands: z.array(
     z.object({
       id: uuid,
@@ -129,6 +140,7 @@ export function useAdminPricingMatrixQuery(
     staleTime: 0,
     refetchOnMount: 'always',
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     retry: false,
   })
 }

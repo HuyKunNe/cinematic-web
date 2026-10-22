@@ -6,14 +6,20 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export * from './apiResponseBookingQuoteResponse';
 export * from './apiResponseBookingResponse';
 export * from './apiResponsePageResponseBookingResponse';
+export * from './bookingQuoteResponse';
 export * from './bookingResponse';
 export * from './bookingResponseStatus';
 export * from './bookingSeatResponse';
+export * from './createBookingQuoteRequest';
 export * from './createBookingRequest';
+export * from './eligibilityEvidence';
 export * from './errorBody';
 export * from './findAllParams';
+export * from './item';
+export * from './line';
 export * from './pageInfo';
 export * from './pageResponseBookingResponse';
 export * from './validationError';

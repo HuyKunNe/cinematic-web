@@ -22,10 +22,13 @@ import type {
   CreateCinemaPricingPolicyRequest,
   DraftBasePriceCoverageResponse,
   DraftFareMatrixCoverageResponse,
+  GetActiveCinemaPricingPolicyParams,
   PreviewDraftBasePriceRequest,
   PreviewDraftBasePriceResponse,
   PreviewDraftFareMatrixRequest,
   PreviewDraftFareMatrixResponse,
+  PublishCinemaPricingPolicyRequest,
+  PublishCinemaPricingPolicyResponse,
   ReplaceCinemaFareMatrixRequest,
   ReplaceCinemaFareSurchargesRequest,
   ReplaceCinemaHolidayDatesRequest,
@@ -427,6 +430,37 @@ export const reviewDraftCinemaPricingPolicy = (
  * Supports FARE_MATRIX_V2 drafts only.
  * expectedVersion refers to policy.version, not policyVersion.
  *
+ * Locks cinema and policy, checks published-period conflicts,
+ * and re-runs full matrix validation before publication.
+ *
+ * Business confirmation and its reference are required.
+ * Publisher identity comes from the authenticated user.
+ *
+ * Returns published=false with validation details and HTTP 422
+ * when matrix analysis fails or reaches its resource limit.
+ *
+ * Published configuration is immutable.
+ * This does not verify an actual customer's eligibility,
+ * create a showtime, calculate a booking quote or open sales.
+ * @summary Publish a confirmed all-inclusive fare matrix
+ */
+export const publishCinemaPricingPolicy = (
+    cinemaId: string,
+    policyId: string,
+    publishCinemaPricingPolicyRequest: PublishCinemaPricingPolicyRequest,
+ ) => {
+      return apiRequest<PublishCinemaPricingPolicyResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/publish`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: publishCinemaPricingPolicyRequest
+    },
+      );
+    }
+  /**
+ * Requires inventory:manage.
+ * Supports FARE_MATRIX_V2 drafts only.
+ * expectedVersion refers to policy.version, not policyVersion.
+ *
  * Runs configuration review first.
  * Checks declared sale scopes across the policy effective period,
  * known holidays, weekdays, time boundaries and screening conditions.
@@ -619,6 +653,29 @@ export const getCinemaPricingPolicyById = (
     },
       );
     }
+  /**
+ * Requires inventory:manage.
+ * startsAt must be an ISO-8601 timestamp with offset.
+ * Resolves the policy effective at that instant.
+ *
+ * Each policy's effective dates use its stored time zone.
+ * effectiveFrom is inclusive; effectiveTo is exclusive.
+ * Drafts and policyVersion ordering do not determine selection.
+ *
+ * Returns confirmed FARE_MATRIX_V2 metadata only.
+ * Does not calculate fares or bind a policy to a showtime.
+ * @summary Resolve published policy for a showtime start
+ */
+export const getActiveCinemaPricingPolicy = (
+    cinemaId: string,
+    params: GetActiveCinemaPricingPolicyParams,
+ ) => {
+      return apiRequest<CinemaPricingPolicyResponse>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/active`, method: 'GET',
+        params
+    },
+      );
+    }
   export type GetCinemaPricingTicketCategoriesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingTicketCategories>>>
 export type ReplaceCinemaPricingTicketCategoriesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingTicketCategories>>>
 export type GetCinemaPricingPolicySurchargesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicySurcharges>>>
@@ -638,6 +695,7 @@ export type ReplaceCinemaPricingPolicyContentResult = NonNullable<Awaited<Return
 export type GetCinemaPricingPoliciesResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicies>>>
 export type CreateCinemaPricingPolicyDraftResult = NonNullable<Awaited<ReturnType<typeof createCinemaPricingPolicyDraft>>>
 export type ReviewDraftCinemaPricingPolicyResult = NonNullable<Awaited<ReturnType<typeof reviewDraftCinemaPricingPolicy>>>
+export type PublishCinemaPricingPolicyResult = NonNullable<Awaited<ReturnType<typeof publishCinemaPricingPolicy>>>
 export type ValidateDraftCinemaFareMatrixResult = NonNullable<Awaited<ReturnType<typeof validateDraftCinemaFareMatrix>>>
 export type ReviewDraftCinemaFareMatrixResult = NonNullable<Awaited<ReturnType<typeof reviewDraftCinemaFareMatrix>>>
 export type PreviewDraftCinemaFareMatrixResult = NonNullable<Awaited<ReturnType<typeof previewDraftCinemaFareMatrix>>>
@@ -645,3 +703,4 @@ export type CheckDraftCinemaFareMatrixCoverageResult = NonNullable<Awaited<Retur
 export type PreviewDraftCinemaBasePriceResult = NonNullable<Awaited<ReturnType<typeof previewDraftCinemaBasePrice>>>
 export type CheckDraftBasePriceCoverageResult = NonNullable<Awaited<ReturnType<typeof checkDraftBasePriceCoverage>>>
 export type GetCinemaPricingPolicyByIdResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyById>>>
+export type GetActiveCinemaPricingPolicyResult = NonNullable<Awaited<ReturnType<typeof getActiveCinemaPricingPolicy>>>

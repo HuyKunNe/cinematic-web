@@ -25,4 +25,6 @@ export interface CinemaPricingPolicyResponse {
   publishedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  publishedBy?: string;
+  publicationConfirmationReference?: string;
 }
