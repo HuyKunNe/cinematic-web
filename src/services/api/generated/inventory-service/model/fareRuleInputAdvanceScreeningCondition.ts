@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Explicit fare applicability: REGULAR_SCREENING or ADVANCE_SCREENING. ANY is rejected for fare rules.
+ */
 export type FareRuleInputAdvanceScreeningCondition = typeof FareRuleInputAdvanceScreeningCondition[keyof typeof FareRuleInputAdvanceScreeningCondition];
 
 

@@ -18,4 +18,6 @@ export interface MatrixPreviewContext {
   simulatedReleaseDate?: string;
   simulatedAdvanceScreening?: boolean;
   simulatedEligibilityCodes?: string[];
+  requestedTicketCategoryCode?: string;
+  categoryAdjustmentReason?: string;
 }

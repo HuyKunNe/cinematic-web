@@ -17,4 +17,7 @@ export interface MatrixFinding {
   advanceScreening?: boolean;
   eligibilityCodes?: string[];
   winningFareRuleIds?: string[];
+  movieAttributeCodes?: string[];
+  /** For SURCHARGE_AMOUNT_BOUND_UNPROVEN, these rules form a conservative bound, not a simultaneous-match witness. */
+  surchargeRuleIds?: string[];
 }

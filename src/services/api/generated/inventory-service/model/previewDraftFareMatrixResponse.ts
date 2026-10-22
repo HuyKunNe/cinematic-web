@@ -6,25 +6,17 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CinemaPricingPolicyResponse } from './cinemaPricingPolicyResponse';
-import type { DraftFareSurchargeEvaluationResponse } from './draftFareSurchargeEvaluationResponse';
 import type { MatrixFareRuleResponse } from './matrixFareRuleResponse';
 import type { MatrixPreviewContext } from './matrixPreviewContext';
 import type { PreviewDraftFareMatrixResponseStatus } from './previewDraftFareMatrixResponseStatus';
 
 export interface PreviewDraftFareMatrixResponse {
-  /** Always true. */
   simulation?: boolean;
-  /** Always false. */
   eligibilityVerified?: boolean;
-  /** True only when fare and additional amounts were calculated for one fare unit. */
-  additionalSurchargesEvaluated?: boolean;
-  /** Always false. */
   bookingQuote?: boolean;
-  /** Always false. */
   publicationValidated?: boolean;
   policy?: CinemaPricingPolicyResponse;
   resolved?: MatrixPreviewContext;
   status?: PreviewDraftFareMatrixResponseStatus;
   winners?: MatrixFareRuleResponse[];
-  surchargeEvaluation?: DraftFareSurchargeEvaluationResponse;
 }

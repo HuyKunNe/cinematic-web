@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { PricingTicketCategoryResponseEligibilityMode } from './pricingTicketCategoryResponseEligibilityMode';
+import type { PricingTicketCategoryResponsePricingRole } from './pricingTicketCategoryResponsePricingRole';
 
 export interface PricingTicketCategoryResponse {
   id?: string;
@@ -13,4 +14,5 @@ export interface PricingTicketCategoryResponse {
   name?: string;
   eligibilityMode?: PricingTicketCategoryResponseEligibilityMode;
   eligibilityRuleCode?: string;
+  pricingRole?: PricingTicketCategoryResponsePricingRole;
 }

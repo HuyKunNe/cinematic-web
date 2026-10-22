@@ -38,6 +38,7 @@ export interface FareRuleInput {
      * @maxLength 64
      */
   seatTypeCode: string;
+  /** Explicit fare applicability: REGULAR_SCREENING or ADVANCE_SCREENING. ANY is rejected for fare rules. */
   advanceScreeningCondition: FareRuleInputAdvanceScreeningCondition;
   /**
      * @minLength 0

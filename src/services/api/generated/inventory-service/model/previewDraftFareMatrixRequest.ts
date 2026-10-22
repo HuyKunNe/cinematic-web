@@ -35,12 +35,4 @@ export interface PreviewDraftFareMatrixRequest {
      * @items.maxLength 64
      */
   simulatedEligibilityCodes?: string[];
-  /**
-     * Hypothetical movie attribute codes. Omission means an empty attribute set. Not verified against Movie Service.
-     * @minItems 0
-     * @maxItems 20
-     * @items.minLength 0
-     * @items.maxLength 64
-     */
-  simulatedMovieAttributeCodes?: string[];
 }

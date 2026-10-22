@@ -13,7 +13,6 @@ export interface DraftFareMatrixCoverageResponse {
   policy?: CinemaPricingPolicyResponse;
   simulation?: boolean;
   eligibilityVerified?: boolean;
-  additionalSurchargesEvaluated?: boolean;
   bookingQuote?: boolean;
   publicationValidated?: boolean;
   /** Always true. Segments describe local clock minutes, not validated scheduling instants. */
@@ -25,8 +24,6 @@ export interface DraftFareMatrixCoverageResponse {
   hasGaps?: boolean;
   hasAmbiguities?: boolean;
   hasUnconfirmedUnits?: boolean;
-  hasSurchargeAmbiguities?: boolean;
-  hasUnresolvedSurcharges?: boolean;
   segmentsTruncated?: boolean;
   segments?: MatrixCoverageSegment[];
 }

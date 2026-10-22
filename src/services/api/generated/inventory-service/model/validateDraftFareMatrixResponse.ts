@@ -14,6 +14,8 @@ export interface ValidateDraftFareMatrixResponse {
   policy?: CinemaPricingPolicyResponse;
   status?: ValidateDraftFareMatrixResponseStatus;
   matrixValid?: boolean;
+  /** True only when analysis completes and fare-unit pricing is valid under the declared predicate model. */
+  unitPricingValid?: boolean;
   /** Always false. This result does not authorize publication. */
   publicationValidated?: boolean;
   datesVisited?: number;

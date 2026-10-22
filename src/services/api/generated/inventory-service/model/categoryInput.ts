@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CategoryInputEligibilityMode } from './categoryInputEligibilityMode';
+import type { CategoryInputPricingRole } from './categoryInputPricingRole';
 
 export interface CategoryInput {
   /**
@@ -25,4 +26,6 @@ export interface CategoryInput {
      * @maxLength 64
      */
   eligibilityRuleCode?: string;
+  /** Pricing role. Each complete policy must contain exactly one unrestricted REGULAR category. */
+  pricingRole: CategoryInputPricingRole;
 }
