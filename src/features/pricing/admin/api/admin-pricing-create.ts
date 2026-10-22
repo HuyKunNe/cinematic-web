@@ -39,32 +39,45 @@ export class PricingDraftCreationError extends Error {
 }
 
 function creationError(error: unknown): PricingDraftCreationError {
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'status' in error &&
-    typeof error.status === 'number'
-  ) {
-    if (error.status === 401) {
-      return new PricingDraftCreationError(
-        'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
-        false,
-      )
+  if (typeof error === 'object' && error !== null) {
+    if ('code' in error) {
+      if (error.code === 'INVENTORY_CINEMA_TIME_ZONE_REQUIRED') {
+        return new PricingDraftCreationError(
+          'Rạp chưa được cấu hình múi giờ. Hãy cập nhật múi giờ của rạp trước khi tạo chính sách giá.',
+          false,
+        )
+      }
+
+      if (error.code === 'INVENTORY_CINEMA_TIME_ZONE_INVALID') {
+        return new PricingDraftCreationError(
+          'Múi giờ của rạp không hợp lệ. Hãy kiểm tra cấu hình múi giờ.',
+          false,
+        )
+      }
     }
 
-    if (error.status === 403) {
-      return new PricingDraftCreationError('Bạn không có quyền tạo chính sách giá.', false)
-    }
+    if ('status' in error && typeof error.status === 'number') {
+      if (error.status === 401) {
+        return new PricingDraftCreationError(
+          'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+          false,
+        )
+      }
 
-    if (error.status === 404) {
-      return new PricingDraftCreationError('Không tìm thấy rạp. Hãy tải lại danh mục.', false)
-    }
+      if (error.status === 403) {
+        return new PricingDraftCreationError('Bạn không có quyền tạo chính sách giá.', false)
+      }
 
-    if ([400, 409, 422].includes(error.status)) {
-      return new PricingDraftCreationError(
-        'Backend từ chối tạo bản nháp. Kiểm tra ngày hiệu lực và cấu hình timezone của rạp.',
-        false,
-      )
+      if (error.status === 404) {
+        return new PricingDraftCreationError('Không tìm thấy rạp. Hãy tải lại danh mục.', false)
+      }
+
+      if ([400, 409, 422].includes(error.status)) {
+        return new PricingDraftCreationError(
+          'Backend từ chối tạo bản nháp. Vui lòng kiểm tra dữ liệu và cấu hình rạp.',
+          false,
+        )
+      }
     }
   }
 

@@ -1230,3 +1230,48 @@
     animation: none !important;
   }
 }
+/* admin-pricing-policies.css */
+@media (max-width: 70rem) {
+  :where([data-reference='admin-pricing-policies']) .pricing-workspace__layout {
+    grid-template-columns: 1fr;
+  }
+
+  :where([data-reference='admin-pricing-policies']) .pricing-type-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 48rem) {
+  :where([data-reference='admin-pricing-policies']) .pricing-page__heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  :where([data-reference='admin-pricing-policies']) .pricing-steps {
+    grid-template-columns: 1fr;
+  }
+
+  :where([data-reference='admin-pricing-policies']) .pricing-policy-context__fields,
+  :where([data-reference='admin-pricing-policies']) .pricing-type-list,
+  :where([data-reference='admin-pricing-policies']) .pricing-type-detail__fields,
+  :where([data-reference='admin-pricing-policies']) .pricing-fares__filters,
+  :where([data-reference='admin-pricing-policies']) .pricing-special-cases__content {
+    grid-template-columns: 1fr;
+  }
+
+  :where([data-reference='admin-pricing-policies']) .pricing-type-detail__field-wide {
+    grid-column: auto;
+  }
+
+  :where([data-reference='admin-pricing-policies']) .pricing-type-detail__actions {
+    justify-content: stretch;
+  }
+
+  :where([data-reference='admin-pricing-policies']) .pricing-type-detail__actions > * {
+    flex: 1 1 100%;
+  }
+
+  :where([data-reference='admin-pricing-policies']) .pricing-fare-table {
+    min-width: 62rem;
+  }
+}

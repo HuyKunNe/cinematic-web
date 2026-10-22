@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { pricingErrorMessage, useAdminPricingQueries } from '../api/admin-pricing-queries'
 import AdminPricingMatrix from '../components/AdminPricingMatrix.vue'
 import AdminPricingDraftCreate from '../components/AdminPricingDraftCreate.vue'
+import AdminPricingCategoriesEditor from '../components/AdminPricingCategoriesEditor.vue'
 
 const auth = useAuthStore()
 
@@ -19,6 +20,9 @@ const canRead = computed(
 const cinemaId = ref('')
 const policyId = ref('')
 const policyCinemaId = ref('')
+const categoryLocked = ref(false)
+const categoryNotice = ref('')
+const reloading = ref(false)
 
 const { cinemas, policies } = useAdminPricingQueries(canRead, policyCinemaId)
 
@@ -50,12 +54,23 @@ const selectedPolicy = computed(() =>
   availablePolicies.value.find((item) => item.id === policyId.value),
 )
 
-const loading = computed(() => cinemas.isFetching.value || policies.isFetching.value)
+const loading = computed(
+  () => reloading.value || cinemas.isFetching.value || policies.isFetching.value,
+)
 
 watch(
   cinemaId,
   () => {
     policyId.value = ''
+    categoryNotice.value = ''
+  },
+  { flush: 'sync' },
+)
+
+watch(
+  policyId,
+  () => {
+    categoryNotice.value = ''
   },
   { flush: 'sync' },
 )
@@ -64,17 +79,57 @@ function statusLabel(status: 'DRAFT' | 'PUBLISHED') {
   return status === 'DRAFT' ? 'Bản nháp' : 'Đã xuất bản'
 }
 
-async function reload() {
-  if (!canRead.value || loading.value) return
+function onCategoryLocked(value: boolean) {
+  categoryLocked.value = value
 
-  const shouldReloadPolicies = Boolean(selectedCinema.value)
-  const requests: Promise<unknown>[] = [cinemas.refetch()]
+  if (value) {
+    categoryNotice.value = ''
+  }
+}
 
-  if (shouldReloadPolicies) {
-    requests.push(policies.refetch())
+async function onCategoriesSaved() {
+  categoryLocked.value = false
+  categoryNotice.value = 'Đã lưu danh mục nhóm vé.'
+
+  if (!canRead.value || !selectedCinema.value || policyCinemaId.value !== selectedCinema.value.id) {
+    return
   }
 
-  await Promise.allSettled(requests)
+  // Nhận revision mới của policy sau khi lưu.
+  await policies.refetch()
+}
+
+async function reload() {
+  if (!canRead.value || loading.value || categoryLocked.value) {
+    return
+  }
+
+  reloading.value = true
+  const requestedCinemaId = cinemaId.value
+
+  try {
+    await cinemas.refetch()
+
+    // Chờ selectedCinema và policyCinemaId cập nhật trước khi refetch.
+    await nextTick()
+
+    if (
+      canRead.value &&
+      selectedCinema.value?.id === requestedCinemaId &&
+      policyCinemaId.value === requestedCinemaId &&
+      !policies.isFetching.value
+    ) {
+      await policies.refetch()
+    }
+  } finally {
+    reloading.value = false
+  }
+}
+
+async function onCategoryReload() {
+  categoryLocked.value = false
+  categoryNotice.value = ''
+  await reload()
 }
 </script>
 
@@ -88,7 +143,9 @@ async function reload() {
       <div>
         <p class="admin-reference__eyebrow">Quản lý giá vé</p>
         <h1 id="pricing-title" tabindex="-1">Chính sách giá</h1>
-        <p class="admin-reference__description">Xem các phiên bản chính sách riêng của từng rạp.</p>
+        <p class="admin-reference__description">
+          Quản lý phiên bản và danh mục nhóm vé riêng của từng rạp.
+        </p>
       </div>
 
       <RouterLink class="admin-reference__link-button" :to="{ name: ROUTE_NAMES.ADMIN_SHOWTIMES }">
@@ -109,7 +166,7 @@ async function reload() {
           <div>
             <h2 id="pricing-meta-title">Thông tin policy</h2>
             <p class="admin-reference__description">
-              Chọn phiên bản để xem thông tin hoặc tạo một bản nháp mới.
+              Chọn phiên bản để xem cấu hình hoặc chỉnh danh mục trên bản nháp.
             </p>
           </div>
 
@@ -117,7 +174,7 @@ async function reload() {
             type="button"
             variant="secondary"
             :loading="loading"
-            :disabled="loading"
+            :disabled="loading || categoryLocked"
             @click="reload"
           >
             Tải lại
@@ -131,8 +188,10 @@ async function reload() {
             <select
               v-model="cinemaId"
               class="admin-reference__input"
-              :disabled="cinemas.isFetching.value || cinemas.isError.value"
-              aria-describedby="pricing-cinema-feedback"
+              :disabled="
+                categoryLocked || reloading || cinemas.isFetching.value || cinemas.isError.value
+              "
+              aria-describedby="pricing-cinema-feedback pricing-edit-help"
             >
               <option value="">Chọn rạp</option>
 
@@ -153,12 +212,14 @@ async function reload() {
               v-model="policyId"
               class="admin-reference__input"
               :disabled="
+                categoryLocked ||
+                reloading ||
                 !selectedCinema ||
                 policies.isFetching.value ||
                 policies.isError.value ||
                 availablePolicies.length === 0
               "
-              aria-describedby="pricing-policy-feedback"
+              aria-describedby="pricing-policy-feedback pricing-edit-help"
             >
               <option value="">Chọn phiên bản</option>
 
@@ -168,6 +229,12 @@ async function reload() {
             </select>
           </label>
         </div>
+
+        <p id="pricing-edit-help" class="pricing-policy__hint" role="status">
+          {{
+            categoryLocked ? 'Lưu hoặc bỏ thay đổi nhóm vé trước khi chuyển rạp hay phiên bản.' : ''
+          }}
+        </p>
 
         <div id="pricing-cinema-feedback" aria-live="polite">
           <p v-if="cinemas.isPending.value || cinemas.isFetching.value">Đang tải danh mục rạp…</p>
@@ -204,6 +271,10 @@ async function reload() {
             Đang xem v{{ selectedPolicy.policyVersion }} · {{ statusLabel(selectedPolicy.status) }}.
           </p>
         </div>
+
+        <p v-if="categoryNotice" class="pricing-policy__notice" role="status">
+          {{ categoryNotice }}
+        </p>
 
         <dl v-if="selectedPolicy" class="pricing-policy__metadata">
           <div>
@@ -243,23 +314,47 @@ async function reload() {
 
           <div>
             <dt>Ngày kết thúc hiệu lực</dt>
-            <dd>{{ selectedPolicy.effectiveTo ?? 'Không giới hạn ngày kết thúc' }}</dd>
+            <dd>
+              {{ selectedPolicy.effectiveTo ?? 'Không giới hạn ngày kết thúc' }}
+            </dd>
           </div>
         </dl>
 
         <p class="pricing-policy__notice">
-          Trạng thái “Đã xuất bản” không xác nhận đây là chính sách đang áp dụng cho một suất chiếu
-          cụ thể. Trang này chưa đánh giá giá vé, coverage, điều kiện ưu đãi hoặc khả năng mở bán.
+          Đang xem cấu hình của phiên bản đã chọn. Giá áp dụng cho suất chiếu phải được Backend xác
+          nhận theo rạp, thời gian và điều kiện thực tế.
         </p>
       </section>
+
+      <AdminPricingCategoriesEditor
+        v-if="selectedPolicy?.pricingModel === 'FARE_MATRIX_V2'"
+        :key="`categories:${selectedPolicy.id}:${selectedPolicy.version}`"
+        :cinema-id="selectedPolicy.cinemaId"
+        :policy-id="selectedPolicy.id"
+        :version="selectedPolicy.version"
+        :can-read="canRead"
+        @locked="onCategoryLocked"
+        @saved="onCategoriesSaved"
+        @reload="onCategoryReload"
+      />
+
       <AdminPricingMatrix
         v-if="selectedPolicy?.pricingModel === 'FARE_MATRIX_V2'"
-        :key="`${selectedPolicy.id}:${selectedPolicy.version}`"
+        :key="`matrix:${selectedPolicy.id}:${selectedPolicy.version}`"
         :cinema-id="selectedPolicy.cinemaId"
         :policy-id="selectedPolicy.id"
         :version="selectedPolicy.version"
         :can-read="canRead"
       />
+
+      <p
+        v-else-if="selectedPolicy"
+        class="pricing-policy__notice pricing-policy__section"
+        role="status"
+      >
+        Phiên bản này dùng mô hình BASE_RULES_V1. Bảng ma trận FARE_MATRIX_V2 không áp dụng cho
+        phiên bản này.
+      </p>
 
       <AdminPricingDraftCreate
         v-if="cinemaId"
@@ -267,17 +362,14 @@ async function reload() {
         :cinema-id="cinemaId"
         :can-create="
           canRead &&
+          !categoryLocked &&
+          !reloading &&
           Boolean(selectedCinema) &&
           policies.isSuccess.value &&
           !policies.isFetching.value
         "
         @created="policyId = $event.cinemaId === cinemaId ? $event.id : policyId"
       />
-
-      <p v-else-if="selectedPolicy" class="pricing-policy__notice" role="status">
-        Phiên bản này dùng mô hình BASE_RULES_V1. Bảng ma trận FARE_MATRIX_V2 không áp dụng cho
-        phiên bản này.
-      </p>
     </template>
   </section>
 </template>
@@ -340,6 +432,11 @@ async function reload() {
   line-height: var(--line-height-base);
 }
 
+[data-reference='admin-pricing-policy'] .pricing-policy__hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
 [data-reference='admin-pricing-policy'] .pricing-policy__notice {
   padding: var(--space-4);
   border: var(--border-width-thin) solid var(--color-border);
@@ -347,6 +444,10 @@ async function reload() {
   background: var(--color-surface-raised);
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+}
+
+[data-reference='admin-pricing-policy'] .pricing-policy__section {
+  margin-top: var(--space-5);
 }
 
 [data-reference='admin-pricing-policy'] .pricing-policy__error {

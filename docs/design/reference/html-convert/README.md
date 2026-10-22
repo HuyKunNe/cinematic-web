@@ -61,6 +61,7 @@ Kiểm tra các trang responsive ở 390, 768, 1024 và 1440px.
 | Admin    | [admin-showtime-form.html](./admin-showtime-form.html)         |
 | Admin    | [admin-showtimes.html](./admin-showtimes.html)                 |
 | Admin    | [admin-users.html](./admin-users.html)                         |
+| Admin    | [admin-pricing-policies.html](./admin-pricing-policies.html)   |
 | Customer | [cinematic-cinema-detail.html](./cinematic-cinema-detail.html) |
 | Customer | [cinematic-cinemas.html](./cinematic-cinemas.html)             |
 | Customer | [cinematic-home-desktop.html](./cinematic-home-desktop.html)   |
