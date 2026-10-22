@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { useAdminPricingMatrixQuery } from '../api/admin-pricing-matrix-query'
-
+import AdminPricingFareCreate from './AdminPricingFareCreate.vue'
 const props = defineProps<{
   cinemaId: string
   policyId: string
@@ -10,7 +10,16 @@ const props = defineProps<{
   canRead: boolean
   categoryCode: string
   categoryName: string
+  canEdit: boolean
 }>()
+
+const emit = defineEmits<{
+  locked: [value: boolean]
+  saved: []
+  reload: []
+}>()
+
+const showCreate = ref(false)
 
 const query = useAdminPricingMatrixQuery(
   () => ({
@@ -45,6 +54,41 @@ const matrix = computed(() => {
     ? value
     : undefined
 })
+
+const canCreate = computed(() => {
+  const value = matrix.value
+  const category = value?.ticketCategories.find((item) => item.code === props.categoryCode)
+
+  return (
+    props.canRead &&
+    props.canEdit &&
+    !showCreate.value &&
+    value?.policy.status === 'DRAFT' &&
+    value.policy.currency === 'VND' &&
+    category?.pricingRole === 'REGULAR' &&
+    category.eligibilityMode === 'UNRESTRICTED' &&
+    value.dayGroups.length > 0 &&
+    value.timeBands.length > 0 &&
+    value.seatTypes.some(
+      (item) => item.mappingStatus === 'CONFIRMED' && item.physicalSeatType !== null,
+    ) &&
+    value.fareRules.length < 2000
+  )
+})
+
+function openCreate() {
+  if (canCreate.value) showCreate.value = true
+}
+
+function fareSaved() {
+  showCreate.value = false
+  emit('saved')
+}
+
+function fareReload() {
+  showCreate.value = false
+  emit('reload')
+}
 
 const categoryRules = computed(() =>
   (matrix.value?.fareRules ?? []).filter((item) => item.ticketCategoryCode === props.categoryCode),
@@ -149,13 +193,28 @@ function reload() {
       <AppButton
         type="button"
         variant="secondary"
-        disabled
+        :disabled="!canCreate"
         aria-describedby="pricing-add-fare-help"
+        @click="openCreate"
       >
         Thêm mức giá
       </AppButton>
     </header>
     <slot name="setup" />
+    <AdminPricingFareCreate
+      v-if="showCreate"
+      :cinema-id="cinemaId"
+      :policy-id="policyId"
+      :version="version"
+      :category-code="categoryCode"
+      :category-name="categoryName"
+      :can-read="canRead"
+      :can-edit="canEdit"
+      @locked="emit('locked', $event)"
+      @cancel="showCreate = false"
+      @saved="fareSaved"
+      @reload="fareReload"
+    />
     <p v-if="!categoryCode" class="pricing-fares__message">
       Chọn loại vé ở phía trên để xem mức giá.
     </p>
@@ -266,8 +325,9 @@ function reload() {
     </template>
 
     <p id="pricing-add-fare-help" class="pricing-fares__note">
-      Chức năng thêm mức giá đang được hoàn thiện. Giá áp dụng thực tế được xác nhận theo bản giá và
-      suất chiếu được chọn. Giá mỗi cặp được tính một lần cho cả cặp ghế.
+      Chọn vé thông thường và cấu hình đủ ngày, giờ, loại ghế để thêm mức giá cho chiếu thường
+      2D/3D. Giá được lưu là giá trọn gói; giá mỗi cặp được tính một lần cho cả cặp ghế đôi. Bản giá
+      đã công bố chỉ có thể xem.
     </p>
   </section>
 </template>

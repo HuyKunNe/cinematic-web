@@ -24,6 +24,7 @@ const policyCinemaId = ref('')
 const categoryLocked = ref(false)
 const seatLocked = ref(false)
 const dimensionLocked = ref(false)
+const fareLocked = ref(false)
 const creating = ref(false)
 const reloading = ref(false)
 const notice = ref('')
@@ -67,7 +68,12 @@ const loading = computed(
 )
 
 const contextLocked = computed(
-  () => categoryLocked.value || seatLocked.value || dimensionLocked.value || creating.value,
+  () =>
+    categoryLocked.value ||
+    seatLocked.value ||
+    dimensionLocked.value ||
+    fareLocked.value ||
+    creating.value,
 )
 
 const currentStep = computed(() => {
@@ -127,6 +133,26 @@ async function onSeatSaved() {
   if (canRead.value && selectedCinema.value && policyCinemaId.value === selectedCinema.value.id) {
     await policies.refetch()
   }
+}
+
+function onFareLocked(value: boolean) {
+  fareLocked.value = value
+  if (value) notice.value = ''
+}
+
+async function onFareSaved() {
+  fareLocked.value = false
+  notice.value = 'Đã lưu mức giá vào bản nháp.'
+
+  if (canRead.value && selectedCinema.value && policyCinemaId.value === selectedCinema.value.id) {
+    await policies.refetch()
+  }
+}
+
+async function onFareReload() {
+  fareLocked.value = false
+  notice.value = ''
+  await reload()
 }
 
 function onDimensionLocked(value: boolean) {
@@ -342,19 +368,19 @@ function onDraftCreated(draft: CreatedPricingDraft) {
 
         <p id="pricing-lock-help" class="pricing-hint" role="status">
           {{
-            categoryLocked
-              ? 'Lưu hoặc hủy thay đổi loại vé trước khi chuyển rạp hay bản giá.'
-              : seatLocked
-                ? 'Lưu hoặc hủy thông tin loại ghế trước khi chuyển rạp hay bản giá.'
-                : dimensionLocked
-                  ? 'Lưu hoặc hủy cấu hình ngày và giờ trước khi chuyển rạp hay bản giá.'
-                  : creating
-                    ? 'Đang tạo bản giá mới…'
-                    : ''
+            fareLocked
+              ? 'Lưu hoặc hủy mức giá trước khi chuyển loại vé, rạp hay bản giá.'
+              : categoryLocked
+                ? 'Lưu hoặc hủy thay đổi loại vé trước khi chuyển rạp hay bản giá.'
+                : seatLocked
+                  ? 'Lưu hoặc hủy thông tin loại ghế trước khi chuyển rạp hay bản giá.'
+                  : dimensionLocked
+                    ? 'Lưu hoặc hủy cấu hình ngày và giờ trước khi chuyển rạp hay bản giá.'
+                    : creating
+                      ? 'Đang tạo bản giá mới…'
+                      : ''
           }}
         </p>
-
-        <p v-if="notice" class="pricing-help" role="status">{{ notice }}</p>
       </section>
 
       <section
@@ -366,7 +392,9 @@ function onDraftCreated(draft: CreatedPricingDraft) {
         <AdminPricingDraftCreate
           :key="selectedCinema.id"
           :cinema-id="selectedCinema.id"
-          :can-create="canRead && !categoryLocked && !seatLocked && !dimensionLocked && !loading"
+          :can-create="
+            canRead && !categoryLocked && !seatLocked && !dimensionLocked && !fareLocked && !loading
+          "
           @busy="creating = $event"
           @created="onDraftCreated"
           @cancel="showCreate = false"
@@ -374,21 +402,14 @@ function onDraftCreated(draft: CreatedPricingDraft) {
       </section>
 
       <template v-if="selectedPolicy?.pricingModel === 'FARE_MATRIX_V2'">
-        <aside class="pricing-help" aria-label="Hướng dẫn ngắn">
-          <span class="pricing-help__icon" aria-hidden="true">i</span>
-          <p>
-            Trước tiên hãy chọn loại vé. Sau đó, bạn có thể xem giá theo ngày, giờ, hình thức chiếu
-            và loại ghế.
-          </p>
-        </aside>
-
         <AdminPricingCategoriesEditor
           :key="`types:${selectedPolicy.id}:${selectedPolicy.version}`"
           :cinema-id="selectedPolicy.cinemaId"
           :policy-id="selectedPolicy.id"
           :version="selectedPolicy.version"
           :can-read="canRead"
-          :can-edit="!creating && !seatLocked && !dimensionLocked"
+          :can-edit="!creating && !seatLocked && !dimensionLocked && !fareLocked"
+          :selection-locked="fareLocked"
           :selected-code="selectedTicket?.code ?? ''"
           @selected="selectedTicket = $event"
           @locked="onCategoryLocked"
@@ -404,6 +425,10 @@ function onDraftCreated(draft: CreatedPricingDraft) {
           :can-read="canRead"
           :category-code="selectedTicket?.code ?? ''"
           :category-name="selectedTicket?.name ?? ''"
+          :can-edit="!creating && !categoryLocked && !seatLocked && !dimensionLocked"
+          @locked="onFareLocked"
+          @saved="onFareSaved"
+          @reload="onFareReload"
         >
           <template #setup>
             <AdminPricingSeatTypes
@@ -411,7 +436,7 @@ function onDraftCreated(draft: CreatedPricingDraft) {
               :policy-id="selectedPolicy.id"
               :version="selectedPolicy.version"
               :can-read="canRead"
-              :can-edit="!creating && !categoryLocked && !dimensionLocked"
+              :can-edit="!creating && !categoryLocked && !dimensionLocked && !fareLocked"
               @locked="onSeatLocked"
               @saved="onSeatSaved"
               @reload="onSeatReload"
@@ -422,29 +447,13 @@ function onDraftCreated(draft: CreatedPricingDraft) {
               :policy-id="selectedPolicy.id"
               :version="selectedPolicy.version"
               :can-read="canRead"
-              :can-edit="!creating && !categoryLocked && !seatLocked"
+              :can-edit="!creating && !categoryLocked && !seatLocked && !fareLocked"
               @locked="onDimensionLocked"
               @saved="onDimensionSaved"
               @reload="onDimensionReload"
             />
           </template>
         </AdminPricingMatrix>
-        <details class="admin-reference__panel pricing-special-cases">
-          <summary>Cách tính giá trong một số trường hợp đặc biệt</summary>
-          <div class="pricing-special-cases__content">
-            <article>
-              <h3>Suất chiếu sớm</h3>
-              <p>
-                Ưu đãi thứ Hai, ưu đãi thành viên và ưu đãi C’Ten sẽ dùng giá vé thông thường của
-                suất chiếu sớm.
-              </p>
-            </article>
-            <article>
-              <h3>Rạp cao cấp</h3>
-              <p>Vé ưu đãi theo nhóm khách sẽ dùng mức giá vé thông thường tại rạp cao cấp.</p>
-            </article>
-          </div>
-        </details>
       </template>
 
       <p v-else-if="selectedPolicy" class="pricing-help" role="status">

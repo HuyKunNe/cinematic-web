@@ -17,6 +17,7 @@ const props = defineProps<{
   canRead: boolean
   canEdit: boolean
   selectedCode: string
+  selectionLocked?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -161,7 +162,7 @@ function allowDiscard() {
 }
 
 function selectTicket(code: string) {
-  if (save.isPending.value || code === activeCode.value) return
+  if (props.selectionLocked || save.isPending.value || code === activeCode.value) return
   if (!allowDiscard()) return
 
   if (dirty.value) restore(code)
@@ -359,7 +360,7 @@ onBeforeUnmount(() => {
             }"
             :aria-pressed="activeCode === row.code"
             aria-controls="pricing-type-detail"
-            :disabled="save.isPending.value"
+            :disabled="save.isPending.value || selectionLocked"
             @click="selectTicket(row.code)"
           >
             <span class="pricing-type-button__copy">
@@ -399,14 +400,6 @@ onBeforeUnmount(() => {
               }}
             </span>
           </header>
-
-          <p class="pricing-type-detail__description">
-            {{
-              selected.pricingRole === 'REGULAR'
-                ? 'Đây là mức giá thông thường của rạp. Mỗi bản giá cần có một loại vé như thế này.'
-                : 'Loại vé này có cách áp dụng riêng. Giá được đặt theo ngày, giờ, hình thức chiếu và loại ghế.'
-            }}
-          </p>
 
           <fieldset class="pricing-type-detail__fields" :disabled="!editable">
             <legend class="admin-visually-hidden">Thông tin loại vé</legend>

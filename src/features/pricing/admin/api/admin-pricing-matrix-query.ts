@@ -11,6 +11,11 @@ import { MatrixFareRuleResponseFareUnit } from '@/services/api/generated/invento
 import { MatrixFareRuleResponseAdvanceScreeningCondition } from '@/services/api/generated/inventory-service/model/matrixFareRuleResponseAdvanceScreeningCondition'
 import { DayGroupInputDaysOfWeekItem } from '@/services/api/generated/inventory-service/model/dayGroupInputDaysOfWeekItem'
 import { CinemaPricingPolicyResponseStatus } from '@/services/api/generated/inventory-service/model/cinemaPricingPolicyResponseStatus'
+import { getCinemaPricingTicketCategories } from '@/services/api/generated/inventory-service/cinema-pricing-policy-controller/cinema-pricing-policy-controller'
+import { CategoryInputPricingRole } from '@/services/api/generated/inventory-service/model/categoryInputPricingRole'
+import { CategoryInputEligibilityMode } from '@/services/api/generated/inventory-service/model/categoryInputEligibilityMode'
+import { SeatTypeInputMappingStatus } from '@/services/api/generated/inventory-service/model/seatTypeInputMappingStatus'
+import { SeatTypeInputPhysicalSeatType } from '@/services/api/generated/inventory-service/model/seatTypeInputPhysicalSeatType'
 
 const uuid = z.string().uuid()
 const code = z.string().trim().min(1)
@@ -23,6 +28,8 @@ const policySchema = z.object({
   pricingModel: z.literal('FARE_MATRIX_V2'),
   currency: code,
   timeZone: code,
+  effectiveFrom: z.string().date(),
+  effectiveTo: z.string().date().nullable(),
 })
 
 const matrixSchema = z.object({
@@ -68,7 +75,29 @@ const matrixSchema = z.object({
 
 const seatTypesSchema = z.object({
   policy: policySchema,
-  seatTypes: z.array(z.object({ code, name: code })),
+  seatTypes: z.array(
+    z.object({
+      code,
+      name: code,
+      mappingStatus: z.nativeEnum(SeatTypeInputMappingStatus),
+      physicalSeatType: z
+        .nativeEnum(SeatTypeInputPhysicalSeatType)
+        .nullish()
+        .transform((value) => value ?? null),
+    }),
+  ),
+})
+
+const ticketCategoriesSchema = z.object({
+  policy: policySchema,
+  ticketCategories: z.array(
+    z.object({
+      code,
+      name: code,
+      pricingRole: z.nativeEnum(CategoryInputPricingRole),
+      eligibilityMode: z.nativeEnum(CategoryInputEligibilityMode),
+    }),
+  ),
 })
 
 type MatrixContext = {
@@ -103,15 +132,17 @@ export function useAdminPricingMatrixQuery(
       const policyId = uuid.parse(queryKey[4])
       const expectedVersion = queryKey[5]
 
-      const [matrixResponse, seatsResponse] = await Promise.all([
+      const [matrixResponse, seatsResponse, categoriesResponse] = await Promise.all([
         getCinemaPricingPolicyFareMatrix(cinemaId, policyId),
         getCinemaPricingSeatTypes(cinemaId, policyId),
+        getCinemaPricingTicketCategories(cinemaId, policyId),
       ])
 
       const result = matrixSchema.parse(matrixResponse)
       const seats = seatTypesSchema.parse(seatsResponse)
+      const categories = ticketCategoriesSchema.parse(categoriesResponse)
 
-      for (const policy of [result.policy, seats.policy]) {
+      for (const policy of [result.policy, seats.policy, categories.policy]) {
         if (
           policy.cinemaId !== cinemaId ||
           policy.id !== policyId ||
@@ -130,11 +161,17 @@ export function useAdminPricingMatrixQuery(
         }
       }
 
-      if (new Set(seats.seatTypes.map((item) => item.code)).size !== seats.seatTypes.length) {
-        throw new Error('Thông tin loại ghế có mã trùng.')
+      for (const items of [seats.seatTypes, categories.ticketCategories]) {
+        if (new Set(items.map((item) => item.code)).size !== items.length) {
+          throw new Error('Danh mục của bản giá có mã trùng.')
+        }
       }
 
-      return { ...result, seatTypes: seats.seatTypes }
+      return {
+        ...result,
+        seatTypes: seats.seatTypes,
+        ticketCategories: categories.ticketCategories,
+      }
     },
     placeholderData: () => undefined,
     staleTime: 0,
