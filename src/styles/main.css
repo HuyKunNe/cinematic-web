@@ -19,6 +19,8 @@
 @import './admin-room-seats.css';
 @import './admin-room-seats-responsive.css';
 @import './admin-showtime-create.css';
+@import './admin-pricing-policies.css';
+
 /* Navigation styles remain imported by their owning layouts. */
 @theme {
   --breakpoint-md: 48rem;

@@ -1,7 +1,10 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { z } from 'zod'
-import { getCinemaPricingPolicyFareMatrix } from '@/services/api/generated/inventory-service/cinema-pricing-policy-controller/cinema-pricing-policy-controller'
+import {
+  getCinemaPricingPolicyFareMatrix,
+  getCinemaPricingSeatTypes,
+} from '@/services/api/generated/inventory-service/cinema-pricing-policy-controller/cinema-pricing-policy-controller'
 import { MatrixFareRuleResponseExperienceType } from '@/services/api/generated/inventory-service/model/matrixFareRuleResponseExperienceType'
 import { MatrixFareRuleResponseContentFormat } from '@/services/api/generated/inventory-service/model/matrixFareRuleResponseContentFormat'
 import { MatrixFareRuleResponseFareUnit } from '@/services/api/generated/inventory-service/model/matrixFareRuleResponseFareUnit'
@@ -10,22 +13,18 @@ import { MatrixFareRuleResponseAdvanceScreeningCondition } from '@/services/api/
 const uuid = z.string().uuid()
 const code = z.string().trim().min(1)
 
+const policySchema = z.object({
+  id: uuid,
+  cinemaId: uuid,
+  version: z.number().int().nonnegative(),
+  pricingModel: z.literal('FARE_MATRIX_V2'),
+  currency: code,
+  timeZone: code,
+})
+
 const matrixSchema = z.object({
-  policy: z.object({
-    id: uuid,
-    cinemaId: uuid,
-    version: z.number().int().nonnegative(),
-    pricingModel: z.literal('FARE_MATRIX_V2'),
-    currency: code,
-    timeZone: code,
-  }),
-  dayGroups: z.array(
-    z.object({
-      id: uuid,
-      code,
-      name: code,
-    }),
-  ),
+  policy: policySchema,
+  dayGroups: z.array(z.object({ id: uuid, code, name: code })),
   timeBands: z.array(
     z.object({
       id: uuid,
@@ -56,6 +55,11 @@ const matrixSchema = z.object({
   ),
 })
 
+const seatTypesSchema = z.object({
+  policy: policySchema,
+  seatTypes: z.array(z.object({ code, name: code })),
+})
+
 type MatrixContext = {
   cinemaId: string
   policyId: string
@@ -69,12 +73,10 @@ export function useAdminPricingMatrixQuery(
   return useQuery({
     queryKey: computed(() => {
       const value = toValue(context)
-
       return ['pricing', 'admin', 'matrix', value.cinemaId, value.policyId, value.version] as const
     }),
     enabled: computed(() => {
       const value = toValue(context)
-
       return (
         toValue(enabled) &&
         uuid.safeParse(value.cinemaId).success &&
@@ -84,22 +86,28 @@ export function useAdminPricingMatrixQuery(
       )
     }),
     queryFn: async ({ queryKey }) => {
-      if (!toValue(enabled)) {
-        throw new Error('Không có quyền xem ma trận.')
-      }
+      if (!toValue(enabled)) throw new Error('Không có quyền xem.')
 
       const cinemaId = uuid.parse(queryKey[3])
       const policyId = uuid.parse(queryKey[4])
       const expectedVersion = queryKey[5]
 
-      const result = matrixSchema.parse(await getCinemaPricingPolicyFareMatrix(cinemaId, policyId))
+      const [matrixResponse, seatsResponse] = await Promise.all([
+        getCinemaPricingPolicyFareMatrix(cinemaId, policyId),
+        getCinemaPricingSeatTypes(cinemaId, policyId),
+      ])
 
-      if (
-        result.policy.cinemaId !== cinemaId ||
-        result.policy.id !== policyId ||
-        result.policy.version !== expectedVersion
-      ) {
-        throw new Error('Metadata chính sách đã thay đổi hoặc không khớp.')
+      const result = matrixSchema.parse(matrixResponse)
+      const seats = seatTypesSchema.parse(seatsResponse)
+
+      for (const policy of [result.policy, seats.policy]) {
+        if (
+          policy.cinemaId !== cinemaId ||
+          policy.id !== policyId ||
+          policy.version !== expectedVersion
+        ) {
+          throw new Error('Thông tin bản giá đã thay đổi.')
+        }
       }
 
       for (const items of [result.dayGroups, result.timeBands, result.fareRules]) {
@@ -107,11 +115,15 @@ export function useAdminPricingMatrixQuery(
           new Set(items.map((item) => item.id)).size !== items.length ||
           new Set(items.map((item) => item.code)).size !== items.length
         ) {
-          throw new Error('Cấu hình trả về chứa mã trùng.')
+          throw new Error('Thông tin bản giá có mã trùng.')
         }
       }
 
-      return result
+      if (new Set(seats.seatTypes.map((item) => item.code)).size !== seats.seatTypes.length) {
+        throw new Error('Thông tin loại ghế có mã trùng.')
+      }
+
+      return { ...result, seatTypes: seats.seatTypes }
     },
     placeholderData: () => undefined,
     staleTime: 0,

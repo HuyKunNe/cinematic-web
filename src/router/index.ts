@@ -300,7 +300,7 @@ const routes: RouteRecordRaw[] = [
     component: loadAdminPricingPolicyPage,
     meta: {
       layout: 'admin',
-      title: 'Chính sách giá',
+      title: 'Giá vé',
       requiresAuth: true,
       roles: ADMIN_ROLES,
       permissions: [APP_PERMISSIONS.INVENTORY_MANAGE],

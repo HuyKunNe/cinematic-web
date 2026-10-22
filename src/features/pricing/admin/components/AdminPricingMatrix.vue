@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { useAdminPricingMatrixQuery } from '../api/admin-pricing-matrix-query'
-import { pricingErrorMessage } from '../api/admin-pricing-queries'
 
 const props = defineProps<{
   cinemaId: string
   policyId: string
   version: number
   canRead: boolean
+  categoryCode: string
+  categoryName: string
 }>()
 
 const query = useAdminPricingMatrixQuery(
@@ -17,7 +18,18 @@ const query = useAdminPricingMatrixQuery(
     policyId: props.policyId,
     version: props.version,
   }),
-  () => props.canRead,
+  () => props.canRead && Boolean(props.categoryCode),
+)
+
+const filters = reactive({ day: '', format: '', seat: '' })
+
+watch(
+  () => props.categoryCode,
+  () => {
+    filters.day = ''
+    filters.format = ''
+    filters.seat = ''
+  },
 )
 
 const matrix = computed(() => {
@@ -34,316 +46,228 @@ const matrix = computed(() => {
     : undefined
 })
 
-const formatKey = ref('')
-
-const formatOptions = computed(() => {
-  const result = new Map<string, string>()
-
-  for (const rule of matrix.value?.fareRules ?? []) {
-    const key = `${rule.experienceType}:${rule.contentFormat}`
-    result.set(key, `${rule.experienceType} · ${rule.contentFormat}`)
-  }
-
-  return [...result].map(([value, label]) => ({ value, label }))
-})
-
-watch(
-  formatOptions,
-  (options) => {
-    if (!options.some((item) => item.value === formatKey.value)) {
-      formatKey.value = options[0]?.value ?? ''
-    }
-  },
-  { immediate: true },
+const categoryRules = computed(() =>
+  (matrix.value?.fareRules ?? []).filter((item) => item.ticketCategoryCode === props.categoryCode),
 )
 
-const visibleRules = computed(() =>
-  (matrix.value?.fareRules ?? []).filter(
-    (rule) => `${rule.experienceType}:${rule.contentFormat}` === formatKey.value,
-  ),
-)
+const experienceLabels = {
+  STANDARD: 'Chiếu thường',
+  PREMIUM_CINEMA: 'Rạp cao cấp',
+  '4DX': 'Chiếu 4DX',
+  IMAX: 'Chiếu IMAX',
+} as const
 
-function resolveMatrixError(error: unknown): string {
-  if (typeof error === 'object' && error !== null && 'status' in error) {
-    if (error.status === 409) {
-      return 'Hệ thống không hỗ trợ đọc ma trận cho chính sách này.'
-    }
-
-    return pricingErrorMessage(error)
-  }
-
-  if (error instanceof Error && error.name !== 'ZodError') {
-    return (
-      'Không đọc được cấu hình phù hợp với phiên bản đã chọn. ' +
-      'Hãy dùng “Tải lại” ở phần thông tin policy rồi chọn lại phiên bản.'
-    )
-  }
-
-  return pricingErrorMessage(error)
-}
-
-const errorMessage = computed(() => resolveMatrixError(query.error.value))
-
-const advanceLabels = {
-  ANY: 'Không giới hạn suất chiếu sớm',
-  ADVANCE_SCREENING: 'Suất chiếu sớm',
+const screeningLabels = {
   REGULAR_SCREENING: 'Suất chiếu thông thường',
+  ADVANCE_SCREENING: 'Suất chiếu sớm',
+  ANY: 'Chưa xác định loại suất chiếu',
 } as const
 
 const unitLabels = {
   PER_TICKET: 'Mỗi vé',
   PER_PAIR: 'Mỗi cặp',
-  UNCONFIRMED: 'Chưa xác nhận đơn vị',
+  UNCONFIRMED: 'Chưa xác định',
 } as const
 
-function dayGroupLabel(code: string) {
-  return (
-    matrix.value?.dayGroups.find((item) => item.code === code)?.name ??
-    `${code} · Chưa có định nghĩa`
-  )
+function dayName(code: string) {
+  return matrix.value?.dayGroups.find((item) => item.code === code)?.name ?? 'Nhóm ngày chưa có tên'
 }
 
-function clockMinute(value: number) {
-  const hours = Math.floor(value / 60)
+function seatName(code: string) {
+  return matrix.value?.seatTypes.find((item) => item.code === code)?.name ?? 'Loại ghế chưa có tên'
+}
+
+function clock(value: number) {
+  return `${Math.floor(value / 60)
     .toString()
-    .padStart(2, '0')
-  const minutes = (value % 60).toString().padStart(2, '0')
-
-  return `${hours}:${minutes}`
+    .padStart(2, '0')}:${(value % 60).toString().padStart(2, '0')}`
 }
 
-function timeBandLabel(code: string) {
-  const band = matrix.value?.timeBands.find((item) => item.code === code)
-
-  return band
-    ? `${band.name} · ${clockMinute(band.fromMinute)}–${clockMinute(band.toMinute)}`
-    : `${code} · Chưa có định nghĩa`
+function timeName(code: string) {
+  const value = matrix.value?.timeBands.find((item) => item.code === code)
+  return value ? `${clock(value.fromMinute)}–${clock(value.toMinute)}` : 'Chưa xác định giờ'
 }
 
-function formatAmount(value: string) {
-  return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+function formatKey(item: (typeof categoryRules.value)[number]) {
+  return `${item.experienceType}:${item.contentFormat}`
+}
+
+function formatName(item: (typeof categoryRules.value)[number]) {
+  return `${experienceLabels[item.experienceType]} · ${item.contentFormat}`
+}
+
+const dayOptions = computed(() =>
+  [...new Set(categoryRules.value.map((item) => item.dayGroupCode))].map((value) => ({
+    value,
+    label: dayName(value),
+  })),
+)
+
+const seatOptions = computed(() =>
+  [...new Set(categoryRules.value.map((item) => item.seatTypeCode))].map((value) => ({
+    value,
+    label: seatName(value),
+  })),
+)
+
+const formatOptions = computed(() => {
+  const values = new Map<string, string>()
+  categoryRules.value.forEach((item) => values.set(formatKey(item), formatName(item)))
+  return [...values].map(([value, label]) => ({ value, label }))
+})
+
+const visibleRules = computed(() =>
+  categoryRules.value.filter(
+    (item) =>
+      (!filters.day || filters.day === item.dayGroupCode) &&
+      (!filters.seat || filters.seat === item.seatTypeCode) &&
+      (!filters.format || filters.format === formatKey(item)),
+  ),
+)
+
+function amount(value: string) {
+  return `${value.replace(/\B(?=(\d{3})+(?!\d))/g, '.')} đồng`
 }
 
 function reload() {
-  if (!props.canRead || query.isFetching.value) return
+  if (!props.canRead || !props.categoryCode || query.isFetching.value) return
   void query.refetch()
 }
 </script>
 
 <template>
-  <section
-    class="admin-reference__panel pricing-matrix"
-    data-reference="admin-pricing-matrix"
-    aria-labelledby="pricing-matrix-title"
-  >
-    <header class="pricing-matrix__heading">
+  <section class="admin-reference__panel pricing-fares" aria-labelledby="pricing-fares-title">
+    <header class="pricing-panel-heading pricing-fares__heading">
       <div>
-        <h2 id="pricing-matrix-title">Ma trận giá đã lưu</h2>
-        <p>Cấu hình theo định dạng, nhóm ngày, khung giờ, nhóm vé và loại ghế.</p>
+        <p class="admin-reference__eyebrow">Bước 3</p>
+        <h2 id="pricing-fares-title">
+          {{ categoryName ? `Mức giá của ${categoryName}` : 'Mức giá vé' }}
+        </h2>
+        <p>Giá thay đổi theo ngày, giờ, hình thức chiếu và loại ghế.</p>
       </div>
 
       <AppButton
         type="button"
         variant="secondary"
-        :loading="query.isFetching.value"
-        :disabled="!canRead || query.isFetching.value"
-        @click="reload"
+        disabled
+        aria-describedby="pricing-add-fare-help"
       >
-        Tải lại ma trận
+        Thêm mức giá
       </AppButton>
     </header>
 
-    <p v-if="!canRead">Bạn không có quyền xem ma trận giá.</p>
-
-    <p v-else-if="query.isPending.value || query.isFetching.value" role="status">
-      Đang tải ma trận…
+    <p v-if="!categoryCode" class="pricing-fares__message">
+      Chọn loại vé ở phía trên để xem mức giá.
     </p>
 
-    <p v-else-if="query.isError.value" class="pricing-matrix__error" role="alert">
-      {{ errorMessage }}
+    <p
+      v-else-if="query.isPending.value || query.isFetching.value"
+      class="pricing-fares__message"
+      role="status"
+    >
+      Đang tải mức giá…
     </p>
+
+    <div v-else-if="query.isError.value" class="pricing-fares__message" role="alert">
+      <p class="pricing-error">
+        Chưa tải được mức giá phù hợp với bản đang xem. Hãy tải lại; nếu vẫn lỗi, tải lại bản giá ở
+        đầu trang.
+      </p>
+      <AppButton type="button" variant="secondary" @click="reload"> Tải lại mức giá </AppButton>
+    </div>
 
     <template v-else-if="matrix">
-      <p class="pricing-matrix__notice">
-        Đây là các rule đã lưu, chưa phải giá được chọn cho suất chiếu. Tiền tệ policy:
-        {{ matrix.policy.currency }}. Múi giờ: {{ matrix.policy.timeZone }}.
-      </p>
-
-      <p v-if="matrix.fareRules.length === 0" role="status">
-        Phiên bản này chưa có fare rule. Không có rule không có nghĩa là vé miễn phí.
-      </p>
-
-      <template v-else>
+      <div class="pricing-fares__filters">
         <label class="admin-reference__field">
-          <span>Trải nghiệm và định dạng nội dung</span>
-
-          <select
-            v-model="formatKey"
-            class="admin-reference__input"
-            aria-controls="pricing-matrix-table"
-          >
-            <option v-for="option in formatOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
+          <span>Ngày</span>
+          <select v-model="filters.day" class="admin-reference__input">
+            <option value="">Tất cả ngày</option>
+            <option v-for="item in dayOptions" :key="item.value" :value="item.value">
+              {{ item.label }}
             </option>
           </select>
         </label>
 
-        <p role="status">{{ visibleRules.length }} rule trong nhóm đang xem.</p>
+        <label class="admin-reference__field">
+          <span>Hình thức chiếu</span>
+          <select v-model="filters.format" class="admin-reference__input">
+            <option value="">Tất cả hình thức</option>
+            <option v-for="item in formatOptions" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </option>
+          </select>
+        </label>
 
-        <div
-          class="pricing-matrix__scroll"
-          role="region"
-          aria-label="Các fare rule đã lưu"
-          tabindex="0"
-        >
-          <table id="pricing-matrix-table">
-            <caption class="admin-visually-hidden">
-              Cấu hình giá đã lưu; không phải kết quả preview hoặc quote
-            </caption>
+        <label class="admin-reference__field">
+          <span>Loại ghế</span>
+          <select v-model="filters.seat" class="admin-reference__input">
+            <option value="">Tất cả loại ghế</option>
+            <option v-for="item in seatOptions" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </option>
+          </select>
+        </label>
+      </div>
 
-            <thead>
-              <tr>
-                <th scope="col">Rule</th>
-                <th scope="col">Nhóm ngày</th>
-                <th scope="col">Khung giờ</th>
-                <th scope="col">Nhóm vé</th>
-                <th scope="col">Loại ghế</th>
-                <th scope="col">Giá cấu hình</th>
-                <th scope="col">Điều kiện</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr v-for="rule in visibleRules" :key="rule.id">
-                <th scope="row">{{ rule.code }}</th>
-                <td>{{ dayGroupLabel(rule.dayGroupCode) }}</td>
-                <td>{{ timeBandLabel(rule.timeBandCode) }}</td>
-                <td>{{ rule.ticketCategoryCode }}</td>
-                <td>{{ rule.seatTypeCode }}</td>
-
-                <td>
-                  <strong>{{ formatAmount(rule.amountVnd) }} VND</strong>
-                  <span
-                    class="pricing-matrix__detail"
-                    :class="{
-                      'pricing-matrix__error': rule.fareUnit === 'UNCONFIRMED',
-                    }"
-                  >
-                    {{ unitLabels[rule.fareUnit] }}
-                  </span>
-                </td>
-
-                <td>
-                  <span>{{ advanceLabels[rule.advanceScreeningCondition] }}</span>
-                  <span class="pricing-matrix__detail">
-                    Mã điều kiện bổ sung: {{ rule.requiredEligibilityCode ?? '—' }}
-                  </span>
-                  <span class="pricing-matrix__detail"> Độ ưu tiên: {{ rule.priority }} </span>
-                  <span class="pricing-matrix__detail">
-                    Hiệu lực: {{ rule.effectiveFrom }} →
-                    {{ rule.effectiveTo ?? 'Không giới hạn ngày kết thúc' }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </template>
-
-      <p class="pricing-matrix__notice">
-        Chưa đánh giá phạm vi bán, điều kiện khách hàng, rule thắng hoặc phụ thu. Các mã nhóm vé và
-        loại ghế được giữ nguyên từ cấu hình. Giá theo cặp được hiển thị theo đơn vị BE trả về,
-        không nhân thêm theo capacity.
-      </p>
+      <div
+        class="pricing-table-scroll"
+        role="region"
+        aria-label="Các mức giá của loại vé đang chọn"
+        tabindex="0"
+      >
+        <table class="pricing-fare-table">
+          <caption class="admin-visually-hidden">
+            Các mức giá đã lưu của loại vé đang chọn
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Ngày và giờ</th>
+              <th scope="col">Hình thức chiếu</th>
+              <th scope="col">Loại ghế</th>
+              <th scope="col">Suất chiếu</th>
+              <th scope="col">Giá vé</th>
+              <th scope="col">Tính theo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in visibleRules" :key="item.id">
+              <td>
+                {{ dayName(item.dayGroupCode) }} · {{ timeName(item.timeBandCode) }}
+                <small class="pricing-table-detail">
+                  Từ {{ item.effectiveFrom }}
+                  {{ item.effectiveTo ? `đến ${item.effectiveTo}` : '' }}
+                </small>
+              </td>
+              <td>{{ formatName(item) }}</td>
+              <td>{{ seatName(item.seatTypeCode) }}</td>
+              <td>
+                {{ screeningLabels[item.advanceScreeningCondition] }}
+                <small v-if="item.requiredEligibilityCode" class="pricing-table-detail">
+                  Có điều kiện mua vé
+                </small>
+              </td>
+              <td>
+                <strong>{{ amount(item.amountVnd) }}</strong>
+              </td>
+              <td>{{ unitLabels[item.fareUnit] }}</td>
+            </tr>
+            <tr v-if="visibleRules.length === 0">
+              <td colspan="6">
+                {{
+                  categoryRules.length === 0
+                    ? 'Loại vé này chưa có mức giá đã lưu.'
+                    : 'Không có mức giá phù hợp với lựa chọn đang lọc.'
+                }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </template>
+
+    <p id="pricing-add-fare-help" class="pricing-fares__note">
+      Chức năng thêm mức giá đang được hoàn thiện. Giá áp dụng thực tế được xác nhận theo bản giá và
+      suất chiếu được chọn. Giá mỗi cặp được tính một lần cho cả cặp ghế.
+    </p>
   </section>
 </template>
-
-<style scoped>
-[data-reference='admin-pricing-matrix'] {
-  --pricing-matrix-table-min-width: 64rem;
-
-  display: grid;
-  gap: var(--space-4);
-  min-width: 0;
-  margin-top: var(--space-5);
-  padding: var(--space-5);
-}
-
-[data-reference='admin-pricing-matrix'] .pricing-matrix__heading {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-4);
-  padding-bottom: var(--space-4);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
-}
-
-[data-reference='admin-pricing-matrix'] h2 {
-  margin: 0 0 var(--space-2);
-  font-size: var(--font-size-lg);
-}
-
-[data-reference='admin-pricing-matrix'] p {
-  margin: 0;
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-base);
-}
-
-[data-reference='admin-pricing-matrix'] .pricing-matrix__notice {
-  padding: var(--space-4);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  font-size: var(--font-size-sm);
-}
-
-[data-reference='admin-pricing-matrix'] .pricing-matrix__scroll {
-  min-width: 0;
-  overflow-x: auto;
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-[data-reference='admin-pricing-matrix'] table {
-  width: 100%;
-  min-width: var(--pricing-matrix-table-min-width);
-  border-collapse: collapse;
-  text-align: left;
-  font-size: var(--font-size-sm);
-}
-
-[data-reference='admin-pricing-matrix'] :is(th, td) {
-  padding: var(--space-3) var(--space-4);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
-  vertical-align: top;
-  color: var(--color-text-secondary);
-  overflow-wrap: anywhere;
-}
-
-[data-reference='admin-pricing-matrix'] thead th {
-  background: var(--color-surface-raised);
-  color: var(--color-text-primary);
-}
-
-[data-reference='admin-pricing-matrix'] strong {
-  color: var(--color-text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-[data-reference='admin-pricing-matrix'] .pricing-matrix__detail {
-  display: block;
-  margin-top: var(--space-2);
-  font-size: var(--font-size-xs);
-}
-
-[data-reference='admin-pricing-matrix'] .pricing-matrix__error {
-  color: var(--color-error);
-}
-
-[data-reference='admin-pricing-matrix'] :is(select, button, [tabindex]):focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus);
-  outline-offset: var(--space-1);
-}
-</style>

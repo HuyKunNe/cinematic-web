@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import {
@@ -9,17 +9,18 @@ import {
   type CategoryForm,
 } from '../api/admin-pricing-categories-editor'
 import { pricingErrorMessage } from '../api/admin-pricing-queries'
-import { CategoryInputEligibilityMode } from '@/services/api/generated/inventory-service/model/categoryInputEligibilityMode'
-import { CategoryInputPricingRole } from '@/services/api/generated/inventory-service/model/categoryInputPricingRole'
 
 const props = defineProps<{
   cinemaId: string
   policyId: string
   version: number
   canRead: boolean
+  canEdit: boolean
+  selectedCode: string
 }>()
 
 const emit = defineEmits<{
+  selected: [value: { code: string; name: string } | null]
   locked: [value: boolean]
   saved: []
   reload: []
@@ -34,22 +35,44 @@ const { query, save } = usePricingCategoriesEditor(
   () => props.canRead,
 )
 
-type FormRow = CategoryForm & { localKey: number }
-
-let nextKey = 0
-const rows = ref<FormRow[]>([])
-const baseline = ref('[]')
+const rows = ref<CategoryForm[]>([])
+const savedRows = ref<CategoryForm[]>([])
+const activeCode = ref('')
 const initialized = ref(false)
 const validationMessage = ref('')
+const nameInput = ref<HTMLInputElement | null>(null)
 
-function values(): CategoryForm[] {
-  return rows.value.map((row) => ({
-    code: row.code,
-    name: row.name,
-    pricingRole: row.pricingRole,
-    eligibilityMode: row.eligibilityMode,
-    eligibilityRuleCode: row.eligibilityRuleCode,
-  }))
+const roleLabels = {
+  UNCONFIRMED: 'Cần kiểm tra',
+  REGULAR: 'Vé thông thường',
+  CATEGORY_DISCOUNT: 'Vé ưu đãi theo nhóm khách',
+  C_MONDAY: 'Ưu đãi thứ Hai',
+  C_MEMBER: 'Ưu đãi thành viên',
+  C_TEN: 'Ưu đãi C’Ten',
+} as const
+
+const roleDescriptions = {
+  UNCONFIRMED: 'Chưa rõ cách áp dụng',
+  REGULAR: 'Dành cho mọi khách',
+  CATEGORY_DISCOUNT: 'Dành cho khách đủ điều kiện',
+  C_MONDAY: 'Chương trình riêng của rạp',
+  C_MEMBER: 'Dành cho thành viên',
+  C_TEN: 'Chương trình riêng của rạp',
+} as const
+
+const roles = Object.keys(roleLabels) as Array<CategoryForm['pricingRole']>
+
+function copy(items: CategoryForm[]) {
+  return items.map((item) => ({ ...item }))
+}
+
+function preferredCode(items: CategoryForm[], preferred = '') {
+  return (
+    items.find((item) => item.code === preferred)?.code ??
+    items.find((item) => item.pricingRole === 'REGULAR')?.code ??
+    items[0]?.code ??
+    ''
+  )
 }
 
 watch(
@@ -57,17 +80,33 @@ watch(
   (data) => {
     if (!data || initialized.value) return
 
-    rows.value = data.ticketCategories.map((item) => ({
-      ...item,
-      localKey: nextKey++,
-    }))
-    baseline.value = JSON.stringify(values())
+    savedRows.value = copy(data.ticketCategories)
+    rows.value = copy(data.ticketCategories)
+    activeCode.value = preferredCode(rows.value, props.selectedCode)
     initialized.value = true
   },
   { immediate: true },
 )
 
-const dirty = computed(() => initialized.value && JSON.stringify(values()) !== baseline.value)
+const selected = computed(() => rows.value.find((item) => item.code === activeCode.value))
+
+watch(
+  () => ({
+    ready: initialized.value,
+    code: selected.value?.code ?? '',
+    name: selected.value?.name ?? '',
+  }),
+  (value) => {
+    if (!value.ready) return
+
+    emit('selected', value.code ? { code: value.code, name: value.name } : null)
+  },
+  { immediate: true },
+)
+
+const dirty = computed(
+  () => initialized.value && JSON.stringify(rows.value) !== JSON.stringify(savedRows.value),
+)
 
 const requiresReload = computed(
   () => save.error.value instanceof CategoryEditorError && save.error.value.requiresReload,
@@ -76,6 +115,7 @@ const requiresReload = computed(
 const editable = computed(
   () =>
     props.canRead &&
+    props.canEdit &&
     initialized.value &&
     query.isSuccess.value &&
     !query.isFetching.value &&
@@ -91,68 +131,98 @@ watch(locked, (value) => emit('locked', value), {
   flush: 'sync',
 })
 
-const roles = Object.values(CategoryInputPricingRole)
-const modes = Object.values(CategoryInputEligibilityMode)
+const hasRegular = computed(() => rows.value.some((item) => item.pricingRole === 'REGULAR'))
 
-const roleLabels = {
-  UNCONFIRMED: 'Chưa xác nhận',
-  REGULAR: 'Giá thường',
-  CATEGORY_DISCOUNT: 'Giá theo đối tượng',
-  C_MONDAY: 'C’Monday',
-  C_MEMBER: 'C’Member',
-  C_TEN: 'C’Ten',
-} as const
-
-const modeLabels = {
-  UNCONFIRMED: 'Chưa xác nhận',
-  UNRESTRICTED: 'Không yêu cầu điều kiện riêng',
-  RULE_REQUIRED: 'Yêu cầu rule điều kiện',
-} as const
-
-const incomplete = computed(
-  () =>
-    rows.value.filter((row) => row.pricingRole === 'REGULAR').length !== 1 ||
-    rows.value.some(
-      (row) => row.pricingRole === 'UNCONFIRMED' || row.eligibilityMode === 'UNCONFIRMED',
-    ),
+const savedCondition = computed(
+  () => savedRows.value.find((item) => item.code === activeCode.value)?.eligibilityRuleCode ?? '',
 )
 
-function roleChanged(row: FormRow) {
+function readableError(error: unknown) {
+  const message = error instanceof CategoryEditorError ? error.message : pricingErrorMessage(error)
+
+  return message
+    .replaceAll('Metadata policy', 'Thông tin bản giá')
+    .replaceAll('metadata policy', 'thông tin bản giá')
+    .replaceAll('Policy', 'Bản giá')
+    .replaceAll('policy', 'bản giá')
+    .replaceAll('Backend', 'Hệ thống')
+    .replaceAll('Response xác nhận', 'Thông tin xác nhận')
+    .replaceAll('vai trò giá', 'cách tính giá')
+}
+
+function restore(preferred = activeCode.value) {
+  rows.value = copy(savedRows.value)
+  activeCode.value = preferredCode(rows.value, preferred)
+  validationMessage.value = ''
+}
+
+function allowDiscard() {
+  return !dirty.value || window.confirm('Hủy thay đổi loại vé chưa lưu?')
+}
+
+function selectTicket(code: string) {
+  if (save.isPending.value || code === activeCode.value) return
+  if (!allowDiscard()) return
+
+  if (dirty.value) restore(code)
+  else activeCode.value = code
+}
+
+async function addTicket(role: CategoryForm['pricingRole']) {
+  if (!editable.value || !allowDiscard()) return
+
+  if (dirty.value) restore()
+  if (rows.value.length >= 100) return
+  if (role === 'REGULAR' && hasRegular.value) return
+
+  let index = 1
+  let code = `${role}_${index}`
+
+  while (rows.value.some((item) => item.code === code)) {
+    code = `${role}_${++index}`
+  }
+
+  rows.value.push({
+    code,
+    name: roleLabels[role],
+    pricingRole: role,
+    eligibilityMode: role === 'REGULAR' ? 'UNRESTRICTED' : 'UNCONFIRMED',
+    eligibilityRuleCode: '',
+  })
+
+  activeCode.value = code
+  validationMessage.value = ''
+
+  await nextTick()
+  nameInput.value?.focus()
+}
+
+function roleChanged() {
+  const row = selected.value
+  if (!row) return
+
   if (row.pricingRole === 'REGULAR') {
-    row.eligibilityMode = CategoryInputEligibilityMode.UNRESTRICTED
+    row.eligibilityMode = 'UNRESTRICTED'
     row.eligibilityRuleCode = ''
   }
 }
 
-function errorText(error: unknown) {
-  return error instanceof CategoryEditorError ? error.message : pricingErrorMessage(error)
+function eligibilityChanged() {
+  const row = selected.value
+  if (!row) return
+
+  row.eligibilityRuleCode = row.eligibilityMode === 'RULE_REQUIRED' ? savedCondition.value : ''
 }
 
-function addRow() {
-  if (!editable.value || rows.value.length >= 100) return
+async function persist(items: CategoryForm[]) {
+  if (!editable.value) return
 
-  rows.value.push({
-    localKey: nextKey++,
-    code: '',
-    name: '',
-    pricingRole: CategoryInputPricingRole.UNCONFIRMED,
-    eligibilityMode: CategoryInputEligibilityMode.UNCONFIRMED,
-    eligibilityRuleCode: '',
-  })
-}
-
-async function submit() {
-  if (!editable.value || !dirty.value) return
-
-  const parsed = categoryListSchema.safeParse(values())
+  const parsed = categoryListSchema.safeParse(items)
 
   if (!parsed.success) {
-    validationMessage.value = parsed.error.issues
-      .map((issue) => {
-        const index = issue.path[0]
-        return typeof index === 'number' ? `Nhóm ${index + 1}: ${issue.message}` : issue.message
-      })
-      .join(' ')
+    validationMessage.value =
+      'Kiểm tra tên loại vé, cách tính giá và điều kiện mua. ' +
+      'Mỗi bản giá chỉ có một loại vé thông thường.'
     return
   }
 
@@ -166,29 +236,46 @@ async function submit() {
       ticketCategories: parsed.data,
     })
 
-    rows.value = result.ticketCategories.map((item) => ({
-      ...item,
-      localKey: nextKey++,
-    }))
-    baseline.value = JSON.stringify(values())
+    savedRows.value = copy(result.ticketCategories)
+    rows.value = copy(result.ticketCategories)
+    activeCode.value = preferredCode(rows.value, activeCode.value)
     emit('saved')
   } catch {
-    // Giữ dữ liệu nhập và hiển thị lỗi của mutation.
+    // Giữ nguyên thông tin nhập và hiển thị lỗi.
   }
 }
 
-function confirmLeave() {
-  if (save.isPending.value) return false
-
-  return !dirty.value || window.confirm('Bỏ thay đổi nhóm vé chưa lưu?')
+async function submit() {
+  if (!dirty.value) return
+  await persist(rows.value)
 }
 
-function reloadPolicy() {
-  if (!confirmLeave()) return
+async function removeTicket() {
+  const row = selected.value
+  if (!row || !editable.value) return
 
-  baseline.value = JSON.stringify(values())
-  validationMessage.value = ''
+  if (!savedRows.value.some((item) => item.code === row.code)) {
+    restore()
+    return
+  }
+
+  if (
+    !window.confirm(`Xóa “${row.name}”? Các mức giá đang dùng loại vé này cần được kiểm tra lại.`)
+  ) {
+    return
+  }
+
+  await persist(rows.value.filter((item) => item.code !== row.code))
+}
+
+function reloadAll() {
+  if (save.isPending.value || !allowDiscard()) return
+  restore()
   emit('reload')
+}
+
+function confirmLeave() {
+  return !save.isPending.value && allowDiscard()
 }
 
 function preventUnload(event: BeforeUnloadEvent) {
@@ -215,214 +302,214 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section
-    class="admin-reference__panel category-editor"
-    data-reference="admin-pricing-category-editor"
-    aria-labelledby="category-editor-title"
-  >
-    <header class="category-editor__heading">
+  <section class="admin-reference__panel pricing-workspace" aria-labelledby="ticket-types-title">
+    <header class="pricing-panel-heading">
       <div>
-        <h2 id="category-editor-title">Nhóm vé của policy</h2>
-        <p>Vai trò giá và điều kiện riêng của từng nhóm vé.</p>
+        <p class="admin-reference__eyebrow">Bước 2</p>
+        <h2 id="ticket-types-title">Chọn loại vé</h2>
+        <p>Chọn một mục bên trái để xem cách áp dụng và mức giá.</p>
       </div>
 
       <AppButton
         type="button"
         variant="secondary"
-        :disabled="save.isPending.value"
-        @click="reloadPolicy"
+        :disabled="!editable || rows.length >= 100"
+        @click="addTicket('CATEGORY_DISCOUNT')"
       >
-        {{ dirty ? 'Bỏ thay đổi và tải lại policy' : 'Tải lại policy' }}
+        Thêm loại vé ưu đãi
       </AppButton>
     </header>
 
-    <p v-if="!canRead">Bạn không có quyền xem hoặc sửa danh mục.</p>
+    <p v-if="!canRead">Bạn không có quyền xem loại vé.</p>
 
     <p v-else-if="query.isPending.value || query.isFetching.value" role="status">
-      Đang tải nhóm vé…
+      Đang tải các loại vé…
     </p>
 
-    <p v-else-if="query.isError.value" class="category-editor__error" role="alert">
-      {{ errorText(query.error.value) }}
-    </p>
+    <div v-else-if="query.isError.value" class="pricing-feedback" role="alert">
+      <p class="pricing-error">{{ readableError(query.error.value) }}</p>
+      <AppButton type="button" variant="secondary" @click="reloadAll"> Tải lại bản giá </AppButton>
+    </div>
 
-    <form v-else-if="initialized" @submit.prevent="submit">
-      <p v-if="query.data.value?.policy.status === 'PUBLISHED'" role="status">
-        Phiên bản đã xuất bản chỉ được xem.
-      </p>
-
-      <fieldset :disabled="!editable">
-        <legend class="admin-visually-hidden">Danh mục nhóm vé</legend>
-
-        <p v-if="rows.length === 0">Chưa có nhóm vé.</p>
-
-        <article
-          v-for="(row, index) in rows"
-          :key="row.localKey"
-          class="category-editor__row"
-          :aria-label="`Nhóm vé ${index + 1}`"
-        >
-          <label class="admin-reference__field">
-            <span>Mã nhóm vé *</span>
-            <input v-model="row.code" class="admin-reference__input" maxlength="64" required />
-          </label>
-
-          <label class="admin-reference__field">
-            <span>Tên nhóm vé *</span>
-            <input v-model="row.name" class="admin-reference__input" maxlength="150" required />
-          </label>
-
-          <label class="admin-reference__field">
-            <span>Vai trò giá *</span>
-            <select
-              v-model="row.pricingRole"
-              class="admin-reference__input"
-              @change="roleChanged(row)"
-            >
-              <option v-for="role in roles" :key="role" :value="role">
-                {{ roleLabels[role] }}
-              </option>
-            </select>
-          </label>
-
-          <label class="admin-reference__field">
-            <span>Điều kiện *</span>
-            <select
-              v-model="row.eligibilityMode"
-              class="admin-reference__input"
-              :disabled="row.pricingRole === 'REGULAR'"
-              @change="row.eligibilityRuleCode = ''"
-            >
-              <option v-for="mode in modes" :key="mode" :value="mode">
-                {{ modeLabels[mode] }}
-              </option>
-            </select>
-          </label>
-
-          <label class="admin-reference__field">
-            <span>Mã rule điều kiện</span>
-            <input
-              v-model="row.eligibilityRuleCode"
-              class="admin-reference__input"
-              maxlength="64"
-              :required="row.eligibilityMode === 'RULE_REQUIRED'"
-              :disabled="row.eligibilityMode !== 'RULE_REQUIRED'"
-            />
-          </label>
-
-          <AppButton
-            type="button"
-            variant="secondary"
-            :disabled="!editable"
-            :aria-label="`Xóa nhóm vé ${index + 1}`"
-            @click="rows.splice(index, 1)"
-          >
-            Xóa nhóm
-          </AppButton>
-        </article>
-
+    <template v-else-if="initialized">
+      <div v-if="!hasRegular" class="pricing-help">
+        <p>Bản giá chưa có vé thông thường.</p>
         <AppButton
           type="button"
           variant="secondary"
           :disabled="!editable || rows.length >= 100"
-          @click="addRow"
+          @click="addTicket('REGULAR')"
         >
-          Thêm nhóm vé
+          Thêm vé thông thường
         </AppButton>
-      </fieldset>
+      </div>
 
-      <p v-if="incomplete" class="category-editor__notice" role="status">
-        Danh mục còn chưa hoàn chỉnh. Có thể lưu draft, nhưng policy hoàn chỉnh cần đúng một nhóm
-        REGULAR và không còn vai trò/điều kiện UNCONFIRMED.
-      </p>
+      <p v-if="rows.length === 0">Chưa có loại vé. Hãy thêm vé thông thường để bắt đầu.</p>
 
-      <p class="category-editor__notice">
-        Lưu thay toàn bộ danh mục; danh sách rỗng sẽ xóa danh mục. Đổi hoặc xóa mã nhóm có thể làm
-        fare rule mất tham chiếu. Khai báo điều kiện không xác nhận khách hàng đủ điều kiện.
-      </p>
+      <div v-else class="pricing-workspace__layout">
+        <nav class="pricing-type-list" aria-label="Các loại vé">
+          <button
+            v-for="row in rows"
+            :key="row.code"
+            type="button"
+            class="pricing-type-button"
+            :class="{
+              'is-selected': activeCode === row.code,
+              'pricing-type-button--warning': row.pricingRole === 'UNCONFIRMED',
+            }"
+            :aria-pressed="activeCode === row.code"
+            aria-controls="pricing-type-detail"
+            :disabled="save.isPending.value"
+            @click="selectTicket(row.code)"
+          >
+            <span class="pricing-type-button__copy">
+              <strong>{{ row.name || roleLabels[row.pricingRole] }}</strong>
+              <small>{{ roleDescriptions[row.pricingRole] }}</small>
+            </span>
+            <span v-if="row.pricingRole === 'REGULAR'" class="pricing-type-button__badge">
+              Cần có
+            </span>
+            <span v-else-if="row.pricingRole === 'UNCONFIRMED'" class="pricing-type-button__badge">
+              Xem lại
+            </span>
+          </button>
+        </nav>
 
-      <p v-if="validationMessage" class="category-editor__error" role="alert">
-        {{ validationMessage }}
-      </p>
+        <form
+          v-if="selected"
+          id="pricing-type-detail"
+          class="pricing-type-detail"
+          aria-labelledby="selected-type-title"
+          @submit.prevent="submit"
+        >
+          <header class="pricing-type-detail__heading">
+            <div>
+              <span class="pricing-hint">Loại vé đang chọn</span>
+              <h3 id="selected-type-title">
+                {{ selected.name || roleLabels[selected.pricingRole] }}
+              </h3>
+            </div>
+            <span class="pricing-badge">
+              {{
+                query.data.value?.policy.status === 'PUBLISHED'
+                  ? 'Chỉ xem'
+                  : selected.pricingRole === 'REGULAR'
+                    ? 'Dành cho mọi khách'
+                    : 'Bản nháp'
+              }}
+            </span>
+          </header>
 
-      <p v-if="save.isError.value" class="category-editor__error" role="alert">
-        {{ errorText(save.error.value) }}
-      </p>
+          <p class="pricing-type-detail__description">
+            {{
+              selected.pricingRole === 'REGULAR'
+                ? 'Đây là mức giá thông thường của rạp. Mỗi bản giá cần có một loại vé như thế này.'
+                : 'Loại vé này có cách áp dụng riêng. Giá được đặt theo ngày, giờ, hình thức chiếu và loại ghế.'
+            }}
+          </p>
 
-      <AppButton type="submit" :loading="save.isPending.value" :disabled="!editable || !dirty">
-        Lưu danh mục · {{ rows.length }} nhóm
-      </AppButton>
-    </form>
+          <fieldset class="pricing-type-detail__fields" :disabled="!editable">
+            <legend class="admin-visually-hidden">Thông tin loại vé</legend>
+
+            <label class="admin-reference__field">
+              <span>Tên hiển thị</span>
+              <input
+                ref="nameInput"
+                v-model="selected.name"
+                class="admin-reference__input"
+                maxlength="150"
+                required
+              />
+              <small>Tên này giúp nhân viên nhận biết loại vé.</small>
+            </label>
+
+            <label class="admin-reference__field">
+              <span>Ai được mua?</span>
+              <select
+                v-model="selected.eligibilityMode"
+                class="admin-reference__input"
+                :disabled="selected.pricingRole === 'REGULAR'"
+                @change="eligibilityChanged"
+              >
+                <option value="UNRESTRICTED">Tất cả khách</option>
+                <option value="RULE_REQUIRED" :disabled="!savedCondition">
+                  Khách cần đáp ứng điều kiện
+                </option>
+                <option value="UNCONFIRMED">Chưa xác định</option>
+              </select>
+              <small v-if="selected.eligibilityMode === 'RULE_REQUIRED'">
+                Giữ nguyên điều kiện mua vé đã được cấu hình.
+              </small>
+              <small v-else-if="selected.pricingRole !== 'REGULAR' && !savedCondition">
+                Chưa có điều kiện mua vé để lựa chọn. Có thể lưu bản nháp với lựa chọn “Chưa xác
+                định”.
+              </small>
+            </label>
+
+            <label class="admin-reference__field pricing-type-detail__field-wide">
+              <span>Cách tính giá</span>
+              <select
+                v-model="selected.pricingRole"
+                class="admin-reference__input"
+                @change="roleChanged"
+              >
+                <option
+                  v-for="role in roles"
+                  :key="role"
+                  :value="role"
+                  :disabled="
+                    role === 'REGULAR' &&
+                    rows.some((row) => row.code !== selected?.code && row.pricingRole === 'REGULAR')
+                  "
+                >
+                  {{ roleLabels[role] }}
+                </option>
+              </select>
+              <small>
+                Một số loại vé ưu đãi dùng giá thông thường khi chiếu sớm hoặc chiếu tại rạp cao
+                cấp.
+              </small>
+            </label>
+          </fieldset>
+
+          <p v-if="validationMessage" class="pricing-error" role="alert">
+            {{ validationMessage }}
+          </p>
+          <p v-if="save.isError.value" class="pricing-error" role="alert">
+            {{ readableError(save.error.value) }}
+          </p>
+
+          <div class="pricing-type-detail__actions">
+            <AppButton
+              type="button"
+              variant="secondary"
+              :disabled="!editable"
+              @click="removeTicket"
+            >
+              Xóa loại vé
+            </AppButton>
+            <AppButton
+              type="button"
+              variant="secondary"
+              :disabled="!dirty || save.isPending.value"
+              @click="restore()"
+            >
+              Hủy thay đổi
+            </AppButton>
+            <AppButton
+              type="submit"
+              :loading="save.isPending.value"
+              :disabled="!editable || !dirty"
+            >
+              Lưu loại vé
+            </AppButton>
+          </div>
+
+          <AppButton v-if="requiresReload" type="button" variant="secondary" @click="reloadAll">
+            Tải lại bản giá
+          </AppButton>
+        </form>
+      </div>
+    </template>
   </section>
 </template>
-
-<style scoped>
-[data-reference='admin-pricing-category-editor'] {
-  display: grid;
-  gap: var(--space-4);
-  min-width: 0;
-  margin-top: var(--space-5);
-  padding: var(--space-5);
-}
-
-[data-reference='admin-pricing-category-editor'] .category-editor__heading {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
-
-[data-reference='admin-pricing-category-editor'] h2 {
-  margin: 0 0 var(--space-2);
-  font-size: var(--font-size-lg);
-}
-
-[data-reference='admin-pricing-category-editor'] p {
-  margin: 0;
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-base);
-}
-
-[data-reference='admin-pricing-category-editor'] :is(form, fieldset) {
-  display: grid;
-  gap: var(--space-4);
-  min-width: 0;
-}
-
-[data-reference='admin-pricing-category-editor'] fieldset {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-[data-reference='admin-pricing-category-editor'] .category-editor__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: start;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-[data-reference='admin-pricing-category-editor'] .category-editor__row > label {
-  flex: 1 1 var(--admin-reference-preview-width);
-  min-width: 0;
-}
-
-[data-reference='admin-pricing-category-editor'] .category-editor__notice {
-  padding: var(--space-4);
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-}
-
-[data-reference='admin-pricing-category-editor'] .category-editor__error {
-  color: var(--color-error);
-}
-
-[data-reference='admin-pricing-category-editor'] :is(input, select, button):focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus);
-  outline-offset: var(--space-1);
-}
-</style>
