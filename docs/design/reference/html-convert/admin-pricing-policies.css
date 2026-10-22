@@ -1,358 +1,734 @@
-:where([data-reference='admin-pricing-policies']) {
-  --pricing-page-gap: var(--space-5);
-  --pricing-panel-padding: var(--space-5);
-  --pricing-layout-gap: var(--space-4);
-  --pricing-type-list-width: 17rem;
-  --pricing-table-min-width: 70rem;
+:root {
+  color-scheme: light;
+
+  --color-primary: #e11d48;
+  --color-primary-hover: #be123c;
+  --color-text: #242229;
+  --color-text-muted: #77737e;
+  --color-border: #e8e5eb;
+  --color-page: #f6f5f7;
+  --color-surface: #ffffff;
+  --color-surface-soft: #faf9fb;
+  --color-sidebar: #17151c;
+  --color-sidebar-text: #c9c5ce;
+  --color-sidebar-active: #30222a;
+  --color-holiday: #fff8ed;
+  --color-holiday-border: #f1d7ad;
+  --color-success: #277344;
+  --color-success-bg: #edf8f0;
+
+  --sidebar-width: 16rem;
+  --content-width: 78rem;
+  --topbar-height: 4.25rem;
+  --control-height: 2.875rem;
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+  --page-padding: clamp(1rem, 3vw, 2rem);
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-page {
-  display: grid;
-  gap: var(--pricing-page-gap);
+* {
+  box-sizing: border-box;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-page__heading {
-  margin-bottom: 0;
+html {
+  min-width: 20rem;
+  background: var(--color-page);
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
+body {
+  min-width: 20rem;
+  min-height: 100vh;
   margin: 0;
-  padding: 0;
-  list-style: none;
+  color: var(--color-text);
+  background: var(--color-page);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.5;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-steps li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-  padding: var(--space-3) var(--space-4);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  background: var(--color-surface);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-steps li > span {
-  display: grid;
-  width: var(--space-8);
-  aspect-ratio: 1;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: var(--radius-pill);
-  color: var(--color-text-primary);
-  background: var(--color-surface-raised);
-  font-weight: 700;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-steps li.is-complete,
-:where([data-reference='admin-pricing-policies']) .pricing-steps li.is-current {
-  border-color: var(--color-primary);
-  color: var(--color-text-primary);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-steps li.is-complete > span,
-:where([data-reference='admin-pricing-policies']) .pricing-steps li.is-current > span {
-  color: var(--color-background);
-  background: var(--color-primary);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-policy-context,
-:where([data-reference='admin-pricing-policies']) .pricing-workspace {
-  display: grid;
-  gap: var(--space-4);
-  min-width: 0;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-policy-context {
-  padding: var(--pricing-panel-padding);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-policy-context .panel-heading h2,
-:where([data-reference='admin-pricing-policies']) .pricing-workspace__heading h2,
-:where([data-reference='admin-pricing-policies']) .pricing-fares h2 {
-  margin: 0;
-  font-size: var(--font-size-lg);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-policy-context .panel-heading p,
-:where([data-reference='admin-pricing-policies']) .pricing-workspace__heading p,
-:where([data-reference='admin-pricing-policies']) .pricing-fares .cinema-list__heading p {
-  margin: var(--space-2) 0 0;
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-body);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-policy-context__fields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--pricing-layout-gap);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-policy-context__status {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-help {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  background: var(--color-surface);
-  line-height: var(--line-height-body);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-help p {
-  margin: 0;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-help__icon {
-  display: grid;
-  width: var(--space-6);
-  aspect-ratio: 1;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: var(--radius-pill);
-  color: var(--color-background);
-  background: var(--color-primary);
-  font-weight: 700;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-workspace {
-  padding: var(--pricing-panel-padding);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-workspace__heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding-bottom: var(--space-4);
-  border-bottom: var(--border-width) solid var(--color-border);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-workspace__layout {
-  display: grid;
-  grid-template-columns: minmax(0, var(--pricing-type-list-width)) minmax(0, 1fr);
-  align-items: start;
-  gap: var(--pricing-layout-gap);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-list {
-  display: grid;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  min-width: 0;
-  padding: var(--space-3);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-primary);
-  background: var(--color-background-soft);
+button,
+input,
+select {
   font: inherit;
-  text-align: left;
+}
+
+button,
+select {
   cursor: pointer;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-type-button:hover,
-:where([data-reference='admin-pricing-policies']) .pricing-type-button.is-selected {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 0.2rem solid color-mix(in srgb, var(--color-primary), transparent 65%);
+  outline-offset: 0.15rem;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-type-button:focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus);
-  outline-offset: var(--space-1);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-button__copy {
+.admin-shell {
   display: grid;
-  gap: var(--space-1);
-  min-width: 0;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-type-button__copy small {
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-body);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-button__badge {
-  flex: 0 0 auto;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-pill);
-  color: var(--color-primary-light);
-  background: var(--color-surface-raised);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-button--warning {
-  border-color: color-mix(in srgb, var(--color-warning) 45%, var(--color-border));
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail {
-  display: grid;
-  gap: var(--space-4);
-  min-width: 0;
-  padding: var(--space-4);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-background-soft);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__heading {
+.admin-sidebar {
+  position: sticky;
+  top: 0;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  width: var(--sidebar-width);
+  height: 100vh;
+  padding: 1.25rem 1rem 1rem;
+  overflow-y: auto;
+  background: var(--color-sidebar);
+  color: var(--color-sidebar-text);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding-inline: 0.5rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+.brand__mark {
+  display: grid;
+  width: 2.5rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 850;
+}
+
+.brand__text {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.brand__text strong {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+}
+
+.brand__text small {
+  color: #aaa4b1;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.admin-sidebar__caption {
+  margin: 2rem 0 0.75rem;
+  padding-inline: 0.75rem;
+  color: #8f8996;
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+}
+
+.admin-nav {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.875rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.625rem;
+  color: var(--color-sidebar-text);
+  font-size: 0.875rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.admin-nav__link:hover {
+  background: rgb(255 255 255 / 7%);
+  color: #fff;
+}
+
+.admin-nav__link--active {
+  background: var(--color-sidebar-active);
+  color: #fff;
+}
+
+.admin-nav__link--active .admin-nav__icon {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.admin-nav__icon {
+  display: grid;
+  width: 1.75rem;
+  min-width: 1.75rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 0.5rem;
+  background: rgb(255 255 255 / 8%);
+  color: #e4dfe8;
+  font-size: 0.625rem;
+  font-weight: 800;
+}
+
+.admin-sidebar__footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding: 1rem 0.5rem 0;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+
+.admin-sidebar__avatar,
+.admin-topbar__avatar {
+  display: grid;
+  width: 2.25rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: #42313e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.admin-sidebar__user {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.admin-sidebar__user strong {
+  color: #fff;
+  font-size: 0.8125rem;
+}
+
+.admin-sidebar__user small {
+  color: #aaa4b1;
+  font-size: 0.75rem;
+}
+
+.admin-main {
+  min-width: 0;
+}
+
+.admin-topbar {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  min-height: var(--topbar-height);
+  padding-inline: var(--page-padding);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__heading h3 {
-  margin: var(--space-1) 0 0;
-  font-size: var(--font-size-lg);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__eyebrow {
+.admin-topbar__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
   color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
+  font-size: 0.8125rem;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__description {
+.admin-topbar__breadcrumb strong {
+  color: var(--color-text);
+  font-weight: 650;
+}
+
+.admin-topbar__account {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-topbar__account-name {
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.admin-topbar__avatar {
+  background: var(--color-primary);
+}
+
+.page-content {
+  width: min(100%, var(--content-width));
+  margin-inline: auto;
+  padding: var(--page-padding);
+}
+
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-heading__eyebrow,
+.panel__eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--color-primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.page-heading h1 {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.2;
+}
+
+.page-heading__description {
+  max-width: 42rem;
   margin: 0;
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-body);
+  color: var(--color-text-muted);
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__fields {
+.panel {
+  margin-bottom: 1.25rem;
+  padding: clamp(1rem, 2.2vw, 1.5rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: 0 0.25rem 1rem rgb(24 16 32 / 4%);
+}
+
+.panel__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.panel__heading h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.125rem;
+  line-height: 1.3;
+}
+
+.panel__heading p:not(.panel__eyebrow) {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.panel__heading--table {
+  align-items: center;
+}
+
+.panel__heading--table .panel__eyebrow {
+  margin-bottom: 0.35rem;
+}
+
+.selection-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--pricing-layout-gap);
+  gap: 1rem;
+  max-width: 44rem;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__field-wide {
-  grid-column: 1 / -1;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__fields input,
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__fields select,
-:where([data-reference='admin-pricing-policies']) .pricing-fares__filters select {
-  width: 100%;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__fields small {
-  color: var(--color-text-muted);
-  line-height: var(--line-height-body);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-type-detail__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding-top: var(--space-4);
-  border-top: var(--border-width) solid var(--color-border);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-fares {
-  min-width: 0;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-fares__filters {
+.form-field {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--pricing-layout-gap);
-  padding: var(--space-4) var(--space-5);
+  gap: 0.45rem;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-fare-table {
-  width: 100%;
-  min-width: var(--pricing-table-min-width);
-  border-collapse: collapse;
-  text-align: left;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-fare-table th,
-:where([data-reference='admin-pricing-policies']) .pricing-fare-table td {
-  padding: var(--space-4);
-  border-bottom: var(--border-width) solid var(--color-border);
-  vertical-align: top;
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-fare-table thead {
-  color: var(--color-text-secondary);
-  background: var(--color-background-soft);
-  font-size: var(--font-size-xs);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-fare-table tbody th {
-  color: var(--color-text-primary);
+.form-field__label {
+  color: var(--color-text);
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-fare-table strong {
-  color: var(--color-primary-light);
+.form-field select {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.form-field select:hover {
+  border-color: #c9c3ce;
+}
+
+.selection-hint {
+  max-width: 55rem;
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  border-left: 0.25rem solid var(--color-primary);
+  border-radius: 0.375rem;
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+}
+
+.edit-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  font-size: 0.75rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-fares__note {
-  margin: 0;
-  padding: var(--space-4) var(--space-5);
-  border-top: var(--border-width) solid var(--color-border);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  line-height: var(--line-height-body);
+.edit-status__dot {
+  width: 0.5rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #319653;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-special-cases {
-  padding: var(--space-4) var(--space-5);
+.pricing-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-special-cases summary {
-  color: var(--color-text-primary);
+.pricing-table {
+  width: 100%;
+  min-width: 54rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.pricing-table th,
+.pricing-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.pricing-table thead th {
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.pricing-table thead th span {
+  display: block;
+  margin-top: 0.15rem;
+  font-weight: 500;
+}
+
+.pricing-table tbody th {
+  min-width: 10rem;
   font-weight: 700;
-  cursor: pointer;
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-special-cases__content {
+.pricing-table tbody td {
+  min-width: 9rem;
+}
+
+.pricing-table tbody tr:last-child th,
+.pricing-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.pricing-table__holiday th,
+.pricing-table__holiday td {
+  background: var(--color-holiday);
+}
+
+.price-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.price-field input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height);
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.price-field input:hover {
+  border-color: #c9c3ce;
+}
+
+.price-field input:focus {
+  border-color: var(--color-primary);
+}
+
+.price-field > span:last-child {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.pricing-notes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--pricing-layout-gap);
-  padding-top: var(--space-4);
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-holiday-border);
+  border-radius: 0.75rem;
+  background: var(--color-holiday);
 }
 
-:where([data-reference='admin-pricing-policies']) .pricing-special-cases__content article {
-  padding: var(--space-4);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-background-soft);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-special-cases__content h3 {
-  margin: 0 0 var(--space-2);
-  font-size: var(--font-size-md);
-}
-
-:where([data-reference='admin-pricing-policies']) .pricing-special-cases__content p {
+.pricing-notes p {
   margin: 0;
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-body);
+  line-height: 1.5;
+}
+
+.pricing-notes strong {
+  color: var(--color-text);
+}
+
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-height);
+  padding: 0.625rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-weight: 750;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.button--primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.button--primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.button--secondary {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.button--secondary:hover {
+  border-color: #c9c3ce;
+  background: var(--color-surface-soft);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 56rem) {
+  :root {
+    --sidebar-width: 13.5rem;
+  }
+
+  .admin-sidebar {
+    padding-inline: 0.75rem;
+  }
+
+  .admin-nav__link {
+    gap: 0.5rem;
+    padding-inline: 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .pricing-table th,
+  .pricing-table td {
+    padding-inline: 0.75rem;
+  }
+}
+
+@media (max-width: 44rem) {
+  .admin-shell {
+    display: block;
+  }
+
+  .admin-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    padding: 0.75rem;
+  }
+
+  .brand {
+    min-height: 2.75rem;
+  }
+
+  .admin-sidebar__caption,
+  .admin-sidebar__footer {
+    display: none;
+  }
+
+  .admin-nav {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .admin-nav__link {
+    flex: 0 0 auto;
+    min-height: 2.5rem;
+    padding-inline: 0.65rem;
+    white-space: nowrap;
+  }
+
+  .admin-nav__icon {
+    display: none;
+  }
+
+  .admin-topbar {
+    min-height: 3.5rem;
+  }
+
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .page-heading > .button {
+    width: 100%;
+  }
+
+  .selection-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .panel__heading--table {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pricing-table-wrap {
+    overflow: visible;
+    border: 0;
+  }
+
+  .pricing-table,
+  .pricing-table tbody {
+    display: block;
+    min-width: 0;
+  }
+
+  .pricing-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+  }
+
+  .pricing-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 0.875rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+  }
+
+  .pricing-table tbody th,
+  .pricing-table tbody td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .pricing-table tbody th {
+    grid-column: 1 / -1;
+    padding-bottom: 0.625rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .pricing-table tbody td::before {
+    display: block;
+    margin-bottom: 0.375rem;
+    color: var(--color-text-muted);
+    content: attr(data-label);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .pricing-table tbody tr.pricing-table__holiday {
+    border-color: var(--color-holiday-border);
+    background: var(--color-holiday);
+  }
+
+  .pricing-table tbody tr.pricing-table__holiday th,
+  .pricing-table tbody tr.pricing-table__holiday td {
+    background: transparent;
+  }
+
+  .page-actions {
+    position: sticky;
+    bottom: 0;
+    margin-inline: calc(-1 * var(--page-padding));
+    padding: 0.75rem var(--page-padding);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  .page-actions .button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 25rem) {
+  .pricing-table tbody tr {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-table tbody th {
+    grid-column: auto;
+  }
+
+  .admin-topbar__account-name {
+    display: none;
+  }
 }

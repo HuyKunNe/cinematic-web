@@ -3,6 +3,8 @@ import { computed, reactive, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { useAdminPricingMatrixQuery } from '../api/admin-pricing-matrix-query'
 import AdminPricingFareCreate from './AdminPricingFareCreate.vue'
+import AdminPricingFareGrid from './AdminPricingFareGrid.vue'
+
 const props = defineProps<{
   cinemaId: string
   policyId: string
@@ -188,7 +190,7 @@ function reload() {
         <h2 id="pricing-fares-title">
           {{ categoryName ? `Mức giá của ${categoryName}` : 'Mức giá vé' }}
         </h2>
-        <p>Giá thay đổi theo ngày, giờ, hình thức chiếu và loại ghế.</p>
+        <p>Chọn bảng giá và hình thức chiếu để so sánh giá giữa các loại ghế.</p>
       </div>
 
       <AppButton
@@ -201,7 +203,7 @@ function reload() {
         Thêm mức giá
       </AppButton>
     </header>
-    
+
     <AdminPricingFareCreate
       v-if="showCreate"
       :cinema-id="cinemaId"
@@ -237,98 +239,103 @@ function reload() {
     </div>
 
     <template v-else-if="matrix">
-      <div class="pricing-fares__filters">
-        <label class="admin-reference__field">
-          <span>Ngày</span>
-          <select v-model="filters.day" class="admin-reference__input">
-            <option value="">Tất cả ngày</option>
-            <option v-for="item in dayOptions" :key="item.value" :value="item.value">
-              {{ item.label }}
-            </option>
-          </select>
-        </label>
+      <AdminPricingFareGrid :key="categoryCode" :matrix="matrix" :category-code="categoryCode" />
 
-        <label class="admin-reference__field">
-          <span>Hình thức chiếu</span>
-          <select v-model="filters.format" class="admin-reference__input">
-            <option value="">Tất cả hình thức</option>
-            <option v-for="item in formatOptions" :key="item.value" :value="item.value">
-              {{ item.label }}
-            </option>
-          </select>
-        </label>
+      <details class="pricing-special-cases">
+        <summary>Xem danh sách chi tiết từng mức giá</summary>
 
-        <label class="admin-reference__field">
-          <span>Loại ghế</span>
-          <select v-model="filters.seat" class="admin-reference__input">
-            <option value="">Tất cả loại ghế</option>
-            <option v-for="item in seatOptions" :key="item.value" :value="item.value">
-              {{ item.label }}
-            </option>
-          </select>
-        </label>
-      </div>
+        <div class="pricing-fares__filters">
+          <label class="admin-reference__field">
+            <span>Ngày</span>
+            <select v-model="filters.day" class="admin-reference__input">
+              <option value="">Tất cả ngày</option>
+              <option v-for="item in dayOptions" :key="item.value" :value="item.value">
+                {{ item.label }}
+              </option>
+            </select>
+          </label>
 
-      <div
-        class="pricing-table-scroll"
-        role="region"
-        aria-label="Các mức giá của loại vé đang chọn"
-        tabindex="0"
-      >
-        <table class="pricing-fare-table">
-          <caption class="admin-visually-hidden">
-            Các mức giá đã lưu của loại vé đang chọn
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Ngày và giờ</th>
-              <th scope="col">Hình thức chiếu</th>
-              <th scope="col">Loại ghế</th>
-              <th scope="col">Suất chiếu</th>
-              <th scope="col">Giá vé</th>
-              <th scope="col">Tính theo</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in visibleRules" :key="item.id">
-              <td>
-                {{ dayName(item.dayGroupCode) }} · {{ timeName(item.timeBandCode) }}
-                <small class="pricing-table-detail">
-                  Từ {{ item.effectiveFrom }}
-                  {{ item.effectiveTo ? `đến ${item.effectiveTo}` : '' }}
-                </small>
-              </td>
-              <td>{{ formatName(item) }}</td>
-              <td>{{ seatName(item.seatTypeCode) }}</td>
-              <td>
-                {{ screeningLabels[item.advanceScreeningCondition] }}
-                <small v-if="item.requiredEligibilityCode" class="pricing-table-detail">
-                  Có điều kiện mua vé
-                </small>
-              </td>
-              <td>
-                <strong>{{ amount(item.amountVnd) }}</strong>
-              </td>
-              <td>{{ unitLabels[item.fareUnit] }}</td>
-            </tr>
-            <tr v-if="visibleRules.length === 0">
-              <td colspan="6">
-                {{
-                  categoryRules.length === 0
-                    ? 'Loại vé này chưa có mức giá đã lưu.'
-                    : 'Không có mức giá phù hợp với lựa chọn đang lọc.'
-                }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          <label class="admin-reference__field">
+            <span>Hình thức chiếu</span>
+            <select v-model="filters.format" class="admin-reference__input">
+              <option value="">Tất cả hình thức</option>
+              <option v-for="item in formatOptions" :key="item.value" :value="item.value">
+                {{ item.label }}
+              </option>
+            </select>
+          </label>
+
+          <label class="admin-reference__field">
+            <span>Loại ghế</span>
+            <select v-model="filters.seat" class="admin-reference__input">
+              <option value="">Tất cả loại ghế</option>
+              <option v-for="item in seatOptions" :key="item.value" :value="item.value">
+                {{ item.label }}
+              </option>
+            </select>
+          </label>
+        </div>
+
+        <div
+          class="pricing-table-scroll"
+          role="region"
+          aria-label="Các mức giá của loại vé đang chọn"
+          tabindex="0"
+        >
+          <table class="pricing-fare-table">
+            <caption class="admin-visually-hidden">
+              Các mức giá đã lưu của loại vé đang chọn
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Ngày và giờ</th>
+                <th scope="col">Hình thức chiếu</th>
+                <th scope="col">Loại ghế</th>
+                <th scope="col">Suất chiếu</th>
+                <th scope="col">Giá vé</th>
+                <th scope="col">Tính theo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in visibleRules" :key="item.id">
+                <td>
+                  {{ dayName(item.dayGroupCode) }} · {{ timeName(item.timeBandCode) }}
+                  <small class="pricing-table-detail">
+                    Từ {{ item.effectiveFrom }}
+                    {{ item.effectiveTo ? `đến ${item.effectiveTo}` : '' }}
+                  </small>
+                </td>
+                <td>{{ formatName(item) }}</td>
+                <td>{{ seatName(item.seatTypeCode) }}</td>
+                <td>
+                  {{ screeningLabels[item.advanceScreeningCondition] }}
+                  <small v-if="item.requiredEligibilityCode" class="pricing-table-detail">
+                    Có điều kiện mua vé
+                  </small>
+                </td>
+                <td>
+                  <strong>{{ amount(item.amountVnd) }}</strong>
+                </td>
+                <td>{{ unitLabels[item.fareUnit] }}</td>
+              </tr>
+              <tr v-if="visibleRules.length === 0">
+                <td colspan="6">
+                  {{
+                    categoryRules.length === 0
+                      ? 'Loại vé này chưa có mức giá đã lưu.'
+                      : 'Không có mức giá phù hợp với lựa chọn đang lọc.'
+                  }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
     </template>
 
     <p id="pricing-add-fare-help" class="pricing-fares__note">
-      Chọn vé thông thường và cấu hình đủ ngày, giờ, loại ghế để thêm mức giá cho chiếu thường
-      2D/3D. Giá được lưu là giá trọn gói; giá mỗi cặp được tính một lần cho cả cặp ghế đôi. Bản giá
-      đã công bố chỉ có thể xem.
+      Chọn “Thêm mức giá” để nhập giá mới. Giá là giá trọn gói; giá ghế đôi được tính một lần cho cả
+      cặp. Bản giá đã công bố chỉ có thể xem.
     </p>
   </section>
 </template>
