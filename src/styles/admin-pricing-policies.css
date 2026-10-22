@@ -417,3 +417,32 @@
     flex: 1 1 100%;
   }
 }
+[data-reference='admin-pricing-policies'] .pricing-shared-setup {
+  min-width: 0;
+  padding: var(--pricing-panel-padding);
+}
+
+[data-reference='admin-pricing-policies'] .pricing-shared-setup summary {
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+[data-reference='admin-pricing-policies'] .pricing-shared-setup summary > span {
+  display: inline-grid;
+  gap: var(--space-1);
+  max-width: 100%;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+[data-reference='admin-pricing-policies'] .pricing-shared-setup summary small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+[data-reference='admin-pricing-policies'] .pricing-shared-setup__content {
+  display: grid;
+  gap: var(--pricing-layout-gap);
+  min-width: 0;
+  padding-block-start: var(--space-4);
+}

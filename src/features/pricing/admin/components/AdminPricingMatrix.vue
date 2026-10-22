@@ -65,8 +65,9 @@ const canCreate = computed(() => {
     !showCreate.value &&
     value?.policy.status === 'DRAFT' &&
     value.policy.currency === 'VND' &&
-    category?.pricingRole === 'REGULAR' &&
-    category.eligibilityMode === 'UNRESTRICTED' &&
+    category !== undefined &&
+    category.pricingRole !== 'UNCONFIRMED' &&
+    category.eligibilityMode !== 'UNCONFIRMED' &&
     value.dayGroups.length > 0 &&
     value.timeBands.length > 0 &&
     value.seatTypes.some(
@@ -200,7 +201,7 @@ function reload() {
         Thêm mức giá
       </AppButton>
     </header>
-    <slot name="setup" />
+    
     <AdminPricingFareCreate
       v-if="showCreate"
       :cinema-id="cinemaId"

@@ -134,6 +134,13 @@ export function usePricingFareCreate(
 
       const category = current.ticketCategories.find((item) => item.code === input.categoryCode)
 
+      if (!category) {
+        throw new FareCreateError(
+          'Không tìm thấy nhóm vé trong bản giá hiện tại. Hãy tải lại bản giá.',
+          true,
+        )
+      }
+
       if (category?.pricingRole !== 'REGULAR' || category.eligibilityMode !== 'UNRESTRICTED') {
         throw new FareCreateError(
           'Chọn vé thông thường dành cho tất cả khách để thêm mức giá.',

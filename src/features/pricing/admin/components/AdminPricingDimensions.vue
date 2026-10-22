@@ -231,7 +231,7 @@ onBeforeUnmount(() => {
     class="pricing-dimensions"
     :open="
       locked ||
-      (Boolean(matrix) && (matrix.dayGroups.length === 0 || matrix.timeBands.length === 0))
+      (Boolean(matrix) && (matrix?.dayGroups.length === 0 || matrix?.timeBands.length === 0))
     "
   >
     <summary>Ngày và khung giờ áp dụng</summary>

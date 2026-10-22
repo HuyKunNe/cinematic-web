@@ -417,6 +417,45 @@ function onDraftCreated(draft: CreatedPricingDraft) {
           @reload="onCategoryReload"
         />
 
+        <section
+          :key="`pricing-setup:${selectedPolicy.id}:${selectedPolicy.version}`"
+          class="admin-reference__panel pricing-shared-setup"
+          aria-labelledby="pricing-shared-setup-title"
+        >
+          <details :open="seatLocked || dimensionLocked">
+            <summary @click="(seatLocked || dimensionLocked) && $event.preventDefault()">
+              <span>
+                <strong id="pricing-shared-setup-title"> Thiết lập dùng chung cho bản giá </strong>
+                <small>Loại ghế, ngày và khung giờ áp dụng</small>
+              </span>
+            </summary>
+
+            <div class="pricing-shared-setup__content">
+              <AdminPricingSeatTypes
+                :cinema-id="selectedPolicy.cinemaId"
+                :policy-id="selectedPolicy.id"
+                :version="selectedPolicy.version"
+                :can-read="canRead"
+                :can-edit="!creating && !categoryLocked && !dimensionLocked && !fareLocked"
+                @locked="onSeatLocked"
+                @saved="onSeatSaved"
+                @reload="onSeatReload"
+              />
+
+              <AdminPricingDimensions
+                :cinema-id="selectedPolicy.cinemaId"
+                :policy-id="selectedPolicy.id"
+                :version="selectedPolicy.version"
+                :can-read="canRead"
+                :can-edit="!creating && !categoryLocked && !seatLocked && !fareLocked"
+                @locked="onDimensionLocked"
+                @saved="onDimensionSaved"
+                @reload="onDimensionReload"
+              />
+            </div>
+          </details>
+        </section>
+
         <AdminPricingMatrix
           :key="`fares:${selectedPolicy.id}:${selectedPolicy.version}`"
           :cinema-id="selectedPolicy.cinemaId"
@@ -429,31 +468,7 @@ function onDraftCreated(draft: CreatedPricingDraft) {
           @locked="onFareLocked"
           @saved="onFareSaved"
           @reload="onFareReload"
-        >
-          <template #setup>
-            <AdminPricingSeatTypes
-              :cinema-id="selectedPolicy.cinemaId"
-              :policy-id="selectedPolicy.id"
-              :version="selectedPolicy.version"
-              :can-read="canRead"
-              :can-edit="!creating && !categoryLocked && !dimensionLocked && !fareLocked"
-              @locked="onSeatLocked"
-              @saved="onSeatSaved"
-              @reload="onSeatReload"
-            />
-
-            <AdminPricingDimensions
-              :cinema-id="selectedPolicy.cinemaId"
-              :policy-id="selectedPolicy.id"
-              :version="selectedPolicy.version"
-              :can-read="canRead"
-              :can-edit="!creating && !categoryLocked && !seatLocked && !fareLocked"
-              @locked="onDimensionLocked"
-              @saved="onDimensionSaved"
-              @reload="onDimensionReload"
-            />
-          </template>
-        </AdminPricingMatrix>
+        />
       </template>
 
       <p v-else-if="selectedPolicy" class="pricing-help" role="status">
