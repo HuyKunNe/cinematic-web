@@ -190,7 +190,7 @@ function reload() {
         <h2 id="pricing-fares-title">
           {{ categoryName ? `Mức giá của ${categoryName}` : 'Mức giá vé' }}
         </h2>
-        <p>Chọn bảng giá và hình thức chiếu để so sánh giá giữa các loại ghế.</p>
+        <p>Xem giá theo ngày, giờ bắt đầu suất chiếu và từng loại ghế.</p>
       </div>
 
       <AppButton

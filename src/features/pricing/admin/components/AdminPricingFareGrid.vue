@@ -9,6 +9,7 @@ type Fare = Matrix['fareRules'][number]
 
 type PriceRow = {
   key: string
+  holiday: boolean
   days: number[]
   from: number
   to: number
@@ -20,7 +21,6 @@ const props = defineProps<{
   categoryCode: string
 }>()
 
-const tableKind = ref<'ordinary' | 'holiday'>('ordinary')
 const selectedFormat = ref('')
 
 const weekdays = [
@@ -111,11 +111,10 @@ const hasInvalidConfiguration = computed(() =>
   }),
 )
 
-const rows = computed(() => {
+function buildRows(holiday: boolean): PriceRow[] {
   if (hasInvalidConfiguration.value) return []
 
   const rules = selectedRules.value
-  const holiday = tableKind.value === 'holiday'
 
   const points = [
     ...new Set([
@@ -169,7 +168,7 @@ const rows = computed(() => {
     }
 
     for (const [signature, group] of groups) {
-      const groupKey = JSON.stringify([group.days, signature])
+      const groupKey = JSON.stringify([holiday, group.days, signature])
       const previous = previousRows.get(groupKey)
 
       // Gộp các khoảng giờ liền nhau khi giữ nguyên toàn bộ mức giá.
@@ -180,6 +179,7 @@ const rows = computed(() => {
 
       const row: PriceRow = {
         key: JSON.stringify([groupKey, from]),
+        holiday,
         days: group.days,
         from,
         to,
@@ -190,20 +190,21 @@ const rows = computed(() => {
       previousRows.set(groupKey, row)
     }
   }
+  return result.sort((a, b) => (a.days[0] ?? 0) - (b.days[0] ?? 0) || a.from - b.from)
+}
 
-  return result
-    .sort((a, b) => (a.days[0] ?? 0) - (b.days[0] ?? 0) || a.from - b.from)
-    .map((row) => ({
-      ...row,
-      cells: props.matrix.seatTypes.map((seat) => ({
-        seat,
-        fares: row.rules.filter((rule) => rule.seatTypeCode === seat.code),
-      })),
-    }))
-})
+const rows = computed(() =>
+  [...buildRows(false), ...buildRows(true)].map((row) => ({
+    ...row,
+    cells: props.matrix.seatTypes.map((seat) => ({
+      seat,
+      fares: row.rules.filter((rule) => rule.seatTypeCode === seat.code),
+    })),
+  })),
+)
 
-function dayLabel(days: number[]) {
-  if (tableKind.value === 'holiday') return 'Lễ, Tết'
+function dayLabel(days: number[], holiday: boolean) {
+  if (holiday) return 'Lễ, Tết'
 
   const names = days.map((day) => weekdayNames[day] ?? 'Ngày chưa xác định')
 
@@ -233,6 +234,20 @@ function amount(value: string) {
   return `${value.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}đ`
 }
 
+function seatUnitName(code: string) {
+  const units = [
+    ...new Set(
+      selectedRules.value.filter((rule) => rule.seatTypeCode === code).map((rule) => rule.fareUnit),
+    ),
+  ]
+
+  if (units.length === 0) return 'Chưa có mức giá'
+  if (units.length > 1) return 'Xem từng mức giá'
+
+  const unit = units[0]
+  return unit ? unitNames[unit] : 'Chưa xác định cách tính'
+}
+
 function dateLabel(value: string) {
   return value.split('-').reverse().join('/')
 }
@@ -259,14 +274,6 @@ function hasOwnPeriod(rule: Fare) {
     <template v-else>
       <div class="pricing-fare-grid__controls">
         <label class="admin-reference__field">
-          <span>Bảng giá</span>
-          <select v-model="tableKind" class="admin-reference__input">
-            <option value="ordinary">Ngày bình thường</option>
-            <option value="holiday">Lễ, Tết</option>
-          </select>
-        </label>
-
-        <label class="admin-reference__field">
           <span>Hình thức và suất chiếu</span>
           <select v-model="selectedFormat" class="admin-reference__input">
             <option v-for="option in formatOptions" :key="option.value" :value="option.value">
@@ -286,7 +293,7 @@ function hasOwnPeriod(rule: Fare) {
       </p>
 
       <p v-else-if="rows.length === 0" class="pricing-fare-grid__message" role="status">
-        Chưa có mức giá cho bảng và hình thức chiếu đang chọn.
+        Chưa có mức giá cho hình thức và suất chiếu đang chọn.
       </p>
 
       <div
@@ -296,31 +303,44 @@ function hasOwnPeriod(rule: Fare) {
         aria-label="Bảng giá theo ngày, giờ và loại ghế"
         tabindex="0"
       >
-        <table class="pricing-fare-grid__table">
+        <table class="pricing-fare-grid__table" role="table">
           <caption class="admin-visually-hidden">
-            {{
-              tableKind === 'holiday'
-                ? 'Các mức giá lễ, Tết đã lưu'
-                : 'Các mức giá ngày bình thường đã lưu'
-            }}
+            Giá ngày bình thường và Lễ, Tết theo từng loại ghế
           </caption>
 
-          <thead>
-            <tr>
-              <th scope="col">Ngày áp dụng</th>
-              <th scope="col">Giờ bắt đầu suất chiếu</th>
-              <th v-for="seat in matrix.seatTypes" :key="seat.code" scope="col">
+          <thead role="rowgroup">
+            <tr role="row">
+              <th scope="col" role="columnheader">Ngày áp dụng</th>
+              <th scope="col" role="columnheader">Giờ bắt đầu suất chiếu</th>
+              <th v-for="seat in matrix.seatTypes" :key="seat.code" scope="col" role="columnheader">
                 {{ seat.name }}
+                <small class="pricing-fare-grid__unit">
+                  {{ seatUnitName(seat.code) }}
+                </small>
               </th>
             </tr>
           </thead>
 
-          <tbody>
-            <tr v-for="row in rows" :key="row.key">
-              <th scope="row">{{ dayLabel(row.days) }}</th>
-              <td>{{ timeLabel(row.from, row.to) }}</td>
+          <tbody role="rowgroup">
+            <tr
+              v-for="row in rows"
+              :key="row.key"
+              :class="{ 'pricing-fare-grid__holiday': row.holiday }"
+              role="row"
+            >
+              <th scope="row" role="rowheader">
+                {{ dayLabel(row.days, row.holiday) }}
+              </th>
+              <td data-label="Giờ bắt đầu suất chiếu" role="cell">
+                {{ timeLabel(row.from, row.to) }}
+              </td>
 
-              <td v-for="cell in row.cells" :key="cell.seat.code">
+              <td
+                v-for="cell in row.cells"
+                :key="cell.seat.code"
+                :data-label="`${cell.seat.name} · ${seatUnitName(cell.seat.code)}`"
+                role="cell"
+              >
                 <span v-if="cell.fares.length === 0"> Chưa có mức giá </span>
 
                 <template v-else>
@@ -331,7 +351,9 @@ function hasOwnPeriod(rule: Fare) {
                   <ul class="pricing-fare-grid__prices">
                     <li v-for="fare in cell.fares" :key="fare.id">
                       <strong>{{ amount(fare.amountVnd) }}</strong>
-                      <small>{{ unitNames[fare.fareUnit] }}</small>
+                      <small v-if="seatUnitName(cell.seat.code) === 'Xem từng mức giá'">
+                        {{ unitNames[fare.fareUnit] }}
+                      </small>
 
                       <small v-if="hasOwnPeriod(fare) || cell.fares.length > 1">
                         {{ periodLabel(fare) }}
@@ -348,11 +370,23 @@ function hasOwnPeriod(rule: Fare) {
           </tbody>
         </table>
       </div>
+      <div class="pricing-fare-grid__notes" aria-label="Lưu ý về bảng giá">
+        <p>
+          <strong>Giờ áp dụng:</strong>
+          Tính theo giờ bắt đầu suất chiếu. Khung “Từ 17:00” bao gồm đúng 17:00.
+        </p>
+        <p>
+          <strong>Ghế đôi:</strong>
+          Kiểm tra cách tính ở đầu cột; giá cho cả cặp được tính một lần.
+        </p>
+        <p>
+          <strong>Lễ, Tết:</strong>
+          Giá lễ được hiển thị ở cuối bảng, không cần chọn ngày cụ thể khi xem.
+        </p>
+      </div>
 
       <p class="pricing-fare-grid__note">
-        Bảng tổng hợp các mức giá đã lưu. Chỉ hiển thị ngày và giờ có ít nhất một mức giá; đây chưa
-        phải kết quả kiểm tra đầy đủ giá bán. Giá áp dụng còn phụ thuộc thời hạn và điều kiện mua
-        vé.
+        Chỉ hiển thị phạm vi đã có mức giá. Giá áp dụng còn phụ thuộc thời hạn và điều kiện mua vé.
       </p>
     </template>
   </div>
@@ -446,5 +480,36 @@ function hasOwnPeriod(rule: Fare) {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   line-height: var(--line-height-base);
+}
+
+.pricing-fare-grid__table .pricing-fare-grid__holiday {
+  background: var(--fare-grid-holiday-background);
+}
+
+.pricing-fare-grid__unit {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-regular);
+}
+
+.pricing-fare-grid__notes {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--pricing-panel-padding);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--fare-grid-holiday-background);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-base);
+}
+
+.pricing-fare-grid__notes p {
+  margin: 0;
+}
+
+.pricing-fare-grid__notes strong {
+  color: var(--color-text-primary);
 }
 </style>
