@@ -8,6 +8,7 @@ import type { CreatedPricingDraft } from '../api/admin-pricing-create'
 import AdminPricingCategoriesEditor from '../components/AdminPricingCategoriesEditor.vue'
 import AdminPricingMatrix from '../components/AdminPricingMatrix.vue'
 import AdminPricingDraftCreate from '../components/AdminPricingDraftCreate.vue'
+import AdminPricingSeatTypes from '../components/AdminPricingSeatTypes.vue'
 
 const auth = useAuthStore()
 
@@ -20,6 +21,7 @@ const cinemaId = ref('')
 const policyId = ref('')
 const policyCinemaId = ref('')
 const categoryLocked = ref(false)
+const seatLocked = ref(false)
 const creating = ref(false)
 const reloading = ref(false)
 const notice = ref('')
@@ -62,7 +64,7 @@ const loading = computed(
   () => reloading.value || cinemas.isFetching.value || policies.isFetching.value,
 )
 
-const contextLocked = computed(() => categoryLocked.value || creating.value)
+const contextLocked = computed(() => categoryLocked.value || seatLocked.value || creating.value)
 
 const currentStep = computed(() => {
   if (!selectedPolicy.value) return 1
@@ -107,6 +109,26 @@ async function onCategoriesSaved() {
   if (canRead.value && selectedCinema.value && policyCinemaId.value === selectedCinema.value.id) {
     await policies.refetch()
   }
+}
+
+function onSeatLocked(value: boolean) {
+  seatLocked.value = value
+  if (value) notice.value = ''
+}
+
+async function onSeatSaved() {
+  seatLocked.value = false
+  notice.value = 'Đã thêm loại ghế cho bản giá.'
+
+  if (canRead.value && selectedCinema.value && policyCinemaId.value === selectedCinema.value.id) {
+    await policies.refetch()
+  }
+}
+
+async function onSeatReload() {
+  seatLocked.value = false
+  notice.value = ''
+  await reload()
 }
 
 async function reload() {
@@ -298,9 +320,11 @@ function onDraftCreated(draft: CreatedPricingDraft) {
           {{
             categoryLocked
               ? 'Lưu hoặc hủy thay đổi loại vé trước khi chuyển rạp hay bản giá.'
-              : creating
-                ? 'Đang tạo bản giá mới…'
-                : ''
+              : seatLocked
+                ? 'Lưu hoặc hủy thông tin loại ghế trước khi chuyển rạp hay bản giá.'
+                : creating
+                  ? 'Đang tạo bản giá mới…'
+                  : ''
           }}
         </p>
 
@@ -316,7 +340,7 @@ function onDraftCreated(draft: CreatedPricingDraft) {
         <AdminPricingDraftCreate
           :key="selectedCinema.id"
           :cinema-id="selectedCinema.id"
-          :can-create="canRead && !categoryLocked && !loading"
+          :can-create="canRead && !categoryLocked && !seatLocked && !loading"
           @busy="creating = $event"
           @created="onDraftCreated"
           @cancel="showCreate = false"
@@ -338,7 +362,7 @@ function onDraftCreated(draft: CreatedPricingDraft) {
           :policy-id="selectedPolicy.id"
           :version="selectedPolicy.version"
           :can-read="canRead"
-          :can-edit="!creating"
+          :can-edit="!creating && !seatLocked"
           :selected-code="selectedTicket?.code ?? ''"
           @selected="selectedTicket = $event"
           @locked="onCategoryLocked"
@@ -354,8 +378,20 @@ function onDraftCreated(draft: CreatedPricingDraft) {
           :can-read="canRead"
           :category-code="selectedTicket?.code ?? ''"
           :category-name="selectedTicket?.name ?? ''"
-        />
-
+        >
+          <template #setup>
+            <AdminPricingSeatTypes
+              :cinema-id="selectedPolicy.cinemaId"
+              :policy-id="selectedPolicy.id"
+              :version="selectedPolicy.version"
+              :can-read="canRead"
+              :can-edit="!creating && !categoryLocked"
+              @locked="onSeatLocked"
+              @saved="onSeatSaved"
+              @reload="onSeatReload"
+            />
+          </template>
+        </AdminPricingMatrix>
         <details class="admin-reference__panel pricing-special-cases">
           <summary>Cách tính giá trong một số trường hợp đặc biệt</summary>
           <div class="pricing-special-cases__content">

@@ -155,7 +155,7 @@ function reload() {
         Thêm mức giá
       </AppButton>
     </header>
-
+    <slot name="setup" />
     <p v-if="!categoryCode" class="pricing-fares__message">
       Chọn loại vé ở phía trên để xem mức giá.
     </p>
