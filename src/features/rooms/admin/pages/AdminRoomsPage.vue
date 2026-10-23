@@ -26,6 +26,8 @@ import {
   adminRoomTypeLabel,
   normalizeAdminRoomSearch,
 } from '../schemas/admin-room.schema'
+import AdminRoomContentFormatsDialog from '../components/AdminRoomContentFormatsDialog.vue'
+import type { RoomContentFormatsResponse } from '@/services/api/generated/inventory-service/model'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -119,7 +121,7 @@ function roomActionId(id?: string) {
 }
 
 function preventRoomMenuFocus(event: Event) {
-  if (editor.value) event.preventDefault()
+  if (editor.value || contentFormatsEditor.value) event.preventDefault()
 }
 
 const filtered = computed(() => {
@@ -184,6 +186,28 @@ type EditorState = {
 }
 
 const editor = ref<EditorState | null>(null)
+
+const contentFormatsEditor = ref<{
+  roomId: string
+  roomName: string
+  returnFocusId: string
+} | null>(null)
+
+function openContentFormats(room: RoomResponse) {
+  if (!canManage.value || !room.id || roomActivity.isPending.value) return
+
+  successMessage.value = ''
+  contentFormatsEditor.value = {
+    roomId: room.id,
+    roomName: room.name || 'Phòng chiếu',
+    returnFocusId: roomActionId(room.id),
+  }
+}
+
+function contentFormatsSaved(_response?: RoomContentFormatsResponse) {
+  contentFormatsEditor.value = null
+  successMessage.value = 'Đã cập nhật định dạng nội dung phòng.'
+}
 
 function openSeats(room: RoomResponse) {
   const cinema = selectedCinema.value
@@ -478,7 +502,16 @@ function statusLabel(active?: boolean) {
                 </td>
                 <td>{{ selectedCinema?.label }}</td>
                 <td>
-                  <span aria-label="Định dạng chưa được API cung cấp"> Chưa có dữ liệu </span>
+                  <div v-if="room.contentFormats?.length" class="admin-rooms__formats">
+                    <span
+                      v-for="format in room.contentFormats"
+                      :key="format"
+                      class="admin-rooms__type"
+                    >
+                      {{ format }}
+                    </span>
+                  </div>
+                  <span v-else class="admin-rooms__muted"> Chưa cấu hình </span>
                 </td>
                 <td>
                   <AdminRoomCapacityCell v-if="room.id" :key="room.id" :room-id="room.id" />
@@ -523,6 +556,13 @@ function statusLabel(active?: boolean) {
                         </DropdownMenuItem>
                         <DropdownMenuItem class="admin-room-menu__item" @select="openSeats(room)">
                           Ghế của phòng
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          class="admin-room-menu__item"
+                          :disabled="!room.id || roomActivity.isPending.value"
+                          @select="openContentFormats(room)"
+                        >
+                          Định dạng nội dung
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           class="admin-room-menu__item"
@@ -579,6 +619,15 @@ function statusLabel(active?: boolean) {
       v-bind="editor"
       @close="editor = null"
       @saved="saved"
+    />
+    <AdminRoomContentFormatsDialog
+      v-if="contentFormatsEditor"
+      :key="contentFormatsEditor.roomId"
+      :room-id="contentFormatsEditor.roomId"
+      :room-name="contentFormatsEditor.roomName"
+      :return-focus-id="contentFormatsEditor.returnFocusId"
+      @close="contentFormatsEditor = null"
+      @saved="contentFormatsSaved"
     />
   </section>
 </template>

@@ -58,6 +58,14 @@ const layoutErrorMessages = new Map<string, string>([
     'INVENTORY_ROOM_LAYOUT_MATRIX_PUBLICATION_PENDING',
     'Chưa hỗ trợ xuất bản sơ đồ. Bạn vẫn có thể lưu bản nháp.',
   ],
+  [
+    'INVENTORY_ROOM_CONTENT_FORMATS_INVALID',
+    'Danh sách định dạng không hợp lệ. Chỉ hỗ trợ các giá trị do API cung cấp.',
+  ],
+  [
+    'INVENTORY_ROOM_VERSION_CONFLICT',
+    'Thông tin phòng đã thay đổi. Đã tải lại dữ liệu mới; hãy kiểm tra và lưu lại.',
+  ],
 ])
 
 export function createAdminRoomValues(room?: RoomResponse): AdminRoomValues {

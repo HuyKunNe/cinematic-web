@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
-  create1,
+  create2 as create1,
   findById1,
   update1,
 } from '@/services/api/generated/movie-service/genre-controller/genre-controller'
