@@ -83,6 +83,11 @@ function createField(field: AdminCinemaField) {
 const [name, nameAttrs] = createField('name')
 const [address, addressAttrs] = createField('address')
 const [city, cityAttrs] = createField('city')
+const [phone, phoneAttrs] = createField('phone')
+const [email, emailAttrs] = createField('email')
+const [openingHours, openingHoursAttrs] = createField('openingHours')
+const [directions, directionsAttrs] = createField('directions')
+const [timeZone, timeZoneAttrs] = createField('timeZone')
 
 function cleanCity(value: string) {
   return value.normalize('NFC').trim().replace(/\s/g, ' ')
@@ -124,18 +129,100 @@ function onCityBlur() {
   onFieldBlur('city')
 }
 
-const models = { name, address, city }
-const attributes = { name: nameAttrs, address: addressAttrs, city: cityAttrs }
+const models = {
+  name,
+  address,
+  city,
+  phone,
+  email,
+  openingHours,
+  directions,
+  timeZone,
+}
+
+const attributes = {
+  name: nameAttrs,
+  address: addressAttrs,
+  city: cityAttrs,
+  phone: phoneAttrs,
+  email: emailAttrs,
+  openingHours: openingHoursAttrs,
+  directions: directionsAttrs,
+  timeZone: timeZoneAttrs,
+}
 
 const fields: {
   name: AdminCinemaField
   label: string
   maxLength: number
   autocomplete: string
+  type: 'text' | 'tel' | 'email'
+  required: boolean
 }[] = [
-  { name: 'name', label: 'Tên cụm rạp', maxLength: 150, autocomplete: 'organization' },
-  { name: 'address', label: 'Địa chỉ', maxLength: 500, autocomplete: 'street-address' },
-  { name: 'city', label: 'Thành phố', maxLength: 100, autocomplete: 'address-level2' },
+  {
+    name: 'name',
+    label: 'Tên cụm rạp',
+    maxLength: 150,
+    autocomplete: 'organization',
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'address',
+    label: 'Địa chỉ',
+    maxLength: 500,
+    autocomplete: 'street-address',
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'city',
+    label: 'Thành phố',
+    maxLength: 100,
+    autocomplete: 'address-level2',
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'phone',
+    label: 'Số điện thoại',
+    maxLength: 32,
+    autocomplete: 'tel',
+    type: 'tel',
+    required: false,
+  },
+  {
+    name: 'email',
+    label: 'Email',
+    maxLength: 254,
+    autocomplete: 'email',
+    type: 'email',
+    required: false,
+  },
+  {
+    name: 'openingHours',
+    label: 'Giờ mở cửa',
+    maxLength: 150,
+    autocomplete: 'off',
+    type: 'text',
+    required: false,
+  },
+  {
+    name: 'directions',
+    label: 'Hướng dẫn đường đi',
+    maxLength: 1000,
+    autocomplete: 'street-address',
+    type: 'text',
+    required: false,
+  },
+  {
+    name: 'timeZone',
+    label: 'Múi giờ',
+    maxLength: 64,
+    autocomplete: 'off',
+    type: 'text',
+    required: false,
+  },
 ]
 
 const visibleErrors = computed(() => {
@@ -152,7 +239,7 @@ const visibleErrors = computed(() => {
   return result
 })
 
-watch([name, address, city, active], () => {
+watch([name, address, city, phone, email, openingHours, directions, timeZone, active], () => {
   requestError.value = ''
   serverErrors.value = {}
 })
@@ -355,7 +442,7 @@ function submit(event: Event) {
             <div v-for="field in fields" :key="field.name" class="admin-cinemas__field">
               <label v-if="field.name !== 'city'" :for="`admin-cinema-${field.name}`">
                 {{ field.label }}
-                <span class="admin-cinemas__error" aria-hidden="true">*</span>
+                <span v-if="field.required" class="admin-cinemas__error" aria-hidden="true">*</span>
               </label>
               <AppCreatableAutocomplete
                 v-if="field.name === 'city'"
@@ -373,6 +460,21 @@ function submit(event: Event) {
                 required
                 @blur="onCityBlur"
               />
+              <textarea
+                v-else-if="field.name === 'directions'"
+                v-bind="attributes[field.name].value"
+                :id="`admin-cinema-${field.name}`"
+                v-model="models[field.name].value"
+                @blur="onFieldBlur(field.name)"
+                class="admin-cinemas__input"
+                :maxlength="field.maxLength"
+                :required="field.required"
+                :aria-invalid="Boolean(visibleErrors[field.name])"
+                :aria-describedby="
+                  visibleErrors[field.name] ? `admin-cinema-${field.name}-error` : undefined
+                "
+              />
+
               <input
                 v-else
                 v-bind="attributes[field.name].value"
@@ -380,10 +482,10 @@ function submit(event: Event) {
                 v-model="models[field.name].value"
                 @blur="onFieldBlur(field.name)"
                 class="admin-cinemas__input"
-                type="text"
+                :type="field.type"
                 :maxlength="field.maxLength"
                 :autocomplete="field.autocomplete"
-                required
+                :required="field.required"
                 :aria-invalid="Boolean(visibleErrors[field.name])"
                 :aria-describedby="
                   visibleErrors[field.name] ? `admin-cinema-${field.name}-error` : undefined

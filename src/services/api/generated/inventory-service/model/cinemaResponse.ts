@@ -14,4 +14,9 @@ export interface CinemaResponse {
   active?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  phone?: string;
+  email?: string;
+  openingHours?: string;
+  directions?: string;
+  timeZone?: string;
 }

@@ -18,7 +18,20 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const makeUnavailable = (
+  /**
+ * Requires inventory:manage.
+ *
+ * AVAILABLE changes to UNAVAILABLE.
+ * An already UNAVAILABLE seat returns its current state.
+ *
+ * HELD and BOOKED seats are rejected without changing
+ * reservation ownership or expiration.
+ *
+ * An expired HELD seat must first be released through
+ * the reservation lifecycle.
+ * @summary Make an unreserved show seat unavailable
+ */
+export const makeShowSeatUnavailable = (
     showSeatId: string,
  ) => {
       return apiRequest<ShowSeatResponse>(
@@ -72,7 +85,20 @@ export const hold = (
     },
       );
     }
-  export const makeAvailable = (
+  /**
+ * Requires inventory:manage.
+ *
+ * UNAVAILABLE changes to AVAILABLE.
+ * An already AVAILABLE seat returns its current state.
+ *
+ * HELD and BOOKED seats are rejected without changing
+ * reservation ownership or expiration.
+ *
+ * This operation does not cancel a booking
+ * or release a reservation.
+ * @summary Make an unreserved show seat available
+ */
+export const makeShowSeatAvailable = (
     showSeatId: string,
  ) => {
       return apiRequest<ShowSeatResponse>(
@@ -109,11 +135,11 @@ export const hold = (
     },
       );
     }
-  export type MakeUnavailableResult = NonNullable<Awaited<ReturnType<typeof makeUnavailable>>>
+  export type MakeShowSeatUnavailableResult = NonNullable<Awaited<ReturnType<typeof makeShowSeatUnavailable>>>
 export type ReleaseResult = NonNullable<Awaited<ReturnType<typeof release>>>
 export type HoldResult = NonNullable<Awaited<ReturnType<typeof hold>>>
 export type BookResult = NonNullable<Awaited<ReturnType<typeof book>>>
-export type MakeAvailableResult = NonNullable<Awaited<ReturnType<typeof makeAvailable>>>
+export type MakeShowSeatAvailableResult = NonNullable<Awaited<ReturnType<typeof makeShowSeatAvailable>>>
 export type GetByShowtimeIdResult = NonNullable<Awaited<ReturnType<typeof getByShowtimeId>>>
 export type GenerateResult = NonNullable<Awaited<ReturnType<typeof generate>>>
 export type GetById4Result = NonNullable<Awaited<ReturnType<typeof getById4>>>

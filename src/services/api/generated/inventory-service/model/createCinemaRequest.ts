@@ -22,4 +22,29 @@ export interface CreateCinemaRequest {
      * @maxLength 100
      */
   city: string;
+  /**
+     * @minLength 0
+     * @maxLength 32
+     */
+  phone?: string;
+  /**
+     * @minLength 0
+     * @maxLength 254
+     */
+  email?: string;
+  /**
+     * @minLength 0
+     * @maxLength 150
+     */
+  openingHours?: string;
+  /**
+     * @minLength 0
+     * @maxLength 1000
+     */
+  directions?: string;
+  /**
+     * @minLength 0
+     * @maxLength 64
+     */
+  timeZone?: string;
 }
