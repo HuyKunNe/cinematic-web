@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#171e28" />
+    <title>Lumière — Quản trị rạp chiếu phim</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <script defer src="assets/js/data.js"></script>
+    <script defer src="assets/js/app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Đến nội dung chính</a>
+    <aside id="sidebar" aria-label="Điều hướng chính"></aside>
+    <div class="workspace">
+      <header id="topbar"></header>
+      <main id="main" tabindex="-1" aria-busy="true">
+        <div class="boot-loading" role="status">Đang chuẩn bị không gian quản trị…</div>
+      </main>
+      <footer>
+        <span class="copyright"
+          >© <span id="year"></span> <span id="footer-brand">Lumière Cinema</span></span
+        ><span>Không gian vận hành · Dữ liệu minh họa</span>
+      </footer>
+    </div>
+    <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+    <div id="toasts" role="status" aria-live="polite"></div>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear()
+    </script>
+  </body>
+</html>

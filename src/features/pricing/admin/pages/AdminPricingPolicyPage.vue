@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import { pricingErrorMessage, useAdminPricingQueries } from '../api/admin-pricing-queries'
 import { useAdminPricingMatrixQuery } from '../api/admin-pricing-matrix-query'
 import AdminPricingWorkflowTable from '../components/AdminPricingWorkflowTable.vue'
+import AdminPricingWorkflowCreate from '../components/AdminPricingWorkflowCreate.vue'
+import type { CreatedWorkflowPolicy } from '../api/admin-pricing-workflow-create'
 
 const auth = useAuthStore()
 
@@ -21,6 +23,7 @@ const selectionKey = ref('')
 const locked = ref(false)
 const refreshing = ref(false)
 const notice = ref('')
+const showCreate = ref(false)
 
 const tableEditor = ref<InstanceType<typeof AdminPricingWorkflowTable> | null>(null)
 
@@ -52,7 +55,7 @@ const matrixQuery = useAdminPricingMatrixQuery(
     policyId: selectedPolicy.value?.id ?? '',
     version: selectedPolicy.value?.version ?? -1,
   }),
-  () => canRead.value && supportsMatrix.value,
+  () => canRead.value && supportsMatrix.value && !showCreate.value,
 )
 
 const matrix = computed(() => {
@@ -203,6 +206,27 @@ async function onSaved() {
   notice.value = 'Đã lưu các mức giá vào bản nháp.'
   await policies.refetch()
 }
+
+function openCreate() {
+  if (!canRead.value || locked.value || busy.value) return
+  showCreate.value = true
+}
+
+async function onCreated(policy: CreatedWorkflowPolicy) {
+  cinemaId.value = policy.cinemaId
+  await nextTick()
+  await policies.refetch()
+  policyId.value = policy.id
+  showCreate.value = false
+  notice.value = `Đã tạo bản nháp số ${policy.policyVersion}. Chưa đưa vào sử dụng.`
+}
+
+async function closeCreate() {
+  showCreate.value = false
+  if (canRead.value && cinemaId.value) {
+    await policies.refetch()
+  }
+}
 </script>
 
 <template>
@@ -214,12 +238,14 @@ async function onSaved() {
     <header class="pricing-workflow__heading">
       <div>
         <p class="pricing-workflow__eyebrow">Quản lý giá vé</p>
-        <h1 id="pricing-workflow-title">Bảng giá vé</h1>
+        <h1 id="pricing-workflow-title">
+          {{ showCreate ? 'Tạo bảng giá' : 'Bảng giá vé' }}
+        </h1>
         <p>Chọn bản giá, nhập giá theo loại ghế rồi kiểm tra trước khi lưu.</p>
       </div>
 
       <AppButton
-        v-if="canRead"
+        v-if="canRead && !showCreate"
         type="button"
         variant="secondary"
         :loading="refreshing"
@@ -228,268 +254,298 @@ async function onSaved() {
       >
         Tải lại
       </AppButton>
+
+      <AppButton
+        v-if="canRead && !showCreate"
+        type="button"
+        :disabled="locked || busy || !cinemas.isSuccess.value"
+        @click="openCreate"
+      >
+        Tạo bảng giá mới
+      </AppButton>
     </header>
 
     <p v-if="!canRead" class="pricing-error" role="alert">Bạn không có quyền quản lý giá vé.</p>
 
     <template v-else>
-      <nav class="pricing-workflow__progress" aria-label="Các bước thiết lập bảng giá">
-        <ol>
-          <li
-            v-for="(step, index) in steps"
-            :key="step.title"
-            :class="{ 'is-current': currentStep === index + 1 }"
-            :aria-current="currentStep === index + 1 ? 'step' : undefined"
-          >
-            <span class="pricing-workflow__number">{{ index + 1 }}</span>
-            <span>
-              <strong>{{ step.title }}</strong>
-              <small>{{ step.description }}</small>
-            </span>
-          </li>
-        </ol>
-      </nav>
+      <AdminPricingWorkflowCreate
+        v-if="showCreate"
+        :cinemas="cinemas.data.value ?? []"
+        :initial-cinema-id="cinemaId"
+        :can-create="canRead"
+        @created="onCreated"
+        @cancel="closeCreate"
+      />
 
-      <p v-if="notice" class="pricing-workflow__notice" role="status">
-        {{ notice }}
-      </p>
-
-      <section class="pricing-workflow__card" aria-labelledby="pricing-info-title">
-        <header class="pricing-workflow__card-heading">
-          <span class="pricing-workflow__number" aria-hidden="true">1</span>
-          <div>
-            <h2 id="pricing-info-title">Thông tin bảng giá</h2>
-            <p>Chọn rạp và bản giá cần xem hoặc chỉnh sửa.</p>
-          </div>
-        </header>
-
-        <div class="pricing-workflow__fields">
-          <label class="admin-reference__field">
-            <span>Rạp áp dụng</span>
-            <select
-              v-model="cinemaId"
-              class="admin-reference__input"
-              :disabled="locked || busy || cinemas.isError.value"
+      <template v-else>
+        <nav class="pricing-workflow__progress" aria-label="Các bước thiết lập bảng giá">
+          <ol>
+            <li
+              v-for="(step, index) in steps"
+              :key="step.title"
+              :class="{ 'is-current': currentStep === index + 1 }"
+              :aria-current="currentStep === index + 1 ? 'step' : undefined"
             >
-              <option value="">Chọn rạp</option>
-              <option
-                v-for="cinema in cinemas.data.value ?? []"
-                :key="cinema.id"
-                :value="cinema.id"
-              >
-                {{ cinema.name }}
-              </option>
-            </select>
-          </label>
+              <span class="pricing-workflow__number">{{ index + 1 }}</span>
+              <span>
+                <strong>{{ step.title }}</strong>
+                <small>{{ step.description }}</small>
+              </span>
+            </li>
+          </ol>
+        </nav>
 
-          <label class="admin-reference__field">
-            <span>Bản giá</span>
-            <select
-              v-model="policyId"
-              class="admin-reference__input"
-              :disabled="locked || busy || !selectedCinema || policies.isError.value"
-            >
-              <option value="">Chọn bản giá</option>
-              <option v-for="policy in availablePolicies" :key="policy.id" :value="policy.id">
-                Bản số {{ policy.policyVersion }} ·
-                {{ policy.status === 'DRAFT' ? 'Bản nháp' : 'Đã công bố' }}
-              </option>
-            </select>
-          </label>
-        </div>
+        <p v-if="notice" class="pricing-workflow__notice" role="status">
+          {{ notice }}
+        </p>
 
-        <div class="pricing-workflow__feedback" aria-live="polite">
-          <p v-if="cinemas.isError.value" class="pricing-error">
-            {{ pricingErrorMessage(cinemas.error.value) }}
-          </p>
-          <p v-else-if="policies.isError.value" class="pricing-error">
-            {{ pricingErrorMessage(policies.error.value) }}
-          </p>
-          <p v-else-if="busy">Đang tải thông tin bảng giá…</p>
-          <p v-else-if="cinemas.isSuccess.value && !cinemas.data.value?.length">
-            Chưa có rạp để lựa chọn.
-          </p>
-          <p v-else-if="selectedCinema && !availablePolicies.length">Rạp này chưa có bản giá.</p>
-        </div>
-
-        <dl v-if="selectedPolicy" class="pricing-workflow__summary">
-          <div>
-            <dt>Bắt đầu áp dụng</dt>
-            <dd>{{ dateLabel(selectedPolicy.effectiveFrom) }}</dd>
-          </div>
-          <div>
-            <dt>Trạng thái</dt>
-            <dd>
-              {{
-                selectedPolicy.status === 'DRAFT'
-                  ? 'Bản nháp, chưa đưa vào sử dụng'
-                  : 'Đã công bố, chỉ có thể xem'
-              }}
-            </dd>
-          </div>
-        </dl>
-      </section>
-
-      <p v-if="selectedPolicy && !supportsMatrix" class="pricing-workflow__notice" role="status">
-        Bản giá này dùng cách lưu khác và chưa hỗ trợ chỉnh sửa tại đây.
-      </p>
-
-      <p v-else-if="supportsMatrix && matrixQuery.isError.value" class="pricing-error" role="alert">
-        Chưa tải được nội dung bản giá. Chọn “Tải lại” để lấy thông tin mới nhất.
-      </p>
-
-      <template v-if="matrix">
-        <section class="pricing-workflow__card" aria-labelledby="pricing-choice-title">
+        <section class="pricing-workflow__card" aria-labelledby="pricing-info-title">
           <header class="pricing-workflow__card-heading">
-            <span class="pricing-workflow__number" aria-hidden="true">2</span>
+            <span class="pricing-workflow__number" aria-hidden="true">1</span>
             <div>
-              <h2 id="pricing-choice-title">Chọn loại vé và hình thức chiếu</h2>
-              <p>Mỗi loại vé và hình thức chiếu có mức giá riêng.</p>
+              <h2 id="pricing-info-title">Thông tin bảng giá</h2>
+              <p>Chọn rạp và bản giá cần xem hoặc chỉnh sửa.</p>
             </div>
           </header>
 
           <div class="pricing-workflow__fields">
             <label class="admin-reference__field">
-              <span>Loại vé</span>
+              <span>Rạp áp dụng</span>
               <select
-                v-model="categoryCode"
+                v-model="cinemaId"
                 class="admin-reference__input"
-                :disabled="locked || busy"
+                :disabled="locked || busy || cinemas.isError.value"
               >
-                <option value="">Chọn loại vé</option>
-                <option v-for="item in matrix.ticketCategories" :key="item.code" :value="item.code">
-                  {{ item.name }}
+                <option value="">Chọn rạp</option>
+                <option
+                  v-for="cinema in cinemas.data.value ?? []"
+                  :key="cinema.id"
+                  :value="cinema.id"
+                >
+                  {{ cinema.name }}
                 </option>
               </select>
             </label>
 
             <label class="admin-reference__field">
-              <span>Hình thức và suất chiếu</span>
+              <span>Bản giá</span>
               <select
-                v-model="selectionKey"
+                v-model="policyId"
                 class="admin-reference__input"
-                :disabled="locked || busy || !formatOptions.length"
+                :disabled="locked || busy || !selectedCinema || policies.isError.value"
               >
-                <option value="">Chọn hình thức chiếu</option>
-                <option v-for="item in formatOptions" :key="item.value" :value="item.value">
-                  {{ item.label }}
+                <option value="">Chọn bản giá</option>
+                <option v-for="policy in availablePolicies" :key="policy.id" :value="policy.id">
+                  Bản số {{ policy.policyVersion }} ·
+                  {{ policy.status === 'DRAFT' ? 'Bản nháp' : 'Đã công bố' }}
                 </option>
               </select>
             </label>
           </div>
 
-          <p class="pricing-workflow__help">
-            <strong>Loại vé khác với loại ghế.</strong>
-            Một loại vé có thể có giá riêng cho ghế thường, ghế VIP và ghế đôi.
-          </p>
-        </section>
+          <div class="pricing-workflow__feedback" aria-live="polite">
+            <p v-if="cinemas.isError.value" class="pricing-error">
+              {{ pricingErrorMessage(cinemas.error.value) }}
+            </p>
+            <p v-else-if="policies.isError.value" class="pricing-error">
+              {{ pricingErrorMessage(policies.error.value) }}
+            </p>
+            <p v-else-if="busy">Đang tải thông tin bảng giá…</p>
+            <p v-else-if="cinemas.isSuccess.value && !cinemas.data.value?.length">
+              Chưa có rạp để lựa chọn.
+            </p>
+            <p v-else-if="selectedCinema && !availablePolicies.length">Rạp này chưa có bản giá.</p>
+          </div>
 
-        <section class="pricing-workflow__card" aria-labelledby="pricing-values-title">
-          <header class="pricing-workflow__card-heading">
-            <span class="pricing-workflow__number" aria-hidden="true">3</span>
+          <dl v-if="selectedPolicy" class="pricing-workflow__summary">
             <div>
-              <h2 id="pricing-values-title">Giá vé theo ngày, giờ và loại ghế</h2>
-              <p>
-                {{ category?.name ?? 'Chưa chọn loại vé' }}
-                {{ selectedFormatName ? ` · ${selectedFormatName}` : '' }}
-              </p>
-            </div>
-          </header>
-
-          <AdminPricingWorkflowTable
-            v-if="categoryCode && selectionKey"
-            :key="`${matrix.policy.id}:${matrix.policy.version}:${categoryCode}`"
-            ref="tableEditor"
-            :matrix="matrix"
-            :category-code="categoryCode"
-            :selection-key="selectionKey"
-            :can-read="canRead"
-            :can-edit="selectedPolicy?.status === 'DRAFT'"
-            :show-actions="false"
-            @locked="locked = $event"
-            @saved="onSaved"
-            @reload="refresh"
-          />
-
-          <p v-else class="pricing-workflow__empty">
-            {{
-              categoryCode ? 'Loại vé này chưa có mức giá đã lưu.' : 'Chọn loại vé để xem bảng giá.'
-            }}
-          </p>
-        </section>
-
-        <section class="pricing-workflow__card" aria-labelledby="pricing-review-title">
-          <header class="pricing-workflow__card-heading">
-            <span class="pricing-workflow__number" aria-hidden="true">4</span>
-            <div>
-              <h2 id="pricing-review-title">Xem lại trước khi lưu</h2>
-              <p>Kiểm tra đúng rạp, loại vé, hình thức chiếu và giá ghế đôi.</p>
-            </div>
-          </header>
-
-          <dl class="pricing-workflow__summary">
-            <div>
-              <dt>Rạp áp dụng</dt>
-              <dd>{{ selectedCinema?.name }}</dd>
+              <dt>Bắt đầu áp dụng</dt>
+              <dd>{{ dateLabel(selectedPolicy.effectiveFrom) }}</dd>
             </div>
             <div>
-              <dt>Bản giá</dt>
-              <dd>Bản số {{ selectedPolicy?.policyVersion }}</dd>
-            </div>
-            <div>
-              <dt>Loại vé</dt>
-              <dd>{{ category?.name ?? 'Chưa chọn' }}</dd>
-            </div>
-            <div>
-              <dt>Hình thức chiếu</dt>
-              <dd>{{ selectedFormatName || 'Chưa chọn' }}</dd>
+              <dt>Trạng thái</dt>
+              <dd>
+                {{
+                  selectedPolicy.status === 'DRAFT'
+                    ? 'Bản nháp, chưa đưa vào sử dụng'
+                    : 'Đã công bố, chỉ có thể xem'
+                }}
+              </dd>
             </div>
           </dl>
+        </section>
 
-          <p v-if="tableEditor?.dirty" class="pricing-workflow__help" role="status">
-            Có mức giá chưa lưu. Kiểm tra các ô dùng chung trước khi lưu bảng giá.
-          </p>
+        <p v-if="selectedPolicy && !supportsMatrix" class="pricing-workflow__notice" role="status">
+          Bản giá này dùng cách lưu khác và chưa hỗ trợ chỉnh sửa tại đây.
+        </p>
 
-          <footer class="pricing-workflow__actions">
-            <template v-if="tableEditor?.editing">
+        <p
+          v-else-if="supportsMatrix && matrixQuery.isError.value"
+          class="pricing-error"
+          role="alert"
+        >
+          Chưa tải được nội dung bản giá. Chọn “Tải lại” để lấy thông tin mới nhất.
+        </p>
+
+        <template v-if="matrix">
+          <section class="pricing-workflow__card" aria-labelledby="pricing-choice-title">
+            <header class="pricing-workflow__card-heading">
+              <span class="pricing-workflow__number" aria-hidden="true">2</span>
+              <div>
+                <h2 id="pricing-choice-title">Chọn loại vé và hình thức chiếu</h2>
+                <p>Mỗi loại vé và hình thức chiếu có mức giá riêng.</p>
+              </div>
+            </header>
+
+            <div class="pricing-workflow__fields">
+              <label class="admin-reference__field">
+                <span>Loại vé</span>
+                <select
+                  v-model="categoryCode"
+                  class="admin-reference__input"
+                  :disabled="locked || busy"
+                >
+                  <option value="">Chọn loại vé</option>
+                  <option
+                    v-for="item in matrix.ticketCategories"
+                    :key="item.code"
+                    :value="item.code"
+                  >
+                    {{ item.name }}
+                  </option>
+                </select>
+              </label>
+
+              <label class="admin-reference__field">
+                <span>Hình thức và suất chiếu</span>
+                <select
+                  v-model="selectionKey"
+                  class="admin-reference__input"
+                  :disabled="locked || busy || !formatOptions.length"
+                >
+                  <option value="">Chọn hình thức chiếu</option>
+                  <option v-for="item in formatOptions" :key="item.value" :value="item.value">
+                    {{ item.label }}
+                  </option>
+                </select>
+              </label>
+            </div>
+
+            <p class="pricing-workflow__help">
+              <strong>Loại vé khác với loại ghế.</strong>
+              Một loại vé có thể có giá riêng cho ghế thường, ghế VIP và ghế đôi.
+            </p>
+          </section>
+
+          <section class="pricing-workflow__card" aria-labelledby="pricing-values-title">
+            <header class="pricing-workflow__card-heading">
+              <span class="pricing-workflow__number" aria-hidden="true">3</span>
+              <div>
+                <h2 id="pricing-values-title">Giá vé theo ngày, giờ và loại ghế</h2>
+                <p>
+                  {{ category?.name ?? 'Chưa chọn loại vé' }}
+                  {{ selectedFormatName ? ` · ${selectedFormatName}` : '' }}
+                </p>
+              </div>
+            </header>
+
+            <AdminPricingWorkflowTable
+              v-if="categoryCode && selectionKey"
+              :key="`${matrix.policy.id}:${matrix.policy.version}:${categoryCode}`"
+              ref="tableEditor"
+              :matrix="matrix"
+              :category-code="categoryCode"
+              :selection-key="selectionKey"
+              :can-read="canRead"
+              :can-edit="selectedPolicy?.status === 'DRAFT'"
+              :show-actions="false"
+              @locked="locked = $event"
+              @saved="onSaved"
+              @reload="refresh"
+            />
+
+            <p v-else class="pricing-workflow__empty">
+              {{
+                categoryCode
+                  ? 'Loại vé này chưa có mức giá đã lưu.'
+                  : 'Chọn loại vé để xem bảng giá.'
+              }}
+            </p>
+          </section>
+
+          <section class="pricing-workflow__card" aria-labelledby="pricing-review-title">
+            <header class="pricing-workflow__card-heading">
+              <span class="pricing-workflow__number" aria-hidden="true">4</span>
+              <div>
+                <h2 id="pricing-review-title">Xem lại trước khi lưu</h2>
+                <p>Kiểm tra đúng rạp, loại vé, hình thức chiếu và giá ghế đôi.</p>
+              </div>
+            </header>
+
+            <dl class="pricing-workflow__summary">
+              <div>
+                <dt>Rạp áp dụng</dt>
+                <dd>{{ selectedCinema?.name }}</dd>
+              </div>
+              <div>
+                <dt>Bản giá</dt>
+                <dd>Bản số {{ selectedPolicy?.policyVersion }}</dd>
+              </div>
+              <div>
+                <dt>Loại vé</dt>
+                <dd>{{ category?.name ?? 'Chưa chọn' }}</dd>
+              </div>
+              <div>
+                <dt>Hình thức chiếu</dt>
+                <dd>{{ selectedFormatName || 'Chưa chọn' }}</dd>
+              </div>
+            </dl>
+
+            <p v-if="tableEditor?.dirty" class="pricing-workflow__help" role="status">
+              Có mức giá chưa lưu. Kiểm tra các ô dùng chung trước khi lưu bảng giá.
+            </p>
+
+            <footer class="pricing-workflow__actions">
+              <template v-if="tableEditor?.editing">
+                <AppButton
+                  type="button"
+                  variant="secondary"
+                  :disabled="tableEditor.saving || tableEditor.requiresReload"
+                  @click="tableEditor.cancelEdit()"
+                >
+                  Hủy thay đổi
+                </AppButton>
+
+                <AppButton
+                  type="button"
+                  :loading="tableEditor.saving"
+                  :disabled="!tableEditor.inputsEnabled || !tableEditor.dirty"
+                  @click="tableEditor.submit()"
+                >
+                  Lưu bảng giá
+                </AppButton>
+              </template>
+
               <AppButton
+                v-else-if="tableEditor?.canStart"
+                type="button"
+                @click="tableEditor.startEdit()"
+              >
+                Chỉnh sửa giá
+              </AppButton>
+
+              <AppButton
+                v-if="tableEditor?.requiresReload"
                 type="button"
                 variant="secondary"
-                :disabled="tableEditor.saving || tableEditor.requiresReload"
-                @click="tableEditor.cancelEdit()"
+                :disabled="tableEditor.saving"
+                @click="tableEditor.reloadEdit()"
               >
-                Hủy thay đổi
+                Tải lại bản giá
               </AppButton>
-
-              <AppButton
-                type="button"
-                :loading="tableEditor.saving"
-                :disabled="!tableEditor.inputsEnabled || !tableEditor.dirty"
-                @click="tableEditor.submit()"
-              >
-                Lưu bảng giá
-              </AppButton>
-            </template>
-
-            <AppButton
-              v-else-if="tableEditor?.canStart"
-              type="button"
-              @click="tableEditor.startEdit()"
-            >
-              Chỉnh sửa giá
-            </AppButton>
-
-            <AppButton
-              v-if="tableEditor?.requiresReload"
-              type="button"
-              variant="secondary"
-              :disabled="tableEditor.saving"
-              @click="tableEditor.reloadEdit()"
-            >
-              Tải lại bản giá
-            </AppButton>
-          </footer>
-        </section>
+            </footer>
+          </section>
+        </template>
       </template>
     </template>
   </section>

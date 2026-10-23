@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Bảng giá vé | Cinema Admin</title>
+  <style>
+    :root {
+      --page: #f5f7fb; --surface: #fff; --surface-soft: #f8fafc; --ink: #182230;
+      --muted: #64748b; --line: #e2e8f0; --line-strong: #cbd5e1; --primary: #e11d48;
+      --primary-dark: #be123c; --primary-soft: #fff1f2; --blue: #2563eb; --blue-soft: #eff6ff;
+      --green: #15803d; --green-soft: #f0fdf4; --amber: #a16207; --amber-soft: #fffbeb;
+      --red: #b91c1c; --red-soft: #fef2f2; --nav: #111827; --nav-muted: #a8b2c2;
+      --radius-sm: 8px; --radius: 12px; --radius-lg: 18px; --shadow: 0 14px 40px #0f172a1a;
+      --sidebar-width: 236px; --control-height: 42px; --content-max: 1440px;
+      --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+      --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; }
+    .sidebar { position: fixed; z-index: 10; inset: 0 auto 0 0; width: var(--sidebar-width); background: var(--nav); color: white; padding: 22px 14px; display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 2px 10px 26px; font-weight: 750; letter-spacing: .01em; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; color: white; background: var(--primary); border-radius: 11px; font-size: 19px; }
+    .brand small { display: block; color: var(--nav-muted); font-size: 11px; font-weight: 500; margin-top: 1px; }
+    .nav-label { padding: 12px 11px 7px; color: #778397; font-size: 10px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+    .nav-link { min-height: 42px; display: flex; align-items: center; gap: 12px; padding: 0 11px; border-radius: 9px; color: #cbd5e1; text-decoration: none; margin: 2px 0; }
+    .nav-link:hover { background: #ffffff0d; color: white; }
+    .nav-link.active { background: #ffffff14; color: white; box-shadow: inset 3px 0 var(--primary); }
+    .nav-icon { width: 19px; text-align: center; font-size: 16px; color: #a8b2c2; }
+    .sidebar-foot { margin-top: auto; border-top: 1px solid #ffffff1a; padding: 16px 8px 0; color: var(--nav-muted); font-size: 12px; }
+    .topbar { position: sticky; top: 0; z-index: 8; height: 68px; margin-left: var(--sidebar-width); background: #ffffffed; backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(18px, 3vw, 42px); }
+    .crumb { color: var(--muted); font-size: 13px; }
+    .crumb b { color: var(--ink); font-weight: 650; }
+    .top-actions { display: flex; align-items: center; gap: 18px; }
+    .icon-button { width: 36px; height: 36px; border: 0; border-radius: 50%; color: #475569; background: transparent; font-size: 17px; }
+    .icon-button:hover { background: var(--surface-soft); }
+    .profile { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 650; }
+    .avatar { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: #9f1239; background: #ffe4e6; font-size: 12px; }
+    main { margin-left: var(--sidebar-width); padding: 30px clamp(18px, 3vw, 42px) 64px; }
+    .content { max-width: var(--content-max); margin: auto; }
+    .page-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 23px; }
+    h1 { margin: 0; font-size: clamp(25px, 3vw, 31px); letter-spacing: -.035em; line-height: 1.2; }
+    .subheading { color: var(--muted); margin: 8px 0 0; max-width: 680px; }
+    .button { min-height: var(--control-height); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: 0 15px; color: #334155; background: white; font-weight: 650; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; white-space: nowrap; transition: .15s ease; }
+    .button:hover { border-color: #94a3b8; background: #f8fafc; }
+    .button.primary { border-color: var(--primary); background: var(--primary); color: white; box-shadow: 0 5px 13px #e11d4826; }
+    .button.primary:hover { background: var(--primary-dark); }
+    .button.small { min-height: 33px; padding: 0 10px; font-size: 12px; }
+    .button.ghost { border-color: transparent; background: transparent; }
+    .demo-banner { display: flex; gap: 11px; align-items: flex-start; margin-bottom: 21px; padding: 12px 15px; color: #854d0e; background: var(--amber-soft); border: 1px solid #fde68a; border-radius: var(--radius); }
+    .demo-banner strong { display: block; font-size: 13px; }
+    .demo-banner span { display: block; font-size: 12px; color: #92400e; margin-top: 2px; }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
+    .metric { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+    .metric-label { color: var(--muted); font-size: 12px; }
+    .metric-value { margin-top: 5px; font-size: 24px; font-weight: 750; letter-spacing: -.03em; }
+    .metric-note { color: #94a3b8; font-size: 11px; margin-top: 1px; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 2px 8px #0f172a05; }
+    .filter-panel { padding: 17px; margin-bottom: 15px; }
+    .filter-grid { display: grid; grid-template-columns: 1.15fr 1.1fr 1fr .95fr 1.5fr auto; align-items: end; gap: 12px; }
+    .field { display: flex; flex-direction: column; min-width: 0; gap: 6px; }
+    .field label, .field-label { color: #344256; font-size: 12px; font-weight: 700; }
+    .control { width: 100%; min-height: var(--control-height); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: 0 11px; outline: none; color: var(--ink); background: #fff; }
+    textarea.control { min-height: 76px; padding: 10px 11px; resize: vertical; }
+    .control::placeholder { color: #94a3b8; }
+    .control:focus, .check-control:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #e11d4833; outline-offset: 2px; border-color: var(--primary); }
+    .search-wrap { position: relative; }
+    .search-wrap .control { padding-left: 35px; }
+    .search-icon { position: absolute; left: 12px; top: 10px; color: #94a3b8; }
+    .table-panel { overflow: hidden; }
+    .table-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+    .table-toolbar h2 { margin: 0; font-size: 16px; }
+    .result-count { color: var(--muted); font-size: 12px; margin-left: 7px; font-weight: 500; }
+    .toolbar-right { display: flex; align-items: center; gap: 8px; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    .policy-table { min-width: 1000px; }
+    th { padding: 12px 15px; color: #64748b; background: #f8fafc; font-size: 11px; font-weight: 750; letter-spacing: .035em; text-transform: uppercase; white-space: nowrap; }
+    td { padding: 14px 15px; vertical-align: middle; border-top: 1px solid #edf1f5; color: #344256; }
+    tbody tr:hover { background: #fcfdff; }
+    .policy-name { color: #1e293b; font-weight: 700; }
+    .table-sub { display: block; color: #8390a2; font-size: 11px; margin-top: 3px; }
+    .scope-pill, .tag, .status { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; white-space: nowrap; font-size: 11px; font-weight: 700; }
+    .scope-pill { padding: 4px 8px; color: #475569; background: #f1f5f9; }
+    .tag { padding: 4px 8px; color: #1d4ed8; background: var(--blue-soft); }
+    .status { padding: 5px 9px; }
+    .status.active { color: var(--green); background: var(--green-soft); }
+    .status.scheduled { color: #1d4ed8; background: var(--blue-soft); }
+    .status.draft { color: #64748b; background: #f1f5f9; }
+    .status.expired { color: #9f1239; background: #fff1f2; }
+    .action-group { display: flex; align-items: center; gap: 3px; }
+    .action-button { min-height: 31px; padding: 0 8px; border: 0; border-radius: 6px; color: #475569; background: transparent; font-size: 12px; font-weight: 650; }
+    .action-button:hover { color: var(--primary-dark); background: var(--primary-soft); }
+    .empty-state { display: none; padding: 46px 18px; text-align: center; color: var(--muted); }
+    .empty-state b { display: block; color: var(--ink); margin-bottom: 4px; }
+    .table-footer { display: flex; justify-content: space-between; align-items: center; padding: 13px 19px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); }
+    .notice-line { margin: 15px 2px 0; color: #7c8797; font-size: 11px; }
+
+    /* Builder */
+    .backdrop { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 22px; background: #0f172a80; backdrop-filter: blur(3px); }
+    .backdrop.open { display: flex; }
+    .dialog { width: min(1120px, 100%); max-height: min(92vh, 900px); display: flex; flex-direction: column; overflow: hidden; background: white; border-radius: 18px; box-shadow: 0 30px 90px #0f172a4d; }
+    .dialog-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 20px 25px 15px; border-bottom: 1px solid var(--line); }
+    .dialog-header h2 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+    .dialog-header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .close-button { width: 35px; height: 35px; border: 0; border-radius: 9px; color: #64748b; background: transparent; font-size: 23px; line-height: 1; }
+    .close-button:hover { background: #f1f5f9; }
+    .stepper { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; padding: 15px 25px; border-bottom: 1px solid var(--line); }
+    .step { display: flex; gap: 9px; align-items: center; min-width: 0; padding: 6px; border-radius: 8px; color: #94a3b8; cursor: pointer; }
+    .step-number { width: 27px; height: 27px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #cbd5e1; border-radius: 50%; font-size: 11px; font-weight: 750; }
+    .step-name { font-size: 11px; font-weight: 700; line-height: 1.2; }
+    .step.current { color: var(--primary-dark); background: var(--primary-soft); }
+    .step.current .step-number, .step.done .step-number { color: white; border-color: var(--primary); background: var(--primary); }
+    .step.done { color: #475569; }
+    .dialog-body { min-height: 0; overflow-y: auto; padding: 23px 25px 28px; }
+    .step-content { display: none; }
+    .step-content.active { display: block; }
+    .section-heading { margin: 0 0 4px; font-size: 17px; letter-spacing: -.015em; }
+    .section-help { color: var(--muted); font-size: 12px; margin: 0 0 19px; }
+    .form-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+    .form-grid.two { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .form-grid.four { grid-template-columns: repeat(4,minmax(0,1fr)); }
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .help-text { color: #8793a4; font-size: 11px; margin: 1px 0 0; line-height: 1.45; }
+    .inline-note { margin-top: 15px; padding: 11px 13px; background: #f8fafc; border: 1px solid var(--line); border-radius: 9px; color: #475569; font-size: 12px; }
+    .inline-note strong { color: #263244; }
+    .inline-note.info { color: #1e40af; background: var(--blue-soft); border-color: #bfdbfe; }
+    .check-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .choice { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 0 11px; border: 1px solid var(--line-strong); border-radius: 8px; background: white; color: #475569; font-size: 12px; cursor: pointer; }
+    .choice:has(input:checked) { color: #9f1239; border-color: #fda4af; background: var(--primary-soft); }
+    .choice input { accent-color: var(--primary); }
+    .subsection { margin-top: 23px; padding-top: 20px; border-top: 1px solid var(--line); }
+    .subsection-title { margin: 0 0 12px; font-size: 14px; }
+    .warn-box, .success-box { display: none; align-items: flex-start; gap: 9px; padding: 11px 13px; margin-top: 13px; border-radius: 9px; font-size: 12px; }
+    .warn-box { color: #92400e; background: var(--amber-soft); border: 1px solid #fde68a; }
+    .warn-box.error { color: var(--red); background: var(--red-soft); border-color: #fecaca; }
+    .success-box { color: var(--green); background: var(--green-soft); border: 1px solid #bbf7d0; }
+    .conditions-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 17px 0 10px; }
+    .day-tabs, .format-tabs { display: flex; gap: 5px; padding: 4px; width: fit-content; border-radius: 9px; background: #f1f5f9; }
+    .tab-button { min-height: 34px; padding: 0 12px; border: 0; border-radius: 6px; color: #64748b; background: transparent; font-size: 12px; font-weight: 700; }
+    .tab-button.active { color: #9f1239; background: white; box-shadow: 0 1px 3px #0f172a14; }
+    .period-head, .period-row { display: grid; grid-template-columns: minmax(160px,1.2fr) minmax(115px,.8fr) minmax(115px,.8fr) minmax(150px,1fr) 42px; align-items: center; gap: 10px; }
+    .period-head { padding: 8px 11px; color: var(--muted); background: #f8fafc; border-radius: 7px 7px 0 0; font-size: 10px; font-weight: 750; text-transform: uppercase; }
+    .period-row { padding: 9px 11px; border: 1px solid var(--line); border-top: 0; }
+    .period-row:last-child { border-radius: 0 0 7px 7px; }
+    .period-row .control { min-height: 36px; font-size: 12px; }
+    .remove-period { width: 34px; height: 34px; border: 1px solid transparent; border-radius: 7px; color: #94a3b8; background: transparent; font-size: 17px; }
+    .remove-period:hover { color: var(--red); background: var(--red-soft); }
+    .price-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 15px 0 12px; }
+    .price-context { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .price-matrix-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+    .price-matrix { min-width: 680px; }
+    .price-matrix th { padding: 11px 12px; text-transform: none; letter-spacing: 0; font-size: 11px; }
+    .price-matrix td { padding: 10px 12px; }
+    .seat-name { font-weight: 700; color: #334155; white-space: nowrap; }
+    .unit-badge { display: block; color: #94a3b8; font-size: 10px; font-weight: 500; }
+    .price-cell { display: flex; align-items: center; gap: 7px; min-width: 145px; }
+    .price-cell input { min-height: 36px; width: 105px; border: 1px solid var(--line-strong); border-radius: 7px; padding: 0 8px; outline: 0; text-align: right; }
+    .price-cell input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px #e11d4822; }
+    .price-cell input:disabled { color: #94a3b8; background: #f8fafc; }
+    .price-state { max-width: 96px; border: 0; color: #64748b; background: transparent; font-size: 10px; }
+    .price-cell.na input { display: none; }
+    .price-cell.na .price-state { max-width: 130px; }
+    .matrix-foot { display: flex; align-items: flex-start; gap: 8px; margin: 10px 1px 0; color: #64748b; font-size: 11px; }
+    .audience-settings { margin-top: 17px; }
+    .offer-card { border: 1px solid var(--line); border-radius: 10px; padding: 15px; margin-top: 11px; background: #fcfdff; }
+    .offer-card:first-of-type { margin-top: 0; }
+    .offer-head { display: flex; align-items: center; gap: 9px; margin-bottom: 11px; }
+    .offer-head label { font-weight: 700; font-size: 13px; }
+    .offer-fields { display: grid; grid-template-columns: 1.1fr .7fr 1.3fr 1.1fr; gap: 10px; }
+    .offer-fields .control { min-height: 37px; font-size: 12px; }
+    .offer-fields .field label { font-size: 10px; }
+    .review-grid { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(260px,.75fr); gap: 17px; }
+    .review-card { border: 1px solid var(--line); border-radius: 11px; padding: 16px; background: white; }
+    .review-card h3 { margin: 0 0 13px; font-size: 13px; }
+    .summary-list { display: grid; grid-template-columns: 135px 1fr; gap: 9px 12px; margin: 0; font-size: 12px; }
+    .summary-list dt { color: var(--muted); }
+    .summary-list dd { margin: 0; color: #293548; font-weight: 650; }
+    .preview-table { width: 100%; min-width: 0; font-size: 11px; }
+    .preview-table th, .preview-table td { padding: 9px 7px; }
+    .preview-table th { font-size: 10px; }
+    .preview-total { margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; color: #475569; font-size: 12px; }
+    .preview-total strong { color: var(--primary-dark); font-size: 15px; }
+    .validation-message { margin-top: 13px; color: var(--red); background: var(--red-soft); border: 1px solid #fecaca; border-radius: 9px; padding: 11px 13px; font-size: 12px; }
+    .validation-message.ok { color: var(--green); background: var(--green-soft); border-color: #bbf7d0; }
+    .dialog-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 25px; border-top: 1px solid var(--line); background: #fff; }
+    .footer-left, .footer-right { display: flex; gap: 8px; }
+    .toast { position: fixed; right: 23px; bottom: 23px; z-index: 60; max-width: min(420px, calc(100vw - 36px)); padding: 13px 16px; border-radius: 10px; color: white; background: #172033; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transform: translateY(10px); transition: .2s ease; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    @media (max-width: 1150px) {
+      .filter-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+      .filter-grid .filter-search { grid-column: span 2; }
+      .metric-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .form-grid.four { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .offer-fields { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 780px) {
+      :root { --sidebar-width: 0px; }
+      .sidebar { position: fixed; inset: auto 0 0; width: 100%; height: 61px; padding: 5px 8px; flex-direction: row; justify-content: space-around; border-top: 1px solid #334155; }
+      .brand, .nav-label, .sidebar-foot { display: none; }
+      .nav-link { flex: 1; min-height: 48px; margin: 0; padding: 4px 2px; flex-direction: column; justify-content: center; gap: 2px; font-size: 9px; }
+      .nav-link.active { box-shadow: inset 0 3px var(--primary); }
+      .nav-icon { font-size: 16px; }
+      .topbar { height: 58px; padding: 0 16px; }
+      .top-actions { gap: 8px; }
+      .profile span:last-child, .crumb span { display: none; }
+      main { padding: 23px 14px 84px; }
+      .page-heading { align-items: flex-start; }
+      .page-heading .button { min-height: 39px; padding: 0 10px; font-size: 12px; }
+      .filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .filter-grid .filter-search { grid-column: span 2; }
+      .filter-grid > .button { grid-column: span 2; }
+      .metric-grid { gap: 9px; }
+      .metric { padding: 13px; }
+      .metric-value { font-size: 20px; }
+      .table-toolbar { align-items: flex-start; flex-direction: column; padding: 15px; }
+      .toolbar-right { width: 100%; justify-content: flex-end; }
+      .backdrop { padding: 0; align-items: stretch; }
+      .dialog { width: 100%; max-height: 100%; border-radius: 0; }
+      .dialog-header { padding: 16px; }
+      .stepper { padding: 10px 11px; }
+      .step { justify-content: center; padding: 5px 1px; }
+      .step-name { display: none; }
+      .dialog-body { padding: 18px 15px 24px; }
+      .dialog-footer { padding: 12px 15px; }
+      .form-grid, .form-grid.two, .form-grid.four { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+      .span-3 { grid-column: span 2; }
+      .review-grid { grid-template-columns: 1fr; }
+      .conditions-head { align-items: flex-start; flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+      .page-heading { flex-direction: column; }
+      .page-heading .button { align-self: stretch; }
+      .filter-grid { grid-template-columns: 1fr; }
+      .filter-grid .filter-search, .filter-grid > .button { grid-column: auto; }
+      .metric-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .form-grid, .form-grid.two, .form-grid.four { grid-template-columns: 1fr; }
+      .span-2, .span-3 { grid-column: auto; }
+      .period-head { display: none; }
+      .period-row { grid-template-columns: 1fr 1fr 34px; gap: 7px; padding: 9px; }
+      .period-row .period-label { grid-column: 1 / -1; }
+      .period-row .remove-period { grid-column: 3; grid-row: 2; }
+      .day-tabs, .format-tabs { width: 100%; }
+      .tab-button { flex: 1; padding: 0 7px; }
+      .offer-fields { grid-template-columns: 1fr; }
+      .summary-list { grid-template-columns: 110px 1fr; }
+      .dialog-footer .button { padding: 0 10px; }
+      .footer-left .button { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Điều hướng quản trị">
+      <div class="brand"><span class="brand-mark">▶</span><span>CINEMA ADMIN<small>Quản trị hệ thống rạp</small></span></div>
+      <div class="nav-label">Tổng quan</div>
+      <a class="nav-link" href="#"><span class="nav-icon">▦</span><span>Dashboard</span></a>
+      <div class="nav-label">Vận hành rạp</div>
+      <a class="nav-link" href="#"><span class="nav-icon">▣</span><span>Cụm rạp</span></a>
+      <a class="nav-link" href="#"><span class="nav-icon">▤</span><span>Phòng chiếu</span></a>
+      <a class="nav-link" href="#"><span class="nav-icon">▸</span><span>Suất chiếu</span></a>
+      <a class="nav-link active" href="#" aria-current="page"><span class="nav-icon">₫</span><span>Bảng giá vé</span></a>
+      <div class="nav-label">Kinh doanh</div>
+      <a class="nav-link" href="#"><span class="nav-icon">♧</span><span>Ưu đãi</span></a>
+      <a class="nav-link" href="#"><span class="nav-icon">♙</span><span>Thành viên</span></a>
+      <div class="sidebar-foot">© 2026 Cinema Admin<br>Phiên bản giao diện minh họa</div>
+    </aside>
+    <header class="topbar">
+      <div class="crumb">Quản trị <span> / </span> <b>Bảng giá vé</b></div>
+      <div class="top-actions"><button class="icon-button" aria-label="Thông báo">♧</button><div class="profile"><span class="avatar">AD</span><span>Quản trị viên</span></div></div>
+    </header>
+
+    <main>
+      <div class="content">
+        <div class="page-heading">
+          <div><h1>Bảng giá vé</h1><p class="subheading">Thiết lập giá theo cụm rạp, phòng chiếu, định dạng, hạng ghế và nhóm khách.</p></div>
+          <button class="button primary" id="createButton"><span aria-hidden="true">＋</span> Tạo bảng giá</button>
+        </div>
+        <div class="demo-banner" role="note"><span aria-hidden="true">ⓘ</span><div><strong>Dữ liệu minh họa — không phải giá chính thức của thương hiệu</strong><span>Giá và tên rạp trong màn hình này chỉ dùng để minh họa cách quản lý. Hãy thay bằng chính sách đã được đơn vị vận hành phê duyệt.</span></div></div>
+
+        <section class="metric-grid" aria-label="Tóm tắt bảng giá">
+          <div class="metric"><div class="metric-label">Bảng giá đang áp dụng</div><div class="metric-value" id="metricActive">8</div><div class="metric-note">Trên toàn hệ thống mẫu</div></div>
+          <div class="metric"><div class="metric-label">Sắp có hiệu lực</div><div class="metric-value" id="metricScheduled">3</div><div class="metric-note">Đã lên lịch áp dụng</div></div>
+          <div class="metric"><div class="metric-label">Bản nháp</div><div class="metric-value" id="metricDraft">2</div><div class="metric-note">Chưa áp dụng cho khách</div></div>
+          <div class="metric"><div class="metric-label">Cần kiểm tra</div><div class="metric-value" id="metricCheck">1</div><div class="metric-note">Có phạm vi cần rà soát</div></div>
+        </section>
+
+        <section class="panel filter-panel" aria-label="Lọc bảng giá">
+          <div class="filter-grid">
+            <div class="field"><label for="filterVenue">Cụm rạp</label><select class="control" id="filterVenue"><option value="">Tất cả cụm rạp</option><option>Cinema Mẫu - Quận 1</option><option>Cinema Mẫu - Thủ Đức</option><option>Cinema Mẫu - Đà Nẵng</option><option>Cinema Mẫu - Cần Thơ</option></select></div>
+            <div class="field"><label for="filterRoom">Loại phòng chiếu</label><select class="control" id="filterRoom"><option value="">Tất cả loại phòng</option><option>Tiêu chuẩn</option><option>IMAX</option><option>4DX</option><option>ScreenX</option><option>Premium</option><option>Gold Class</option><option>Phòng giường nằm</option><option>ULTRA 4DX</option></select></div>
+            <div class="field"><label for="filterFormat">Định dạng</label><select class="control" id="filterFormat"><option value="">Tất cả định dạng</option><option>2D</option><option>3D</option><option>IMAX 2D</option><option>IMAX 3D</option><option>4DX 2D</option><option>4DX 3D</option><option>ScreenX 2D</option><option>ULTRA 4DX</option></select></div>
+            <div class="field"><label for="filterStatus">Trạng thái</label><select class="control" id="filterStatus"><option value="">Tất cả trạng thái</option><option value="Đang áp dụng">Đang áp dụng</option><option value="Sắp áp dụng">Sắp áp dụng</option><option value="Bản nháp">Bản nháp</option><option value="Đã hết hạn">Đã hết hạn</option></select></div>
+            <div class="field filter-search"><label for="filterSearch">Tìm kiếm</label><div class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input class="control" id="filterSearch" placeholder="Tìm theo tên bảng giá, phòng hoặc cụm rạp"></div></div>
+            <button class="button" id="clearFilters">Xóa lọc</button>
+          </div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="table-toolbar"><div><h2>Danh sách bảng giá <span class="result-count" id="resultCount"></span></h2></div><div class="toolbar-right"><button class="button small" id="exportButton">⇩ Tải danh sách</button><button class="button small" id="refreshButton">↻ Làm mới</button></div></div>
+          <div class="table-scroll">
+            <table class="policy-table" aria-label="Danh sách bảng giá vé">
+              <thead><tr><th>Tên bảng giá</th><th>Phạm vi áp dụng</th><th>Phòng / định dạng</th><th>Thời gian hiệu lực</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+              <tbody id="policyRows"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="emptyState"><b>Không tìm thấy bảng giá phù hợp</b>Hãy đổi bộ lọc hoặc từ khóa tìm kiếm.</div>
+          <div class="table-footer"><span id="footerCount">Hiển thị 0 bảng giá</span><span>Dữ liệu mẫu để xem trước giao diện</span></div>
+        </section>
+        <p class="notice-line">Tên sản phẩm như Gold Class, L’amour hoặc ULTRA 4DX có thể là tên riêng theo từng thương hiệu. Chỉ thêm lựa chọn nào đang được cấu hình cho phòng đã chọn.</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="backdrop" id="builderBackdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+      <header class="dialog-header"><div><h2 id="dialogTitle">Tạo bảng giá mới</h2><p>Chọn đúng phạm vi trước, sau đó thiết lập ngày áp dụng và giá vé.</p></div><button class="close-button" id="closeDialog" aria-label="Đóng">×</button></header>
+      <div class="stepper" aria-label="Các bước tạo bảng giá">
+        <div class="step current" data-step-link="0" tabindex="0"><span class="step-number">1</span><span class="step-name">Thông tin &amp; phạm vi</span></div>
+        <div class="step" data-step-link="1" tabindex="0"><span class="step-number">2</span><span class="step-name">Ngày &amp; khung giờ</span></div>
+        <div class="step" data-step-link="2" tabindex="0"><span class="step-number">3</span><span class="step-name">Giá vé &amp; ưu đãi</span></div>
+        <div class="step" data-step-link="3" tabindex="0"><span class="step-number">4</span><span class="step-name">Kiểm tra</span></div>
+      </div>
+      <div class="dialog-body">
+        <section class="step-content active" data-step="0">
+          <h3 class="section-heading">Thông tin và phạm vi áp dụng</h3><p class="section-help">Một bảng giá chỉ áp dụng cho các cụm rạp, phòng, định dạng và nhóm khách bạn chọn.</p>
+          <div class="form-grid">
+            <div class="field span-2"><label for="policyName">Tên bảng giá <span aria-hidden="true">*</span></label><input class="control" id="policyName" placeholder="Ví dụ: Giá vé tiêu chuẩn — mùa hè" value="Bảng giá vé tiêu chuẩn mẫu"><p class="help-text">Tên dễ nhận biết với nhân viên quản lý; không hiển thị như giá chính thức của thương hiệu.</p></div>
+            <div class="field"><label for="policyStatus">Trạng thái khi lưu</label><select class="control" id="policyStatus"><option value="Bản nháp">Lưu bản nháp</option><option value="Sắp áp dụng">Lên lịch áp dụng</option></select></div>
+            <div class="field"><label for="formSystem">Hệ thống rạp</label><select class="control" id="formSystem"><option>Hệ thống rạp mẫu</option><option>Toàn hệ thống mẫu</option></select><p class="help-text">Ví dụ thực tế có CGV, Lotte Cinema, Galaxy Cinema, BHD Star, Cinestar. Mỗi bên có thể đặt chính sách riêng.</p></div>
+            <div class="field"><label for="formVenue">Cụm rạp <span aria-hidden="true">*</span></label><select class="control" id="formVenue"><option>Cinema Mẫu - Quận 1</option><option>Cinema Mẫu - Thủ Đức</option><option>Cinema Mẫu - Đà Nẵng</option><option>Cinema Mẫu - Cần Thơ</option></select></div>
+            <div class="field"><label for="formRoom">Phòng chiếu <span aria-hidden="true">*</span></label><select class="control" id="formRoom"><option value="standard">Phòng 01 — Tiêu chuẩn</option><option value="imax">Phòng 02 — IMAX</option><option value="4dx">Phòng 03 — 4DX</option><option value="screenx">Phòng 04 — ScreenX</option><option value="premium">Phòng 05 — Premium</option><option value="gold">Phòng 06 — Gold Class</option><option value="bed">Phòng 07 — Giường nằm</option><option value="ultra">Phòng 08 — ULTRA 4DX</option></select></div>
+            <div class="field span-3"><span class="field-label">Định dạng hình ảnh áp dụng <span aria-hidden="true">*</span></span><div class="check-row" id="formatChoices"></div><p class="help-text">Chỉ chọn định dạng có trong lịch chiếu của phòng. Ví dụ phòng IMAX có thể có IMAX 2D hoặc IMAX 3D; không tự thêm định dạng chưa được cấu hình.</p></div>
+          </div>
+          <div class="subsection"><h4 class="subsection-title">Nhóm khách áp dụng</h4><div class="check-row" id="audienceChoices"></div><p class="help-text">Chỉ chọn nhóm khách mà hệ thống rạp thực sự có chính sách giá riêng.</p></div>
+          <div class="inline-note info" id="roomSummary"></div>
+        </section>
+
+        <section class="step-content" data-step="1">
+          <h3 class="section-heading">Ngày áp dụng và khung giờ</h3><p class="section-help">Khoảng ngày có hiệu lực và từng khung giờ phải khớp với lịch vận hành. Mốc 17:00 được tính vào khung “Từ 17:00”.</p>
+          <div class="form-grid four">
+            <div class="field"><label for="validFrom">Ngày bắt đầu hiệu lực <span aria-hidden="true">*</span></label><input class="control" type="date" id="validFrom" value="2028-01-01"></div>
+            <div class="field"><label for="validTo">Ngày kết thúc hiệu lực <span aria-hidden="true">*</span></label><input class="control" type="date" id="validTo" value="2028-12-31"></div>
+            <div class="field span-2"><label for="conditionNote">Ghi chú áp dụng</label><input class="control" id="conditionNote" placeholder="Ví dụ: Áp dụng từ ngày công bố"></div>
+          </div>
+          <div class="conditions-head"><div class="day-tabs" role="tablist" aria-label="Nhóm ngày"><button class="tab-button active" data-day="weekday" role="tab" aria-selected="true">Thứ Hai–Thứ Năm</button><button class="tab-button" data-day="weekend" role="tab" aria-selected="false">Thứ Sáu–Chủ Nhật</button><button class="tab-button" data-day="holiday" role="tab" aria-selected="false">Lễ, Tết</button></div><button class="button small" id="addPeriod">＋ Thêm khung giờ</button></div>
+          <div class="period-head"><span>Khung giờ áp dụng</span><span>Từ</span><span>Đến</span><span>Giá áp dụng cho</span><span></span></div>
+          <div id="periodRows"></div>
+          <div class="warn-box" id="periodWarning" role="status"><span>⚠</span><span></span></div>
+          <div class="inline-note"><strong>Ví dụ:</strong> “Trước 17:00” kết thúc lúc 17:00; “Từ 17:00” bắt đầu lúc 17:00. Hai khoảng này liền nhau, không chồng lấn.</div>
+          <div class="warn-box error" id="dateWarning" role="alert"><span>⚠</span><span></span></div>
+        </section>
+
+        <section class="step-content" data-step="2">
+          <h3 class="section-heading">Giá theo hạng ghế và đối tượng khách</h3><p class="section-help">Bảng chỉ hiện hạng ghế và định dạng đã cấu hình cho phòng đang chọn. Chọn nhóm ngày và khung giờ để nhập giá.</p>
+          <div class="price-toolbar"><div class="price-context"><span class="scope-pill" id="priceRoomPill">Phòng 01 — Tiêu chuẩn</span><span class="scope-pill" id="priceFormatPill">2D</span><span class="scope-pill" id="pricePeriodPill">Thứ Hai–Thứ Năm · Trước 17:00</span></div><div class="field"><label class="sr-only" for="pricePeriod">Nhóm ngày và khung giờ</label><select class="control" id="pricePeriod"></select></div></div>
+          <div class="format-tabs" id="priceFormatTabs" role="tablist" aria-label="Định dạng giá"></div>
+          <div class="price-matrix-wrap"><table class="price-matrix" aria-label="Nhập giá theo hạng ghế và nhóm khách"><thead id="matrixHead"></thead><tbody id="matrixBody"></tbody></table></div>
+          <div class="matrix-foot"><span>ⓘ</span><span>Ô trống là <b>Chưa nhập giá</b>; chọn “Không áp dụng” khi nhóm này không dùng được. Nhập <b>0</b> được hiểu là giá 0đ, không phải ô trống.</span></div>
+          <div class="warn-box error" id="priceWarning" role="status"><span>⚠</span><span></span></div>
+          <div class="subsection audience-settings"><h4 class="subsection-title">Ưu đãi riêng (không thay đổi giá niêm yết)</h4><p class="help-text">Thêm điều kiện rõ ràng cho chương trình thành viên, ngày ưu đãi hoặc mã giảm giá. Ưu đãi không tự tạo ra giá vé mới.</p>
+            <div class="offer-card"><div class="offer-head"><input type="checkbox" id="offerMember"><label for="offerMember">Ưu đãi thành viên</label></div><div class="offer-fields"><div class="field"><label for="memberOfferName">Tên ưu đãi</label><input class="control offer-input" id="memberOfferName" placeholder="Ví dụ: Thành viên hạng Vàng" disabled></div><div class="field"><label for="memberDiscount">Mức giảm (%)</label><input class="control offer-input" id="memberDiscount" type="number" min="0" max="100" placeholder="10" disabled></div><div class="field"><label for="memberAudience">Đối tượng / hạng thành viên</label><input class="control offer-input" id="memberAudience" placeholder="Ai được sử dụng?" disabled></div><div class="field"><label for="memberRule">Điều kiện khác</label><input class="control offer-input" id="memberRule" placeholder="Ví dụ: Xuất trình thẻ" disabled></div></div></div>
+            <div class="offer-card"><div class="offer-head"><input type="checkbox" id="offerCode"><label for="offerCode">Mã giảm giá hoặc chương trình riêng</label></div><div class="offer-fields"><div class="field"><label for="codeOfferName">Tên / mã chương trình</label><input class="control offer-input" id="codeOfferName" placeholder="Ví dụ: THU3VUIVE" disabled></div><div class="field"><label for="codeDiscount">Mức giảm (%)</label><input class="control offer-input" id="codeDiscount" type="number" min="0" max="100" placeholder="15" disabled></div><div class="field"><label for="codeAudience">Đối tượng áp dụng</label><input class="control offer-input" id="codeAudience" placeholder="Ai được sử dụng?" disabled></div><div class="field"><label for="codeRule">Điều kiện khác</label><input class="control offer-input" id="codeRule" placeholder="Ví dụ: Mỗi tài khoản 1 lần" disabled></div></div></div>
+          </div>
+        </section>
+
+        <section class="step-content" data-step="3">
+          <h3 class="section-heading">Kiểm tra và xem trước</h3><p class="section-help">Rà lại phạm vi, thời gian và một số mức giá trước khi lưu bảng giá.</p>
+          <div class="review-grid">
+            <div class="review-card"><h3>Thông tin áp dụng</h3><dl class="summary-list" id="reviewSummary"></dl><div class="validation-message" id="reviewValidation" role="status"></div></div>
+            <div class="review-card"><h3>Ví dụ giá vé hoàn chỉnh</h3><table class="preview-table"><thead><tr><th>Ngày / giờ</th><th>Hạng ghế</th><th>Đối tượng</th><th>Giá</th></tr></thead><tbody id="previewRows"></tbody></table><div class="preview-total"><span>Giá đang xem trước</span><strong id="previewPrice">—</strong></div><p class="help-text" id="offerPreview"></p></div>
+          </div>
+          <div class="inline-note info"><strong>Kiểm tra cuối:</strong> Bảng giá có thể được lưu ở trạng thái bản nháp hoặc lên lịch. Việc phát hành áp dụng phụ thuộc quy trình duyệt của đơn vị vận hành.</div>
+        </section>
+      </div>
+      <footer class="dialog-footer"><div class="footer-left"><button class="button" id="cancelBuilder">Đóng</button><button class="button ghost" id="saveDraft">Lưu bản nháp</button></div><div class="footer-right"><button class="button" id="prevStep" disabled>Quay lại</button><button class="button primary" id="nextStep">Tiếp tục</button></div></footer>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const roomTypes = {
+        standard: { label: 'Tiêu chuẩn', room: 'Phòng 01 — Tiêu chuẩn', formats: ['2D', '3D'], seats: [{ name: 'Ghế thường', unit: '/vé' }, { name: 'Ghế VIP', unit: '/vé' }, { name: 'Ghế đôi', unit: '/cặp' }] },
+        imax: { label: 'IMAX', room: 'Phòng 02 — IMAX', formats: ['IMAX 2D', 'IMAX 3D'], seats: [{ name: 'Ghế IMAX tiêu chuẩn', unit: '/vé' }, { name: 'Ghế IMAX VIP', unit: '/vé' }] },
+        '4dx': { label: '4DX', room: 'Phòng 03 — 4DX', formats: ['4DX 2D', '4DX 3D'], seats: [{ name: 'Ghế 4DX', unit: '/vé' }, { name: 'Ghế 4DX VIP', unit: '/vé' }] },
+        screenx: { label: 'ScreenX', room: 'Phòng 04 — ScreenX', formats: ['ScreenX 2D'], seats: [{ name: 'Ghế ScreenX', unit: '/vé' }, { name: 'Ghế VIP', unit: '/vé' }] },
+        premium: { label: 'Premium', room: 'Phòng 05 — Premium', formats: ['2D'], seats: [{ name: 'Ghế ngả', unit: '/vé' }, { name: 'Ghế VIP', unit: '/vé' }] },
+        gold: { label: 'Gold Class', room: 'Phòng 06 — Gold Class', formats: ['2D'], seats: [{ name: 'Ghế Gold Class', unit: '/vé' }] },
+        bed: { label: 'Giường nằm (ví dụ L’amour)', room: 'Phòng 07 — Giường nằm', formats: ['2D'], seats: [{ name: 'Giường đơn', unit: '/giường' }, { name: 'Giường đôi', unit: '/giường' }] },
+        ultra: { label: 'ULTRA 4DX', room: 'Phòng 08 — ULTRA 4DX', formats: ['ULTRA 4DX 2D', 'ULTRA 4DX 3D'], seats: [{ name: 'Ghế ULTRA 4DX', unit: '/vé' }] }
+      };
+      const audiences = [
+        { id: 'adult', label: 'Người lớn' }, { id: 'child', label: 'Trẻ em' },
+        { id: 'student', label: 'Học sinh–sinh viên' }, { id: 'senior', label: 'Người cao tuổi' }
+      ];
+      const venues = ['Cinema Mẫu - Quận 1', 'Cinema Mẫu - Thủ Đức', 'Cinema Mẫu - Đà Nẵng', 'Cinema Mẫu - Cần Thơ'];
+      let policies = [
+        { id: 'P-101', name: 'Giá vé tiêu chuẩn — minh họa', venue: venues[0], room: 'Tiêu chuẩn', format: '2D', from: '01/01/2026', to: '31/12/2026', status: 'Đang áp dụng', summary: '55.000đ – 250.000đ' },
+        { id: 'P-102', name: 'Giá vé IMAX — minh họa', venue: venues[1], room: 'IMAX', format: 'IMAX 2D, IMAX 3D', from: '01/06/2026', to: '31/05/2027', status: 'Đang áp dụng', summary: '110.000đ – 195.000đ' },
+        { id: 'P-103', name: 'Giá vé trải nghiệm chuyển động', venue: venues[0], room: '4DX', format: '4DX 2D, 4DX 3D', from: '01/11/2026', to: '31/10/2027', status: 'Sắp áp dụng', summary: '120.000đ – 220.000đ' },
+        { id: 'P-104', name: 'Giá vé phòng Premium', venue: venues[2], room: 'Premium', format: '2D', from: '01/08/2026', to: '31/07/2027', status: 'Đang áp dụng', summary: '95.000đ – 180.000đ' },
+        { id: 'P-105', name: 'Giá vé ScreenX — minh họa', venue: venues[3], room: 'ScreenX', format: 'ScreenX 2D', from: '01/01/2027', to: '31/12/2027', status: 'Bản nháp', summary: 'Chưa hoàn tất' },
+        { id: 'P-106', name: 'Giá vé phòng giường nằm', venue: venues[1], room: 'Phòng giường nằm', format: '2D', from: '01/01/2025', to: '31/12/2025', status: 'Đã hết hạn', summary: '180.000đ – 320.000đ' },
+        { id: 'P-107', name: 'Giá vé Gold Class — minh họa', venue: venues[2], room: 'Gold Class', format: '2D', from: '01/12/2026', to: '30/11/2027', status: 'Sắp áp dụng', summary: '160.000đ – 280.000đ' },
+        { id: 'P-108', name: 'Giá vé cuối tuần — tiêu chuẩn', venue: venues[0], room: 'Tiêu chuẩn', format: '2D, 3D', from: '01/03/2026', to: '28/02/2027', status: 'Đang áp dụng', summary: '85.000đ – 250.000đ' }
+      ];
+      const dayLabels = { weekday: 'Thứ Hai–Thứ Năm', weekend: 'Thứ Sáu–Chủ Nhật', holiday: 'Lễ, Tết' };
+      let currentStep = 0, activeDay = 'weekday', activeFormat = '', editingId = null, currentPolicy = null, toastTimer;
+      const priceStore = new Map();
+      const $ = (id) => document.getElementById(id);
+      const fmtPrice = (value) => `${Number(value).toLocaleString('vi-VN')}đ`;
+      const statusClass = (status) => ({ 'Đang áp dụng':'active', 'Sắp áp dụng':'scheduled', 'Bản nháp':'draft', 'Đã hết hạn':'expired' }[status] || 'draft');
+
+      function renderPolicies() {
+        $('metricActive').textContent = policies.filter(p => p.status === 'Đang áp dụng').length;
+        $('metricScheduled').textContent = policies.filter(p => p.status === 'Sắp áp dụng').length;
+        $('metricDraft').textContent = policies.filter(p => p.status === 'Bản nháp').length;
+        $('metricCheck').textContent = policies.filter(p => p.summary === 'Chưa hoàn tất').length;
+        const venue = $('filterVenue').value, room = $('filterRoom').value, format = $('filterFormat').value, status = $('filterStatus').value;
+        const q = $('filterSearch').value.trim().toLocaleLowerCase('vi');
+        const rows = policies.filter(p => (!venue || p.venue === venue) && (!room || p.room === room) && (!format || p.format.split(', ').includes(format)) && (!status || p.status === status) && (!q || `${p.name} ${p.venue} ${p.room} ${p.format}`.toLocaleLowerCase('vi').includes(q)));
+        $('policyRows').innerHTML = rows.map(p => `<tr>
+          <td><span class="policy-name">${escapeHtml(p.name)}</span><span class="table-sub">Mã ${escapeHtml(p.id)} · Dữ liệu minh họa</span></td>
+          <td><span class="scope-pill">${escapeHtml(p.venue)}</span></td>
+          <td><span class="policy-name">${escapeHtml(p.room)}</span><span class="table-sub">${escapeHtml(p.format)}</span></td>
+          <td>${escapeHtml(p.from)}<span class="table-sub">đến ${escapeHtml(p.to)}</span></td>
+          <td><span class="status ${statusClass(p.status)}">● ${escapeHtml(p.status)}</span><span class="table-sub">${escapeHtml(p.summary)}</span></td>
+          <td><div class="action-group"><button class="action-button" data-action="view" data-id="${escapeHtml(p.id)}">Xem</button><button class="action-button" data-action="edit" data-id="${escapeHtml(p.id)}">Sửa</button><button class="action-button" data-action="duplicate" data-id="${escapeHtml(p.id)}">Nhân bản</button></div></td>
+        </tr>`).join('');
+        $('resultCount').textContent = `(${rows.length})`;
+        $('footerCount').textContent = `Hiển thị ${rows.length} / ${policies.length} bảng giá`;
+        $('emptyState').style.display = rows.length ? 'none' : 'block';
+        document.querySelector('.policy-table').style.display = rows.length ? 'table' : 'none';
+      }
+      function escapeHtml(value) { return String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+      function toast(message) { const t = $('toast'); t.textContent = message; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600); }
+      function selectedRoom() { return roomTypes[$('formRoom').value]; }
+      function selectedAudiences() { return audiences.filter(a => $(`aud-${a.id}`).checked); }
+      function selectedFormats() { return [...document.querySelectorAll('#formatChoices input:checked')].map(i => i.value); }
+      function selectedPeriod() { return $('pricePeriod').value; }
+      function selectedPeriodParts() { const [day, index] = selectedPeriod().split('|'); return { day, index: Number(index) }; }
+      function priceKey(format, day, index, seat, audience) { return [format, day, index, seat, audience].join('::'); }
+      function clearDayPrices(day) { [...priceStore.keys()].forEach(key => { if (key.split('::')[1] === day) priceStore.delete(key); }); }
+      function makeDemoPrices() {
+        priceStore.clear();
+        const seed = {
+          weekday: [
+            { 'Ghế thường': 55000, 'Ghế VIP': 70000, 'Ghế đôi': 200000 },
+            { 'Ghế thường': 70000, 'Ghế VIP': 85000, 'Ghế đôi': 200000 }
+          ],
+          weekend: [{ 'Ghế thường': 85000, 'Ghế VIP': 100000, 'Ghế đôi': 200000 }],
+          holiday: [{ 'Ghế thường': 100000, 'Ghế VIP': 120000, 'Ghế đôi': 250000 }]
+        };
+        Object.entries(seed).forEach(([day, periods]) => periods.forEach((prices, index) => {
+          ['2D','3D'].forEach(format => Object.entries(prices).forEach(([seat, base]) => {
+            const amount = format === '3D' ? Math.round(base * 1.18 / 1000) * 1000 : base;
+            priceStore.set(priceKey(format, day, index, seat, 'adult'), { value: amount, na: false });
+          }));
+        }));
+      }
+      function renderChoices() {
+        const room = selectedRoom();
+        const oldFormats = selectedFormats();
+        $('formatChoices').innerHTML = room.formats.map((f, i) => `<label class="choice"><input type="checkbox" value="${escapeHtml(f)}" ${oldFormats.includes(f) || (!oldFormats.length && i === 0) ? 'checked' : ''}>${escapeHtml(f)}</label>`).join('');
+        $('audienceChoices').innerHTML = audiences.map((a, i) => `<label class="choice"><input type="checkbox" id="aud-${a.id}" ${i === 0 || (editingId && currentPolicy?.audiences?.includes(a.id)) ? 'checked' : ''}>${a.label}</label>`).join('');
+        $('roomSummary').innerHTML = `<strong>Đang chọn:</strong> ${escapeHtml(room.room)} · ${room.seats.map(s => `${escapeHtml(s.name)} (${s.unit})`).join(' · ')}. Danh sách hạng ghế thay đổi theo loại phòng.`;
+        const selected = selectedFormats();
+        activeFormat = selected[0] || room.formats[0];
+        renderPriceFormatTabs();
+        renderPricePeriodOptions();
+        updatePriceContext();
+        renderMatrix();
+      }
+      function renderPriceFormatTabs() {
+        const formats = selectedFormats();
+        $('priceFormatTabs').innerHTML = formats.map((f,i) => `<button type="button" class="tab-button ${f === activeFormat ? 'active' : ''}" role="tab" aria-selected="${f === activeFormat}" data-format="${escapeHtml(f)}">${escapeHtml(f)}</button>`).join('');
+        if (!formats.includes(activeFormat)) activeFormat = formats[0] || selectedRoom().formats[0];
+      }
+      function renderPricePeriodOptions() {
+        const current = $('pricePeriod').value;
+        const periods = [];
+        document.querySelectorAll('#periodRows .period-row').forEach((row, index) => {
+          const day = row.dataset.day;
+          const label = row.querySelector('.period-label').value || `Khung ${index+1}`;
+          const dayIndex = [...document.querySelectorAll(`#periodRows .period-row[data-day="${day}"]`)].indexOf(row);
+          periods.push({ value: `${day}|${dayIndex}`, label: `${dayLabels[day]} · ${label}` });
+        });
+        $('pricePeriod').innerHTML = periods.map(p => `<option value="${p.value}">${escapeHtml(p.label)}</option>`).join('');
+        if (periods.some(p => p.value === current)) $('pricePeriod').value = current;
+        updatePriceContext();
+      }
+      function updatePriceContext() {
+        $('priceRoomPill').textContent = selectedRoom().room;
+        $('priceFormatPill').textContent = activeFormat || selectedRoom().formats[0];
+        const [day, indexText] = ($('pricePeriod').value || 'weekday|0').split('|');
+        const rows = [...document.querySelectorAll(`#periodRows .period-row[data-day="${day}"]`)];
+        const periodName = rows[Number(indexText)]?.querySelector('.period-label')?.value || 'Trước 17:00';
+        $('pricePeriodPill').textContent = `${dayLabels[day] || dayLabels.weekday} · ${periodName}`;
+      }
+      function renderMatrix() {
+        const room = selectedRoom(), audienceList = selectedAudiences();
+        const thead = `<tr><th>Hạng ghế / đơn vị tính</th>${audienceList.map(a => `<th>${a.label}</th>`).join('')}</tr>`;
+        $('matrixHead').innerHTML = thead;
+        $('matrixBody').innerHTML = room.seats.map((seat, seatIndex) => `<tr><td><span class="seat-name">${escapeHtml(seat.name)}</span><span class="unit-badge">Tính theo ${escapeHtml(seat.unit)}</span></td>${audienceList.map(a => {
+          const {day,index} = selectedPeriodParts(); const key = priceKey(activeFormat, day, index, seat.name, a.id); const state = priceStore.get(key) || {value:'',na:false};
+          return `<td><div class="price-cell ${state.na ? 'na' : ''}"><label class="sr-only" for="price-${seatIndex}-${a.id}">${escapeHtml(seat.name)} — ${a.label}</label><input id="price-${seatIndex}-${a.id}" type="number" min="0" step="1000" inputmode="numeric" placeholder="Chưa nhập" value="${state.value === '' ? '' : state.value}" ${state.na ? 'disabled' : ''} data-price-seat="${escapeHtml(seat.name)}" data-price-audience="${a.id}"><select class="price-state" aria-label="Trạng thái giá" data-state-seat="${escapeHtml(seat.name)}" data-state-audience="${a.id}"><option value="apply" ${!state.na ? 'selected' : ''}>Áp dụng</option><option value="na" ${state.na ? 'selected' : ''}>Không áp dụng</option></select></div></td>`;
+        }).join('')}</tr>`).join('');
+        updatePriceWarning();
+      }
+      function updatePriceWarning() {
+        const missing = countMissingPrices();
+        const box = $('priceWarning');
+        box.style.display = missing ? 'flex' : 'none';
+        box.querySelector('span:last-child').textContent = missing ? `Còn ${missing} ô chưa nhập giá. Mỗi ô cần có giá (kể cả 0đ) hoặc chọn “Không áp dụng”.` : '';
+      }
+      function countMissingPrices() {
+        const room = selectedRoom(), formats = selectedFormats(), audienceList = selectedAudiences();
+        let missing = 0;
+        formats.forEach(format => Object.keys(dayLabels).forEach(day => {
+          allPeriods().filter(r => r.dataset.day === day).forEach((_, index) => room.seats.forEach(seat => audienceList.forEach(a => {
+            const value = priceStore.get(priceKey(format,day,index,seat.name,a.id));
+            const amount = value && Number(value.value);
+            if (!value || (!value.na && (value.value === '' || value.value === null || value.value === undefined || !Number.isFinite(amount) || amount < 0))) missing++;
+          })));
+        }));
+        return missing;
+      }
+      function defaultPeriodRows() {
+        return [
+          { day: 'weekday', label: 'Trước 17:00', from: '00:00', to: '17:00', scope: 'Mọi suất trong khung giờ' },
+          { day: 'weekday', label: 'Từ 17:00', from: '17:00', to: '24:00', scope: 'Cả ngày' },
+          { day: 'weekend', label: 'Cả ngày', from: '00:00', to: '24:00', scope: 'Cả ngày' },
+          { day: 'holiday', label: 'Cả ngày', from: '00:00', to: '24:00', scope: 'Cả ngày' }
+        ];
+      }
+      function allPeriods() { return [...document.querySelectorAll('#periodRows .period-row')]; }
+      function renderPeriods() {
+        $('periodRows').innerHTML = defaultPeriodRows().map(p => periodRowHtml(p)).join('');
+        updateDayVisibility(); checkPeriods(); renderPricePeriodOptions();
+      }
+      function updateDayVisibility() { allPeriods().forEach(row => { row.hidden = row.dataset.day !== activeDay; }); }
+      function periodRowHtml(p) {
+        return `<div class="period-row" data-day="${p.day}"><input class="control period-label" aria-label="Tên khung giờ" value="${escapeHtml(p.label)}"><input class="control period-from" type="time" aria-label="Giờ bắt đầu" value="${p.from}" step="60"><input class="control period-to" type="text" inputmode="numeric" placeholder="HH:MM" aria-label="Giờ kết thúc (có thể nhập 24:00)" value="${p.to}" maxlength="5"><select class="control period-scope" aria-label="Phạm vi khung giờ"><option ${p.scope === 'Mọi suất trong khung giờ'?'selected':''}>Mọi suất trong khung giờ</option><option ${p.scope === 'Cả ngày'?'selected':''}>Cả ngày</option><option ${p.scope === 'Suất chiếu cụ thể'?'selected':''}>Chỉ suất chiếu được chọn</option></select><button class="remove-period" type="button" aria-label="Xóa khung giờ">×</button></div>`;
+      }
+      function checkPeriods() {
+        const problems = [];
+        for (const day of Object.keys(dayLabels)) {
+          const rows = allPeriods().filter(r => r.dataset.day === day);
+          const parsed = rows.map(row => {
+            const from = row.querySelector('.period-from').value;
+            const to = row.querySelector('.period-to').value;
+            return { row, label: row.querySelector('.period-label').value, from, to, start: timeMinutes(from), end: timeMinutes(to) };
+          });
+          parsed.forEach((p, i) => {
+            if (!p.from || !/^([01]\d|2[0-3]):[0-5]\d$/.test(p.from) || !/^([01]\d|2[0-3]):[0-5]\d$|^24:00$/.test(p.to) || p.end > 1440 || p.start >= p.end) problems.push(`${dayLabels[day]}: khung “${p.label || 'chưa đặt tên'}” cần giờ đúng dạng HH:MM và giờ kết thúc sau giờ bắt đầu (có thể nhập 24:00).`);
+            parsed.slice(i+1).forEach(q => { if (p.start < q.end && q.start < p.end) problems.push(`${dayLabels[day]}: “${p.label}” bị trùng giờ với “${q.label}”.`); });
+          });
+        }
+        const box = $('periodWarning');
+        box.style.display = problems.length ? 'flex' : 'none';
+        box.querySelector('span:last-child').textContent = problems.join(' ');
+        checkDateRange();
+        return problems;
+      }
+      function timeMinutes(time) { if (time === '24:00') return 1440; if (!time) return 0; const [h,m] = time.split(':').map(Number); return h*60+m; }
+      function checkDateRange() {
+        const from = $('validFrom').value, to = $('validTo').value, box = $('dateWarning');
+        const formats = selectedFormats();
+        const conflict = policies.find(p => p.id !== editingId && p.venue === $('formVenue').value && p.room === selectedRoom().label && p.format.split(', ').some(f=>formats.includes(f)) && p.status !== 'Đã hết hạn' && dateRangesOverlap(from,to,p.from,p.to));
+        let message = '';
+        if (!from || !to || from > to) message = 'Ngày kết thúc phải bằng hoặc sau ngày bắt đầu.';
+        else if (conflict) message = `Khoảng hiệu lực có thể trùng với bảng “${conflict.name}” tại cùng cụm rạp và loại phòng. Hãy kiểm tra lại phạm vi.`;
+        box.style.display = message ? 'flex' : 'none'; box.querySelector('span:last-child').textContent = message;
+        return !message;
+      }
+      function dateRangesOverlap(from, to, from2, to2) {
+        const parse = s => { if (s.includes('/')) { const [d,m,y]=s.split('/'); return `${y}-${m}-${d}`; } return s; };
+        return from && to && parse(from) <= parse(to2) && parse(from2) <= parse(to);
+      }
+      function setStep(step) {
+        currentStep = Math.max(0, Math.min(3, step));
+        document.querySelectorAll('.step-content').forEach(el => el.classList.toggle('active', Number(el.dataset.step) === currentStep));
+        document.querySelectorAll('.step[data-step-link]').forEach(el => { const n = Number(el.dataset.stepLink); el.classList.toggle('current', n === currentStep); el.classList.toggle('done', n < currentStep); });
+        $('prevStep').disabled = currentStep === 0;
+        $('nextStep').textContent = currentStep === 3 ? 'Lưu bảng giá' : 'Tiếp tục';
+        if (currentStep === 3) updateReview();
+        $('dialogTitle').textContent = editingId ? 'Chỉnh sửa bảng giá' : (currentStep === 3 ? 'Kiểm tra bảng giá' : 'Tạo bảng giá mới');
+      }
+      function validateStep(step) {
+        if (step === 0) {
+          if (!$('policyName').value.trim()) { $('policyName').focus(); toast('Vui lòng nhập tên bảng giá.'); return false; }
+          if (!selectedFormats().length) { toast('Chọn ít nhất một định dạng đang có trong phòng.'); return false; }
+          if (!selectedAudiences().length) { toast('Chọn ít nhất một nhóm khách áp dụng.'); return false; }
+        }
+        if (step === 1) {
+          if (!checkDateRange() || checkPeriods().length) { toast('Hãy xử lý ngày hiệu lực hoặc khung giờ đang cảnh báo.'); return false; }
+        }
+        if (step === 2) {
+          updatePriceWarning();
+          if (countMissingPrices() > 0) { toast('Hãy nhập đủ giá hoặc chọn “Không áp dụng” cho từng ô ở mọi định dạng và khung giờ.'); return false; }
+          if ($('offerMember').checked && (!$('memberOfferName').value.trim() || !$('memberAudience').value.trim())) { toast('Ưu đãi thành viên cần có tên và đối tượng áp dụng.'); $('memberOfferName').focus(); return false; }
+          if ($('offerCode').checked && (!$('codeOfferName').value.trim() || !$('codeAudience').value.trim())) { toast('Chương trình riêng cần có tên và đối tượng áp dụng.'); $('codeOfferName').focus(); return false; }
+        }
+        return true;
+      }
+      function dateDisplay(v) { if (!v) return '—'; const [y,m,d]=v.split('-'); return `${d}/${m}/${y}`; }
+      function currentPolicyFromForm() {
+        const room = selectedRoom(), formats = selectedFormats(), audienceList = selectedAudiences();
+        const promo = [];
+        if ($('offerMember').checked) promo.push(`${$('memberOfferName').value || 'Ưu đãi thành viên'}${$('memberDiscount').value ? ` · giảm ${$('memberDiscount').value}%` : ''}${$('memberAudience').value ? ` · ${$('memberAudience').value}` : ''}`);
+        if ($('offerCode').checked) promo.push(`${$('codeOfferName').value || 'Chương trình riêng'}${$('codeDiscount').value ? ` · giảm ${$('codeDiscount').value}%` : ''}${$('codeAudience').value ? ` · ${$('codeAudience').value}` : ''}`);
+        const sample = [];
+        formats.forEach(format => Object.keys(dayLabels).forEach(day => allPeriods().filter(r=>r.dataset.day===day).forEach((_,index)=>room.seats.forEach(seat=>audienceList.forEach(a=>{
+          const entry=priceStore.get(priceKey(format,day,index,seat.name,a.id));
+          if(entry && !entry.na && entry.value !== '' && Number.isFinite(Number(entry.value))) sample.push(Number(entry.value));
+        })))));
+        return { id: editingId || `P-${109 + policies.length}`, name: $('policyName').value.trim() || 'Bảng giá mới', venue: $('formVenue').value, room: room.label, roomLabel: room.room, roomKey: $('formRoom').value, format: formats.join(', '), from: dateDisplay($('validFrom').value), to: dateDisplay($('validTo').value), status: $('policyStatus').value, summary: sample.length ? `${fmtPrice(Math.min(...sample))} – ${fmtPrice(Math.max(...sample))}` : 'Chưa hoàn tất', audiences: audienceList.map(a=>a.id), promotions: promo };
+      }
+      function updateReview() {
+        const p = currentPolicyFromForm();
+        const pairs = [['Hệ thống', $('formSystem').value], ['Cụm rạp', p.venue], ['Phòng chiếu', p.roomLabel], ['Định dạng', p.format], ['Nhóm khách', p.audiences.map(id=>audiences.find(a=>a.id===id)?.label).join(', ')], ['Ngày hiệu lực', `${p.from} – ${p.to}`], ['Trạng thái', p.status]];
+        $('reviewSummary').innerHTML = pairs.map(([k,v])=>`<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v || '—')}</dd>`).join('');
+        const validation = $('reviewValidation');
+        const missing = countMissingPrices();
+        const rangeOk = checkDateRange(), timeIssues = checkPeriods();
+        const offersOk = (!$('offerMember').checked || Boolean($('memberOfferName').value.trim() && $('memberAudience').value.trim())) && (!$('offerCode').checked || Boolean($('codeOfferName').value.trim() && $('codeAudience').value.trim()));
+        const ready = missing === 0 && rangeOk && !timeIssues.length && offersOk;
+        validation.classList.toggle('ok', ready);
+        validation.textContent = ready ? 'Đã nhập đủ giá, khung giờ không bị trùng và phạm vi ngày hợp lệ.' : `Cần kiểm tra: ${missing ? `${missing} ô giá còn trống; ` : ''}${!rangeOk ? 'ngày hiệu lực có cảnh báo; ' : ''}${timeIssues.length ? 'khung giờ có cảnh báo; ' : ''}${!offersOk ? 'ưu đãi thiếu tên hoặc đối tượng; ' : ''}`;
+        const {day,index} = selectedPeriodParts(); const row = [...document.querySelectorAll(`#periodRows .period-row[data-day="${day}"]`)][index];
+        const periodName = row?.querySelector('.period-label').value || 'Khung đã chọn';
+        const roomSeat = selectedRoom().seats[0]; const adult = selectedAudiences()[0];
+        const sample = adult ? priceStore.get(priceKey(activeFormat,day,index,roomSeat.name,adult.id)) : null;
+        const examples = [['weekday',0],['weekday',1],['weekend',0],['holiday',0]].map(([d,i])=>{
+          const pr=[...document.querySelectorAll(`#periodRows .period-row[data-day="${d}"]`)][i];
+          const label=pr?.querySelector('.period-label').value || 'Khung giờ';
+          const v=adult ? priceStore.get(priceKey(activeFormat,d,i,roomSeat.name,adult.id)) : null;
+          return `<tr><td>${escapeHtml(dayLabels[d])}<span class="table-sub">${escapeHtml(label)}</span></td><td>${escapeHtml(roomSeat.name)}<span class="table-sub">${roomSeat.unit}</span></td><td>${adult?.label || '—'}</td><td>${v?.na ? 'Không áp dụng' : v?.value !== '' && v ? fmtPrice(v.value) : 'Chưa nhập'}</td></tr>`;
+        }).join('');
+        $('previewRows').innerHTML = examples || `<tr><td>${escapeHtml(dayLabels[day])} · ${escapeHtml(periodName)}</td><td>${escapeHtml(roomSeat.name)}</td><td>${adult?.label || '—'}</td><td>Chưa nhập</td></tr>`;
+        $('previewPrice').textContent = sample?.na ? 'Không áp dụng' : sample?.value !== '' && sample ? fmtPrice(sample.value) : 'Chưa nhập';
+        $('offerPreview').textContent = p.promotions.length ? `Ưu đãi riêng: ${p.promotions.join(' · ')}. Điều kiện hiển thị khách hàng cần được rà soát trước khi phát hành.` : 'Chưa thêm ưu đãi. Giá niêm yết được quản lý riêng.';
+      }
+      function resetBuilder() {
+        editingId = null; currentPolicy = null; currentStep = 0; activeDay = 'weekday'; priceStore.clear(); makeDemoPrices();
+        $('policyName').value = 'Bảng giá vé tiêu chuẩn mẫu'; $('policyStatus').value = 'Bản nháp'; $('formSystem').value = 'Hệ thống rạp mẫu'; $('formVenue').value = venues[0]; $('formRoom').value = 'standard';
+        $('validFrom').value = '2028-01-01'; $('validTo').value = '2028-12-31'; $('conditionNote').value = '';
+        $('offerMember').checked = false; $('offerCode').checked = false;
+        document.querySelectorAll('.offer-input').forEach(i => { i.disabled = true; i.value = ''; });
+        renderPeriods(); renderChoices(); setStep(0);
+      }
+      function openBuilder(mode='create', policy=null) {
+        resetBuilder();
+        if (mode !== 'create' && policy) {
+          editingId = mode === 'edit' ? policy.id : null;
+          currentPolicy = policy;
+          $('dialogTitle').textContent = mode === 'edit' ? 'Chỉnh sửa bảng giá' : 'Nhân bản bảng giá';
+          $('policyName').value = mode === 'edit' ? policy.name : `${policy.name} — bản sao`;
+          $('formVenue').value = policy.venue;
+          const roomKey = Object.keys(roomTypes).find(k => roomTypes[k].label === policy.room) || 'standard';
+          $('formRoom').value = roomKey;
+          $('policyStatus').value = mode === 'edit' ? policy.status : 'Bản nháp';
+          $('validFrom').value = mode === 'edit' ? isoDate(policy.from) : '2028-01-01';
+          $('validTo').value = mode === 'edit' ? isoDate(policy.to) : '2028-12-31';
+          renderChoices();
+          document.querySelectorAll('#formatChoices input').forEach(i => i.checked = policy.format.split(', ').includes(i.value));
+          document.querySelectorAll('#audienceChoices input').forEach(i => i.checked = policy.audiences?.includes(i.id.replace('aud-','')) || i.id === 'aud-adult');
+          renderPriceFormatTabs(); renderMatrix();
+        }
+        $('builderBackdrop').classList.add('open'); document.body.style.overflow = 'hidden';
+        setTimeout(() => $('policyName').focus(), 0);
+      }
+      function isoDate(s) { if (!s) return '2027-01-01'; const [d,m,y]=s.split('/'); return `${y}-${m}-${d}`; }
+      function closeBuilder() { $('builderBackdrop').classList.remove('open'); document.body.style.overflow = ''; }
+      function savePolicy(draft=false) {
+        if (!draft) {
+          for (let i=0;i<3;i++) if (!validateStep(i)) { setStep(i); return; }
+        }
+        const p = currentPolicyFromForm();
+        if (draft) p.status = 'Bản nháp';
+        const index = policies.findIndex(x=>x.id===p.id);
+        if (index >= 0) policies[index] = p; else policies.unshift(p);
+        renderPolicies(); closeBuilder(); toast(draft ? 'Đã lưu bảng giá ở trạng thái bản nháp.' : 'Đã lưu bảng giá minh họa.');
+      }
+
+      ['filterVenue','filterRoom','filterFormat','filterStatus'].forEach(id => $(id).addEventListener('change', renderPolicies));
+      $('filterSearch').addEventListener('input', renderPolicies);
+      $('clearFilters').addEventListener('click', () => { ['filterVenue','filterRoom','filterFormat','filterStatus'].forEach(id => $(id).value=''); $('filterSearch').value=''; renderPolicies(); });
+      $('refreshButton').addEventListener('click', () => { renderPolicies(); toast('Danh sách đã được làm mới.'); });
+      $('exportButton').addEventListener('click', () => { const data = ['Tên bảng giá,Cụm rạp,Loại phòng,Định dạng,Hiệu lực,Trạng thái', ...policies.map(p=>[p.name,p.venue,p.room,p.format,`${p.from} - ${p.to}`,p.status].map(v=>`"${String(v).replaceAll('"','""')}"`).join(','))].join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+data],{type:'text/csv;charset=utf-8'})); a.download='danh-sach-bang-gia-minh-hoa.csv'; a.click(); URL.revokeObjectURL(a.href); toast('Đã tải danh sách minh họa dạng CSV.'); });
+      $('createButton').addEventListener('click', () => openBuilder());
+      $('closeDialog').addEventListener('click', closeBuilder); $('cancelBuilder').addEventListener('click', closeBuilder);
+      $('builderBackdrop').addEventListener('click', e => { if (e.target === $('builderBackdrop')) closeBuilder(); });
+      $('prevStep').addEventListener('click', () => setStep(currentStep-1));
+      $('nextStep').addEventListener('click', () => { if (currentStep < 3) { if (validateStep(currentStep)) setStep(currentStep+1); } else savePolicy(false); });
+      $('saveDraft').addEventListener('click', () => savePolicy(true));
+      document.querySelectorAll('.step[data-step-link]').forEach(el => { const go=()=>{ const target=Number(el.dataset.stepLink); if (target <= currentStep) setStep(target); else if (validateStep(currentStep)) setStep(target); }; el.addEventListener('click',go); el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}}); });
+      $('formRoom').addEventListener('change', () => { renderChoices(); checkDateRange(); });
+      $('formVenue').addEventListener('change', checkDateRange);
+      $('formatChoices').addEventListener('change', () => { const chosen = selectedFormats(); if (!chosen.includes(activeFormat)) activeFormat = chosen[0] || selectedRoom().formats[0]; renderPriceFormatTabs(); renderMatrix(); });
+      $('audienceChoices').addEventListener('change', renderMatrix);
+      $('priceFormatTabs').addEventListener('click', e => { const b=e.target.closest('[data-format]'); if (!b) return; activeFormat=b.dataset.format; renderPriceFormatTabs(); renderMatrix(); updatePriceContext(); });
+      $('pricePeriod').addEventListener('change', () => { updatePriceContext(); renderMatrix(); });
+      $('matrixBody').addEventListener('input', e => { const input=e.target.closest('input[data-price-seat]'); if (!input) return; const {day,index}=selectedPeriodParts(); priceStore.set(priceKey(activeFormat,day,index,input.dataset.priceSeat,input.dataset.priceAudience),{value:input.value,na:false}); updatePriceWarning(); });
+      $('matrixBody').addEventListener('change', e => { const select=e.target.closest('select[data-state-seat]'); if (!select) return; const {day,index}=selectedPeriodParts(); const key=priceKey(activeFormat,day,index,select.dataset.stateSeat,select.dataset.stateAudience); const cell=select.closest('.price-cell'); const existing=priceStore.get(key)||{value:'',na:false}; existing.na=select.value==='na'; priceStore.set(key,existing); cell.classList.toggle('na',existing.na); const input=cell.querySelector('input'); input.disabled=existing.na; updatePriceWarning(); });
+      $('periodRows').addEventListener('click', e => { const remove=e.target.closest('.remove-period'); if (!remove) return; const row=remove.closest('.period-row'); const dayRows=allPeriods().filter(r=>r.dataset.day===row.dataset.day); if(dayRows.length===1){toast('Mỗi nhóm ngày cần có ít nhất một khung giờ.');return;} clearDayPrices(row.dataset.day); row.remove(); checkPeriods(); renderPricePeriodOptions(); renderMatrix(); });
+      $('periodRows').addEventListener('input', e => { if (e.target.matches('.period-label,.period-from,.period-to')) { checkPeriods(); renderPricePeriodOptions(); updatePriceContext(); } });
+      $('periodRows').addEventListener('change', e => { if (e.target.matches('.period-from,.period-to')) { checkPeriods(); renderPricePeriodOptions(); } });
+      $('addPeriod').addEventListener('click', () => { const rows=allPeriods().filter(r=>r.dataset.day===activeDay); const day=activeDay; const next=rows.length ? 'Khung giờ mới' : 'Cả ngày'; $('periodRows').insertAdjacentHTML('beforeend', periodRowHtml({day,label:next,from:'10:00',to:'16:00',scope:'Suất chiếu cụ thể'})); updateDayVisibility(); checkPeriods(); renderPricePeriodOptions(); $('periodRows').lastElementChild.querySelector('.period-label').focus(); });
+      document.querySelectorAll('.day-tabs .tab-button').forEach(b => b.addEventListener('click', () => { activeDay=b.dataset.day; document.querySelectorAll('.day-tabs .tab-button').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-selected',x===b?'true':'false');}); const first=allPeriods().find(r=>r.dataset.day===activeDay); if (!first) $('periodRows').insertAdjacentHTML('beforeend',periodRowHtml({day:activeDay,label:'Cả ngày',from:'00:00',to:'24:00',scope:'Cả ngày'})); updateDayVisibility(); renderPricePeriodOptions(); const option=[...$('pricePeriod').options].find(o=>o.value.startsWith(`${activeDay}|`)); if(option) $('pricePeriod').value=option.value; updatePriceContext(); renderMatrix(); }));
+      $('validFrom').addEventListener('change',checkDateRange); $('validTo').addEventListener('change',checkDateRange);
+      [['offerMember',['memberOfferName','memberDiscount','memberAudience','memberRule']],['offerCode',['codeOfferName','codeDiscount','codeAudience','codeRule']]].forEach(([check,ids])=>$(check).addEventListener('change',()=>ids.forEach(id=>$(id).disabled=!$(check).checked)));
+      $('reviewSummary').addEventListener('change',updateReview);
+      $('policyRows').addEventListener('click', e => { const b=e.target.closest('[data-action]'); if(!b)return; const p=policies.find(x=>x.id===b.dataset.id); if(!p)return; if(b.dataset.action==='view'){ toast(`${p.name} · ${p.venue} · ${p.room} · ${p.format} · ${p.summary}`); } else openBuilder(b.dataset.action==='edit'?'edit':'duplicate',p); });
+      document.addEventListener('keydown', e => { if(e.key==='Escape' && $('builderBackdrop').classList.contains('open')) closeBuilder(); });
+
+      renderPolicies();
+    })();
+  </script>
+</body>
+</html>

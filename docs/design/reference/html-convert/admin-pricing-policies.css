@@ -16,9 +16,11 @@
   --color-holiday-border: #f1d7ad;
   --color-success: #277344;
   --color-success-bg: #edf8f0;
+  --color-info-bg: #f5f2f8;
+  --color-info-border: #d9cfe4;
 
   --sidebar-width: 16rem;
-  --content-width: 78rem;
+  --content-width: 80rem;
   --topbar-height: 4.25rem;
   --control-height: 2.875rem;
   --radius-card: 1rem;
@@ -67,7 +69,8 @@ select {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+.format-selector__option:focus-visible {
   outline: 0.2rem solid color-mix(in srgb, var(--color-primary), transparent 65%);
   outline-offset: 0.15rem;
 }
@@ -306,13 +309,13 @@ select:focus-visible {
 }
 
 .page-heading__description {
-  max-width: 42rem;
+  max-width: 48rem;
   margin: 0;
   color: var(--color-text-muted);
 }
 
 .workflow-progress {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   padding: 1rem 1.25rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
@@ -321,35 +324,20 @@ select:focus-visible {
 
 .workflow-progress ol {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.workflow-progress__item {
+.workflow-progress li {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  min-width: 0;
+  gap: 0.6rem;
   color: var(--color-text-muted);
-}
-
-.workflow-progress__item > span:last-child {
-  display: grid;
-  gap: 0.1rem;
-  min-width: 0;
-}
-
-.workflow-progress__item strong {
-  color: var(--color-text);
   font-size: 0.8125rem;
-}
-
-.workflow-progress__item small {
-  color: var(--color-text-muted);
-  font-size: 0.6875rem;
+  font-weight: 650;
 }
 
 .workflow-progress__number,
@@ -365,17 +353,6 @@ select:focus-visible {
   color: var(--color-text-muted);
   font-size: 0.8125rem;
   font-weight: 750;
-}
-
-.workflow-progress__item--current .workflow-progress__number,
-.step-number {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.workflow-progress__item--current strong {
-  color: var(--color-primary);
 }
 
 .pricing-workflow {
@@ -399,9 +376,12 @@ select:focus-visible {
   margin-bottom: 1.25rem;
 }
 
-.workflow-card__heading .step-number {
+.step-number {
   width: 2.25rem;
   min-width: 2.25rem;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
 }
 
 .workflow-card__heading h2 {
@@ -417,12 +397,16 @@ select:focus-visible {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
+.form-grid--three {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .form-grid--two {
-  max-width: 50rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 54rem;
 }
 
 .form-field {
@@ -468,18 +452,20 @@ select:focus-visible {
   line-height: 1.45;
 }
 
+.scope-note,
 .plain-language-note {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  max-width: 58rem;
+  max-width: 60rem;
   margin-top: 1.25rem;
   padding: 0.875rem 1rem;
   border-left: 0.25rem solid var(--color-primary);
   border-radius: 0.375rem;
-  background: var(--color-surface-soft);
+  background: var(--color-info-bg);
 }
 
+.scope-note__icon,
 .plain-language-note__icon {
   display: grid;
   width: 1.25rem;
@@ -490,9 +476,15 @@ select:focus-visible {
   background: #fce7ed;
   color: var(--color-primary);
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 850;
 }
 
+.scope-note strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.scope-note p,
 .plain-language-note p {
   margin: 0;
   color: var(--color-text-muted);
@@ -501,6 +493,132 @@ select:focus-visible {
 
 .plain-language-note strong {
   color: var(--color-text);
+}
+
+.plain-language-note--warning {
+  border-left-color: #d28a18;
+  background: var(--color-holiday);
+}
+
+.plain-language-note--warning .plain-language-note__icon {
+  background: #ffedc9;
+  color: #9a5b00;
+}
+
+.seat-type-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.seat-type-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: var(--color-surface);
+}
+
+.seat-type-card--optional {
+  border-style: dashed;
+  background: var(--color-surface-soft);
+}
+
+.seat-type-card__symbol {
+  display: grid;
+  width: 2.25rem;
+  min-width: 2.25rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 0.625rem;
+  background: #fce7ed;
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+.seat-type-card__content {
+  min-width: 0;
+}
+
+.seat-type-card__content h3 {
+  margin: 0 0 0.2rem;
+  font-size: 0.875rem;
+}
+
+.seat-type-card__content p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.seat-type-card__status {
+  margin-left: auto;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 650;
+  text-align: center;
+}
+
+.format-selector {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(8rem, 12rem));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.format-selector legend {
+  grid-column: 1 / -1;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.format-selector__option {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.format-selector__option strong {
+  font-size: 0.875rem;
+}
+
+.format-selector__option small {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+#format-2d:checked + .format-selector__option,
+#format-3d:checked + .format-selector__option {
+  border-color: var(--color-primary);
+  background: #fff5f7;
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.format-panel {
+  display: none;
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin-top: 1rem;
+}
+
+#format-2d:checked ~ .format-panel--2d,
+#format-3d:checked ~ .format-panel--3d {
+  display: block;
 }
 
 .table-heading {
@@ -538,6 +656,12 @@ select:focus-visible {
   color: var(--color-text-muted);
   font-size: 0.75rem;
   white-space: nowrap;
+}
+
+.format-panel__message {
+  margin: 0 0 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
 }
 
 .pricing-table-wrap {
@@ -618,6 +742,11 @@ select:focus-visible {
 
 .price-field input:focus {
   border-color: var(--color-primary);
+}
+
+.price-field input::placeholder {
+  color: #aaa5af;
+  font-size: 0.75rem;
 }
 
 .price-field > span:last-child {
@@ -749,25 +878,22 @@ select:focus-visible {
   white-space: nowrap;
 }
 
-@media (max-width: 64rem) {
+@media (max-width: 68rem) {
   :root {
     --sidebar-width: 14rem;
   }
 
   .workflow-progress ol {
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
-  .workflow-progress__item {
-    align-items: flex-start;
-  }
-
-  .workflow-progress__item small {
-    display: none;
+  .workflow-progress li {
+    gap: 0.4rem;
+    font-size: 0.75rem;
   }
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 50rem) {
   .admin-shell {
     display: block;
   }
@@ -817,15 +943,13 @@ select:focus-visible {
   }
 
   .workflow-progress ol {
-    grid-template-columns: repeat(4, minmax(9rem, 1fr));
-    min-width: 38rem;
+    grid-template-columns: repeat(5, minmax(7.5rem, 1fr));
+    min-width: 39rem;
   }
 
-  .workflow-progress__item small {
-    display: block;
-  }
-
-  .form-grid,
+  .form-grid--three,
+  .form-grid--two,
+  .seat-type-list,
   .review-grid {
     grid-template-columns: 1fr;
   }
@@ -914,7 +1038,7 @@ select:focus-visible {
   }
 }
 
-@media (max-width: 25rem) {
+@media (max-width: 28rem) {
   .pricing-table tbody tr {
     grid-template-columns: 1fr;
   }
@@ -923,7 +1047,20 @@ select:focus-visible {
     grid-column: auto;
   }
 
+  .seat-type-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .seat-type-card__status {
+    margin-left: calc(2.25rem + 0.75rem);
+  }
+
   .admin-topbar__account-name {
     display: none;
+  }
+
+  .format-selector {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
