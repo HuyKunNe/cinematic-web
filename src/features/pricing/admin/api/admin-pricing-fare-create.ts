@@ -141,13 +141,6 @@ export function usePricingFareCreate(
         )
       }
 
-      if (category?.pricingRole !== 'REGULAR' || category.eligibilityMode !== 'UNRESTRICTED') {
-        throw new FareCreateError(
-          'Chọn vé thông thường dành cho tất cả khách để thêm mức giá.',
-          false,
-        )
-      }
-
       const parsed = fareCreateSchema.safeParse(input)
 
       if (!parsed.success) {

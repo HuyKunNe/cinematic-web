@@ -23,6 +23,14 @@ const emit = defineEmits<{
 
 const showCreate = ref(false)
 
+const createLocked = ref(false)
+const gridLocked = ref(false)
+
+watch([createLocked, gridLocked], ([creating, editing]) => emit('locked', creating || editing), {
+  immediate: true,
+  flush: 'sync',
+})
+
 const query = useAdminPricingMatrixQuery(
   () => ({
     cinemaId: props.cinemaId,
@@ -65,6 +73,7 @@ const canCreate = computed(() => {
     props.canRead &&
     props.canEdit &&
     !showCreate.value &&
+    !gridLocked.value &&
     value?.policy.status === 'DRAFT' &&
     value.policy.currency === 'VND' &&
     category !== undefined &&
@@ -213,7 +222,7 @@ function reload() {
       :category-name="categoryName"
       :can-read="canRead"
       :can-edit="canEdit"
-      @locked="emit('locked', $event)"
+      @locked="createLocked = $event"
       @cancel="showCreate = false"
       @saved="fareSaved"
       @reload="fareReload"
@@ -239,7 +248,16 @@ function reload() {
     </div>
 
     <template v-else-if="matrix">
-      <AdminPricingFareGrid :key="categoryCode" :matrix="matrix" :category-code="categoryCode" />
+      <AdminPricingFareGrid
+        :key="categoryCode"
+        :matrix="matrix"
+        :category-code="categoryCode"
+        :can-read="canRead"
+        :can-edit="canEdit && !showCreate"
+        @locked="gridLocked = $event"
+        @saved="fareSaved"
+        @reload="fareReload"
+      />
 
       <details class="pricing-special-cases">
         <summary>Xem danh sách chi tiết từng mức giá</summary>

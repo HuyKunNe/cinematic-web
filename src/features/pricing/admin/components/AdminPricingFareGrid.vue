@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import AppButton from '@/components/ui/AppButton.vue'
+import {
+  fareEditErrorMessage,
+  fareEditRequiresReload,
+  normalizeFareAmount,
+  usePricingFareEdit,
+} from '../api/admin-pricing-fare-edit'
 import type { useAdminPricingMatrixQuery } from '../api/admin-pricing-matrix-query'
 import { DayGroupInputDaysOfWeekItem as Weekday } from '@/services/api/generated/inventory-service/model/dayGroupInputDaysOfWeekItem'
 
@@ -19,6 +27,14 @@ type PriceRow = {
 const props = defineProps<{
   matrix: Matrix
   categoryCode: string
+  canRead: boolean
+  canEdit: boolean
+}>()
+
+const emit = defineEmits<{
+  locked: [value: boolean]
+  saved: []
+  reload: []
 }>()
 
 const selectedFormat = ref('')
@@ -263,10 +279,225 @@ function hasOwnPeriod(rule: Fare) {
     rule.effectiveTo !== props.matrix.policy.effectiveTo
   )
 }
+
+const editing = ref(false)
+const awaitingRefresh = ref(false)
+const showErrors = ref(false)
+const originals = ref<Record<string, string>>({})
+const drafts = ref<Record<string, string>>({})
+const editContext = ref<{
+  cinemaId: string
+  policyId: string
+  version: number
+  categoryCode: string
+} | null>(null)
+
+const save = usePricingFareEdit(
+  () => ({ matrix: props.matrix, categoryCode: props.categoryCode }),
+  () => props.canRead,
+  () => props.canEdit,
+)
+
+const contextChanged = computed(() => {
+  const value = editContext.value
+  return (
+    value !== null &&
+    (value.cinemaId !== props.matrix.policy.cinemaId ||
+      value.policyId !== props.matrix.policy.id ||
+      value.version !== props.matrix.policy.version ||
+      value.categoryCode !== props.categoryCode)
+  )
+})
+
+const requiresReload = computed(
+  () => contextChanged.value || fareEditRequiresReload(save.error.value),
+)
+
+const changes = computed(() =>
+  Object.entries(originals.value).flatMap(([code, original]) => {
+    const amountVnd = normalizeFareAmount(drafts.value[code] ?? '')
+    return amountVnd === original ? [] : [{ code, amountVnd: amountVnd ?? '' }]
+  }),
+)
+
+const dirty = computed(() => changes.value.length > 0)
+
+const fieldErrors = computed(() => {
+  const errors: Record<string, string> = {}
+  if (!showErrors.value) return errors
+
+  for (const code of Object.keys(originals.value)) {
+    if (normalizeFareAmount(drafts.value[code] ?? '') === null) {
+      errors[code] = 'Nhập số tiền hợp lệ, ví dụ 55.000 hoặc 55000.'
+    }
+  }
+
+  return errors
+})
+
+const editableFares = computed(() => {
+  const fares = new Map<string, Fare>()
+
+  for (const row of rows.value) {
+    for (const cell of row.cells) {
+      const fare = cell.fares.length === 1 ? cell.fares[0] : undefined
+      if (!fare) continue
+
+      const seat = cell.seat
+      const expectedUnit = seat.physicalSeatType === 'COUPLE' ? 'PER_PAIR' : 'PER_TICKET'
+
+      if (
+        seat.mappingStatus === 'CONFIRMED' &&
+        seat.physicalSeatType !== null &&
+        fare.fareUnit === expectedUnit &&
+        fare.advanceScreeningCondition !== 'ANY'
+      ) {
+        fares.set(fare.code, fare)
+      }
+    }
+  }
+
+  return [...fares.values()]
+})
+
+const inputsEnabled = computed(
+  () =>
+    props.canRead &&
+    props.canEdit &&
+    props.matrix.policy.status === 'DRAFT' &&
+    props.matrix.policy.currency === 'VND' &&
+    !save.isPending.value &&
+    !requiresReload.value &&
+    !awaitingRefresh.value,
+)
+
+const canStart = computed(
+  () =>
+    inputsEnabled.value &&
+    !editing.value &&
+    !hasInvalidConfiguration.value &&
+    editableFares.value.length > 0,
+)
+
+function startEdit() {
+  if (!canStart.value) return
+
+  save.reset()
+  showErrors.value = false
+  originals.value = Object.fromEntries(
+    editableFares.value.map((fare) => [fare.code, fare.amountVnd]),
+  )
+  drafts.value = Object.fromEntries(
+    editableFares.value.map((fare) => [
+      fare.code,
+      fare.amountVnd.replace(/\B(?=(\d{3})+(?!\d))/g, '.'),
+    ]),
+  )
+  editContext.value = {
+    cinemaId: props.matrix.policy.cinemaId,
+    policyId: props.matrix.policy.id,
+    version: props.matrix.policy.version,
+    categoryCode: props.categoryCode,
+  }
+  editing.value = true
+}
+
+function clearEdit() {
+  editing.value = false
+  originals.value = {}
+  drafts.value = {}
+  editContext.value = null
+  showErrors.value = false
+}
+
+function cancelEdit() {
+  if (save.isPending.value || requiresReload.value) return
+  clearEdit()
+  save.reset()
+}
+
+function sharedCount(code: string) {
+  return rows.value.reduce(
+    (total, row) =>
+      total + row.cells.filter((cell) => cell.fares.some((fare) => fare.code === code)).length,
+    0,
+  )
+}
+
+function displayedAmount(fare: Fare) {
+  if (!editing.value || originals.value[fare.code] === undefined) {
+    return amount(fare.amountVnd)
+  }
+
+  const value = normalizeFareAmount(drafts.value[fare.code] ?? '')
+  return value === null ? 'Chưa hợp lệ' : amount(value)
+}
+
+async function submit() {
+  if (!editing.value || !inputsEnabled.value || !dirty.value || !editContext.value) return
+
+  showErrors.value = true
+  if (Object.keys(fieldErrors.value).length > 0) return
+
+  try {
+    await save.mutateAsync({
+      ...editContext.value,
+      changes: changes.value.map((item) => ({ ...item })),
+    })
+    awaitingRefresh.value = true
+    clearEdit()
+    emit('saved')
+  } catch {
+    // Giữ nguyên số tiền đang nhập để người dùng kiểm tra.
+  }
+}
+
+function reloadEdit() {
+  if (save.isPending.value) return
+  if (dirty.value && !window.confirm('Bỏ thay đổi chưa lưu và tải lại bản giá?')) {
+    return
+  }
+
+  clearEdit()
+  save.reset()
+  awaitingRefresh.value = false
+  emit('reload')
+}
+
+function confirmLeave() {
+  if (save.isPending.value) return false
+  return !dirty.value || window.confirm('Rời trang và bỏ các mức giá chưa lưu?')
+}
+
+function preventUnload(event: BeforeUnloadEvent) {
+  if (!dirty.value && !save.isPending.value) return
+  event.preventDefault()
+  event.returnValue = ''
+}
+
+watch(
+  () => editing.value || save.isPending.value || requiresReload.value,
+  (value) => emit('locked', value),
+  { immediate: true, flush: 'sync' },
+)
+
+onBeforeRouteLeave(confirmLeave)
+onBeforeRouteUpdate(confirmLeave)
+onMounted(() => window.addEventListener('beforeunload', preventUnload))
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', preventUnload)
+  emit('locked', false)
+})
 </script>
 
 <template>
-  <div class="pricing-fare-grid">
+  <form
+    class="pricing-fare-grid"
+    aria-label="Mức giá theo ngày, giờ và loại ghế"
+    :aria-busy="save.isPending.value"
+    novalidate
+    @submit.prevent="submit"
+  >
     <p v-if="categoryRules.length === 0" class="pricing-fare-grid__message">
       Loại vé này chưa có mức giá. Chọn “Thêm mức giá” để bắt đầu.
     </p>
@@ -275,13 +506,38 @@ function hasOwnPeriod(rule: Fare) {
       <div class="pricing-fare-grid__controls">
         <label class="admin-reference__field">
           <span>Hình thức và suất chiếu</span>
-          <select v-model="selectedFormat" class="admin-reference__input">
+          <select
+            v-model="selectedFormat"
+            class="admin-reference__input"
+            :disabled="editing || save.isPending.value || awaitingRefresh"
+          >
             <option v-for="option in formatOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
           </select>
         </label>
       </div>
+
+      <p v-if="editing" class="pricing-fare-grid__message" role="status">
+        Nhập số tiền bằng đồng, ví dụ 55.000 hoặc 55000. Mức giá dùng chung ở nhiều ô sẽ được cập
+        nhật cùng nhau.
+      </p>
+
+      <p
+        v-if="save.isError.value || contextChanged"
+        class="pricing-error pricing-fare-grid__message"
+        role="alert"
+      >
+        {{
+          contextChanged
+            ? 'Bản giá đã thay đổi. Hãy tải lại trước khi tiếp tục.'
+            : fareEditErrorMessage(save.error.value)
+        }}
+      </p>
+
+      <p v-if="awaitingRefresh" class="pricing-fare-grid__message" role="status">
+        Đã lưu. Đang tải bản giá mới…
+      </p>
 
       <p
         v-if="hasInvalidConfiguration"
@@ -323,7 +579,7 @@ function hasOwnPeriod(rule: Fare) {
 
           <tbody role="rowgroup">
             <tr
-              v-for="row in rows"
+              v-for="(row, rowIndex) in rows"
               :key="row.key"
               :class="{ 'pricing-fare-grid__holiday': row.holiday }"
               role="row"
@@ -350,7 +606,47 @@ function hasOwnPeriod(rule: Fare) {
 
                   <ul class="pricing-fare-grid__prices">
                     <li v-for="fare in cell.fares" :key="fare.id">
-                      <strong>{{ amount(fare.amountVnd) }}</strong>
+                      +
+                      <template
+                        v-if="
+                          editing && cell.fares.length === 1 && originals[fare.code] !== undefined
+                        "
+                      >
+                        <input
+                          v-model="drafts[fare.code]"
+                          class="admin-reference__input pricing-fare-grid__input"
+                          type="text"
+                          inputmode="numeric"
+                          autocomplete="off"
+                          maxlength="25"
+                          :disabled="!inputsEnabled"
+                          :aria-label="
+                            [
+                              cell.seat.name,
+                              dayLabel(row.days, row.holiday),
+                              timeLabel(row.from, row.to),
+                              seatUnitName(cell.seat.code),
+                            ].join(', ')
+                          "
+                          :aria-invalid="Boolean(fieldErrors[fare.code])"
+                          :aria-describedby="
+                            fieldErrors[fare.code]
+                              ? `fare-error-${rowIndex}-${cell.seat.code}`
+                              : undefined
+                          "
+                        />
+                        <small v-if="sharedCount(fare.code) > 1" class="pricing-fare-grid__shared">
+                          Dùng chung ở {{ sharedCount(fare.code) }} ô.
+                        </small>
+                        <small
+                          v-if="fieldErrors[fare.code]"
+                          :id="`fare-error-${rowIndex}-${cell.seat.code}`"
+                          class="pricing-error"
+                        >
+                          {{ fieldErrors[fare.code] }}
+                        </small>
+                      </template>
+                      <strong v-else>{{ displayedAmount(fare) }}</strong>
                       <small v-if="seatUnitName(cell.seat.code) === 'Xem từng mức giá'">
                         {{ unitNames[fare.fareUnit] }}
                       </small>
@@ -370,6 +666,40 @@ function hasOwnPeriod(rule: Fare) {
           </tbody>
         </table>
       </div>
+      <div class="pricing-fare-grid__actions">
+        <AppButton v-if="!editing && canStart" type="button" variant="secondary" @click="startEdit">
+          Chỉnh sửa giá
+        </AppButton>
+
+        <template v-else-if="editing">
+          <AppButton
+            type="button"
+            variant="secondary"
+            :disabled="save.isPending.value || requiresReload"
+            @click="cancelEdit"
+          >
+            Hủy thay đổi
+          </AppButton>
+          <AppButton
+            type="submit"
+            :loading="save.isPending.value"
+            :disabled="!inputsEnabled || !dirty"
+          >
+            Lưu bảng giá
+          </AppButton>
+        </template>
+
+        <AppButton
+          v-if="requiresReload"
+          type="button"
+          variant="secondary"
+          :disabled="save.isPending.value"
+          @click="reloadEdit"
+        >
+          Tải lại bản giá
+        </AppButton>
+      </div>
+
       <div class="pricing-fare-grid__notes" aria-label="Lưu ý về bảng giá">
         <p>
           <strong>Giờ áp dụng:</strong>
@@ -389,15 +719,36 @@ function hasOwnPeriod(rule: Fare) {
         Chỉ hiển thị phạm vi đã có mức giá. Giá áp dụng còn phụ thuộc thời hạn và điều kiện mua vé.
       </p>
     </template>
-  </div>
+  </form>
 </template>
 
 <style scoped>
 .pricing-fare-grid {
   --fare-grid-min-width: 38rem;
   --fare-grid-field-width: 18rem;
-
+  --fare-grid-holiday-background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
   min-width: 0;
+}
+
+.pricing-fare-grid__input {
+  width: 100%;
+  min-width: 0;
+  font-size: var(--font-size-md);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.pricing-fare-grid__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--pricing-panel-padding);
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+
+.pricing-fare-grid__shared {
+  color: var(--color-warning);
 }
 
 .pricing-fare-grid__controls {
