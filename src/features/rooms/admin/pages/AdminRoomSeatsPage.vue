@@ -491,7 +491,7 @@ async function changeActivity() {
             <strong>{{ current.room.name }}</strong>
           </article>
           <article class="seatmap-stat">
-            <span>Tổng số ghế</span>
+            <span>Đơn vị ghế theo sơ đồ</span>
             <strong>{{ matrix?.seats.length ?? '—' }}</strong>
           </article>
           <article class="seatmap-stat">
@@ -727,14 +727,22 @@ async function changeActivity() {
                   <dd>{{ matrix.emptyCount }}</dd>
                 </div>
                 <div>
-                  <dt>Tổng số chỗ</dt>
+                  <dt>Sức chứa theo sơ đồ (người)</dt>
                   <dd>{{ matrix.capacity }}</dd>
                 </div>
                 <div>
-                  <dt>Chỗ đang hoạt động</dt>
+                  <dt>Đơn vị ghế đang hoạt động</dt>
+                  <dd>{{ matrix.seats.filter((seat) => seat.active).length }}</dd>
+                </div>
+                <div>
+                  <dt>Sức chứa ghế đang hoạt động (người)</dt>
                   <dd>{{ matrix.activeCapacity }}</dd>
                 </div>
               </dl>
+              <p class="seatmap-muted">
+                Mỗi ghế trong sơ đồ là một đơn vị ghế. Ghế đôi vẫn là một đơn vị nhưng có sức chứa 2
+                người. Trạng thái hoạt động không cho biết tình trạng còn chỗ của một suất chiếu.
+              </p>
             </template>
           </aside>
         </div>
