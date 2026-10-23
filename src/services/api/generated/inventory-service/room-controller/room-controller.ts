@@ -58,11 +58,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  /**
- * Omit active to include both active and inactive rooms.
- * @summary List rooms for inventory management
- */
-export const getManagedRooms = (
+  export const getManagedRooms = (
     params: GetManagedRoomsParams,
  ) => {
       return apiRequest<RoomResponse[]>(

@@ -167,6 +167,7 @@ export * from './roomLayoutSeatPositionResponse';
 export * from './roomLayoutSeatPositionResponseSeatTypeSnapshot';
 export * from './roomPublishedSeatMapResponse';
 export * from './roomResponse';
+export * from './roomResponseContentFormatsItem';
 export * from './roomResponseRoomType';
 export * from './roomScreeningCapabilitiesResponse';
 export * from './ruleInput';

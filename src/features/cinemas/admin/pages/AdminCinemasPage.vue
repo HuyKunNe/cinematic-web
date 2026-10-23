@@ -3,7 +3,7 @@ import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import type { CinemaResponse } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
-import { Building2, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Plus } from 'lucide-vue-next'
+import { Building2, ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 import {
   DropdownMenuContent,
   DropdownMenuItem,
@@ -16,6 +16,8 @@ import { useAdminCinemaCatalogQuery } from '../api/admin-cinema-queries'
 import AdminCinemaDetailDialog from '../components/AdminCinemaDetailDialog.vue'
 import AdminCinemaEditorDialog from '../components/AdminCinemaEditorDialog.vue'
 import { adminCinemaErrorMessage } from '../schemas/admin-cinema.schema'
+import { useAdminRoomSummaryQuery } from '@/features/rooms/admin/api/admin-room-queries'
+import { adminRoomErrorMessage } from '@/features/rooms/admin/schemas/admin-room.schema'
 
 const auth = useAuthStore()
 const canManage = computed(
@@ -24,6 +26,14 @@ const canManage = computed(
 )
 
 const catalog = useAdminCinemaCatalogQuery(canManage)
+const cinemaIds = computed(() =>
+  (catalog.data.value ?? []).flatMap((cinema) => (cinema.id ? [cinema.id] : [])),
+)
+
+const roomSummary = useAdminRoomSummaryQuery(
+  cinemaIds,
+  () => canManage.value && catalog.data.value !== undefined,
+)
 const search = ref('')
 const city = ref('')
 const activeFilter = ref('all')
@@ -114,8 +124,12 @@ function resetFilters() {
   page.value = 1
 }
 
-function menuId(id?: string) {
-  return `admin-cinema-actions-${id ?? 'missing'}`
+function detailActionId(id?: string) {
+  return `admin-cinema-detail-${id ?? 'missing'}`
+}
+
+function editActionId(id?: string) {
+  return `admin-cinema-edit-${id ?? 'missing'}`
 }
 
 function openCreate() {
@@ -129,7 +143,7 @@ function openEdit(id?: string) {
   if (!id || !canManage.value) return
 
   successMessage.value = ''
-  editor.value = { cinemaId: id, returnFocusId: menuId(id) }
+  editor.value = { cinemaId: id, returnFocusId: editActionId(id) }
 }
 
 function openDetail(id?: string) {
@@ -138,12 +152,20 @@ function openDetail(id?: string) {
   successMessage.value = ''
   detailDialog.value = {
     cinemaId: id,
-    returnFocusId: menuId(id),
+    returnFocusId: detailActionId(id),
   }
 }
 
-function preventMenuFocus(event: Event) {
-  if (editor.value || detailDialog.value) event.preventDefault()
+function roomCount(cinemaId: string | undefined, key: 'total' | 'active' | 'inactive') {
+  if (!cinemaId) return '—'
+
+  const counts = roomSummary.countsByCinema.value.get(cinemaId)
+  if (counts) return String(counts[key])
+
+  if (roomSummary.isFetching.value) return '…'
+  if (roomSummary.error.value) return 'Chưa tải'
+
+  return '—'
 }
 
 function saved(cinema: CinemaResponse) {
@@ -237,15 +259,15 @@ function statusLabel(active?: boolean) {
       <section
         class="admin-cinemas__panel"
         aria-labelledby="admin-cinema-list-title"
-        :aria-busy="catalog.isFetching.value"
+        :aria-busy="catalog.isFetching.value || roomSummary.isFetching.value"
       >
         <header class="admin-cinemas__list-heading">
           <div>
-            <h2 id="admin-cinema-list-title">Danh sách rạp</h2>
-            <p>Thông tin cụm rạp và trạng thái hiện tại</p>
+            <h2 id="admin-cinema-list-title">Danh sách cụm rạp</h2>
+            <p>Thông tin địa điểm và số lượng phòng chiếu theo dữ liệu hiện có.</p>
           </div>
           <span v-if="catalog.data.value" class="admin-cinemas__muted">
-            {{ filtered.length }} rạp
+            {{ filtered.length }} cụm rạp
           </span>
         </header>
 
@@ -262,120 +284,126 @@ function statusLabel(active?: boolean) {
             :loading="catalog.isFetching.value"
             @click="catalog.refetch()"
           >
-            Thử lại
+            Thử lại danh sách
           </AppButton>
         </div>
 
-        <p v-else-if="catalog.isFetching.value" class="admin-cinemas__feedback" role="status">
-          {{ catalog.data.value ? 'Đang cập nhật danh sách…' : 'Đang tải danh sách rạp…' }}
-        </p>
-
-        <div
-          class="admin-cinemas__table-scroll"
-          role="region"
-          aria-label="Danh sách rạp"
-          tabindex="0"
-        >
-          <table class="admin-cinemas__table">
-            <caption class="admin-visually-hidden">
-              <p>Danh sách theo bộ lọc hiện tại</p>
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Rạp</th>
-                <th scope="col">Địa chỉ</th>
-                <th scope="col">Khu vực</th>
-                <th scope="col">Trạng thái</th>
-                <th scope="col"><span class="admin-visually-hidden">Thao tác</span></th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr v-for="(cinema, index) in rows" :key="cinema.id ?? index">
-                <td>
-                  <div class="admin-cinemas__name">
-                    <span class="admin-cinemas__avatar" aria-hidden="true">
-                      <template v-if="initials(cinema.name)">{{ initials(cinema.name) }}</template>
-                      <Building2 v-else />
-                    </span>
-                    <span>
-                      <strong>{{ cinema.name || 'Chưa có tên cụm rạp' }}</strong>
-                      <small>Cụm rạp</small>
-                    </span>
-                  </div>
-                </td>
-                <td>{{ cinema.address || '—' }}</td>
-                <td>{{ cinema.city || '—' }}</td>
-                <td>
-                  <span
-                    class="admin-cinemas__status"
-                    :class="{
-                      'is-active': cinema.active === true,
-                      'is-paused': cinema.active === false,
-                    }"
-                  >
-                    {{ statusLabel(cinema.active) }}
-                  </span>
-                </td>
-                <td>
-                  <DropdownMenuRoot>
-                    <DropdownMenuTrigger as-child>
-                      <button
-                        :id="menuId(cinema.id)"
-                        class="admin-cinemas__row-action"
-                        type="button"
-                        :disabled="!cinema.id"
-                        :aria-label="`Thao tác với ${cinema.name || 'rạp'}`"
-                      >
-                        <MoreHorizontal aria-hidden="true" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuContent
-                        class="admin-cinema-menu"
-                        align="end"
-                        @close-auto-focus="preventMenuFocus"
-                      >
-                        <DropdownMenuItem
-                          class="admin-cinema-menu__item"
-                          @select="openDetail(cinema.id)"
-                        >
-                          Chi tiết cụm rạp
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          class="admin-cinema-menu__item"
-                          @select="openEdit(cinema.id)"
-                        >
-                          <Pencil aria-hidden="true" />
-                          Sửa thông tin
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuRoot>
-                </td>
-              </tr>
-
-              <tr v-if="!rows.length">
-                <td colspan="5" class="admin-cinemas__empty">
-                  {{
-                    catalog.isPending.value
-                      ? 'Đang tải danh sách…'
-                      : catalog.isError.value && !catalog.data.value
-                        ? 'Chưa tải được danh sách cụm rạp.'
-                        : search || city || activeFilter !== 'all'
-                          ? 'Không có cụm rạp phù hợp với bộ lọc.'
-                          : 'Chưa có cụm rạp.'
-                  }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-if="roomSummary.error.value" class="admin-cinemas__feedback">
+          <p class="admin-cinemas__error" role="alert">
+            {{ adminRoomErrorMessage(roomSummary.error.value, 'Không thể tải thống kê phòng.') }}
+          </p>
+          <AppButton
+            variant="secondary"
+            size="sm"
+            :loading="roomSummary.isFetching.value"
+            @click="roomSummary.refresh()"
+          >
+            Thử lại số liệu phòng
+          </AppButton>
         </div>
 
-        <footer v-if="catalog.data.value" class="admin-cinemas__table-footer">
-          <span>Hiển thị {{ firstResult }}–{{ lastResult }} trong {{ filtered.length }} rạp</span>
+        <p
+          v-if="catalog.isFetching.value && !catalog.data.value"
+          class="admin-cinemas__feedback"
+          role="status"
+        >
+          Đang tải danh sách cụm rạp…
+        </p>
 
-          <nav class="admin-cinemas__pagination" aria-label="Phân trang rạp">
+        <div v-if="rows.length" class="admin-cinema-cards">
+          <article v-for="cinema in rows" :key="cinema.id" class="admin-cinema-card">
+            <header class="admin-cinema-card__heading">
+              <div class="admin-cinema-card__cover">
+                <span class="admin-cinema-card__city">
+                  {{ cinema.city || 'Chưa cập nhật thành phố' }}
+                </span>
+
+                <span
+                  class="admin-cinemas__status"
+                  :class="{
+                    'is-active': cinema.active === true,
+                    'is-paused': cinema.active === false,
+                  }"
+                >
+                  {{ statusLabel(cinema.active) }}
+                </span>
+              </div>
+            </header>
+
+            <div class="admin-cinema-card__body">
+              <h3>{{ cinema.name || 'Chưa có tên cụm rạp' }}</h3>
+
+              <p class="admin-cinema-card__address">
+                <strong>Địa chỉ</strong>
+                <span>{{ cinema.address || 'Chưa cập nhật' }}</span>
+              </p>
+
+              <dl class="admin-cinema-card__stats" aria-label="Thống kê phòng chiếu">
+                <div>
+                  <dt>Tổng phòng</dt>
+                  <dd>{{ roomCount(cinema.id, 'total') }}</dd>
+                </div>
+                <div>
+                  <dt>Đang hoạt động</dt>
+                  <dd>{{ roomCount(cinema.id, 'active') }}</dd>
+                </div>
+                <div>
+                  <dt>Tạm ngưng</dt>
+                  <dd>{{ roomCount(cinema.id, 'inactive') }}</dd>
+                </div>
+              </dl>
+
+              <div class="admin-cinema-card__contact">
+                <p>
+                  <strong>Điện thoại</strong>
+                  <span>{{ cinema.phone || 'Chưa cập nhật' }}</span>
+                </p>
+                <p>
+                  <strong>Giờ mở cửa</strong>
+                  <span>{{ cinema.openingHours || 'Chưa cập nhật' }}</span>
+                </p>
+              </div>
+
+              <footer class="admin-cinema-card__actions">
+                <AppButton
+                  :id="detailActionId(cinema.id)"
+                  variant="secondary"
+                  :disabled="!cinema.id"
+                  @click="openDetail(cinema.id)"
+                >
+                  Chi tiết cụm rạp
+                </AppButton>
+                <AppButton
+                  :id="editActionId(cinema.id)"
+                  variant="ghost"
+                  :disabled="!cinema.id"
+                  @click="openEdit(cinema.id)"
+                >
+                  Chỉnh sửa
+                </AppButton>
+              </footer>
+            </div>
+          </article>
+        </div>
+
+        <p v-else class="admin-cinemas__empty" role="status">
+          {{
+            catalog.isPending.value
+              ? 'Đang tải danh sách…'
+              : catalog.isError.value && !catalog.data.value
+                ? 'Chưa tải được danh sách cụm rạp.'
+                : search || city || activeFilter !== 'all'
+                  ? 'Không có cụm rạp phù hợp với bộ lọc.'
+                  : 'Chưa có cụm rạp.'
+          }}
+        </p>
+
+        <footer v-if="catalog.data.value" class="admin-cinemas__table-footer">
+          <span
+            >Hiển thị {{ firstResult }}–{{ lastResult }} trong {{ filtered.length }} cụm rạp</span
+          >
+
+          <nav class="admin-cinemas__pagination" aria-label="Phân trang cụm rạp">
             <button type="button" aria-label="Trang trước" :disabled="page === 1" @click="page--">
               <ChevronLeft aria-hidden="true" />
             </button>

@@ -72,29 +72,48 @@ export function useAdminRoomSummaryQuery(
     ),
   })
 
+  const cinemaIdsSorted = computed(() => [...new Set(toValue(cinemaIds))].filter(Boolean).sort())
+
+  const countsByCinema = computed(() => {
+    const result = new Map<string, { total: number; active: number; inactive: number }>()
+
+    cinemaIdsSorted.value.forEach((cinemaId, index) => {
+      const data = queries.value[index]?.data
+      if (data === undefined) return
+
+      result.set(cinemaId, {
+        total: data.length,
+        active: data.filter((room) => room.active === true).length,
+        inactive: data.filter((room) => room.active === false).length,
+      })
+    })
+
+    return result
+  })
+
   const counts = computed(() => {
     if (!toValue(enabled) || queries.value.some((query) => query.data === undefined)) {
       return null
     }
 
-    const allRooms = queries.value.flatMap((query) => query.data ?? [])
-
-    return {
-      total: allRooms.length,
-      active: allRooms.filter((room) => room.active === true).length,
-      inactive: allRooms.filter((room) => room.active === false).length,
-    }
+    return [...countsByCinema.value.values()].reduce(
+      (summary, cinema) => ({
+        total: summary.total + cinema.total,
+        active: summary.active + cinema.active,
+        inactive: summary.inactive + cinema.inactive,
+      }),
+      { total: 0, active: 0, inactive: 0 },
+    )
   })
 
   const isFetching = computed(() => queries.value.some((query) => query.isFetching))
-
   const error = computed(() => queries.value.find((query) => query.isError)?.error ?? null)
 
   async function refresh() {
     await Promise.allSettled(queries.value.map((query) => query.refetch()))
   }
 
-  return { counts, isFetching, error, refresh }
+  return { counts, countsByCinema, isFetching, error, refresh }
 }
 
 export function useAdminRoomDetailQuery(
