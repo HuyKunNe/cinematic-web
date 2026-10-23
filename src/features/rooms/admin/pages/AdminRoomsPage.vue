@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
+import { ROUTE_NAMES } from '@/router/route-constants'
 import type { RoomResponse } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
 import { MoreHorizontal, Plus } from 'lucide-vue-next'
@@ -25,7 +26,7 @@ import {
   adminRoomTypeLabel,
   normalizeAdminRoomSearch,
 } from '../schemas/admin-room.schema'
-import { ROUTE_NAMES } from '@/router/route-constants'
+
 const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
@@ -272,7 +273,9 @@ function statusLabel(active?: boolean) {
       <div>
         <p class="admin-rooms__eyebrow">Cụm rạp · Phòng chiếu</p>
         <h1 id="admin-rooms-title" tabindex="-1">Quản lý phòng chiếu</h1>
-        <p class="admin-rooms__muted">Theo dõi phòng chiếu và cập nhật loại phòng theo từng cụm rạp.</p>
+        <p class="admin-rooms__muted">
+          Theo dõi phòng chiếu và cập nhật loại phòng theo từng cụm rạp.
+        </p>
       </div>
       <AppButton
         id="admin-room-create"
@@ -453,13 +456,14 @@ function statusLabel(active?: boolean) {
         >
           <table class="admin-rooms__table">
             <caption class="admin-visually-hidden">
-             Phòng thuộc cụm rạp đã chọn
+              Phòng thuộc cụm rạp đã chọn
             </caption>
             <thead>
               <tr>
-                <th scope="col">Phòng</th>
+                <th scope="col">Phòng chiếu</th>
                 <th scope="col">Cụm rạp</th>
-                <th scope="col">Loại phòng</th>
+                <th scope="col">Định dạng</th>
+                <th scope="col">Sức chứa</th>
                 <th scope="col">Trạng thái</th>
                 <th scope="col"><span class="admin-visually-hidden">Thao tác</span></th>
               </tr>
@@ -468,17 +472,17 @@ function statusLabel(active?: boolean) {
               <tr v-for="(room, index) in rows" :key="room.id ?? index">
                 <td class="admin-rooms__name">
                   <strong>{{ room.name || 'Chưa có tên phòng' }}</strong>
+                  <span class="admin-rooms__type">
+                    {{ adminRoomTypeLabel(room.roomType) }}
+                  </span>
                 </td>
                 <td>{{ selectedCinema?.label }}</td>
                 <td>
-                  <span
-                    class="admin-rooms__type"
-                    :class="{
-                      'is-premium': Boolean(room.roomType && room.roomType !== 'STANDARD'),
-                    }"
-                  >
-                    {{ adminRoomTypeLabel(room.roomType) }}
-                  </span>
+                  <span aria-label="Định dạng chưa được API cung cấp"> Chưa có dữ liệu </span>
+                </td>
+                <td>
+                  <AdminRoomCapacityCell v-if="room.id" :key="room.id" :room-id="room.id" />
+                  <span v-else aria-label="Không có mã phòng">—</span>
                 </td>
                 <td>
                   <span
@@ -533,7 +537,7 @@ function statusLabel(active?: boolean) {
                 </td>
               </tr>
               <tr v-if="!rows.length">
-                <td colspan="5" class="admin-rooms__empty">{{ emptyMessage }}</td>
+                <td colspan="6" class="admin-rooms__empty">{{ emptyMessage }}</td>
               </tr>
             </tbody>
           </table>
