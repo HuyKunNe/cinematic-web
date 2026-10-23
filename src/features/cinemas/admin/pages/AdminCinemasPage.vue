@@ -133,7 +133,7 @@ function preventMenuFocus(event: Event) {
 function saved(cinema: CinemaResponse) {
   const editing = Boolean(editor.value?.cinemaId)
   editor.value = null
-  successMessage.value = `${editing ? 'Đã cập nhật' : 'Đã thêm'} rạp${cinema.name ? ` ${cinema.name}` : ''}.`
+  successMessage.value = `${editing ? 'Đã cập nhật' : 'Đã thêm'} cụm rạp${cinema.name ? ` ${cinema.name}` : ''}.`
 }
 
 function initials(name?: string) {
@@ -158,16 +158,16 @@ function statusLabel(active?: boolean) {
   <section class="admin-cinemas" aria-labelledby="admin-cinemas-title">
     <header class="admin-cinemas__heading">
       <div>
-        <p class="admin-cinemas__eyebrow">Hệ thống rạp</p>
-        <h1 id="admin-cinemas-title" tabindex="-1">Quản lý rạp chiếu</h1>
+        <p class="admin-cinemas__eyebrow">Cụm rạp</p>
+        <h1 id="admin-cinemas-title" tabindex="-1">Quản lý cụm rạp</h1>
         <p class="admin-cinemas__description">
-          Theo dõi danh sách và trạng thái hoạt động của các rạp.
+          Theo dõi các địa điểm và trạng thái hoạt động của cụm rạp.
         </p>
       </div>
 
       <AppButton id="admin-cinema-create" :disabled="!canManage" @click="openCreate">
         <Plus aria-hidden="true" />
-        Thêm rạp
+        Thêm cụm rạp
       </AppButton>
     </header>
 
@@ -176,18 +176,18 @@ function statusLabel(active?: boolean) {
     </p>
 
     <p v-if="!canManage" class="admin-cinemas__error" role="alert">
-      Tài khoản không có quyền quản lý rạp.
+      Tài khoản không có quyền quản lý cụm rạp.
     </p>
 
     <template v-else>
       <section class="admin-cinemas__filters" aria-label="Tìm và lọc rạp">
         <label class="admin-cinemas__field admin-cinemas__search">
-          <span>Tìm rạp</span>
+          <span>Tìm cụm rạp</span>
           <input
             v-model="search"
             class="admin-cinemas__input"
             type="search"
-            placeholder="Nhập tên rạp hoặc địa chỉ"
+            placeholder="Nhập tên cụm rạp hoặc địa chỉ"
           />
         </label>
 
@@ -207,7 +207,7 @@ function statusLabel(active?: boolean) {
             id="admin-cinema-status-filter"
             v-model="activeFilter"
             class="admin-cinemas__input"
-            aria-label="Lọc trạng thái rạp"
+            aria-label="Lọc trạng thái cụm rạp"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Đang hoạt động</option>
@@ -226,7 +226,7 @@ function statusLabel(active?: boolean) {
         <header class="admin-cinemas__list-heading">
           <div>
             <h2 id="admin-cinema-list-title">Danh sách rạp</h2>
-            <p>Thông tin rạp và trạng thái hiện tại</p>
+            <p>Thông tin cụm rạp và trạng thái hiện tại</p>
           </div>
           <span v-if="catalog.data.value" class="admin-cinemas__muted">
             {{ filtered.length }} rạp
@@ -283,8 +283,8 @@ function statusLabel(active?: boolean) {
                       <Building2 v-else />
                     </span>
                     <span>
-                      <strong>{{ cinema.name || 'Chưa có tên rạp' }}</strong>
-                      <small>Rạp chiếu phim</small>
+                      <strong>{{ cinema.name || 'Chưa có tên cụm rạp' }}</strong>
+                      <small>Cụm rạp</small>
                     </span>
                   </div>
                 </td>
@@ -339,10 +339,10 @@ function statusLabel(active?: boolean) {
                     catalog.isPending.value
                       ? 'Đang tải danh sách…'
                       : catalog.isError.value && !catalog.data.value
-                        ? 'Chưa tải được danh sách rạp.'
+                        ? 'Chưa tải được danh sách cụm rạp.'
                         : search || city || activeFilter !== 'all'
-                          ? 'Không có rạp phù hợp với bộ lọc.'
-                          : 'Chưa có rạp.'
+                          ? 'Không có cụm rạp phù hợp với bộ lọc.'
+                          : 'Chưa có cụm rạp.'
                   }}
                 </td>
               </tr>

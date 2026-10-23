@@ -189,7 +189,7 @@ const routes: RouteRecordRaw[] = [
     component: loadAdminCinemasPage,
     meta: {
       layout: 'admin',
-      title: 'Quản lý rạp',
+      title: 'Quản lý cụm rạp',
       requiresAuth: true,
       roles: ADMIN_ROLES,
       permissions: [APP_PERMISSIONS.INVENTORY_MANAGE],

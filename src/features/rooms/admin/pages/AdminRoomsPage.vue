@@ -251,13 +251,13 @@ function resetFilters() {
 }
 
 const emptyMessage = computed(() => {
-  if (!selectedCinema.value) return 'Chọn rạp để xem danh sách phòng.'
+  if (!selectedCinema.value) return 'Chọn cụm rạp để xem danh sách phòng.'
   if (rooms.isFetching.value && !hasData.value) return 'Đang tải danh sách phòng…'
   if (rooms.isError.value && !hasData.value) return 'Chưa tải được danh sách phòng.'
   if (search.value || activeFilter.value !== 'all') {
     return 'Không có phòng phù hợp với bộ lọc.'
   }
-  return 'Rạp chưa có phòng.'
+  return 'Cụm rạp chưa có phòng chiếu.'
 })
 function statusLabel(active?: boolean) {
   if (active === true) return 'Đang hoạt động'
@@ -270,9 +270,9 @@ function statusLabel(active?: boolean) {
   <section class="admin-rooms" aria-labelledby="admin-rooms-title">
     <header class="admin-rooms__heading">
       <div>
-        <p class="admin-rooms__eyebrow">Hệ thống rạp</p>
+        <p class="admin-rooms__eyebrow">Cụm rạp · Phòng chiếu</p>
         <h1 id="admin-rooms-title" tabindex="-1">Quản lý phòng chiếu</h1>
-        <p class="admin-rooms__muted">Theo dõi phòng chiếu và cập nhật loại phòng theo từng rạp.</p>
+        <p class="admin-rooms__muted">Theo dõi phòng chiếu và cập nhật loại phòng theo từng cụm rạp.</p>
       </div>
       <AppButton
         id="admin-room-create"
@@ -348,7 +348,7 @@ function statusLabel(active?: boolean) {
         </label>
 
         <label class="admin-rooms__field" for="admin-room-cinema">
-          <span>Rạp</span>
+          <span>Cụm rạp</span>
           <select
             id="admin-room-cinema"
             v-model="cinemaId"
@@ -358,7 +358,7 @@ function statusLabel(active?: boolean) {
             "
             :aria-busy="cinemas.isFetching.value"
           >
-            <option value="">Chọn rạp</option>
+            <option value="">Chọn cụm rạp</option>
             <option v-for="item in cinemaOptions" :key="item.value" :value="item.value">
               {{ item.label }}
             </option>
@@ -384,7 +384,7 @@ function statusLabel(active?: boolean) {
 
       <div v-if="cinemas.isError.value" class="admin-rooms__feedback">
         <p class="admin-rooms__error" role="alert">
-          {{ adminRoomErrorMessage(cinemas.error.value, 'Không thể tải danh sách rạp.') }}
+          {{ adminRoomErrorMessage(cinemas.error.value, 'Không thể tải danh sách cụm rạp.') }}
         </p>
         <AppButton
           variant="secondary"
@@ -392,7 +392,7 @@ function statusLabel(active?: boolean) {
           :loading="cinemas.isFetching.value"
           @click="cinemas.refetch()"
         >
-          Tải lại rạp
+          Tải lại cụm rạp
         </AppButton>
       </div>
       <p
@@ -400,7 +400,7 @@ function statusLabel(active?: boolean) {
         class="admin-rooms__muted"
         role="status"
       >
-        Chưa có rạp để quản lý phòng.
+        Chưa có cụm rạp để quản lý phòng.
       </p>
       <p v-if="selectedCinema?.active === false" class="admin-rooms__muted" role="status">
         Rạp đang tạm ngưng. Bạn có thể xem và sửa thông tin phòng, nhưng chưa thể thêm phòng mới.
@@ -417,7 +417,7 @@ function statusLabel(active?: boolean) {
               {{
                 selectedCinema
                   ? `Danh sách phòng tại ${selectedCinema.label}.`
-                  : 'Chọn một rạp để tải danh sách.'
+                  : 'Chọn một cụm rạp để tải danh sách phòng chiếu.'
               }}
             </p>
           </div>
@@ -453,12 +453,12 @@ function statusLabel(active?: boolean) {
         >
           <table class="admin-rooms__table">
             <caption class="admin-visually-hidden">
-              Phòng của rạp đã chọn
+             Phòng thuộc cụm rạp đã chọn
             </caption>
             <thead>
               <tr>
                 <th scope="col">Phòng</th>
-                <th scope="col">Rạp chiếu</th>
+                <th scope="col">Cụm rạp</th>
                 <th scope="col">Loại phòng</th>
                 <th scope="col">Trạng thái</th>
                 <th scope="col"><span class="admin-visually-hidden">Thao tác</span></th>

@@ -263,7 +263,7 @@ function submit(event: Event) {
           <div class="admin-room-form__layout">
             <fieldset class="admin-room-form__fields" :disabled="busy || !canManage">
               <div class="admin-rooms__field">
-                <label for="admin-room-cinema-name">Rạp</label>
+                <label for="admin-room-cinema-name">Cụm rạp</label>
                 <input
                   id="admin-room-cinema-name"
                   class="admin-rooms__input"
@@ -334,7 +334,7 @@ function submit(event: Event) {
 
               <dl>
                 <div>
-                  <dt>Rạp</dt>
+                  <dt>Cụm rạp</dt>
                   <dd>{{ cinemaName }}</dd>
                 </div>
                 <div>
@@ -342,7 +342,7 @@ function submit(event: Event) {
                   <dd>{{ name?.trim() || 'Chưa nhập' }}</dd>
                 </div>
                 <div>
-                  <dt>Định dạng</dt>
+                  <dt>Loại phòng</dt>
                   <dd>{{ adminRoomTypeLabel(roomType) }}</dd>
                 </div>
               </dl>

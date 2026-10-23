@@ -64,8 +64,8 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
     roles: ADMIN_ROLES,
   },
   {
-    label: 'Rạp',
-    description: 'Thông tin rạp, thành phố và trạng thái hoạt động.',
+    label: 'Cụm rạp',
+    description: 'Quản lý các địa điểm thuộc hệ thống rạp và trạng thái hoạt động.',
     routeName: ROUTE_NAMES.ADMIN_CINEMAS,
     icon: 'cinemas',
     group: 'operations',

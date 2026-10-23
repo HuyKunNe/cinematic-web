@@ -6,7 +6,7 @@ import type {
 import type { ApiError } from '@/services/http/api-error'
 
 export const adminCinemaSchema = z.object({
-  name: z.string().trim().min(1, 'Nhập tên rạp.').max(150, 'Tên rạp tối đa 150 ký tự.'),
+  name: z.string().trim().min(1, 'Nhập tên cụm rạp.').max(150, 'Tên cụm rạp tối đa 150 ký tự.'),
   address: z.string().trim().min(1, 'Nhập địa chỉ.').max(500, 'Địa chỉ tối đa 500 ký tự.'),
   city: z.string().trim().min(1, 'Nhập thành phố.').max(100, 'Thành phố tối đa 100 ký tự.'),
 })
@@ -42,11 +42,14 @@ export function isAdminCinemaApiError(error: unknown): error is ApiError {
   )
 }
 
-export function adminCinemaErrorMessage(error: unknown, fallback = 'Không thể tải thông tin rạp.') {
+export function adminCinemaErrorMessage(
+  error: unknown,
+  fallback = 'Không thể tải thông tin cụm rạp.',
+) {
   if (isAdminCinemaApiError(error)) {
     if (error.status === 401) return 'Phiên đăng nhập đã hết hạn.'
     if (error.status === 403) return 'Không đủ quyền quản lý rạp.'
-    if (error.status === 404) return 'Rạp không còn tồn tại.'
+    if (error.status === 404) return 'Cụm rạp không còn tồn tại.'
     if (error.status === null) return 'Không thể kết nối dịch vụ.'
     return error.message || fallback
   }

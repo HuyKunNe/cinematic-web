@@ -115,7 +115,7 @@ export function adminRoomErrorMessage(error: unknown, fallback = 'Không thể t
   if (layoutMessage) return layoutMessage
 
   if (error.status === 404) {
-    return 'Rạp hoặc phòng không còn tồn tại.'
+    return 'Cụm rạp hoặc phòng chiếu không còn tồn tại.'
   }
 
   return error.message || fallback

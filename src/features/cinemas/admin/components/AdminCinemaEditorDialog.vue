@@ -133,7 +133,7 @@ const fields: {
   maxLength: number
   autocomplete: string
 }[] = [
-  { name: 'name', label: 'Tên rạp', maxLength: 150, autocomplete: 'organization' },
+  { name: 'name', label: 'Tên cụm rạp', maxLength: 150, autocomplete: 'organization' },
   { name: 'address', label: 'Địa chỉ', maxLength: 500, autocomplete: 'street-address' },
   { name: 'city', label: 'Thành phố', maxLength: 100, autocomplete: 'address-level2' },
 ]
@@ -300,13 +300,13 @@ function submit(event: Event) {
         <header class="admin-cinema-dialog__heading">
           <div>
             <DialogTitle class="admin-cinema-dialog__title">
-              {{ cinemaId ? 'Sửa thông tin rạp' : 'Thêm rạp' }}
+              {{ cinemaId ? 'Sửa thông tin cụm rạp' : 'Thêm cụm rạp' }}
             </DialogTitle>
             <DialogDescription class="admin-cinemas__muted">
               {{
                 cinemaId
                   ? 'Cập nhật thông tin và trạng thái hoạt động của rạp.'
-                  : 'Nhập tên rạp, địa chỉ và thành phố.'
+                  : 'Nhập tên cụm rạp, địa chỉ và thành phố.'
               }}
             </DialogDescription>
           </div>
