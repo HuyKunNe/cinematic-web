@@ -321,10 +321,6 @@ const helperMessage = computed(() => {
     return 'Chưa có rạp đang hoạt động.'
   }
 
-  if (!hasCinema.value) {
-    return 'Chọn thành phố và rạp để bắt đầu đặt vé nhanh.'
-  }
-
   if (props.moviesLoading) {
     return 'Đang tải danh sách phim…'
   }
@@ -845,50 +841,5 @@ onBeforeUnmount(() => {
       {{ checking ? 'Đang kiểm tra…' : 'Tiếp tục →' }}
     </button>
 
-    <div class="home-booking__feedback-row">
-      <p
-        id="quick-booking-feedback"
-        class="home-booking__feedback"
-        :class="{ 'home-booking__feedback--error': Boolean(errorMessage) }"
-        :role="errorMessage ? 'alert' : 'status'"
-        aria-atomic="true"
-      >
-        {{ feedbackMessage }}
-      </p>
-
-      <div v-if="canRetry || canChangeCinema" class="home-booking__feedback-actions">
-        <button
-          v-if="canRetry"
-          class="home-booking__retry"
-          type="button"
-          :disabled="
-            checking ||
-            cinemasQuery.isFetching.value ||
-            roomsQuery.isFetching.value ||
-            moviesLoading ||
-            showtimesQuery.isFetching.value ||
-            bookableQuery.isFetching.value
-          "
-          @click="retryLoading"
-        >
-          Thử lại
-        </button>
-
-        <button
-          v-if="canChangeCinema"
-          id="home-change-cinema"
-          class="home-booking__retry"
-          type="button"
-          data-location-trigger
-          aria-haspopup="dialog"
-          aria-controls="cinema-location-dialog"
-          :aria-expanded="locationDialogOpen"
-          :disabled="checking"
-          @click="openBookingLocation"
-        >
-          Đổi rạp
-        </button>
-      </div>
-    </div>
   </section>
 </template>

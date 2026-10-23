@@ -3,15 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Quản lý bảng giá vé theo ngày, giờ chiếu và loại ghế." />
-    <title>Bảng giá vé | CINEMA Admin</title>
+    <meta
+      name="description"
+      content="Tạo bảng giá vé theo loại vé, hình thức chiếu, ngày và loại ghế."
+    />
+    <title>Tạo bảng giá vé | CINEMA Admin</title>
     <link rel="stylesheet" href="./admin-pricing-policies.css" />
   </head>
 
   <body>
     <div class="admin-shell">
       <aside class="admin-sidebar" aria-label="Thanh điều hướng quản trị">
-        <a class="brand" href="#" aria-label="CINEMA Admin, trang chủ">
+        <a class="brand" href="#" aria-label="CINEMA, trang quản trị">
           <span class="brand__mark" aria-hidden="true">C</span>
           <span class="brand__text">
             <strong>CINEMA</strong>
@@ -38,11 +41,7 @@
             <span class="admin-nav__icon" aria-hidden="true">R</span>
             <span>Rạp và phòng chiếu</span>
           </a>
-          <a
-            class="admin-nav__link admin-nav__link--active"
-            href="#pricing-table"
-            aria-current="page"
-          >
+          <a class="admin-nav__link admin-nav__link--active" href="#" aria-current="page">
             <span class="admin-nav__icon" aria-hidden="true">G</span>
             <span>Giá vé</span>
           </a>
@@ -68,9 +67,11 @@
       <div class="admin-main">
         <header class="admin-topbar">
           <div class="admin-topbar__breadcrumb">
-            <span>Quản trị</span>
+            <a href="#">Quản trị</a>
             <span aria-hidden="true">/</span>
-            <strong>Giá vé</strong>
+            <a href="#">Giá vé</a>
+            <span aria-hidden="true">/</span>
+            <strong>Tạo bảng giá</strong>
           </div>
 
           <div class="admin-topbar__account">
@@ -83,213 +84,337 @@
           <header class="page-heading">
             <div>
               <p class="page-heading__eyebrow">QUẢN LÝ GIÁ VÉ</p>
-              <h1>Bảng giá vé</h1>
+              <h1>Tạo bảng giá</h1>
               <p class="page-heading__description">
-                Thiết lập giá theo ngày chiếu, giờ bắt đầu suất chiếu và loại ghế.
+                Làm theo từng bước để thiết lập giá vé cho rạp.
               </p>
             </div>
 
-            <button class="button button--primary" type="button">Lưu bảng giá</button>
+            <a class="button button--secondary" href="#"> Quay lại danh sách </a>
           </header>
 
-          <section class="panel" aria-labelledby="selection-title">
-            <div class="panel__heading">
-              <div>
-                <h2 id="selection-title">Chọn bảng giá cần chỉnh sửa</h2>
-                <p>Loại vé và hình thức chiếu có bảng giá riêng.</p>
+          <nav class="workflow-progress" aria-label="Các bước tạo bảng giá">
+            <ol>
+              <li class="workflow-progress__item workflow-progress__item--current">
+                <span class="workflow-progress__number">1</span>
+                <span>
+                  <strong>Thông tin</strong>
+                  <small>Rạp và ngày áp dụng</small>
+                </span>
+              </li>
+              <li class="workflow-progress__item">
+                <span class="workflow-progress__number">2</span>
+                <span>
+                  <strong>Chọn loại vé</strong>
+                  <small>Loại vé và hình thức chiếu</small>
+                </span>
+              </li>
+              <li class="workflow-progress__item">
+                <span class="workflow-progress__number">3</span>
+                <span>
+                  <strong>Nhập giá</strong>
+                  <small>Ngày, giờ và loại ghế</small>
+                </span>
+              </li>
+              <li class="workflow-progress__item">
+                <span class="workflow-progress__number">4</span>
+                <span>
+                  <strong>Xem lại</strong>
+                  <small>Kiểm tra trước khi lưu</small>
+                </span>
+              </li>
+            </ol>
+          </nav>
+
+          <form class="pricing-workflow">
+            <section class="workflow-card" aria-labelledby="step-one-title">
+              <div class="workflow-card__heading">
+                <span class="step-number" aria-hidden="true">1</span>
+                <div>
+                  <h2 id="step-one-title">Thông tin bảng giá</h2>
+                  <p>Chọn rạp và thời điểm bắt đầu áp dụng bảng giá này.</p>
+                </div>
               </div>
-            </div>
 
-            <div class="selection-fields">
-              <label class="form-field" for="ticket-category">
-                <span class="form-field__label">Loại vé</span>
-                <select id="ticket-category" name="ticketCategory">
-                  <option value="regular" selected>Vé thông thường</option>
-                  <option value="u22">Vé U22</option>
-                </select>
-              </label>
+              <div class="form-grid">
+                <label class="form-field" for="cinema">
+                  <span class="form-field__label">Rạp áp dụng</span>
+                  <select id="cinema" name="cinema" required>
+                    <option value="" selected disabled>Chọn rạp</option>
+                    <option value="cinema-1">Chọn một rạp</option>
+                  </select>
+                </label>
 
-              <label class="form-field" for="screening-format">
-                <span class="form-field__label">Hình thức chiếu</span>
-                <select id="screening-format" name="screeningFormat">
-                  <option value="2d" selected>2D</option>
-                  <option value="3d">3D</option>
-                </select>
-              </label>
-            </div>
+                <label class="form-field" for="price-list-name">
+                  <span class="form-field__label">Tên bảng giá</span>
+                  <input
+                    id="price-list-name"
+                    name="name"
+                    type="text"
+                    placeholder="Ví dụ: Giá vé tiêu chuẩn"
+                    required
+                  />
+                  <span class="form-field__help"> Đặt tên dễ nhận biết để tiện chọn khi cần. </span>
+                </label>
 
-            <p class="selection-hint">
-              Loại vé và loại ghế được chọn riêng. Ví dụ, vé U22 vẫn có thể áp dụng cho ghế thường,
-              ghế VIP hoặc ghế đôi.
-            </p>
-          </section>
+                <label class="form-field" for="effective-from">
+                  <span class="form-field__label">Bắt đầu áp dụng từ ngày</span>
+                  <input id="effective-from" name="effectiveFrom" type="date" required />
+                  <span class="form-field__help">
+                    Bảng giá được dùng cho các suất chiếu từ ngày này.
+                  </span>
+                </label>
+              </div>
+            </section>
 
-          <section class="panel" id="pricing-table" aria-labelledby="pricing-title">
-            <div class="panel__heading panel__heading--table">
-              <div>
-                <p class="panel__eyebrow">VÉ THÔNG THƯỜNG · 2D</p>
-                <h2 id="pricing-title">Mức giá theo ngày và giờ chiếu</h2>
-                <p>Nhập số tiền cho từng loại ghế. Đơn vị tiền là đồng.</p>
+            <section class="workflow-card" aria-labelledby="step-two-title">
+              <div class="workflow-card__heading">
+                <span class="step-number" aria-hidden="true">2</span>
+                <div>
+                  <h2 id="step-two-title">Chọn loại vé và hình thức chiếu</h2>
+                  <p>Mỗi loại vé và hình thức chiếu có bảng giá riêng.</p>
+                </div>
               </div>
 
-              <span class="edit-status">
-                <span class="edit-status__dot" aria-hidden="true"></span>
-                Đang chỉnh sửa
-              </span>
-            </div>
+              <div class="form-grid form-grid--two">
+                <label class="form-field" for="ticket-category">
+                  <span class="form-field__label">Loại vé</span>
+                  <select id="ticket-category" name="ticketCategory">
+                    <option value="regular" selected>Vé thông thường</option>
+                    <option value="u22">Vé U22</option>
+                  </select>
+                  <span class="form-field__help">
+                    Khi chọn loại vé khác, hãy nhập mức giá riêng cho loại vé đó.
+                  </span>
+                </label>
 
-            <div class="pricing-table-wrap">
-              <table class="pricing-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Ngày áp dụng</th>
-                    <th scope="col">Giờ bắt đầu suất chiếu</th>
-                    <th scope="col">Ghế thường <span>/ vé</span></th>
-                    <th scope="col">Ghế VIP <span>/ vé</span></th>
-                    <th scope="col">Ghế đôi <span>/ cả cặp</span></th>
-                  </tr>
-                </thead>
+                <label class="form-field" for="screening-format">
+                  <span class="form-field__label">Hình thức chiếu</span>
+                  <select id="screening-format" name="screeningFormat">
+                    <option value="2d" selected>2D</option>
+                    <option value="3d">3D</option>
+                  </select>
+                  <span class="form-field__help">
+                    Giá 3D được thiết lập riêng, không tự dùng giá 2D.
+                  </span>
+                </label>
+              </div>
 
-                <tbody>
-                  <tr>
-                    <th scope="row">Thứ Hai–Thứ Năm</th>
-                    <td data-label="Giờ bắt đầu suất chiếu">Trước 17:00</td>
-                    <td data-label="Ghế thường / vé">
-                      <label class="price-field">
-                        <span class="visually-hidden">
-                          Giá ghế thường, Thứ Hai đến Thứ Năm, trước 17 giờ
-                        </span>
-                        <input type="text" inputmode="numeric" value="55.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                    <td data-label="Ghế VIP / vé">
-                      <label class="price-field">
-                        <span class="visually-hidden">
-                          Giá ghế VIP, Thứ Hai đến Thứ Năm, trước 17 giờ
-                        </span>
-                        <input type="text" inputmode="numeric" value="70.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                    <td data-label="Ghế đôi / cả cặp">
-                      <label class="price-field">
-                        <span class="visually-hidden">
-                          Giá ghế đôi, Thứ Hai đến Thứ Năm, trước 17 giờ
-                        </span>
-                        <input type="text" inputmode="numeric" value="200.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                  </tr>
+              <div class="plain-language-note">
+                <span class="plain-language-note__icon" aria-hidden="true">i</span>
+                <p>
+                  <strong>Loại vé khác với loại ghế.</strong>
+                  Ví dụ, vé U22 vẫn có thể có giá riêng cho ghế thường, ghế VIP và ghế đôi.
+                </p>
+              </div>
+            </section>
 
-                  <tr>
-                    <th scope="row">Thứ Hai–Thứ Năm</th>
-                    <td data-label="Giờ bắt đầu suất chiếu">Từ 17:00</td>
-                    <td data-label="Ghế thường / vé">
-                      <label class="price-field">
-                        <span class="visually-hidden">
-                          Giá ghế thường, Thứ Hai đến Thứ Năm, từ 17 giờ
-                        </span>
-                        <input type="text" inputmode="numeric" value="70.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                    <td data-label="Ghế VIP / vé">
-                      <label class="price-field">
-                        <span class="visually-hidden">
-                          Giá ghế VIP, Thứ Hai đến Thứ Năm, từ 17 giờ
-                        </span>
-                        <input type="text" inputmode="numeric" value="85.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                    <td data-label="Ghế đôi / cả cặp">
-                      <label class="price-field">
-                        <span class="visually-hidden">
-                          Giá ghế đôi, Thứ Hai đến Thứ Năm, từ 17 giờ
-                        </span>
-                        <input type="text" inputmode="numeric" value="200.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                  </tr>
+            <section class="workflow-card" aria-labelledby="step-three-title">
+              <div class="workflow-card__heading">
+                <span class="step-number" aria-hidden="true">3</span>
+                <div>
+                  <h2 id="step-three-title">Nhập giá vé</h2>
+                  <p>Bảng dưới đây đang thiết lập cho vé thông thường, hình thức chiếu 2D.</p>
+                </div>
+              </div>
 
-                  <tr>
-                    <th scope="row">Thứ Sáu–Chủ Nhật</th>
-                    <td data-label="Giờ bắt đầu suất chiếu">Cả ngày</td>
-                    <td data-label="Ghế thường / vé">
-                      <label class="price-field">
-                        <span class="visually-hidden"> Giá ghế thường, Thứ Sáu đến Chủ Nhật </span>
-                        <input type="text" inputmode="numeric" value="85.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                    <td data-label="Ghế VIP / vé">
-                      <label class="price-field">
-                        <span class="visually-hidden"> Giá ghế VIP, Thứ Sáu đến Chủ Nhật </span>
-                        <input type="text" inputmode="numeric" value="100.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                    <td data-label="Ghế đôi / cả cặp">
-                      <label class="price-field">
-                        <span class="visually-hidden"> Giá ghế đôi, Thứ Sáu đến Chủ Nhật </span>
-                        <input type="text" inputmode="numeric" value="200.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                  </tr>
+              <div class="table-heading">
+                <div>
+                  <span class="table-heading__tag">VÉ THÔNG THƯỜNG</span>
+                  <span class="table-heading__tag table-heading__tag--muted">2D</span>
+                  <h3>Giá theo ngày, giờ bắt đầu và loại ghế</h3>
+                </div>
+                <span class="currency-label">Đơn vị: đồng</span>
+              </div>
 
-                  <tr class="pricing-table__holiday">
-                    <th scope="row">Lễ, Tết</th>
-                    <td data-label="Giờ bắt đầu suất chiếu">Cả ngày</td>
-                    <td data-label="Ghế thường / vé">
-                      <label class="price-field">
-                        <span class="visually-hidden"> Giá ghế thường vào ngày Lễ, Tết </span>
-                        <input type="text" inputmode="numeric" value="100.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                    <td data-label="Ghế VIP / vé">
-                      <label class="price-field">
-                        <span class="visually-hidden"> Giá ghế VIP vào ngày Lễ, Tết </span>
-                        <input type="text" inputmode="numeric" value="120.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                    <td data-label="Ghế đôi / cả cặp">
-                      <label class="price-field">
-                        <span class="visually-hidden"> Giá ghế đôi vào ngày Lễ, Tết </span>
-                        <input type="text" inputmode="numeric" value="250.000" />
-                        <span aria-hidden="true">đ</span>
-                      </label>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+              <div class="pricing-table-wrap">
+                <table class="pricing-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Ngày áp dụng</th>
+                      <th scope="col">Giờ bắt đầu suất chiếu</th>
+                      <th scope="col">Ghế thường <span>/ vé</span></th>
+                      <th scope="col">Ghế VIP <span>/ vé</span></th>
+                      <th scope="col">Ghế đôi <span>/ cả cặp</span></th>
+                    </tr>
+                  </thead>
 
-            <div class="pricing-notes" aria-label="Lưu ý về bảng giá">
-              <p>
-                <strong>Mốc 17:00:</strong> Suất chiếu bắt đầu đúng 17:00 áp dụng mức giá “Từ
-                17:00”.
-              </p>
-              <p>
-                <strong>Ghế đôi:</strong> Giá hiển thị là giá cho cả cặp ghế, không phải giá của một
-                ghế.
-              </p>
-              <p>
-                <strong>Lễ, Tết:</strong> Dùng một bảng giá riêng, không cần chọn ngày cụ thể tại
-                đây.
-              </p>
-            </div>
-          </section>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Thứ Hai–Thứ Năm</th>
+                      <td data-label="Giờ bắt đầu suất chiếu">Trước 17:00</td>
+                      <td data-label="Ghế thường / vé">
+                        <label class="price-field">
+                          <span class="visually-hidden">
+                            Giá ghế thường, Thứ Hai đến Thứ Năm, trước 17 giờ
+                          </span>
+                          <input type="text" inputmode="numeric" value="55.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                      <td data-label="Ghế VIP / vé">
+                        <label class="price-field">
+                          <span class="visually-hidden">
+                            Giá ghế VIP, Thứ Hai đến Thứ Năm, trước 17 giờ
+                          </span>
+                          <input type="text" inputmode="numeric" value="70.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                      <td data-label="Ghế đôi / cả cặp">
+                        <label class="price-field">
+                          <span class="visually-hidden">
+                            Giá ghế đôi, Thứ Hai đến Thứ Năm, trước 17 giờ
+                          </span>
+                          <input type="text" inputmode="numeric" value="200.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                    </tr>
 
-          <footer class="page-actions">
-            <button class="button button--secondary" type="button">Hủy thay đổi</button>
-            <button class="button button--primary" type="button">Lưu bảng giá</button>
-          </footer>
+                    <tr>
+                      <th scope="row">Thứ Hai–Thứ Năm</th>
+                      <td data-label="Giờ bắt đầu suất chiếu">Từ 17:00</td>
+                      <td data-label="Ghế thường / vé">
+                        <label class="price-field">
+                          <span class="visually-hidden">
+                            Giá ghế thường, Thứ Hai đến Thứ Năm, từ 17 giờ
+                          </span>
+                          <input type="text" inputmode="numeric" value="70.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                      <td data-label="Ghế VIP / vé">
+                        <label class="price-field">
+                          <span class="visually-hidden">
+                            Giá ghế VIP, Thứ Hai đến Thứ Năm, từ 17 giờ
+                          </span>
+                          <input type="text" inputmode="numeric" value="85.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                      <td data-label="Ghế đôi / cả cặp">
+                        <label class="price-field">
+                          <span class="visually-hidden">
+                            Giá ghế đôi, Thứ Hai đến Thứ Năm, từ 17 giờ
+                          </span>
+                          <input type="text" inputmode="numeric" value="200.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th scope="row">Thứ Sáu–Chủ Nhật</th>
+                      <td data-label="Giờ bắt đầu suất chiếu">Cả ngày</td>
+                      <td data-label="Ghế thường / vé">
+                        <label class="price-field">
+                          <span class="visually-hidden">
+                            Giá ghế thường, Thứ Sáu đến Chủ Nhật
+                          </span>
+                          <input type="text" inputmode="numeric" value="85.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                      <td data-label="Ghế VIP / vé">
+                        <label class="price-field">
+                          <span class="visually-hidden"> Giá ghế VIP, Thứ Sáu đến Chủ Nhật </span>
+                          <input type="text" inputmode="numeric" value="100.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                      <td data-label="Ghế đôi / cả cặp">
+                        <label class="price-field">
+                          <span class="visually-hidden"> Giá ghế đôi, Thứ Sáu đến Chủ Nhật </span>
+                          <input type="text" inputmode="numeric" value="200.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                    </tr>
+
+                    <tr class="pricing-table__holiday">
+                      <th scope="row">Lễ, Tết</th>
+                      <td data-label="Giờ bắt đầu suất chiếu">Cả ngày</td>
+                      <td data-label="Ghế thường / vé">
+                        <label class="price-field">
+                          <span class="visually-hidden"> Giá ghế thường vào ngày Lễ, Tết </span>
+                          <input type="text" inputmode="numeric" value="100.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                      <td data-label="Ghế VIP / vé">
+                        <label class="price-field">
+                          <span class="visually-hidden"> Giá ghế VIP vào ngày Lễ, Tết </span>
+                          <input type="text" inputmode="numeric" value="120.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                      <td data-label="Ghế đôi / cả cặp">
+                        <label class="price-field">
+                          <span class="visually-hidden"> Giá ghế đôi vào ngày Lễ, Tết </span>
+                          <input type="text" inputmode="numeric" value="250.000" />
+                          <span aria-hidden="true">đ</span>
+                        </label>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="pricing-notes" aria-label="Lưu ý khi nhập giá">
+                <p>
+                  <strong>Mốc 17:00:</strong> Suất chiếu bắt đầu đúng 17:00 áp dụng mức “Từ 17:00”.
+                </p>
+                <p><strong>Ghế đôi:</strong> Giá là cho cả cặp ghế, không phải giá của một ghế.</p>
+                <p>
+                  <strong>Lễ, Tết:</strong> Đây là nhóm giá riêng; không cần chọn ngày cụ thể tại
+                  đây.
+                </p>
+              </div>
+            </section>
+
+            <section class="workflow-card" aria-labelledby="step-four-title">
+              <div class="workflow-card__heading">
+                <span class="step-number" aria-hidden="true">4</span>
+                <div>
+                  <h2 id="step-four-title">Xem lại trước khi lưu</h2>
+                  <p>Kiểm tra các lựa chọn và mức giá vừa nhập.</p>
+                </div>
+              </div>
+
+              <dl class="review-grid">
+                <div class="review-item">
+                  <dt>Rạp áp dụng</dt>
+                  <dd>Rạp đã chọn ở bước 1</dd>
+                </div>
+                <div class="review-item">
+                  <dt>Loại vé</dt>
+                  <dd>Vé thông thường</dd>
+                </div>
+                <div class="review-item">
+                  <dt>Hình thức chiếu</dt>
+                  <dd>2D</dd>
+                </div>
+                <div class="review-item">
+                  <dt>Ngày bắt đầu áp dụng</dt>
+                  <dd>Ngày đã chọn ở bước 1</dd>
+                </div>
+              </dl>
+
+              <div class="review-confirmation">
+                <span class="review-confirmation__check" aria-hidden="true">✓</span>
+                <p>
+                  Bảng giá có <strong>4 nhóm ngày và giờ</strong> cùng <strong>3 loại ghế</strong>.
+                  Hãy kiểm tra lại giá ghế đôi đã tính cho cả cặp.
+                </p>
+              </div>
+            </section>
+
+            <footer class="workflow-actions">
+              <a class="button button--secondary" href="#">Hủy</a>
+              <button class="button button--primary" type="submit">Tạo bảng giá</button>
+            </footer>
+          </form>
         </main>
       </div>
     </div>
