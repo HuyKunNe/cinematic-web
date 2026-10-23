@@ -5,7 +5,7 @@ import { Info } from 'lucide-vue-next'
 import AppButton from '@/components/ui/AppButton.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
 
-type Module = 'showtimes' | 'bookings' | 'users' | 'promotions' | 'showtime-form'
+type Module = 'showtimes' | 'bookings' | 'users' | 'promotions' | 'showtime-form' | 'pricing'
 
 type Field = {
   id: string
@@ -32,6 +32,17 @@ type Definition = {
 const props = defineProps<{ module: Module }>()
 
 const definitions: Record<Module, Definition> = {
+  pricing: {
+    eyebrow: 'Giá vé',
+    title: 'Quản lý bảng giá vé',
+    description:
+      'Backend hiện chưa có API quản lý bảng giá vé. Trang này chỉ thông báo giới hạn và không tải hoặc lưu dữ liệu.',
+    stats: [],
+    fields: [],
+    listTitle: '',
+    listDescription: '',
+    columns: [],
+  },
   showtimes: {
     eyebrow: 'Lịch vận hành',
     title: 'Quản lý suất chiếu',
@@ -230,12 +241,13 @@ const preview = [
       </AppButton>
     </header>
 
-    <p id="admin-reference-note" class="admin-reference__note" role="status">
-      <Info aria-hidden="true" />
-      <span>Chức năng này chưa sẵn sàng để tra cứu hoặc lưu dữ liệu.</span>
-    </p>
+    <span v-if="module === 'pricing'">
+      Backend hiện chưa cung cấp API bảng giá vé; chức năng tra cứu và lưu đang tạm thời chưa khả
+      dụng.
+    </span>
+    <span v-else> Chức năng này chưa sẵn sàng để tra cứu hoặc lưu dữ liệu. </span>
 
-    <template v-if="!isForm">
+    <template v-if="!isForm && module !== 'pricing'">
       <section
         v-if="definition.stats.length"
         class="admin-reference__stats"
@@ -345,7 +357,21 @@ const preview = [
         </footer>
       </section>
     </template>
-
+    <section
+      v-else-if="module === 'pricing'"
+      class="admin-reference__panel"
+      aria-labelledby="admin-pricing-unavailable-title"
+    >
+      <header class="admin-reference__list-heading">
+        <div>
+          <h2 id="admin-pricing-unavailable-title">Chưa thể quản lý bảng giá</h2>
+          <p>
+            API bảng giá chưa có trong backend hiện tại. Trang sẽ được nối lại khi backend cung cấp
+            contract đọc và lưu bảng giá.
+          </p>
+        </div>
+      </header>
+    </section>
     <form v-else class="admin-reference__form-layout" @submit.prevent>
       <section
         class="admin-reference__panel admin-reference__form"
