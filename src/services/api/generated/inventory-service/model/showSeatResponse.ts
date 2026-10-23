@@ -14,7 +14,6 @@ export interface ShowSeatResponse {
   seatId?: string;
   seatNumber?: string;
   seatType?: ShowSeatResponseSeatType;
-  /** Legacy price only. Null for policy-priced showtimes. */
   price?: number;
   status?: ShowSeatResponseStatus;
   heldByBookingId?: string;

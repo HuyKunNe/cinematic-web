@@ -5,14 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CreateShowtimeRequestContentFormat } from './createShowtimeRequestContentFormat';
-import type { CreateShowtimeRequestExperienceType } from './createShowtimeRequestExperienceType';
 
 export interface CreateShowtimeRequest {
   movieId: string;
   roomId: string;
   startsAt: string;
   endsAt: string;
-  experienceType: CreateShowtimeRequestExperienceType;
-  contentFormat: CreateShowtimeRequestContentFormat;
+  /** @minimum 0.01 */
+  basePrice: number;
+  /** Published layout belonging to roomId. Required when the room has a published matrix layout. Otherwise omission retains legacy catalog generation. The server does not automatically select a layout. */
+  roomLayoutId?: string;
 }

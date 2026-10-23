@@ -5,8 +5,6 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ShowtimeResponseContentFormat } from './showtimeResponseContentFormat';
-import type { ShowtimeResponseExperienceType } from './showtimeResponseExperienceType';
 import type { ShowtimeResponseStatus } from './showtimeResponseStatus';
 
 export interface ShowtimeResponse {
@@ -21,13 +19,6 @@ export interface ShowtimeResponse {
   status?: ShowtimeResponseStatus;
   createdAt?: string;
   updatedAt?: string;
+  /** Published layout pinned when the showtime was created. */
   roomLayoutId?: string;
-  roomLayoutVersion?: number;
-  pricingPolicyId?: string;
-  pricingPolicyVersion?: number;
-  experienceType?: ShowtimeResponseExperienceType;
-  contentFormat?: ShowtimeResponseContentFormat;
-  officialReleaseDate?: string;
-  movieVersion?: number;
-  advanceScreening?: boolean;
 }

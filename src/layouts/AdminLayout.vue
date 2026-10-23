@@ -161,3 +161,4 @@ async function handleLogout() {
 </template>
 
 <style src="../styles/admin-navigation.css"></style>
+<style src="../styles/admin-shell.css"></style>

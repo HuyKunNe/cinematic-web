@@ -1,0 +1,245 @@
+/* Cinema Admin reference — shared shell */
+.admin-layout,
+.admin-sidebar,
+.admin-header,
+.admin-drawer,
+.admin-search-dialog,
+.admin-user-menu__panel {
+  --admin-shell-paper: #ffffff;
+  --admin-shell-background: #f5f7f9;
+  --admin-shell-ink: #202936;
+  --admin-shell-muted: #72808f;
+  --admin-shell-line: #e5e9ed;
+  --admin-shell-accent: #e66535;
+  --admin-shell-accent-hover: #cf552b;
+  --admin-shell-accent-soft: #fff0e9;
+  --admin-shell-focus: #e6653577;
+  --admin-shell-nav: #171e28;
+  --admin-shell-nav-text: #a2adbb;
+  --admin-shell-nav-muted: #657487;
+  --admin-shell-nav-active: #e665351e;
+  --admin-shell-nav-hover: #ffffff08;
+  --admin-shell-nav-line: #ffffff12;
+  --admin-shell-nav-icon: #fb895b;
+  --admin-shell-avatar-background: #f9e5db;
+  --admin-shell-avatar-text: #ae592f;
+  --admin-shell-overlay: #17223066;
+  --admin-shell-shadow: 0 0.5rem 2rem #25314509;
+
+  --admin-sidebar-width: 14.875rem;
+  --admin-sidebar-width-collapsed: 4.375rem;
+  --admin-drawer-width: min(14.6875rem, calc(100vw - var(--space-8)));
+  --admin-content-width: 112.5rem;
+  --admin-header-height: 4.625rem;
+  --admin-header-control-height: 2.1875rem;
+  --admin-user-avatar-size: 2.0625rem;
+  --admin-sidebar-brand-size: 2.125rem;
+  --admin-sidebar-brand-inset: 1.5625rem;
+  --admin-sidebar-brand-inset-collapsed: 1.125rem;
+  --admin-sidebar-nav-padding: 0.875rem;
+  --admin-sidebar-font-size: 0.8125rem;
+  --admin-sidebar-label-size: 0.625rem;
+  --admin-sidebar-group-tracking: 0.09375rem;
+  --admin-shell-gutter: clamp(0.875rem, 2.4vw, 2.125rem);
+  --admin-shell-padding-top: 1.5625rem;
+  --admin-shell-padding-bottom: 2.1875rem;
+  --admin-shell-brand-height: 5.5625rem;
+  --admin-shell-brand-title-size: 1.375rem;
+  --admin-shell-brand-caption-size: 0.5625rem;
+  --admin-shell-brand-caption-tracking: 0.1875rem;
+  --admin-shell-link-height: 2.5rem;
+  --admin-shell-radius: 0.4375rem;
+  --admin-shell-active-border: 0.1875rem;
+  --admin-shell-active-height: 1.25rem;
+}
+
+/* Light surfaces, including content rendered through portals. */
+.admin-header,
+.admin-search-dialog,
+.admin-user-menu__panel {
+  --color-background: var(--admin-shell-background);
+  --color-surface: var(--admin-shell-paper);
+  --color-surface-raised: var(--admin-shell-background);
+  --color-border: var(--admin-shell-line);
+  --color-text-primary: var(--admin-shell-ink);
+  --color-text-secondary: var(--admin-shell-muted);
+  --color-text-muted: var(--admin-shell-muted);
+  --color-primary: var(--admin-shell-accent);
+  --color-focus: var(--admin-shell-focus);
+  --admin-header-control-border: var(--admin-shell-line);
+  --shadow-raised: var(--admin-shell-shadow);
+  --radius-md: var(--admin-shell-radius);
+
+  color-scheme: light;
+}
+
+.admin-layout {
+  background: var(--admin-shell-background);
+}
+
+.admin-layout__sidebar {
+  border-right: 0;
+  background: var(--admin-shell-nav);
+}
+
+.admin-header {
+  background: var(--admin-shell-paper);
+}
+
+.admin-header__menu-button {
+  background: transparent;
+  border-color: transparent;
+}
+
+.admin-header__search {
+  background: var(--admin-shell-background);
+}
+
+.admin-user-menu__avatar {
+  border: 0;
+  background: var(--admin-shell-avatar-background);
+  color: var(--admin-shell-avatar-text);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Dark navigation has its own palette. */
+.admin-sidebar {
+  --color-background: var(--admin-shell-nav);
+  --color-surface: var(--admin-shell-nav);
+  --color-surface-raised: var(--admin-shell-nav-hover);
+  --color-border: var(--admin-shell-nav-line);
+  --color-text-primary: var(--admin-shell-paper);
+  --color-text-secondary: var(--admin-shell-nav-text);
+  --color-text-muted: var(--admin-shell-nav-muted);
+  --color-primary: var(--admin-shell-accent);
+  --color-focus: var(--admin-shell-focus);
+
+  background: var(--admin-shell-nav);
+  color: var(--admin-shell-nav-text);
+}
+
+.admin-sidebar__top {
+  min-height: var(--admin-shell-brand-height);
+  border-bottom: 0;
+}
+
+.admin-sidebar__brand {
+  color: var(--admin-shell-paper);
+}
+
+.admin-sidebar__brand-mark {
+  border-radius: var(--admin-shell-radius);
+  background: var(--admin-shell-accent);
+  color: var(--admin-shell-paper);
+}
+
+.admin-sidebar__brand-copy > strong {
+  color: var(--admin-shell-paper);
+  font-size: var(--admin-shell-brand-title-size);
+  font-weight: var(--font-weight-semibold);
+}
+
+.admin-sidebar__brand-copy > span {
+  color: var(--admin-shell-nav-text);
+  font-size: var(--admin-shell-brand-caption-size);
+  letter-spacing: var(--admin-shell-brand-caption-tracking);
+}
+
+.admin-sidebar__group-label {
+  font-weight: var(--font-weight-semibold);
+}
+
+.admin-sidebar__link {
+  position: relative;
+  height: var(--admin-shell-link-height);
+  border: 0;
+  border-radius: var(--admin-shell-radius);
+  color: var(--admin-shell-nav-text);
+  font-size: var(--admin-sidebar-font-size);
+  font-weight: var(--font-weight-medium);
+}
+
+.admin-sidebar__link:hover {
+  background: var(--admin-shell-nav-hover);
+  color: var(--admin-shell-paper);
+}
+
+.admin-sidebar__link.is-active {
+  background: var(--admin-shell-nav-active);
+  color: var(--admin-shell-paper);
+  font-weight: var(--font-weight-medium);
+}
+
+.admin-sidebar__link.is-active::before {
+  position: absolute;
+  inset-inline-start: 0;
+  width: var(--admin-shell-active-border);
+  height: var(--admin-shell-active-height);
+  border-radius: var(--admin-shell-radius);
+  background: var(--admin-shell-accent);
+  content: '';
+}
+
+.admin-sidebar__link.is-active .admin-sidebar__icon {
+  color: var(--admin-shell-nav-icon);
+}
+
+.admin-sidebar__footer {
+  margin-inline: var(--space-4);
+  padding-inline: var(--space-2);
+  border-color: var(--admin-shell-nav-line);
+}
+
+.admin-sidebar__access {
+  color: var(--admin-shell-nav-text);
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar__link {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar__label {
+  display: none;
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar__nav {
+  padding-inline: var(--space-2);
+}
+
+.admin-drawer {
+  border-right: 0;
+  background: var(--admin-shell-nav);
+}
+
+.admin-drawer__overlay {
+  background: var(--admin-shell-overlay, #17223066);
+}
+
+/* Breadcrumbs sit outside the page's existing theme. */
+.admin-layout .admin-breadcrumbs__list,
+.admin-layout .admin-breadcrumbs__item + .admin-breadcrumbs__item::before {
+  color: var(--admin-shell-muted);
+}
+
+.admin-layout .admin-breadcrumbs__item--current {
+  color: var(--admin-shell-ink);
+}
+
+.admin-layout .admin-breadcrumbs__item a:hover {
+  color: var(--admin-shell-accent);
+}
+
+.admin-layout .admin-skip-link {
+  background: var(--admin-shell-accent);
+  color: var(--admin-shell-paper);
+}
+
+.admin-header :focus-visible,
+.admin-sidebar :focus-visible,
+.admin-search-dialog :focus-visible,
+.admin-user-menu__panel :focus-visible {
+  outline: var(--focus-ring-width) solid var(--admin-shell-focus);
+  outline-offset: var(--border-width-strong);
+}

@@ -14,6 +14,4 @@ export interface CinemaResponse {
   active?: boolean;
   createdAt?: string;
   updatedAt?: string;
-  /** Null means the cinema time zone is not configured. */
-  timeZone?: string;
 }
