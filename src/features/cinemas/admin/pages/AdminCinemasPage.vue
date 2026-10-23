@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import AppButton from '@/components/ui/AppButton.vue'
+import { APP_PERMISSIONS } from '@/config/authorization'
+import type { CinemaResponse } from '@/services/api/generated/inventory-service/model'
+import { useAuthStore } from '@/stores/auth.store'
 import { Building2, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Plus } from 'lucide-vue-next'
 import {
   DropdownMenuContent,
@@ -8,12 +11,10 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from 'reka-ui'
-import AppButton from '@/components/ui/AppButton.vue'
-import { APP_PERMISSIONS } from '@/config/authorization'
-import { useAuthStore } from '@/stores/auth.store'
-import type { CinemaResponse } from '@/services/api/generated/inventory-service/model'
-import AdminCinemaEditorDialog from '../components/AdminCinemaEditorDialog.vue'
+import { computed, ref, watch } from 'vue'
 import { useAdminCinemaCatalogQuery } from '../api/admin-cinema-queries'
+import AdminCinemaDetailDialog from '../components/AdminCinemaDetailDialog.vue'
+import AdminCinemaEditorDialog from '../components/AdminCinemaEditorDialog.vue'
 import { adminCinemaErrorMessage } from '../schemas/admin-cinema.schema'
 
 const auth = useAuthStore()
@@ -32,6 +33,11 @@ const successMessage = ref('')
 
 const editor = ref<{
   cinemaId: string | null
+  returnFocusId: string
+} | null>(null)
+
+const detailDialog = ref<{
+  cinemaId: string
   returnFocusId: string
 } | null>(null)
 
@@ -126,8 +132,18 @@ function openEdit(id?: string) {
   editor.value = { cinemaId: id, returnFocusId: menuId(id) }
 }
 
+function openDetail(id?: string) {
+  if (!id || !canManage.value) return
+
+  successMessage.value = ''
+  detailDialog.value = {
+    cinemaId: id,
+    returnFocusId: menuId(id),
+  }
+}
+
 function preventMenuFocus(event: Event) {
-  if (editor.value) event.preventDefault()
+  if (editor.value || detailDialog.value) event.preventDefault()
 }
 
 function saved(cinema: CinemaResponse) {
@@ -322,6 +338,12 @@ function statusLabel(active?: boolean) {
                       >
                         <DropdownMenuItem
                           class="admin-cinema-menu__item"
+                          @select="openDetail(cinema.id)"
+                        >
+                          Chi tiết cụm rạp
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          class="admin-cinema-menu__item"
                           @select="openEdit(cinema.id)"
                         >
                           <Pencil aria-hidden="true" />
@@ -388,6 +410,13 @@ function statusLabel(active?: boolean) {
       :return-focus-id="editor.returnFocusId"
       @close="editor = null"
       @saved="saved"
+    />
+    <AdminCinemaDetailDialog
+      v-if="detailDialog"
+      :key="detailDialog.cinemaId"
+      :cinema-id="detailDialog.cinemaId"
+      :return-focus-id="detailDialog.returnFocusId"
+      @close="detailDialog = null"
     />
   </section>
 </template>

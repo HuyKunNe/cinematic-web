@@ -50,7 +50,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const create1 = (
+  export const create2 = (
     createGenreRequest: CreateGenreRequest,
  ) => {
       return apiRequest<GenreResponse>(
@@ -64,4 +64,4 @@ import { apiRequest } from '../../../../http/axios-instance';
 export type Update1Result = NonNullable<Awaited<ReturnType<typeof update1>>>
 export type Delete1Result = NonNullable<Awaited<ReturnType<typeof delete1>>>
 export type FindAll1Result = NonNullable<Awaited<ReturnType<typeof findAll1>>>
-export type Create1Result = NonNullable<Awaited<ReturnType<typeof create1>>>
+export type Create2Result = NonNullable<Awaited<ReturnType<typeof create2>>>

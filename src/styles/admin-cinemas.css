@@ -410,3 +410,91 @@
     padding: var(--space-4);
   }
 }
+.admin-cinemas {
+  --admin-cinema-detail-field-min-width: 16rem;
+}
+
+.admin-cinema-detail__tabs {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.admin-cinema-detail__tab {
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-bottom: var(--border-width-thin) solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-cinema-detail__tab.is-active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.admin-cinema-detail__tab:focus-visible,
+.admin-cinema-detail__panel:focus-visible {
+  outline: var(--border-width-focus) solid var(--color-primary);
+  outline-offset: var(--space-1);
+}
+
+.admin-cinema-detail__panel {
+  min-width: 0;
+}
+
+.admin-cinema-detail__panel[hidden] {
+  display: none;
+}
+
+.admin-cinema-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, var(--admin-cinema-detail-field-min-width)), 1fr)
+  );
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.admin-cinema-detail__grid > div {
+  min-width: 0;
+  padding: var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.admin-cinema-detail__grid dt {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.admin-cinema-detail__grid dd {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.admin-cinema-detail__wide {
+  grid-column: 1 / -1;
+}
+
+.admin-cinema-detail__table {
+  min-width: var(--admin-cinema-table-min-width);
+}
+
+@variant mobile-layout {
+  .admin-cinema-detail__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-cinema-detail__wide {
+    grid-column: auto;
+  }
+}

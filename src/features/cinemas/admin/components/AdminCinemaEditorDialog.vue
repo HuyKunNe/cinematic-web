@@ -207,22 +207,6 @@ const fields: {
     type: 'text',
     required: false,
   },
-  {
-    name: 'directions',
-    label: 'Hướng dẫn đường đi',
-    maxLength: 1000,
-    autocomplete: 'street-address',
-    type: 'text',
-    required: false,
-  },
-  {
-    name: 'timeZone',
-    label: 'Múi giờ',
-    maxLength: 64,
-    autocomplete: 'off',
-    type: 'text',
-    required: false,
-  },
 ]
 
 const visibleErrors = computed(() => {
