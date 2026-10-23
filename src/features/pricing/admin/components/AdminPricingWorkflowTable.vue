@@ -29,6 +29,8 @@ const props = defineProps<{
   categoryCode: string
   canRead: boolean
   canEdit: boolean
+  selectionKey?: string
+  showActions?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -38,6 +40,14 @@ const emit = defineEmits<{
 }>()
 
 const selectedFormat = ref('')
+
+watch(
+  () => props.selectionKey,
+  (value) => {
+    if (value !== undefined) selectedFormat.value = value
+  },
+  { immediate: true },
+)
 
 const weekdays = [
   Weekday.MONDAY,
@@ -488,22 +498,35 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', preventUnload)
   emit('locked', false)
 })
+
+defineExpose({
+  startEdit,
+  cancelEdit,
+  submit,
+  reloadEdit,
+  editing,
+  dirty,
+  canStart,
+  inputsEnabled,
+  requiresReload,
+  saving: save.isPending,
+})
 </script>
 
 <template>
   <form
-    class="pricing-fare-grid"
+    class="pricing-workflow-table"
     aria-label="Mức giá theo ngày, giờ và loại ghế"
     :aria-busy="save.isPending.value"
     novalidate
     @submit.prevent="submit"
   >
-    <p v-if="categoryRules.length === 0" class="pricing-fare-grid__message">
-      Loại vé này chưa có mức giá. Chọn “Thêm mức giá” để bắt đầu.
+    <p v-if="categoryRules.length === 0" class="pricing-workflow-table__message">
+      Loại vé này chưa có mức giá trong bản giá đang chọn.
     </p>
 
     <template v-else>
-      <div class="pricing-fare-grid__controls">
+      <div v-if="selectionKey === undefined" class="pricing-workflow-table__controls">
         <label class="admin-reference__field">
           <span>Hình thức và suất chiếu</span>
           <select
@@ -518,14 +541,14 @@ onBeforeUnmount(() => {
         </label>
       </div>
 
-      <p v-if="editing" class="pricing-fare-grid__message" role="status">
+      <p v-if="editing" class="pricing-workflow-table__message" role="status">
         Nhập số tiền bằng đồng, ví dụ 55.000 hoặc 55000. Mức giá dùng chung ở nhiều ô sẽ được cập
         nhật cùng nhau.
       </p>
 
       <p
         v-if="save.isError.value || contextChanged"
-        class="pricing-error pricing-fare-grid__message"
+        class="pricing-error pricing-workflow-table__message"
         role="alert"
       >
         {{
@@ -535,31 +558,31 @@ onBeforeUnmount(() => {
         }}
       </p>
 
-      <p v-if="awaitingRefresh" class="pricing-fare-grid__message" role="status">
+      <p v-if="awaitingRefresh" class="pricing-workflow-table__message" role="status">
         Đã lưu. Đang tải bản giá mới…
       </p>
 
       <p
         v-if="hasInvalidConfiguration"
-        class="pricing-error pricing-fare-grid__message"
+        class="pricing-error pricing-workflow-table__message"
         role="alert"
       >
-        Có mức giá chưa xác định đủ ngày, giờ, loại ghế hoặc loại suất chiếu. Hãy mở danh sách chi
-        tiết bên dưới để kiểm tra.
+        Có mức giá chưa xác định đủ ngày, giờ, loại ghế hoặc loại suất chiếu. Hãy kiểm tra lại thông
+        tin của bản giá.
       </p>
 
-      <p v-else-if="rows.length === 0" class="pricing-fare-grid__message" role="status">
+      <p v-else-if="rows.length === 0" class="pricing-workflow-table__message" role="status">
         Chưa có mức giá cho hình thức và suất chiếu đang chọn.
       </p>
 
       <div
         v-else
-        class="pricing-fare-grid__scroll"
+        class="pricing-workflow-table__scroll"
         role="region"
         aria-label="Bảng giá theo ngày, giờ và loại ghế"
         tabindex="0"
       >
-        <table class="pricing-fare-grid__table" role="table">
+        <table class="pricing-workflow-table__table" role="table">
           <caption class="admin-visually-hidden">
             Giá ngày bình thường và Lễ, Tết theo từng loại ghế
           </caption>
@@ -570,7 +593,7 @@ onBeforeUnmount(() => {
               <th scope="col" role="columnheader">Giờ bắt đầu suất chiếu</th>
               <th v-for="seat in matrix.seatTypes" :key="seat.code" scope="col" role="columnheader">
                 {{ seat.name }}
-                <small class="pricing-fare-grid__unit">
+                <small class="pricing-workflow-table__unit">
                   {{ seatUnitName(seat.code) }}
                 </small>
               </th>
@@ -581,7 +604,7 @@ onBeforeUnmount(() => {
             <tr
               v-for="(row, rowIndex) in rows"
               :key="row.key"
-              :class="{ 'pricing-fare-grid__holiday': row.holiday }"
+              :class="{ 'pricing-workflow-table__holiday': row.holiday }"
               role="row"
             >
               <th scope="row" role="rowheader">
@@ -600,11 +623,11 @@ onBeforeUnmount(() => {
                 <span v-if="cell.fares.length === 0"> Chưa có mức giá </span>
 
                 <template v-else>
-                  <p v-if="cell.fares.length > 1" class="pricing-fare-grid__condition">
+                  <p v-if="cell.fares.length > 1" class="pricing-workflow-table__condition">
                     Có nhiều mức giá; cần xem điều kiện áp dụng.
                   </p>
 
-                  <ul class="pricing-fare-grid__prices">
+                  <ul class="pricing-workflow-table__prices">
                     <li v-for="fare in cell.fares" :key="fare.id">
                       +
                       <template
@@ -614,7 +637,7 @@ onBeforeUnmount(() => {
                       >
                         <input
                           v-model="drafts[fare.code]"
-                          class="admin-reference__input pricing-fare-grid__input"
+                          class="admin-reference__input pricing-workflow-table__input"
                           type="text"
                           inputmode="numeric"
                           autocomplete="off"
@@ -635,7 +658,10 @@ onBeforeUnmount(() => {
                               : undefined
                           "
                         />
-                        <small v-if="sharedCount(fare.code) > 1" class="pricing-fare-grid__shared">
+                        <small
+                          v-if="sharedCount(fare.code) > 1"
+                          class="pricing-workflow-table__shared"
+                        >
                           Dùng chung ở {{ sharedCount(fare.code) }} ô.
                         </small>
                         <small
@@ -666,7 +692,7 @@ onBeforeUnmount(() => {
           </tbody>
         </table>
       </div>
-      <div class="pricing-fare-grid__actions">
+      <div v-if="showActions !== false" class="pricing-workflow-table__actions">
         <AppButton v-if="!editing && canStart" type="button" variant="secondary" @click="startEdit">
           Chỉnh sửa giá
         </AppButton>
@@ -700,7 +726,7 @@ onBeforeUnmount(() => {
         </AppButton>
       </div>
 
-      <div class="pricing-fare-grid__notes" aria-label="Lưu ý về bảng giá">
+      <div class="pricing-workflow-table__notes" aria-label="Lưu ý về bảng giá">
         <p>
           <strong>Giờ áp dụng:</strong>
           Tính theo giờ bắt đầu suất chiếu. Khung “Từ 17:00” bao gồm đúng 17:00.
@@ -715,152 +741,9 @@ onBeforeUnmount(() => {
         </p>
       </div>
 
-      <p class="pricing-fare-grid__note">
+      <p class="pricing-workflow-table__note">
         Chỉ hiển thị phạm vi đã có mức giá. Giá áp dụng còn phụ thuộc thời hạn và điều kiện mua vé.
       </p>
     </template>
   </form>
 </template>
-
-<style scoped>
-.pricing-fare-grid {
-  --fare-grid-min-width: 38rem;
-  --fare-grid-field-width: 18rem;
-  --fare-grid-holiday-background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
-  min-width: 0;
-}
-
-.pricing-fare-grid__input {
-  width: 100%;
-  min-width: 0;
-  font-size: var(--font-size-md);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.pricing-fare-grid__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--pricing-panel-padding);
-  border-top: var(--border-width-thin) solid var(--color-border);
-}
-
-.pricing-fare-grid__shared {
-  color: var(--color-warning);
-}
-
-.pricing-fare-grid__controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--pricing-layout-gap);
-  padding: var(--pricing-panel-padding);
-}
-
-.pricing-fare-grid__controls > label {
-  flex: 1 1 var(--fare-grid-field-width);
-  min-width: 0;
-}
-
-.pricing-fare-grid__scroll {
-  min-width: 0;
-  overflow-x: auto;
-}
-
-.pricing-fare-grid__table {
-  width: 100%;
-  min-width: var(--fare-grid-min-width);
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.pricing-fare-grid__table :is(th, td) {
-  padding: var(--space-4);
-  border-bottom: var(--border-width-thin) solid var(--color-border);
-  vertical-align: top;
-  color: var(--color-text-secondary);
-}
-
-.pricing-fare-grid__table thead {
-  background: var(--color-surface-raised);
-}
-
-.pricing-fare-grid__table th {
-  color: var(--color-text-primary);
-  font-weight: var(--font-weight-semibold);
-}
-
-.pricing-fare-grid__prices {
-  display: grid;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pricing-fare-grid__prices li {
-  display: grid;
-  gap: var(--space-1);
-}
-
-.pricing-fare-grid__prices strong {
-  color: var(--color-primary);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.pricing-fare-grid__prices small {
-  display: block;
-  overflow-wrap: anywhere;
-}
-
-.pricing-fare-grid__condition {
-  margin: 0 0 var(--space-2);
-  color: var(--color-warning);
-  font-size: var(--font-size-sm);
-}
-
-.pricing-fare-grid__message,
-.pricing-fare-grid__note {
-  margin: 0;
-  padding: var(--pricing-panel-padding);
-}
-
-.pricing-fare-grid__note {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-base);
-}
-
-.pricing-fare-grid__table .pricing-fare-grid__holiday {
-  background: var(--fare-grid-holiday-background);
-}
-
-.pricing-fare-grid__unit {
-  display: block;
-  margin-top: var(--space-1);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-regular);
-}
-
-.pricing-fare-grid__notes {
-  display: grid;
-  gap: var(--space-2);
-  margin: var(--pricing-panel-padding);
-  padding: var(--space-4);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--fare-grid-holiday-background);
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-base);
-}
-
-.pricing-fare-grid__notes p {
-  margin: 0;
-}
-
-.pricing-fare-grid__notes strong {
-  color: var(--color-text-primary);
-}
-</style>
