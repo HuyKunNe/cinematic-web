@@ -21,4 +21,6 @@ export interface ReplacePricingPolicyDraftRequest {
      */
   description?: string;
   dayGroup: ReplacePricingPolicyDraftRequestDayGroup;
+  /** @minItems 1 */
+  cinemaIds: string[];
 }

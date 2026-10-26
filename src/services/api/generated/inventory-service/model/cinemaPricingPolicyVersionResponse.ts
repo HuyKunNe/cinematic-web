@@ -11,7 +11,7 @@ import type { CinemaPricingPolicyVersionResponseStatus } from './cinemaPricingPo
 export interface CinemaPricingPolicyVersionResponse {
   id?: string;
   policyId?: string;
-  cinemaId?: string;
+  cinemaIds?: string[];
   revision?: number;
   name?: string;
   description?: string;

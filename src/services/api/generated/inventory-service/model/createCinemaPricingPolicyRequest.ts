@@ -20,4 +20,6 @@ export interface CreateCinemaPricingPolicyRequest {
      */
   description?: string;
   dayGroup: CreateCinemaPricingPolicyRequestDayGroup;
+  /** @minItems 1 */
+  cinemaIds: string[];
 }
