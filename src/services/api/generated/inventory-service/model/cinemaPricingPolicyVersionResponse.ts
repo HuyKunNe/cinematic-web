@@ -20,4 +20,7 @@ export interface CinemaPricingPolicyVersionResponse {
   version?: number;
   createdAt?: string;
   updatedAt?: string;
+  publishedAt?: string;
+  /** Validated JWT subject that first published this version. */
+  publishedBy?: string;
 }

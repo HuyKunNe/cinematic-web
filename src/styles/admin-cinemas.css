@@ -441,7 +441,7 @@
 
 .admin-cinema-detail__tab:focus-visible,
 .admin-cinema-detail__panel:focus-visible {
-  outline: var(--border-width-focus) solid var(--color-primary);
+  outline: var(--border-width-strong) solid var(--color-primary);
   outline-offset: var(--space-1);
 }
 
@@ -538,7 +538,7 @@
     110deg,
     transparent 0 var(--space-8),
     var(--admin-cinema-card-cover-accent) var(--space-8)
-      calc(var(--space-8) + var(--border-width-medium))
+      calc(var(--space-8) + var(--border-width-strong))
   );
   content: '';
   transform: rotate(-8deg);

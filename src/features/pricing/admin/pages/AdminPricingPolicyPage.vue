@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
-import { pricingErrorMessage, useAdminPricingQueries } from '../api/admin-pricing-queries'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useAdminPricingMatrixQuery } from '../api/admin-pricing-matrix-query'
-import AdminPricingWorkflowTable from '../components/AdminPricingWorkflowTable.vue'
-import AdminPricingWorkflowCreate from '../components/AdminPricingWorkflowCreate.vue'
+import { pricingErrorMessage, useAdminPricingQueries } from '../api/admin-pricing-queries'
 import type { CreatedWorkflowPolicy } from '../api/admin-pricing-workflow-create'
+import AdminPricingWorkflowCreate from '../components/AdminPricingWorkflowCreate.vue'
+import AdminPricingWorkflowTable from '../components/AdminPricingWorkflowTable.vue'
 
 const auth = useAuthStore()
 

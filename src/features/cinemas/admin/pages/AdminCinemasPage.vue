@@ -1,23 +1,18 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
+import { useAdminRoomSummaryQuery } from '@/features/rooms/admin/api/admin-room-queries'
+import { adminRoomErrorMessage } from '@/features/rooms/admin/schemas/admin-room.schema'
 import type { CinemaResponse } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
-import { Building2, ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
-import {
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuPortal,
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
-} from 'reka-ui'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAdminCinemaCatalogQuery } from '../api/admin-cinema-queries'
 import AdminCinemaDetailDialog from '../components/AdminCinemaDetailDialog.vue'
 import AdminCinemaEditorDialog from '../components/AdminCinemaEditorDialog.vue'
 import { adminCinemaErrorMessage } from '../schemas/admin-cinema.schema'
-import { useAdminRoomSummaryQuery } from '@/features/rooms/admin/api/admin-room-queries'
-import { adminRoomErrorMessage } from '@/features/rooms/admin/schemas/admin-room.schema'
+import { ROUTE_NAMES } from '@/router/route-constants.ts'
 
 const auth = useAuthStore()
 const canManage = computed(
@@ -40,6 +35,7 @@ const activeFilter = ref('all')
 const page = ref(1)
 const pageSize = 10
 const successMessage = ref('')
+const router = useRouter()
 
 const editor = ref<{
   cinemaId: string | null
@@ -154,6 +150,15 @@ function openDetail(id?: string) {
     cinemaId: id,
     returnFocusId: detailActionId(id),
   }
+}
+
+function openRooms(cinemaId?: string) {
+  if (!canManage.value || !cinemaId) return
+
+  void router.push({
+    name: ROUTE_NAMES.ADMIN_ROOMS,
+    query: { cinemaId },
+  })
 }
 
 function roomCount(cinemaId: string | undefined, key: 'total' | 'active' | 'inactive') {
@@ -372,6 +377,9 @@ function statusLabel(active?: boolean) {
                   @click="openDetail(cinema.id)"
                 >
                   Chi tiết cụm rạp
+                </AppButton>
+                <AppButton variant="secondary" :disabled="!cinema.id" @click="openRooms(cinema.id)">
+                  Quản lý phòng & ghế
                 </AppButton>
                 <AppButton
                   :id="editActionId(cinema.id)"

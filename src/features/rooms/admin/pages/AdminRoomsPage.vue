@@ -27,7 +27,6 @@ import {
   normalizeAdminRoomSearch,
 } from '../schemas/admin-room.schema'
 import AdminRoomContentFormatsDialog from '../components/AdminRoomContentFormatsDialog.vue'
-import type { RoomContentFormatsResponse } from '@/services/api/generated/inventory-service/model'
 import AdminRoomDetailDialog from '../components/AdminRoomDetailDialog.vue'
 import AdminRoomCapacityCell from '../components/AdminRoomCapacityCell.vue'
 
@@ -214,7 +213,7 @@ function openContentFormats(room: RoomResponse) {
   }
 }
 
-function contentFormatsSaved(_response?: RoomContentFormatsResponse) {
+function contentFormatsSaved() {
   contentFormatsEditor.value = null
   successMessage.value = 'Đã cập nhật định dạng nội dung phòng.'
 }

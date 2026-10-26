@@ -10,7 +10,7 @@ import {
 } from 'reka-ui'
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
-import { ReplaceRoomContentFormatsRequestFormatsItem } from '@/services/api/generated/inventory-service/model'
+import type { ReplaceRoomContentFormatsRequestFormatsItem } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
 import { adminRoomErrorMessage, isAdminRoomApiError } from '../schemas/admin-room.schema'
 import {
