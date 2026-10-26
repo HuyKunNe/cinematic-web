@@ -45,29 +45,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  /**
- * Requires showtime:manage.
- *
- * When roomLayoutId is supplied, it must identify a
- * PUBLISHED layout belonging to roomId.
- * Seats are generated from that layout's snapshots.
- * Active seats start AVAILABLE; inactive seats start UNAVAILABLE.
- *
- * roomLayoutId is required when the room has any
- * PUBLISHED matrix layout.
- * Omitting it in that case returns
- * INVENTORY_SHOWTIME_LAYOUT_REQUIRED.
- *
- * When the room has no published matrix layout,
- * omission retains legacy active-catalog-seat generation.
- *
- * The server does not automatically select the latest layout.
- * Seat prices are calculated from basePrice using SeatPricingPolicy.
- * The pinned layout cannot be changed after creation.
- * Existing showtimes are not migrated by this operation.
- * @summary Create a showtime and generate its seats
- */
-export const create = (
+  export const create = (
     createShowtimeRequest: CreateShowtimeRequest,
  ) => {
       return apiRequest<unknown>(
@@ -125,18 +103,7 @@ export const create = (
     },
       );
     }
-  /**
- * Returns future OPEN_FOR_BOOKING showtimes in active rooms
- * and an active cinema.
- *
- * The time interval is [from, to).
- * from and to must include an ISO-8601 offset.
- * movieId is optional.
- *
- * OPEN_FOR_BOOKING does not guarantee available seats.
- * @summary Get bookable showtimes for a cinema
- */
-export const getBookableShowtimes = (
+  export const getBookableShowtimes = (
     params: GetBookableShowtimesParams,
  ) => {
       return apiRequest<ShowtimeResponse[]>(

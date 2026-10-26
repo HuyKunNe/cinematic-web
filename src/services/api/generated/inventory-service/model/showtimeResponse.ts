@@ -6,6 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ShowtimeResponseStatus } from './showtimeResponseStatus';
+import type { ShowtimeSchedulingResponse } from './showtimeSchedulingResponse';
+import type { ShowtimeScreeningVersionResponse } from './showtimeScreeningVersionResponse';
 
 export interface ShowtimeResponse {
   id?: string;
@@ -21,4 +23,9 @@ export interface ShowtimeResponse {
   updatedAt?: string;
   /** Published layout pinned when the showtime was created. */
   roomLayoutId?: string;
+  /** Screening version snapshot pinned at creation. Null for legacy showtimes. */
+  screeningVersion?: ShowtimeScreeningVersionResponse;
+  /** Pinned scheduling details. Null for legacy showtimes. */
+  scheduling?: ShowtimeSchedulingResponse;
+  version?: number;
 }

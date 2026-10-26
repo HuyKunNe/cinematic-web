@@ -6,6 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Optional compatibility field. Only SCHEDULED is accepted. Use lifecycle PATCH endpoints to change status.
+ * @deprecated
+ */
 export type UpdateShowtimeRequestStatus = typeof UpdateShowtimeRequestStatus[keyof typeof UpdateShowtimeRequestStatus];
 
 

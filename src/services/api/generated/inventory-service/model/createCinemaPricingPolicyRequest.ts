@@ -5,18 +5,19 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CreateCinemaPricingPolicyRequestPricingModel } from './createCinemaPricingPolicyRequestPricingModel';
+import type { CreateCinemaPricingPolicyRequestDayGroup } from './createCinemaPricingPolicyRequestDayGroup';
 
 export interface CreateCinemaPricingPolicyRequest {
+  clientRequestId: string;
   /**
-     * @minLength 3
-     * @maxLength 3
+     * @minLength 0
+     * @maxLength 120
      */
-  currency: string;
-  /** Inclusive first local date in the policy time zone. */
-  effectiveFrom: string;
-  /** Exclusive ending local date. Null means no ending date. */
-  effectiveTo?: string;
-  /** Immutable pricing model. Omission or null retains BASE_RULES_V1 compatibility. FARE_MATRIX_V2 creates metadata only until its rule APIs are implemented. */
-  pricingModel?: CreateCinemaPricingPolicyRequestPricingModel;
+  name: string;
+  /**
+     * @minLength 0
+     * @maxLength 1000
+     */
+  description?: string;
+  dayGroup: CreateCinemaPricingPolicyRequestDayGroup;
 }

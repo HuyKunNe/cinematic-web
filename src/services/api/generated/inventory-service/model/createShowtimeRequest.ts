@@ -13,6 +13,14 @@ export interface CreateShowtimeRequest {
   endsAt: string;
   /** @minimum 0.01 */
   basePrice: number;
-  /** Published layout belonging to roomId. Required when the room has a published matrix layout. Otherwise omission retains legacy catalog generation. The server does not automatically select a layout. */
+  /** Published layout belonging to roomId. Required when the room has a published matrix layout. */
   roomLayoutId?: string;
+  /** Active screening version belonging to movieId. Its content format must be supported by the room. */
+  movieScreeningVersionId: string;
+  /**
+     * Room turnaround time after the screening, in minutes.
+     * @minimum 0
+     * @maximum 120
+     */
+  breakMinutes: number;
 }

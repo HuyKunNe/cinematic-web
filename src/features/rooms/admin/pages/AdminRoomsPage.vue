@@ -28,6 +28,7 @@ import {
 } from '../schemas/admin-room.schema'
 import AdminRoomContentFormatsDialog from '../components/AdminRoomContentFormatsDialog.vue'
 import type { RoomContentFormatsResponse } from '@/services/api/generated/inventory-service/model'
+import AdminRoomDetailDialog from '../components/AdminRoomDetailDialog.vue'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -121,9 +122,10 @@ function roomActionId(id?: string) {
 }
 
 function preventRoomMenuFocus(event: Event) {
-  if (editor.value || contentFormatsEditor.value) event.preventDefault()
+  if (editor.value || contentFormatsEditor.value || roomDetail.value) {
+    event.preventDefault()
+  }
 }
-
 const filtered = computed(() => {
   const words = normalizeAdminRoomSearch(search.value).split(/\s+/).filter(Boolean)
 
@@ -193,6 +195,13 @@ const contentFormatsEditor = ref<{
   returnFocusId: string
 } | null>(null)
 
+const roomDetail = ref<{
+  roomId: string
+  roomName: string
+  cinemaName: string
+  returnFocusId: string
+} | null>(null)
+
 function openContentFormats(room: RoomResponse) {
   if (!canManage.value || !room.id || roomActivity.isPending.value) return
 
@@ -231,6 +240,19 @@ function openEditor(roomId: string | null = null) {
     cinemaName: cinema.label,
     roomId,
     returnFocusId: roomId ? roomActionId(roomId) : 'admin-room-create',
+  }
+}
+
+function openRoomDetail(room: RoomResponse) {
+  const cinema = selectedCinema.value
+
+  if (!canManage.value || !cinema || !room.id || roomActivity.isPending.value) return
+
+  roomDetail.value = {
+    roomId: room.id,
+    roomName: room.name || 'Phòng chiếu',
+    cinemaName: cinema.label,
+    returnFocusId: roomActionId(room.id),
   }
 }
 
@@ -550,6 +572,13 @@ function statusLabel(active?: boolean) {
                       >
                         <DropdownMenuItem
                           class="admin-room-menu__item"
+                          :disabled="!room.id || roomActivity.isPending.value"
+                          @select="openRoomDetail(room)"
+                        >
+                          Chi tiết phòng
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          class="admin-room-menu__item"
                           @select="room.id && openEditor(room.id)"
                         >
                           Sửa thông tin
@@ -628,6 +657,15 @@ function statusLabel(active?: boolean) {
       :return-focus-id="contentFormatsEditor.returnFocusId"
       @close="contentFormatsEditor = null"
       @saved="contentFormatsSaved"
+    />
+    <AdminRoomDetailDialog
+      v-if="roomDetail"
+      :key="roomDetail.roomId"
+      :room-id="roomDetail.roomId"
+      :room-name="roomDetail.roomName"
+      :cinema-name="roomDetail.cinemaName"
+      :return-focus-id="roomDetail.returnFocusId"
+      @close="roomDetail = null"
     />
   </section>
 </template>
