@@ -29,6 +29,7 @@ import {
 import AdminRoomContentFormatsDialog from '../components/AdminRoomContentFormatsDialog.vue'
 import type { RoomContentFormatsResponse } from '@/services/api/generated/inventory-service/model'
 import AdminRoomDetailDialog from '../components/AdminRoomDetailDialog.vue'
+import AdminRoomCapacityCell from '../components/AdminRoomCapacityCell.vue'
 
 const auth = useAuthStore()
 const route = useRoute()

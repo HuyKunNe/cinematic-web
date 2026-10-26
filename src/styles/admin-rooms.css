@@ -186,17 +186,34 @@
   font-size: var(--font-size-sm);
 }
 
-.admin-rooms__name strong {
-  display: block;
-  color: var(--color-text-primary);
-  font-weight: var(--font-weight-semibold);
+.admin-rooms__name {
+  vertical-align: middle;
 }
 
-.admin-rooms__name small {
+.admin-rooms__name strong {
   display: block;
+  min-width: 0;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-base);
+  overflow-wrap: anywhere;
+}
+
+.admin-rooms__name .admin-rooms__type {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 0;
   margin-top: var(--space-1);
+  padding: 0;
+  border-color: transparent;
+  border-radius: 0;
+  background: transparent;
   color: var(--color-text-muted);
   font-size: var(--admin-room-code-size);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-base);
+  white-space: normal;
   overflow-wrap: anywhere;
 }
 

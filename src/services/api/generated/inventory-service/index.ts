@@ -2,6 +2,7 @@ export * from './cinema-amenities-controller/cinema-amenities-controller';
 export * from './cinema-controller/cinema-controller';
 export * from './cinema-pricing-policy-controller/cinema-pricing-policy-controller';
 export * from './cinema-room-capacities-controller/cinema-room-capacities-controller';
+export * from './fare-matrix-controller/fare-matrix-controller';
 export * from './room-content-formats-controller/room-content-formats-controller';
 export * from './room-controller/room-controller';
 export * from './room-layout-controller/room-layout-controller';

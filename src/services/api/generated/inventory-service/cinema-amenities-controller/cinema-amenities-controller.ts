@@ -14,7 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const get2 = (
+  export const get3 = (
     cinemaId: string,
  ) => {
       return apiRequest<CinemaAmenitiesResponse>(
@@ -22,7 +22,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const replace1 = (
+  export const replace2 = (
     cinemaId: string,
     replaceCinemaAmenitiesRequest: ReplaceCinemaAmenitiesRequest,
  ) => {
@@ -33,5 +33,5 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type Get2Result = NonNullable<Awaited<ReturnType<typeof get2>>>
-export type Replace1Result = NonNullable<Awaited<ReturnType<typeof replace1>>>
+  export type Get3Result = NonNullable<Awaited<ReturnType<typeof get3>>>
+export type Replace2Result = NonNullable<Awaited<ReturnType<typeof replace2>>>
