@@ -11,6 +11,7 @@ import type {
   CinemaResponse,
   CreateRoomRequest,
   RoomResponse,
+  UpdateRoomRequest,
 } from '@/services/api/generated/inventory-service/model'
 import { adminRoomSchema } from '../schemas/admin-room.schema'
 
@@ -131,31 +132,42 @@ export function useAdminRoomDetailQuery(
   })
 }
 
-type SaveRoomVariables = {
-  cinemaId: string
-  roomId: string | null
-  input: CreateRoomRequest
-}
+type SaveRoomVariables =
+  | {
+      operation: 'create'
+      cinemaId: string
+      input: CreateRoomRequest
+    }
+  | {
+      operation: 'update'
+      cinemaId: string
+      roomId: string
+      input: Pick<UpdateRoomRequest, 'name' | 'roomType'>
+    }
 
 export function useSaveAdminRoomMutation() {
   const queryClient = useQueryClient()
 
   return useMutation<RoomResponse, unknown, SaveRoomVariables>({
-    mutationFn: async ({ cinemaId, roomId, input }) => {
-      if (!roomId) return create2(input, { cinemaId })
+    mutationFn: async (variables) => {
+      if (variables.operation === 'create') {
+        return create2(variables.input, { cinemaId: variables.cinemaId })
+      }
 
-      // PUT yêu cầu active: đọc lại để giữ trạng thái hiện tại.
-      const current = await getById2(roomId)
+      const current = await getById2(variables.roomId)
 
       if (
-        current.id !== roomId ||
-        current.cinemaId !== cinemaId ||
+        current.id !== variables.roomId ||
+        current.cinemaId !== variables.cinemaId ||
         typeof current.active !== 'boolean'
       ) {
         throw new Error('Không nhận được thông tin phòng hợp lệ. Hãy mở lại form.')
       }
 
-      return update2(roomId, { ...input, active: current.active })
+      return update2(variables.roomId, {
+        ...variables.input,
+        active: current.active,
+      })
     },
     retry: false,
     onSuccess: (room) => {
@@ -170,6 +182,7 @@ export function useSaveAdminRoomMutation() {
     },
   })
 }
+
 type SetRoomActivityVariables = {
   cinemaId: string
   roomId: string

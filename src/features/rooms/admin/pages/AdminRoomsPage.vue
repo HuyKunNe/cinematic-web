@@ -287,9 +287,18 @@ async function changeRoomActivity(room: RoomResponse) {
 }
 
 function saved(room: RoomResponse) {
-  const editing = Boolean(editor.value?.roomId)
+  const creating = !editor.value?.roomId
   editor.value = null
-  successMessage.value = `${editing ? 'Đã cập nhật' : 'Đã thêm'} phòng${room.name ? ` ${room.name}` : ''}.`
+
+  if (creating && room.active === false && activeFilter.value === 'active') {
+    activeFilter.value = 'all'
+    successMessage.value =
+      `Đã thêm phòng${room.name ? ` ${room.name}` : ''} ở trạng thái Tạm ngưng. ` +
+      'Đang hiển thị tất cả phòng.'
+    return
+  }
+
+  successMessage.value = `${creating ? 'Đã thêm' : 'Đã cập nhật'} phòng${room.name ? ` ${room.name}` : ''}.`
 }
 
 function resetFilters() {

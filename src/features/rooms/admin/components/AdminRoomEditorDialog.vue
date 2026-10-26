@@ -13,16 +13,24 @@ import {
 import AppButton from '@/components/ui/AppButton.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
-import type { RoomResponse } from '@/services/api/generated/inventory-service/model'
+import {
+  CreateRoomRequestContentFormatsItem,
+  type CreateRoomRequest,
+  type RoomResponse,
+} from '@/services/api/generated/inventory-service/model'
 import { useAdminRoomDetailQuery, useSaveAdminRoomMutation } from '../api/admin-room-queries'
 import {
+  adminRoomContentFormatOptions,
+  adminRoomCreateSchema,
   adminRoomErrorMessage,
   adminRoomSchema,
   adminRoomTypeLabel,
   adminRoomTypeOptions,
+  createAdminRoomCreateValues,
   createAdminRoomValues,
   isAdminRoomApiError,
-  toAdminRoomRequest,
+  toAdminRoomCreateRequest,
+  toAdminRoomUpdateRequest,
   type AdminRoomField,
 } from '../schemas/admin-room.schema'
 
@@ -50,6 +58,11 @@ const ready = ref(props.roomId === null)
 const requestError = ref('')
 const serverErrors = ref<Partial<Record<AdminRoomField, string>>>({})
 const formElement = ref<HTMLFormElement | null>(null)
+type AdminRoomContentFormat = NonNullable<CreateRoomRequest['contentFormats']>[number]
+
+const active = ref(true)
+const contentFormats = ref<AdminRoomContentFormat[]>([CreateRoomRequestContentFormatsItem['2D']])
+const contentFormatsError = ref('')
 const fields: AdminRoomField[] = ['name', 'roomType']
 
 const { errors, submitCount, isSubmitting, defineField, isFieldTouched, resetForm, handleSubmit } =
@@ -86,6 +99,11 @@ const visibleErrors = computed(() => {
 
 watch([name, roomType], () => {
   serverErrors.value = {}
+  requestError.value = ''
+})
+
+watch(contentFormats, () => {
+  contentFormatsError.value = ''
   requestError.value = ''
 })
 
@@ -154,6 +172,7 @@ async function focusError() {
 
   const target =
     formElement.value?.querySelector<HTMLElement>('[aria-invalid="true"]') ??
+    document.getElementById('admin-room-content-formats') ??
     document.getElementById('admin-room-request-error')
 
   target?.focus()
@@ -165,11 +184,34 @@ const save = handleSubmit(async (values) => {
   let room: RoomResponse
 
   try {
-    room = await mutation.mutateAsync({
-      cinemaId: props.cinemaId,
-      roomId: props.roomId,
-      input: toAdminRoomRequest(values),
-    })
+    if (props.roomId) {
+      room = await mutation.mutateAsync({
+        operation: 'update',
+        cinemaId: props.cinemaId,
+        roomId: props.roomId,
+        input: toAdminRoomUpdateRequest(values),
+      })
+    } else {
+      const parsed = adminRoomCreateSchema.safeParse({
+        ...values,
+        active: active.value,
+        contentFormats: contentFormats.value,
+      })
+
+      if (!parsed.success) {
+        contentFormatsError.value =
+          parsed.error.issues.find((issue) => issue.path[0] === 'contentFormats')?.message ??
+          'Chọn ít nhất một định dạng phòng hỗ trợ.'
+        await focusError()
+        return
+      }
+
+      room = await mutation.mutateAsync({
+        operation: 'create',
+        cinemaId: props.cinemaId,
+        input: toAdminRoomCreateRequest(parsed.data),
+      })
+    }
   } catch (error) {
     if (isAdminRoomApiError(error)) {
       for (const item of error.fieldErrors) {
@@ -326,6 +368,36 @@ function submit(event: Event) {
                   {{ visibleErrors.roomType }}
                 </p>
               </div>
+              <div v-if="!roomId" class="admin-rooms__field">
+                <label for="admin-room-active">Trạng thái</label>
+                <select id="admin-room-active" v-model="active" class="admin-rooms__input">
+                  <option :value="true">Đang hoạt động</option>
+                  <option :value="false">Tạm ngưng</option>
+                </select>
+              </div>
+
+              <fieldset
+                v-if="!roomId"
+                id="admin-room-content-formats"
+                class="admin-room-form__formats"
+                tabindex="-1"
+                :aria-invalid="Boolean(contentFormatsError)"
+              >
+                <legend>Định dạng phòng hỗ trợ *</legend>
+
+                <label
+                  v-for="format in adminRoomContentFormatOptions"
+                  :key="format.value"
+                  class="admin-room-form__format"
+                >
+                  <input v-model="contentFormats" type="checkbox" :value="format.value" />
+                  <span>{{ format.label }}</span>
+                </label>
+
+                <p v-if="contentFormatsError" class="admin-rooms__error" role="alert">
+                  {{ contentFormatsError }}
+                </p>
+              </fieldset>
             </fieldset>
 
             <aside class="admin-room-preview" aria-labelledby="admin-room-preview-title">
@@ -344,6 +416,16 @@ function submit(event: Event) {
                 <div>
                   <dt>Loại phòng</dt>
                   <dd>{{ adminRoomTypeLabel(roomType) }}</dd>
+                </div>
+                <div v-if="!roomId">
+                  <dt>Trạng thái</dt>
+                  <dd>{{ active ? 'Đang hoạt động' : 'Tạm ngưng' }}</dd>
+                </div>
+                <div v-if="!roomId">
+                  <dt>Định dạng</dt>
+                  <dd>
+                    {{ contentFormats.length ? contentFormats.join(' · ') : 'Chưa chọn định dạng' }}
+                  </dd>
                 </div>
               </dl>
 

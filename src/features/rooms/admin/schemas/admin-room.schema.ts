@@ -1,8 +1,10 @@
 import { z } from 'zod'
 import {
+  CreateRoomRequestContentFormatsItem,
   CreateRoomRequestRoomType,
   type CreateRoomRequest,
   type RoomResponse,
+  type UpdateRoomRequest,
 } from '@/services/api/generated/inventory-service/model'
 import type { ApiError } from '@/services/http/api-error'
 
@@ -13,16 +15,6 @@ export const adminRoomTypeOptions = [
   { value: CreateRoomRequestRoomType.SCREEN_X, label: 'ScreenX' },
   { value: CreateRoomRequestRoomType.VIP, label: 'VIP' },
 ] as const
-
-export const adminRoomSchema = z.object({
-  name: z.string().trim().min(1, 'Nhập tên phòng.').max(100, 'Tên phòng tối đa 100 ký tự.'),
-  roomType: z.nativeEnum(CreateRoomRequestRoomType, {
-    errorMap: () => ({ message: 'Chọn loại phòng hợp lệ.' }),
-  }),
-})
-
-export type AdminRoomValues = z.infer<typeof adminRoomSchema>
-export type AdminRoomField = keyof AdminRoomValues
 
 const layoutErrorMessages = new Map<string, string>([
   [
@@ -67,15 +59,6 @@ const layoutErrorMessages = new Map<string, string>([
     'Thông tin phòng đã thay đổi. Đã tải lại dữ liệu mới; hãy kiểm tra và lưu lại.',
   ],
 ])
-
-export function createAdminRoomValues(room?: RoomResponse): AdminRoomValues {
-  const type = adminRoomSchema.shape.roomType.safeParse(room?.roomType)
-
-  return {
-    name: room?.name ?? '',
-    roomType: type.success ? type.data : CreateRoomRequestRoomType.STANDARD,
-  }
-}
 
 export function toAdminRoomRequest(values: AdminRoomValues): CreateRoomRequest {
   return {
@@ -127,4 +110,61 @@ export function adminRoomErrorMessage(error: unknown, fallback = 'Không thể t
   }
 
   return error.message || fallback
+}
+
+export const adminRoomContentFormatOptions = Object.values(CreateRoomRequestContentFormatsItem).map(
+  (value) => ({ value, label: value }),
+)
+
+export const adminRoomSchema = z.object({
+  name: z.string().trim().min(1, 'Nhập tên phòng.').max(100, 'Tên phòng tối đa 100 ký tự.'),
+  roomType: z.nativeEnum(CreateRoomRequestRoomType, {
+    errorMap: () => ({ message: 'Chọn loại phòng hợp lệ.' }),
+  }),
+})
+
+export const adminRoomCreateSchema = adminRoomSchema.extend({
+  active: z.boolean(),
+  contentFormats: z
+    .array(z.nativeEnum(CreateRoomRequestContentFormatsItem))
+    .min(1, 'Chọn ít nhất một định dạng phòng hỗ trợ.'),
+})
+
+export type AdminRoomValues = z.infer<typeof adminRoomSchema>
+export type AdminRoomField = keyof AdminRoomValues
+export type AdminRoomCreateValues = z.infer<typeof adminRoomCreateSchema>
+
+export function createAdminRoomValues(room?: RoomResponse): AdminRoomValues {
+  const type = adminRoomSchema.shape.roomType.safeParse(room?.roomType)
+
+  return {
+    name: room?.name ?? '',
+    roomType: type.success ? type.data : CreateRoomRequestRoomType.STANDARD,
+  }
+}
+
+export function createAdminRoomCreateValues(): AdminRoomCreateValues {
+  return {
+    ...createAdminRoomValues(),
+    active: true,
+    contentFormats: [CreateRoomRequestContentFormatsItem['2D']],
+  }
+}
+
+export function toAdminRoomCreateRequest(values: AdminRoomCreateValues): CreateRoomRequest {
+  return {
+    name: values.name.trim(),
+    roomType: values.roomType,
+    active: values.active,
+    contentFormats: [...values.contentFormats],
+  }
+}
+
+export function toAdminRoomUpdateRequest(
+  values: AdminRoomValues,
+): Pick<UpdateRoomRequest, 'name' | 'roomType'> {
+  return {
+    name: values.name.trim(),
+    roomType: values.roomType,
+  }
 }

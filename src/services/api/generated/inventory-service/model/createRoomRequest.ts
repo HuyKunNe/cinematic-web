@@ -5,6 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
+import type { CreateRoomRequestContentFormatsItem } from './createRoomRequestContentFormatsItem';
 import type { CreateRoomRequestRoomType } from './createRoomRequestRoomType';
 
 export interface CreateRoomRequest {
@@ -14,4 +15,12 @@ export interface CreateRoomRequest {
      */
   name: string;
   roomType: CreateRoomRequestRoomType;
+  /** Initial activity state. Omitted or null defaults to true. */
+  active?: boolean;
+  /**
+     * Supported content formats. Omitted or null defaults to an empty list. Duplicate values are rejected.
+     * @minItems 0
+     * @maxItems 2
+     */
+  contentFormats?: CreateRoomRequestContentFormatsItem[];
 }

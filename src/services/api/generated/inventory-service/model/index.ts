@@ -43,6 +43,7 @@ export * from './createCinemaRequest';
 export * from './createRangeParams';
 export * from './createRoomLayoutRequest';
 export * from './createRoomRequest';
+export * from './createRoomRequestContentFormatsItem';
 export * from './createRoomRequestRoomType';
 export * from './createSeatRangeRequest';
 export * from './createSeatRangeRequestSeatType';
