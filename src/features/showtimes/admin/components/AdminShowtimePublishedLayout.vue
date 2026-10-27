@@ -3,33 +3,33 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
-import { useAdminShowtimePublishedLayoutQuery } from '../api/admin-showtime-layout-query'
+import type { useAdminShowtimePublishedLayoutQuery } from '../api/admin-showtime-layout-query'
 import { showtimeErrorMessage } from '../schemas/admin-showtime.schema'
 
 const props = defineProps<{
   roomId: string
   roomName: string
   canRead: boolean
+  query: ReturnType<typeof useAdminShowtimePublishedLayoutQuery>
+  selectedLayoutId: string
+  disabled: boolean
 }>()
 
-const query = useAdminShowtimePublishedLayoutQuery(
-  () => props.roomId,
-  () => props.canRead,
-)
+const emit = defineEmits<{ reload: [] }>()
 
 const layout = computed(() => {
-  if (!props.canRead || !props.roomId || query.isFetching.value || !query.isSuccess.value) {
+  if (
+    !props.canRead ||
+    !props.roomId ||
+    props.query.isFetching.value ||
+    !props.query.isSuccess.value
+  ) {
     return null
   }
 
-  const value = query.data.value
+  const value = props.query.data.value
   return value?.roomId === props.roomId ? value : null
 })
-
-function reload() {
-  if (!props.canRead || !props.roomId || query.isFetching.value) return
-  void query.refetch()
-}
 </script>
 
 <template>
@@ -41,36 +41,31 @@ function reload() {
       <div>
         <h2 id="showtime-layout-title">Sơ đồ ghế của phòng</h2>
       </div>
-
       <span v-if="layout" class="showtime-create__badge showtime-create__badge--success">
         Đã xuất bản
       </span>
     </header>
 
     <div class="showtime-create__panel-body">
-      <p v-if="!roomId" class="showtime-create__hint">Chọn rạp và phòng để xem sơ đồ.</p>
-
-      <p v-else-if="!canRead" class="showtime-create__hint">Bạn chưa có quyền xem sơ đồ phòng.</p>
+      <p v-if="!roomId" class="showtime-create__hint">
+        Chọn rạp và phòng để xác nhận sơ đồ.
+      </p>
+      <p v-else-if="!canRead" class="showtime-create__hint">
+        Bạn chưa có quyền đọc cấu hình sơ đồ phòng.
+      </p>
 
       <template v-else>
-        <p
-          v-if="query.isPending.value || query.isFetching.value"
-          class="showtime-create__hint"
-          role="status"
-        >
+        <p v-if="query.isFetching.value || query.isPending.value" class="showtime-create__hint" role="status">
           Đang tải sơ đồ đã xuất bản…
         </p>
 
         <p v-else-if="query.isError.value" class="showtime-create__error" role="alert">
-          {{
-            showtimeErrorMessage(query.error.value, 'Không thể đọc sơ đồ của phòng. Hãy tải lại.')
-          }}
+          {{ showtimeErrorMessage(query.error.value, 'Không thể xác nhận sơ đồ. Hãy tải lại.') }}
         </p>
 
         <template v-else-if="layout">
           <div class="showtime-create__layout-summary">
-            <span class="showtime-create__layout-icon" aria-hidden="true"> ▦ </span>
-
+            <span class="showtime-create__layout-icon" aria-hidden="true">▦</span>
             <div>
               <strong>{{ roomName }} · v{{ layout.layoutVersion }}</strong>
               <p class="showtime-create__hint">
@@ -80,8 +75,11 @@ function reload() {
           </div>
 
           <p class="showtime-create__hint">
-            Đang hiển thị sơ đồ đã xuất bản của phòng. Chưa xác nhận phiên bản sẽ được gắn khi tạo
-            suất chiếu.
+            {{
+              selectedLayoutId === layout.id
+                ? 'Phiên bản sơ đồ này được chọn để gắn vào suất chiếu.'
+                : 'Phiên bản đang hiển thị chưa khớp sơ đồ được chọn cho suất chiếu.'
+            }}
           </p>
 
           <RouterLink
@@ -97,8 +95,17 @@ function reload() {
         </template>
 
         <p v-else class="showtime-create__hint" role="status">
-          Phòng chưa có sơ đồ PUBLISHED để hiển thị.
+          Phòng chưa có sơ đồ công bố. Hệ thống sẽ kiểm tra các ghế đang hoạt động của phòng khi lập lịch.
         </p>
+
+        <AppButton
+          type="button"
+          variant="secondary"
+          :disabled="disabled || query.isFetching.value"
+          @click="emit('reload')"
+        >
+          Tải lại sơ đồ
+        </AppButton>
       </template>
     </div>
   </section>
