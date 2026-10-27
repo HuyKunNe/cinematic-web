@@ -17,6 +17,7 @@
   --admin-shell-nav: #171e28;
   --admin-shell-nav-text: #a2adbb;
   --admin-shell-nav-muted: #657487;
+  --admin-shell-nav-caption: #8c98a8;
   --admin-shell-nav-active: #e665351e;
   --admin-shell-nav-hover: #ffffff08;
   --admin-shell-nav-line: #ffffff12;
@@ -33,24 +34,54 @@
   --admin-header-height: 4.625rem;
   --admin-header-control-height: 2.1875rem;
   --admin-user-avatar-size: 2.0625rem;
+
+  --admin-sidebar-font-family: Inter, 'Segoe UI', Arial, sans-serif;
+  --admin-sidebar-font-size: 0.8125rem;
+  --admin-sidebar-label-size: 0.625rem;
+  --admin-sidebar-group-tracking: 0.09375rem;
   --admin-sidebar-brand-size: 2.125rem;
   --admin-sidebar-brand-inset: 1.5625rem;
   --admin-sidebar-brand-inset-collapsed: 1.125rem;
   --admin-sidebar-nav-padding: 0.875rem;
-  --admin-sidebar-font-size: 0.8125rem;
-  --admin-sidebar-label-size: 0.625rem;
-  --admin-sidebar-group-tracking: 0.09375rem;
+
   --admin-shell-gutter: clamp(0.875rem, 2.4vw, 2.125rem);
   --admin-shell-padding-top: 1.5625rem;
   --admin-shell-padding-bottom: 2.1875rem;
+
   --admin-shell-brand-height: 5.5625rem;
-  --admin-shell-brand-title-size: 1.375rem;
-  --admin-shell-brand-caption-size: 0.5625rem;
-  --admin-shell-brand-caption-tracking: 0.1875rem;
+  --admin-shell-brand-gap: 0.6875rem;
+  --admin-shell-brand-mark-height: 2.3125rem;
+  --admin-shell-brand-mark-size: 1.5625rem;
+  --admin-shell-brand-mark-radius: 0.5rem;
+  --admin-shell-brand-mark-font: Georgia, serif;
+  --admin-shell-brand-title-size: 1.3125rem;
+  --admin-shell-brand-title-tracking: -0.03125rem;
+  --admin-shell-brand-caption-size: 0.5rem;
+  --admin-shell-brand-caption-tracking: 0.1125rem;
+  --admin-shell-brand-caption-offset: -0.125rem;
+
+  --admin-shell-nav-padding-block: 0.125rem;
+  --admin-shell-group-margin-top: 1.4375rem;
+  --admin-shell-group-margin-bottom: 0.5625rem;
+  --admin-shell-group-first-margin-top: 0.5rem;
+  --admin-shell-group-margin-inline: 0.75rem;
+
   --admin-shell-link-height: 2.5rem;
+  --admin-shell-link-margin-block: 0.1875rem;
+  --admin-shell-link-padding-inline: 0.8125rem;
+  --admin-shell-link-gap: 0.75rem;
+  --admin-shell-icon-size: 1.125rem;
+  --admin-shell-icon-stroke: 1.7;
   --admin-shell-radius: 0.4375rem;
   --admin-shell-active-border: 0.1875rem;
   --admin-shell-active-height: 1.25rem;
+  --admin-shell-active-radius: 0.1875rem;
+
+  --admin-shell-footer-margin-block: 0.9375rem;
+  --admin-shell-footer-margin-inline: 1.125rem;
+  --admin-shell-footer-padding-block: 0.875rem;
+  --admin-shell-footer-padding-inline: 0.625rem;
+  --admin-shell-footer-font-size: 0.6875rem;
 }
 
 /* Light surfaces, including content rendered through portals. */
@@ -125,34 +156,72 @@
 }
 
 .admin-sidebar__brand {
+  gap: var(--admin-shell-brand-gap);
   color: var(--admin-shell-paper);
 }
 
 .admin-sidebar__brand-mark {
-  border-radius: var(--admin-shell-radius);
+  width: var(--admin-sidebar-brand-size);
+  height: var(--admin-shell-brand-mark-height);
+  border-radius: var(--admin-shell-brand-mark-radius);
   background: var(--admin-shell-accent);
   color: var(--admin-shell-paper);
+  font-family: var(--admin-shell-brand-mark-font);
+  font-size: var(--admin-shell-brand-mark-size);
+  font-weight: var(--font-weight-bold);
+}
+
+.admin-sidebar__brand-copy {
+  flex: 1 1 auto;
+  gap: 0;
+  overflow: hidden;
 }
 
 .admin-sidebar__brand-copy > strong {
+  overflow: hidden;
   color: var(--admin-shell-paper);
   font-size: var(--admin-shell-brand-title-size);
   font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--admin-shell-brand-title-tracking);
+  text-overflow: ellipsis;
 }
 
 .admin-sidebar__brand-copy > span {
-  color: var(--admin-shell-nav-text);
+  margin-top: var(--admin-shell-brand-caption-offset);
+  color: var(--admin-shell-nav-caption);
   font-size: var(--admin-shell-brand-caption-size);
+  font-weight: var(--font-weight-medium);
   letter-spacing: var(--admin-shell-brand-caption-tracking);
+  white-space: nowrap;
+}
+
+.admin-sidebar__nav {
+  gap: 0;
+  padding: var(--admin-shell-nav-padding-block) var(--admin-sidebar-nav-padding);
+  scrollbar-color: var(--admin-shell-nav-muted) var(--admin-shell-nav);
 }
 
 .admin-sidebar__group-label {
+  min-height: 0;
+  margin: var(--admin-shell-group-margin-top) var(--admin-shell-group-margin-inline)
+    var(--admin-shell-group-margin-bottom);
+  color: var(--admin-shell-nav-muted);
+  font-size: var(--admin-sidebar-label-size);
   font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--admin-sidebar-group-tracking);
+}
+
+.admin-sidebar__group:first-child .admin-sidebar__group-label {
+  margin-top: var(--admin-shell-group-first-margin-top);
 }
 
 .admin-sidebar__link {
   position: relative;
+  gap: var(--admin-shell-link-gap);
   height: var(--admin-shell-link-height);
+  overflow: visible;
+  margin-block: var(--admin-shell-link-margin-block);
+  padding-inline: var(--admin-shell-link-padding-inline);
   border: 0;
   border-radius: var(--admin-shell-radius);
   color: var(--admin-shell-nav-text);
@@ -173,26 +242,84 @@
 
 .admin-sidebar__link.is-active::before {
   position: absolute;
-  inset-inline-start: 0;
+  inset-block-start: 50%;
+  inset-inline-start: calc(-1 * var(--admin-sidebar-nav-padding));
   width: var(--admin-shell-active-border);
   height: var(--admin-shell-active-height);
-  border-radius: var(--admin-shell-radius);
+  transform: translateY(-50%);
+  border-radius: 0 var(--admin-shell-active-radius) var(--admin-shell-active-radius) 0;
   background: var(--admin-shell-accent);
   content: '';
+}
+
+.admin-sidebar__icon {
+  flex: 0 0 auto;
+  width: var(--admin-shell-icon-size);
+  height: var(--admin-shell-icon-size);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--admin-shell-icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .admin-sidebar__link.is-active .admin-sidebar__icon {
   color: var(--admin-shell-nav-icon);
 }
 
-.admin-sidebar__footer {
-  margin-inline: var(--space-4);
-  padding-inline: var(--space-2);
-  border-color: var(--admin-shell-nav-line);
+.admin-sidebar__label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.admin-sidebar__access {
+.admin-sidebar__footer {
+  margin: var(--admin-shell-footer-margin-block) var(--admin-shell-footer-margin-inline);
+  padding: var(--admin-shell-footer-padding-block) var(--admin-shell-footer-padding-inline);
+  border-color: var(--admin-shell-nav-line);
+  font-size: var(--admin-shell-footer-font-size);
+}
+
+.admin-sidebar__identity {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.admin-sidebar__access,
+.admin-sidebar__account {
+  min-height: 0;
+  margin: 0;
   color: var(--admin-shell-nav-text);
+  font-size: var(--admin-shell-footer-font-size);
+  line-height: var(--line-height-base);
+}
+
+.admin-sidebar__account {
+  overflow: hidden;
+  color: var(--admin-shell-nav-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Compact navigation uses the same icon positions as the reference. */
+.admin-sidebar.is-collapsed {
+  --admin-sidebar-nav-padding: var(--space-2);
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar__top {
+  padding-inline: var(--admin-sidebar-brand-inset-collapsed);
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar__brand {
+  flex: 0 0 auto;
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar__brand-copy,
+.admin-sidebar.is-collapsed .admin-sidebar__group-label,
+.admin-sidebar.is-collapsed .admin-sidebar__label,
+.admin-sidebar.is-collapsed .admin-sidebar__footer {
+  display: none;
 }
 
 .admin-sidebar.is-collapsed .admin-sidebar__link {
@@ -200,21 +327,18 @@
   padding-inline: 0;
 }
 
-.admin-sidebar.is-collapsed .admin-sidebar__label {
-  display: none;
-}
-
 .admin-sidebar.is-collapsed .admin-sidebar__nav {
-  padding-inline: var(--space-2);
+  padding-inline: var(--admin-sidebar-nav-padding);
 }
 
+/* Existing mobile drawer behavior is provided by AdminLayout and Reka UI. */
 .admin-drawer {
   border-right: 0;
   background: var(--admin-shell-nav);
 }
 
 .admin-drawer__overlay {
-  background: var(--admin-shell-overlay, #17223066);
+  background: var(--admin-shell-overlay);
 }
 
 /* Breadcrumbs sit outside the page's existing theme. */

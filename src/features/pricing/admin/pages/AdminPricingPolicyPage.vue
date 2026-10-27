@@ -342,8 +342,10 @@ function selectVersion(): void {
               type="button"
               :disabled="loading"
               @click="
-                versions.refetch()
-                detail.refetch()
+                () => {
+                  versions.refetch()
+                  detail.refetch()
+                }
               "
             >
               Thử tải lại

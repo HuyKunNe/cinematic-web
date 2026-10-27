@@ -8,6 +8,7 @@ export type AdminRouteName =
   | typeof ROUTE_NAMES.ADMIN_CINEMAS
   | typeof ROUTE_NAMES.ADMIN_ROOMS
   | typeof ROUTE_NAMES.ADMIN_SHOWTIMES
+  | typeof ROUTE_NAMES.ADMIN_PRICING_POLICY
   | typeof ROUTE_NAMES.ADMIN_BOOKINGS
   | typeof ROUTE_NAMES.ADMIN_PROMOTIONS
   | typeof ROUTE_NAMES.ADMIN_USERS
@@ -31,8 +32,8 @@ export const ADMIN_NAVIGATION_GROUPS: readonly {
   id: AdminNavigationGroup
   label: string
 }[] = [
-  { id: 'overview', label: 'Điều hành' },
-  { id: 'content', label: 'Nội dung' },
+  { id: 'overview', label: 'Tổng quan' },
+  { id: 'content', label: 'Quản lý rạp' },
   { id: 'operations', label: 'Vận hành' },
   { id: 'system', label: 'Hệ thống' },
 ]
@@ -48,7 +49,7 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
   },
   {
     label: 'Phim',
-    description: 'Thông tin phim, thể loại, hình ảnh và trạng thái phát hành.',
+    description: 'Quản lý nội dung phim và các phiên bản trình chiếu.',
     routeName: ROUTE_NAMES.ADMIN_MOVIES,
     icon: 'movies',
     group: 'content',
@@ -56,45 +57,54 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
     permission: APP_PERMISSIONS.MOVIE_MANAGE,
   },
   {
-    label: 'Khuyến mãi',
-    description: 'Các chương trình ưu đãi và chiến dịch.',
-    routeName: ROUTE_NAMES.ADMIN_PROMOTIONS,
-    icon: 'promotions',
-    group: 'content',
-    roles: ADMIN_ROLES,
-  },
-  {
     label: 'Cụm rạp',
-    description: 'Quản lý các địa điểm thuộc hệ thống rạp và trạng thái hoạt động.',
+    description: 'Quản lý địa điểm, thông tin liên hệ và trạng thái hoạt động.',
     routeName: ROUTE_NAMES.ADMIN_CINEMAS,
     icon: 'cinemas',
-    group: 'operations',
+    group: 'content',
     roles: ADMIN_ROLES,
     permission: APP_PERMISSIONS.INVENTORY_MANAGE,
   },
   {
-    label: 'Phòng và ghế',
-    description: 'Phòng chiếu, ghế của phòng và thiết kế sơ đồ.',
+    label: 'Phòng & sơ đồ ghế',
+    description: 'Cấu hình phòng chiếu, ghế và sơ đồ vị trí đặt chỗ.',
     routeName: ROUTE_NAMES.ADMIN_ROOMS,
     icon: 'rooms',
-    group: 'operations',
+    group: 'content',
     roles: ADMIN_ROLES,
     permission: APP_PERMISSIONS.INVENTORY_MANAGE,
   },
   {
     label: 'Lịch chiếu',
-    description: 'Phân bổ phim, phòng chiếu và thời gian chiếu.',
+    description: 'Sắp xếp phim, phòng chiếu và thời gian chiếu.',
     routeName: ROUTE_NAMES.ADMIN_SHOWTIMES,
     icon: 'showtimes',
-    group: 'operations',
+    group: 'content',
     roles: ADMIN_ROLES,
     permission: APP_PERMISSIONS.SHOWTIME_MANAGE,
   },
   {
-    label: 'Đặt vé',
-    description: 'Tra cứu giao dịch đặt vé và thanh toán.',
+    label: 'Chính sách vé',
+    description: 'Quản lý bảng giá, nhóm ngày, phạm vi áp dụng và phiên bản.',
+    routeName: ROUTE_NAMES.ADMIN_PRICING_POLICY,
+    icon: 'bookings',
+    group: 'content',
+    roles: ADMIN_ROLES,
+    permission: APP_PERMISSIONS.INVENTORY_MANAGE,
+  },
+  {
+    label: 'Đơn đặt vé',
+    description: 'Tra cứu giao dịch đặt vé và thông tin đơn hàng.',
     routeName: ROUTE_NAMES.ADMIN_BOOKINGS,
     icon: 'bookings',
+    group: 'operations',
+    roles: ADMIN_ROLES,
+  },
+  {
+    label: 'Khuyến mãi',
+    description: 'Các chương trình ưu đãi và chiến dịch.',
+    routeName: ROUTE_NAMES.ADMIN_PROMOTIONS,
+    icon: 'promotions',
     group: 'operations',
     roles: ADMIN_ROLES,
   },
