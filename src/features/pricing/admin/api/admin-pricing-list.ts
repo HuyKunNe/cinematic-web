@@ -2,8 +2,8 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQueries, useQuery } from '@tanstack/vue-query'
 import { z } from 'zod'
 import {
-  listLatest,
-  listVersions,
+  listLatestCinemaPricingPolicies,
+  listCinemaPricingPolicyVersions,
 } from '@/services/api/generated/inventory-service/cinema-pricing-policy-controller/cinema-pricing-policy-controller'
 import {
   pricingPolicySchema,
@@ -66,7 +66,7 @@ export function useAdminPricingList(
         enabled: toValue(enabled),
         queryFn: async () => {
           if (!toValue(enabled)) throw new Error('Không có quyền xem bảng giá.')
-          return parseList(await listLatest(id), id)
+          return parseList(await listLatestCinemaPricingPolicies(id), id)
         },
         staleTime: 0,
         retry: false,
@@ -197,9 +197,11 @@ export function useAdminPricingVersions(
       const cinemaId = uuid.parse(queryKey[3])
       const policyId = uuid.parse(queryKey[4])
 
-      return parseList(await listVersions(cinemaId, policyId), cinemaId, policyId).sort(
-        (first, second) => second.revision - first.revision,
-      )
+      return parseList(
+        await listCinemaPricingPolicyVersions(cinemaId, policyId),
+        cinemaId,
+        policyId,
+      ).sort((first, second) => second.revision - first.revision)
     },
     staleTime: 0,
     retry: false,

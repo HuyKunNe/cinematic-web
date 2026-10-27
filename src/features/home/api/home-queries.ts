@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { cinemaProgrammeQueryKeys, useCinemaProgrammeQuery } from '@/features/cinemas'
-import { findAll } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
+import { findAllMovies } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import { getActiveCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import {
-  getByMovieId,
+  getShowtimesByMovie,
   getBookableShowtimes,
 } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
 import type { GetBookableShowtimesParams } from '@/services/api/generated/inventory-service/model/getBookableShowtimesParams'
@@ -38,7 +38,7 @@ export const homeQueryKeys = {
 export function useHomeMovies() {
   return useQuery({
     queryKey: homeQueryKeys.movies,
-    queryFn: findAll,
+    queryFn: findAllMovies,
     select: (response) => response.map(toHomeMovie).filter((movie) => movie !== null),
   })
 }
@@ -103,7 +103,7 @@ export function useHomeShowtimes(movieId: MaybeRefOrGetter<string>) {
 
   return useQuery({
     queryKey: computed(() => homeQueryKeys.showtimes(id.value)),
-    queryFn: () => getByMovieId(id.value),
+    queryFn: () => getShowtimesByMovie(id.value),
     enabled: computed(() => Boolean(id.value)),
   })
 }

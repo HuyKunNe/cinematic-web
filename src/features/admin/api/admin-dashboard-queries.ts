@@ -4,12 +4,12 @@ import { APP_PERMISSIONS } from '@/config/authorization'
 import { getVisibleAdminNavigation } from '@/config/admin-navigation'
 import { useAuthStore } from '@/stores/auth.store'
 import {
-  findById,
-  findAll,
+  findMovieById,
+  findAllMovies,
   getMovieCatalog,
 } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import { getActiveCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
-import { getByTimeRange } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
+import { getShowtimesByTimeRange } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
 import type {
   GetMovieCatalogParams,
   MovieResponse,
@@ -106,7 +106,7 @@ export function useAdminDashboardQueries(
 
   const movieCatalog = useQuery<MovieResponse[], ApiError>({
     queryKey: adminDashboardKeys.movieOptions,
-    queryFn: () => findAll(),
+    queryFn: () => findAllMovies(),
     enabled: canManageShowtimes,
     staleTime: 60_000,
     retry: false,
@@ -140,7 +140,7 @@ export function useAdminDashboardQueries(
     queryKey: computed(() =>
       adminDashboardKeys.schedule(range.value?.from ?? '', range.value?.to ?? ''),
     ),
-    queryFn: ({ queryKey }) => getByTimeRange({ from: queryKey[3], to: queryKey[4] }),
+    queryFn: ({ queryKey }) => getShowtimesByTimeRange({ from: queryKey[3], to: queryKey[4] }),
     enabled: computed(() => canManageShowtimes.value && range.value !== null),
     select: (response) => {
       const currentRange = range.value
@@ -203,7 +203,7 @@ export function useAdminDashboardQueries(
     queries: computed(() =>
       movieIds.value.map((id) => ({
         queryKey: adminDashboardKeys.movieLabel(id),
-        queryFn: (): Promise<MovieResponse> => findById(id),
+        queryFn: (): Promise<MovieResponse> => findMovieById(id),
         staleTime: 60_000,
         retry: false,
         refetchOnWindowFocus: false,

@@ -2,10 +2,10 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { getManagedCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import {
-  create2,
+  createRoom,
   getManagedRooms,
-  getById2,
-  update2,
+  getRoomById,
+  updateRoom,
 } from '@/services/api/generated/inventory-service/room-controller/room-controller'
 import type {
   CinemaResponse,
@@ -123,7 +123,7 @@ export function useAdminRoomDetailQuery(
 ) {
   return useQuery<RoomResponse, unknown, RoomResponse, ReturnType<typeof adminRoomKeys.detail>>({
     queryKey: computed(() => adminRoomKeys.detail(toValue(roomId))),
-    queryFn: ({ queryKey }) => getById2(queryKey[3]),
+    queryFn: ({ queryKey }) => getRoomById(queryKey[3]),
     enabled: computed(() => toValue(enabled) && Boolean(toValue(roomId))),
     staleTime: 0,
     retry: false,
@@ -151,10 +151,10 @@ export function useSaveAdminRoomMutation() {
   return useMutation<RoomResponse, unknown, SaveRoomVariables>({
     mutationFn: async (variables) => {
       if (variables.operation === 'create') {
-        return create2(variables.input, { cinemaId: variables.cinemaId })
+        return createRoom(variables.input, { cinemaId: variables.cinemaId })
       }
 
-      const current = await getById2(variables.roomId)
+      const current = await getRoomById(variables.roomId)
 
       if (
         current.id !== variables.roomId ||
@@ -164,7 +164,7 @@ export function useSaveAdminRoomMutation() {
         throw new Error('Không nhận được thông tin phòng hợp lệ. Hãy mở lại form.')
       }
 
-      return update2(variables.roomId, {
+      return updateRoom(variables.roomId, {
         ...variables.input,
         active: current.active,
       })
@@ -194,7 +194,7 @@ export function useSetAdminRoomActivityMutation() {
 
   return useMutation<RoomResponse, unknown, SetRoomActivityVariables>({
     mutationFn: async ({ cinemaId, roomId, active }) => {
-      const current = await getById2(roomId)
+      const current = await getRoomById(roomId)
       const metadata = adminRoomSchema.safeParse(current)
 
       if (
@@ -208,7 +208,7 @@ export function useSetAdminRoomActivityMutation() {
 
       if (current.active === active) return current
 
-      return update2(roomId, {
+      return updateRoom(roomId, {
         ...metadata.data,
         active,
       })

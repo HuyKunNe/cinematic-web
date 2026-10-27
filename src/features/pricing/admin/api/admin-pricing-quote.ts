@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { z } from 'zod'
-import { quote } from '@/services/api/generated/inventory-service/pricing-fare-quote-controller/pricing-fare-quote-controller'
+import { quotePricingFare } from '@/services/api/generated/inventory-service/pricing-fare-quote-controller/pricing-fare-quote-controller'
 import {
   CellResponseUnit,
   PricingFareQuoteResponseDayGroup,
@@ -134,7 +134,7 @@ export function useAdminPublishedPricingQuote(
       }
       const request = requestSchema.parse(selected.request) satisfies QuotePricingFareRequest
       const response = responseSchema.parse(
-        await quote(context.cinemaId, context.policyId, context.versionId, request),
+        await quotePricingFare(context.cinemaId, context.policyId, context.versionId, request),
       )
 
       const bands = selected.timeBands.filter((band) =>

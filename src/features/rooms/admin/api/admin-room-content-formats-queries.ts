@@ -1,8 +1,8 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
-  get,
-  replace,
+  getRoomContentFormats,
+  replaceRoomContentFormats,
 } from '@/services/api/generated/inventory-service/room-content-formats-controller/room-content-formats-controller'
 import type {
   ReplaceRoomContentFormatsRequest,
@@ -25,7 +25,7 @@ export function useAdminRoomContentFormatsQuery(
     ReturnType<typeof adminRoomContentFormatKeys.detail>
   >({
     queryKey: computed(() => adminRoomContentFormatKeys.detail(toValue(roomId))),
-    queryFn: ({ queryKey }) => get(queryKey[2]),
+    queryFn: ({ queryKey }) => getRoomContentFormats(queryKey[2]),
     enabled: computed(() => toValue(enabled) && Boolean(toValue(roomId))),
     staleTime: 0,
     retry: false,
@@ -43,7 +43,7 @@ export function useReplaceAdminRoomContentFormatsMutation() {
   const queryClient = useQueryClient()
 
   return useMutation<RoomContentFormatsResponse, ApiError, ReplaceVariables>({
-    mutationFn: ({ roomId, input }) => replace(roomId, input),
+    mutationFn: ({ roomId, input }) => replaceRoomContentFormats(roomId, input),
     retry: false,
     onSuccess: async (response) => {
       if (response.roomId) {

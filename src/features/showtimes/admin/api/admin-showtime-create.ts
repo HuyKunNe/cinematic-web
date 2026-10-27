@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { z } from 'zod'
 import { getActiveCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import { getActiveRooms } from '@/services/api/generated/inventory-service/room-controller/room-controller'
-import { findAll } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
+import { findAllMovies } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 
 const uuid = z.string().uuid()
 
@@ -54,7 +54,7 @@ export function useShowtimeCreationOptions(
     queryKey: ['showtimes', 'admin', 'create', 'movies'],
     enabled: computed(() => toValue(enabled)),
     queryFn: async () =>
-      uniqueIds(z.array(movieSchema).parse(await findAll())).filter(
+      uniqueIds(z.array(movieSchema).parse(await findAllMovies())).filter(
         (item) => item.status === 'NOW_SHOWING' || item.status === 'UPCOMING',
       ),
     retry: false,

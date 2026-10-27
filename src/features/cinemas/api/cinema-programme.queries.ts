@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { getActiveRooms } from '@/services/api/generated/inventory-service/room-controller/room-controller'
-import { getByRoomId } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
+import { getShowtimesByRoom } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
 import type { ShowtimeResponse } from '@/services/api/generated/inventory-service/model/showtimeResponse'
 
 export const cinemaProgrammeQueryKeys = {
@@ -54,7 +54,7 @@ export function useCinemaProgrammeQuery(cinemaId: MaybeRefOrGetter<string>) {
 
         const responses = await Promise.all(
           batch.map(async (roomId) => {
-            const showtimes = await getByRoomId(roomId)
+            const showtimes = await getShowtimesByRoom(roomId)
 
             return showtimes.filter(
               (showtime) => showtime.roomId === roomId && showtime.cinemaId === requestedCinemaId,

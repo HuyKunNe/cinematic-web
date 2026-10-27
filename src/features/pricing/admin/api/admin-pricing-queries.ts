@@ -3,20 +3,20 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { z } from 'zod'
 import { getManagedCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import {
-  create4,
-  get1,
-  listLatest,
-  listVersions,
-  replaceDraft,
+  createCinemaPricingPolicy,
+  getCinemaPricingPolicyVersion,
+  listLatestCinemaPricingPolicies,
+  listCinemaPricingPolicyVersions,
+  replaceCinemaPricingPolicyDraft,
 } from '@/services/api/generated/inventory-service/cinema-pricing-policy-controller/cinema-pricing-policy-controller'
 import {
-  get2,
-  replace2,
+  getPricingFareMatrix,
+  replacePricingFareMatrix,
 } from '@/services/api/generated/inventory-service/fare-matrix-controller/fare-matrix-controller'
-import { replace3 } from '@/services/api/generated/inventory-service/pricing-policy-configuration-controller/pricing-policy-configuration-controller'
+import { replacePricingPolicyConfiguration } from '@/services/api/generated/inventory-service/pricing-policy-configuration-controller/pricing-policy-configuration-controller'
 import {
-  publish,
-  validate,
+  publishPricingPolicyVersion,
+  validatePricingPolicyFareMatrix,
 } from '@/services/api/generated/inventory-service/pricing-policy-publication-controller/pricing-policy-publication-controller'
 import {
   CinemaPricingPolicyVersionResponseDayGroup,
@@ -422,8 +422,8 @@ async function readDetail(context: PricingContext): Promise<PricingDetail> {
   requireContext(context)
 
   const [policyResponse, matrixResponse] = await Promise.all([
-    get1(context.cinemaId, context.policyId, context.versionId),
-    get2(context.cinemaId, context.policyId, context.versionId),
+    getCinemaPricingPolicyVersion(context.cinemaId, context.policyId, context.versionId),
+    getPricingFareMatrix(context.cinemaId, context.policyId, context.versionId),
   ])
 
   const policy = pricingPolicySchema.parse(policyResponse)
@@ -489,7 +489,7 @@ export function useAdminPricingQueries(
     queryFn: async ({ queryKey }) => {
       requireAccess()
       const id = uuid.parse(queryKey[3])
-      return parsePolicies(await listLatest(id), id)
+      return parsePolicies(await listLatestCinemaPricingPolicies(id), id)
     },
   })
 
@@ -508,7 +508,7 @@ export function useAdminPricingQueries(
       requireAccess()
       const cinema = uuid.parse(queryKey[3])
       const policy = uuid.parse(queryKey[4])
-      return parsePolicies(await listVersions(cinema, policy), cinema, policy)
+      return parsePolicies(await listCinemaPricingPolicyVersions(cinema, policy), cinema, policy)
     },
   })
 
@@ -577,7 +577,9 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
       requireAccess()
       uuid.parse(input.cinemaId)
 
-      const result = pricingPolicySchema.parse(await create4(input.cinemaId, input.request))
+      const result = pricingPolicySchema.parse(
+        await createCinemaPricingPolicy(input.cinemaId, input.request),
+      )
 
       if (!result.cinemaIds.includes(input.cinemaId)) {
         throw new Error('Bản nháp phản hồi không thuộc cụm rạp đã chọn.')
@@ -598,7 +600,7 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
       requireContext(input.context)
 
       const result = pricingPolicySchema.parse(
-        await replaceDraft(
+        await replaceCinemaPricingPolicyDraft(
           input.context.cinemaId,
           input.context.policyId,
           input.context.versionId,
@@ -627,7 +629,7 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
       requireContext(input.context)
 
       return draftMatrix(
-        await replace3(
+        await replacePricingPolicyConfiguration(
           input.context.cinemaId,
           input.context.policyId,
           input.context.versionId,
@@ -647,7 +649,7 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
       requireContext(input.context)
 
       return draftMatrix(
-        await replace2(
+        await replacePricingFareMatrix(
           input.context.cinemaId,
           input.context.policyId,
           input.context.versionId,
@@ -667,7 +669,11 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
       requireContext(context)
 
       const result = validationSchema.parse(
-        await validate(context.cinemaId, context.policyId, context.versionId),
+        await validatePricingPolicyFareMatrix(
+          context.cinemaId,
+          context.policyId,
+          context.versionId,
+        ),
       )
 
       if (result.policyId !== context.policyId || result.policyVersionId !== context.versionId) {
@@ -688,7 +694,7 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
       requireContext(input.context)
 
       const result = pricingPolicySchema.parse(
-        await publish(
+        await publishPricingPolicyVersion(
           input.context.cinemaId,
           input.context.policyId,
           input.context.versionId,

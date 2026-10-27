@@ -1,9 +1,9 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
-  create2 as create1,
-  findById1,
-  update1,
+  createGenre,
+  findGenreById,
+  updateGenre,
 } from '@/services/api/generated/movie-service/genre-controller/genre-controller'
 import type {
   CreateGenreRequest,
@@ -22,7 +22,7 @@ export function useAdminGenreDetailQuery(
   return useQuery<GenreResponse, ApiError, GenreResponse, ReturnType<typeof adminGenreKeys.detail>>(
     {
       queryKey: computed(() => adminGenreKeys.detail(toValue(id))),
-      queryFn: ({ queryKey }) => findById1(queryKey[3]),
+      queryFn: ({ queryKey }) => findGenreById(queryKey[3]),
       enabled: computed(() => toValue(enabled) && Boolean(toValue(id))),
       staleTime: 0,
       refetchOnMount: 'always',
@@ -41,7 +41,8 @@ export function useSaveAdminGenreMutation() {
   const queryClient = useQueryClient()
 
   return useMutation<GenreResponse, ApiError, SaveAdminGenreVariables>({
-    mutationFn: ({ genreId, input }) => (genreId ? update1(genreId, input) : create1(input)),
+    mutationFn: ({ genreId, input }) =>
+      genreId ? updateGenre(genreId, input) : createGenre(input),
 
     retry: false,
 

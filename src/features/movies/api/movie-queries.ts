@@ -1,8 +1,8 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import {
-  findAll,
-  findById,
+  findAllMovies,
+  findMovieById,
 } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import type { MovieResponse } from '@/services/api/generated/movie-service/model/movieResponse'
 import type { ApiError } from '@/services/http/api-error'
@@ -29,7 +29,7 @@ function mapMovieCatalog(response: MovieResponse[]): CatalogMovie[] {
 export function useMoviesQuery() {
   return useQuery({
     queryKey: moviesQueryKeys.catalog,
-    queryFn: () => findAll(),
+    queryFn: () => findAllMovies(),
     select: mapMovieCatalog,
   })
 }
@@ -43,7 +43,7 @@ export function useMovieDetailQuery(movieId: MaybeRefOrGetter<string>) {
   >({
     queryKey: computed(() => moviesQueryKeys.detail(toValue(movieId))),
     enabled: computed(() => Boolean(toValue(movieId))),
-    queryFn: ({ queryKey }) => findById(queryKey[2]),
+    queryFn: ({ queryKey }) => findMovieById(queryKey[2]),
     select: toMovieDetail,
     retry: false,
   })

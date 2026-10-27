@@ -1,10 +1,10 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
-  create3,
+  createCinema,
   getManagedCinemas,
-  getById3,
-  update3,
+  getCinemaById,
+  updateCinema,
 } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import type {
   CinemaResponse,
@@ -40,7 +40,7 @@ export function useAdminCinemaDetailQuery(
     ReturnType<typeof adminCinemaKeys.detail>
   >({
     queryKey: computed(() => adminCinemaKeys.detail(toValue(id))),
-    queryFn: ({ queryKey }) => getById3(queryKey[3]),
+    queryFn: ({ queryKey }) => getCinemaById(queryKey[3]),
     enabled: computed(() => toValue(enabled) && Boolean(toValue(id))),
     staleTime: 0,
     retry: false,
@@ -65,10 +65,10 @@ export function useSaveAdminCinemaMutation() {
   return useMutation<CinemaResponse, ApiError, SaveCinemaVariables>({
     mutationFn: (variables) => {
       if (variables.cinemaId === null) {
-        return create3(variables.input)
+        return createCinema(variables.input)
       }
 
-      return update3(variables.cinemaId, variables.input)
+      return updateCinema(variables.cinemaId, variables.input)
     },
     retry: false,
     onSuccess: (cinema) => {

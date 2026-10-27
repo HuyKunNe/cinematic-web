@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { getById2 } from '@/services/api/generated/inventory-service/room-controller/room-controller'
-import { getById3 } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
+import { getRoomById } from '@/services/api/generated/inventory-service/room-controller/room-controller'
+import { getCinemaById } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import type { CinemaResponse, RoomResponse } from '@/services/api/generated/inventory-service/model'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 
@@ -22,7 +22,7 @@ export function useAdminRoomSeatContext(
     refetchOnWindowFocus: false,
     queryFn: async ({ queryKey }): Promise<RoomSeatContext> => {
       const requestedRoomId = queryKey[3]
-      const room = await getById2(requestedRoomId)
+      const room = await getRoomById(requestedRoomId)
 
       if (
         room.id !== requestedRoomId ||
@@ -33,7 +33,7 @@ export function useAdminRoomSeatContext(
         throw new Error('Thông tin phòng không hợp lệ. Hãy tải lại.')
       }
 
-      const cinema = await getById3(room.cinemaId)
+      const cinema = await getCinemaById(room.cinemaId)
 
       if (
         cinema.id !== room.cinemaId ||

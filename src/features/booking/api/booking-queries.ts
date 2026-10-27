@@ -1,11 +1,11 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { getById as getShowtime } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
-import { getById2 as getRoom } from '@/services/api/generated/inventory-service/room-controller/room-controller'
-import { getById3 as getCinema } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
+import { getShowtimeById } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
+import { getRoomById } from '@/services/api/generated/inventory-service/room-controller/room-controller'
+import { getCinemaById } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import { getActiveSeats } from '@/services/api/generated/inventory-service/seat-controller/seat-controller'
-import { getByShowtimeId } from '@/services/api/generated/inventory-service/show-seat-controller/show-seat-controller'
-import { findById as getMovie } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
+import { getShowSeatsByShowtime } from '@/services/api/generated/inventory-service/show-seat-controller/show-seat-controller'
+import { findMovieById } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import type { ShowtimeResponse } from '@/services/api/generated/inventory-service/model/showtimeResponse'
 import type { RoomResponse } from '@/services/api/generated/inventory-service/model/roomResponse'
 import type { CinemaResponse } from '@/services/api/generated/inventory-service/model/cinemaResponse'
@@ -34,7 +34,7 @@ const bookingQueryKeys = {
 }
 
 async function readBookingContext(showtimeId: string): Promise<BookingContext | null> {
-  const showtime = await getShowtime(showtimeId)
+  const showtime = await getShowtimeById(showtimeId)
   const { id, movieId, roomId, cinemaId, startsAt } = showtime
 
   if (
@@ -49,9 +49,9 @@ async function readBookingContext(showtimeId: string): Promise<BookingContext | 
   }
 
   const [movie, room, cinema] = await Promise.all([
-    getMovie(movieId),
-    getRoom(roomId),
-    getCinema(cinemaId),
+    findMovieById(movieId),
+    getRoomById(roomId),
+    getCinemaById(cinemaId),
   ])
 
   if (
@@ -101,7 +101,7 @@ export function useBookingSeatsQuery(
 
       const [physicalSeats, showSeats] = await Promise.all([
         getActiveSeats({ roomId: currentRoomId }),
-        getByShowtimeId({
+        getShowSeatsByShowtime({
           showtimeId: currentShowtimeId,
           availableOnly: false,
         }),

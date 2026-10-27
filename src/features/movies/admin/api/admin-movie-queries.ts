@@ -1,12 +1,12 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
-  create,
-  findById,
+  createMovie,
+  findMovieById,
   getMovieCatalog,
-  update,
+  updateMovie,
 } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
-import { findAll1 as getGenres } from '@/services/api/generated/movie-service/genre-controller/genre-controller'
+import { findAll as getGenres } from '@/services/api/generated/movie-service/genre-controller/genre-controller'
 import type {
   CreateMovieRequest,
   GenreResponse,
@@ -57,7 +57,7 @@ export function useAdminMovieDetailQuery(
   return useQuery<MovieResponse, ApiError, MovieResponse, ReturnType<typeof adminMovieKeys.detail>>(
     {
       queryKey: computed(() => adminMovieKeys.detail(toValue(id))),
-      queryFn: ({ queryKey }) => findById(queryKey[3]),
+      queryFn: ({ queryKey }) => findMovieById(queryKey[3]),
       enabled: computed(() => toValue(enabled) && Boolean(toValue(id))),
       retry: false,
       staleTime: 0,
@@ -76,7 +76,8 @@ export function useSaveAdminMovieMutation() {
   const queryClient = useQueryClient()
 
   return useMutation<MovieResponse, ApiError, SaveAdminMovieVariables>({
-    mutationFn: ({ movieId, input }) => (movieId ? update(movieId, input) : create(input)),
+    mutationFn: ({ movieId, input }) =>
+      movieId ? updateMovie(movieId, input) : createMovie(input),
 
     retry: false,
 

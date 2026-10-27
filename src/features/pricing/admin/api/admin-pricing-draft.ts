@@ -1,7 +1,7 @@
 import { computed, ref, shallowRef, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { z } from 'zod'
-import { createDraft } from '@/services/api/generated/inventory-service/pricing-policy-draft-controller/pricing-policy-draft-controller'
+import { createPricingPolicyDraftFromPublished } from '@/services/api/generated/inventory-service/pricing-policy-draft-controller/pricing-policy-draft-controller'
 import type { CreatePricingPolicyDraftRequest } from '@/services/api/generated/inventory-service/model/createPricingPolicyDraftRequest'
 import {
   pricingErrorMessage,
@@ -92,7 +92,12 @@ export function useCreatePricingDraftFromPublished(enabled: MaybeRefOrGetter<boo
         clientRequestId: uuid.parse(attempt.clientRequestId),
       } satisfies CreatePricingPolicyDraftRequest
 
-      const response = await createDraft(cinemaId, policyId, sourceVersionId, request)
+      const response = await createPricingPolicyDraftFromPublished(
+        cinemaId,
+        policyId,
+        sourceVersionId,
+        request,
+      )
 
       const created = pricingPolicySchema.parse(response)
 

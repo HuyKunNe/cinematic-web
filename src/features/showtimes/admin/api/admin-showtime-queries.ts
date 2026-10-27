@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { getByTimeRange } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
-import { findAll } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
+import { getShowtimesByTimeRange } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
+import { findAllMovies } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import { getCinemaDayRange } from '@/utils/cinema-time'
 import { adminShowtimeMoviesSchema, adminShowtimesSchema } from '../schemas/admin-showtime.schema'
 
@@ -24,7 +24,7 @@ export function useAdminShowtimesQuery(
         throw new Error('Ngày xem lịch không hợp lệ.')
       }
 
-      const response = await getByTimeRange(range)
+      const response = await getShowtimesByTimeRange(range)
       const items = adminShowtimesSchema.parse(response)
 
       const from = Date.parse(range.from)
@@ -52,7 +52,7 @@ export function useAdminShowtimeMoviesQuery(enabled: MaybeRefOrGetter<boolean>) 
   return useQuery({
     queryKey: adminShowtimeKeys.movies,
     enabled: computed(() => toValue(enabled)),
-    queryFn: async () => adminShowtimeMoviesSchema.parse(await findAll()),
+    queryFn: async () => adminShowtimeMoviesSchema.parse(await findAllMovies()),
     retry: false,
     refetchOnWindowFocus: false,
   })
