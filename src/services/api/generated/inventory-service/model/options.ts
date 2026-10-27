@@ -8,15 +8,11 @@
 import type { OptionsCellStatesItem } from './optionsCellStatesItem';
 import type { OptionsContentFormatsItem } from './optionsContentFormatsItem';
 import type { OptionsExperienceTypesItem } from './optionsExperienceTypesItem';
-import type { OptionsTicketCategoriesItem } from './optionsTicketCategoriesItem';
-import type { OptionsTimeBandsItem } from './optionsTimeBandsItem';
 import type { SeatTypeOption } from './seatTypeOption';
 
 export interface Options {
   experienceTypes?: OptionsExperienceTypesItem[];
   contentFormats?: OptionsContentFormatsItem[];
-  timeBands?: OptionsTimeBandsItem[];
-  ticketCategories?: OptionsTicketCategoriesItem[];
   seatTypes?: SeatTypeOption[];
   cellStates?: OptionsCellStatesItem[];
 }

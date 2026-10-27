@@ -7,7 +7,6 @@
  */
 import type { CellInput } from './cellInput';
 import type { ReplaceFareMatrixRequestSeatTypesItem } from './replaceFareMatrixRequestSeatTypesItem';
-import type { ReplaceFareMatrixRequestTicketCategoriesItem } from './replaceFareMatrixRequestTicketCategoriesItem';
 import type { ScopeInput } from './scopeInput';
 
 export interface ReplaceFareMatrixRequest {
@@ -22,15 +21,6 @@ export interface ReplaceFareMatrixRequest {
      * @minItems 0
      * @maxItems 4
      */
-  ticketCategories: ReplaceFareMatrixRequestTicketCategoriesItem[];
-  /**
-     * @minItems 0
-     * @maxItems 4
-     */
   seatTypes: ReplaceFareMatrixRequestSeatTypesItem[];
-  /**
-     * @minItems 0
-     * @maxItems 320
-     */
   cells: CellInput[];
 }

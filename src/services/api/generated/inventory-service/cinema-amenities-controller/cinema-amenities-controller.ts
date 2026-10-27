@@ -22,7 +22,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const replace3 = (
+  export const replace4 = (
     cinemaId: string,
     replaceCinemaAmenitiesRequest: ReplaceCinemaAmenitiesRequest,
  ) => {
@@ -34,4 +34,4 @@ import { apiRequest } from '../../../../http/axios-instance';
       );
     }
   export type Get3Result = NonNullable<Awaited<ReturnType<typeof get3>>>
-export type Replace3Result = NonNullable<Awaited<ReturnType<typeof replace3>>>
+export type Replace4Result = NonNullable<Awaited<ReturnType<typeof replace4>>>

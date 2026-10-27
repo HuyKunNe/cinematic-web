@@ -8,13 +8,13 @@
 import type { QuotePricingFareRequestContentFormat } from './quotePricingFareRequestContentFormat';
 import type { QuotePricingFareRequestExperienceType } from './quotePricingFareRequestExperienceType';
 import type { QuotePricingFareRequestSeatType } from './quotePricingFareRequestSeatType';
-import type { QuotePricingFareRequestTicketCategory } from './quotePricingFareRequestTicketCategory';
 
 export interface QuotePricingFareRequest {
   /** Screening start including its UTC offset. The cinema time zone determines the fare time band. */
   startsAt: string;
   experienceType: QuotePricingFareRequestExperienceType;
   contentFormat: QuotePricingFareRequestContentFormat;
-  ticketCategory: QuotePricingFareRequestTicketCategory;
+  /** Ticket group owned by this pricing version. Omit to use the version's default group. */
+  ticketGroupId?: string;
   seatType: QuotePricingFareRequestSeatType;
 }

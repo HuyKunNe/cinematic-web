@@ -8,13 +8,11 @@
 import type { CellReferenceContentFormat } from './cellReferenceContentFormat';
 import type { CellReferenceExperienceType } from './cellReferenceExperienceType';
 import type { CellReferenceSeatType } from './cellReferenceSeatType';
-import type { CellReferenceTicketCategory } from './cellReferenceTicketCategory';
-import type { CellReferenceTimeBand } from './cellReferenceTimeBand';
 
 export interface CellReference {
   experienceType?: CellReferenceExperienceType;
   contentFormat?: CellReferenceContentFormat;
-  timeBand?: CellReferenceTimeBand;
-  ticketCategory?: CellReferenceTicketCategory;
+  timeBandId?: string;
+  ticketGroupId?: string;
   seatType?: CellReferenceSeatType;
 }

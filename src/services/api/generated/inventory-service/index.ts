@@ -4,6 +4,7 @@ export * from './cinema-pricing-policy-controller/cinema-pricing-policy-controll
 export * from './cinema-room-capacities-controller/cinema-room-capacities-controller';
 export * from './fare-matrix-controller/fare-matrix-controller';
 export * from './pricing-fare-quote-controller/pricing-fare-quote-controller';
+export * from './pricing-policy-configuration-controller/pricing-policy-configuration-controller';
 export * from './pricing-policy-draft-controller/pricing-policy-draft-controller';
 export * from './pricing-policy-publication-controller/pricing-policy-publication-controller';
 export * from './room-content-formats-controller/room-content-formats-controller';

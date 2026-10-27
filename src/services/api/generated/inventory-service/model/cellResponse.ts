@@ -9,15 +9,13 @@ import type { CellResponseContentFormat } from './cellResponseContentFormat';
 import type { CellResponseExperienceType } from './cellResponseExperienceType';
 import type { CellResponseSeatType } from './cellResponseSeatType';
 import type { CellResponseState } from './cellResponseState';
-import type { CellResponseTicketCategory } from './cellResponseTicketCategory';
-import type { CellResponseTimeBand } from './cellResponseTimeBand';
 import type { CellResponseUnit } from './cellResponseUnit';
 
 export interface CellResponse {
   experienceType?: CellResponseExperienceType;
   contentFormat?: CellResponseContentFormat;
-  timeBand?: CellResponseTimeBand;
-  ticketCategory?: CellResponseTicketCategory;
+  timeBandId?: string;
+  ticketGroupId?: string;
   seatType?: CellResponseSeatType;
   state?: CellResponseState;
   amount?: number;

@@ -9,14 +9,12 @@ import type { CellInputContentFormat } from './cellInputContentFormat';
 import type { CellInputExperienceType } from './cellInputExperienceType';
 import type { CellInputSeatType } from './cellInputSeatType';
 import type { CellInputState } from './cellInputState';
-import type { CellInputTicketCategory } from './cellInputTicketCategory';
-import type { CellInputTimeBand } from './cellInputTimeBand';
 
 export interface CellInput {
   experienceType: CellInputExperienceType;
   contentFormat: CellInputContentFormat;
-  timeBand: CellInputTimeBand;
-  ticketCategory: CellInputTicketCategory;
+  timeBandId: string;
+  ticketGroupId: string;
   seatType: CellInputSeatType;
   state: CellInputState;
   amount?: number;

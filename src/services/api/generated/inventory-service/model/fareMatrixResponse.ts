@@ -9,9 +9,10 @@ import type { CellResponse } from './cellResponse';
 import type { FareMatrixResponseDayGroup } from './fareMatrixResponseDayGroup';
 import type { FareMatrixResponseSeatTypesItem } from './fareMatrixResponseSeatTypesItem';
 import type { FareMatrixResponseStatus } from './fareMatrixResponseStatus';
-import type { FareMatrixResponseTicketCategoriesItem } from './fareMatrixResponseTicketCategoriesItem';
 import type { Options } from './options';
 import type { ScopeResponse } from './scopeResponse';
+import type { TicketGroupResponse } from './ticketGroupResponse';
+import type { TimeBandResponse } from './timeBandResponse';
 
 export interface FareMatrixResponse {
   policyId?: string;
@@ -21,7 +22,9 @@ export interface FareMatrixResponse {
   dayGroup?: FareMatrixResponseDayGroup;
   status?: FareMatrixResponseStatus;
   scopes?: ScopeResponse[];
-  ticketCategories?: FareMatrixResponseTicketCategoriesItem[];
+  timeBands?: TimeBandResponse[];
+  ticketGroups?: TicketGroupResponse[];
+  defaultTicketGroupId?: string;
   seatTypes?: FareMatrixResponseSeatTypesItem[];
   requiredCellCount?: number;
   configuredCellCount?: number;
