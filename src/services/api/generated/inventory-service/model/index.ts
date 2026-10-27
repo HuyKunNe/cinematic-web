@@ -105,6 +105,7 @@ export * from './replacePricingPolicyDraftRequestDayGroup';
 export * from './replaceRoomContentFormatsRequest';
 export * from './replaceRoomContentFormatsRequestFormatsItem';
 export * from './replaceRoomLayoutContentRequest';
+export * from './replaceShowtimePricingRequest';
 export * from './roomCapacity';
 export * from './roomCapacitySource';
 export * from './roomContentFormatsResponse';

@@ -22,7 +22,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const replace = (
+  export const replace1 = (
     roomId: string,
     replaceRoomContentFormatsRequest: ReplaceRoomContentFormatsRequest,
  ) => {
@@ -34,4 +34,4 @@ import { apiRequest } from '../../../../http/axios-instance';
       );
     }
   export type GetResult = NonNullable<Awaited<ReturnType<typeof get>>>
-export type ReplaceResult = NonNullable<Awaited<ReturnType<typeof replace>>>
+export type Replace1Result = NonNullable<Awaited<ReturnType<typeof replace1>>>

@@ -62,6 +62,10 @@ const options = ref<PricingMatrix['options'] | undefined>(
   props.initial?.matrix.options ?? props.configurationOptions,
 )
 const confirmedOptions = ref(Boolean(props.initial))
+const persistedDayGroup = ref<PricingMetadata['dayGroup'] | null>(
+  props.initial?.matrix.dayGroup ?? null,
+)
+const persistedScopeCount = ref(props.initial?.matrix.scopes.length ?? 0)
 const busy = ref(false)
 const requiresReload = ref(false)
 const error = ref('')
@@ -118,6 +122,8 @@ const editable = computed(
     !requiresReload.value &&
     !waitingForCreation.value,
 )
+
+const dayGroupLocked = computed(() => persistedScopeCount.value > 0)
 
 const entries = computed(() =>
   scopes.value.flatMap((scope) =>
@@ -264,7 +270,26 @@ function configureNew(value: PricingMatrix['options']): void {
   rebuildScopes()
 }
 
+function rememberPersistedMatrix(matrix: PricingMatrix): void {
+  persistedDayGroup.value = matrix.dayGroup
+  persistedScopeCount.value = matrix.scopes.length
+}
+
+function workflowErrorMessage(cause: unknown): string {
+  if (
+    typeof cause === 'object' &&
+    cause !== null &&
+    'code' in cause &&
+    cause.code === 'INVENTORY_PRICING_MATRIX_DAY_GROUP_LOCKED'
+  ) {
+    return 'Loại ngày đã được khóa vì bảng giá có cấu hình được lưu. Hãy tải lại trước khi tiếp tục.'
+  }
+
+  return pricingErrorMessage(cause)
+}
+
 function hydrate(detail: PricingDetail): void {
+  rememberPersistedMatrix(detail.matrix)
   policy.value = detail.policy
   options.value = detail.matrix.options
   confirmedOptions.value = true
@@ -292,15 +317,18 @@ function hydrate(detail: PricingDetail): void {
   scopes.value = detail.matrix.scopes.map((item) => ({ ...item }))
   targetStatus.value = detail.policy.status === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT'
   baseline.value = snapshot.value
+
+  if (detail.policy.status === 'DRAFT' && detail.matrix.scopes.length === 0) {
+    configureNew(detail.matrix.options)
+  }
 }
 
 if (props.initial) {
   hydrate(props.initial)
-} else if (options.value) {
-  configureNew(options.value)
+} else {
+  if (options.value) configureNew(options.value)
+  baseline.value = snapshot.value
 }
-
-baseline.value = snapshot.value
 
 function parseAmount(text: string): number | null {
   const value = text.trim()
@@ -347,6 +375,10 @@ function validateMetadata(): PricingMetadata {
 
   if (policy.value && !result.data.cinemaIds.includes(anchorId.value)) {
     throw new Error('Cần giữ cụm rạp đang mở trong phạm vi của phiên bản này.')
+  }
+
+  if (dayGroupLocked.value && result.data.dayGroup !== persistedDayGroup.value) {
+    throw new Error('Bảng giá đã có cấu hình được lưu nên không thể đổi loại ngày.')
   }
 
   return result.data
@@ -461,10 +493,12 @@ async function ensureDraft(): Promise<void> {
     }
 
     try {
-      policy.value = await actions.create.mutateAsync({
+      const created = await actions.create.mutateAsync({
         cinemaId: anchorId.value,
         request: pendingCreate.value,
       })
+      policy.value = created
+      persistedDayGroup.value = created.dayGroup
     } catch (cause: unknown) {
       const status = pricingErrorStatus(cause)
       if (status === 400 || status === 422) pendingCreate.value = null
@@ -474,6 +508,7 @@ async function ensureDraft(): Promise<void> {
 
   if (!confirmedOptions.value) {
     const detail = await actions.loadDetail(context())
+    rememberPersistedMatrix(detail.matrix)
 
     if (detail.matrix.requiredCellCount > 0) {
       requiresReload.value = true
@@ -513,6 +548,7 @@ async function nextStep(): Promise<void> {
       validateDefinition()
     }
 
+    if (step.value === 2) validateMetadata()
     if (step.value === 3) matrixRequest(policy.value?.version ?? 0)
 
     step.value = Math.min(4, step.value + 1)
@@ -583,6 +619,7 @@ async function save(): Promise<void> {
       })
 
       policy.value = currentPolicy
+      persistedDayGroup.value = currentPolicy.dayGroup
     }
 
     stage = 'matrix'
@@ -600,6 +637,7 @@ async function save(): Promise<void> {
     }
 
     policy.value = currentPolicy
+    rememberPersistedMatrix(matrix)
     baseline.value = snapshot.value
 
     if (targetStatus.value === 'PUBLISHED') {
@@ -635,7 +673,7 @@ async function save(): Promise<void> {
 
     emit('close')
   } catch (cause: unknown) {
-    error.value = pricingErrorMessage(cause)
+    error.value = workflowErrorMessage(cause)
 
     const status = pricingErrorStatus(cause)
 
@@ -1009,12 +1047,27 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               <div class="price-form-grid">
                 <label class="price-field price-full">
                   <span>Mẫu loại ngày</span>
-                  <select v-model="metadata.dayGroup" class="price-control" :disabled="!editable">
+                  <select
+                    v-model="metadata.dayGroup"
+                    class="price-control"
+                    :disabled="!editable || dayGroupLocked"
+                    :aria-describedby="dayGroupLocked ? 'pricing-day-group-lock' : undefined"
+                  >
                     <option value="WEEKDAY">Ngày thường</option>
                     <option value="WEEKEND">Cuối tuần</option>
                     <option value="HOLIDAY">Lễ/Tết</option>
                   </select>
                 </label>
+
+                <p
+                  v-if="dayGroupLocked"
+                  id="pricing-day-group-lock"
+                  class="price-notice price-notice--info price-full"
+                >
+                  Bảng giá đã có cấu hình được lưu nên loại ngày được giữ nguyên. Bạn vẫn có thể
+                  chỉnh sửa tên, mô tả, phạm vi cụm rạp và giá vé. Nếu cần bảng giá cho loại ngày
+                  khác, hãy tạo bảng giá mới.
+                </p>
 
                 <div class="price-notice price-notice--info price-full">
                   Chọn trực tiếp bảng giá này cho suất chiếu. Mẫu lễ/Tết không tự suy luận ngày lễ
