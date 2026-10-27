@@ -1,11 +1,20 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
-import AppButton from '@/components/ui/AppButton.vue'
+import {
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from 'reka-ui'
 import type {
   CellInput,
   CreateCinemaPricingPolicyRequest,
   OptionsCellStatesItem,
+  OptionsContentFormatsItem,
+  OptionsExperienceTypesItem,
   OptionsTimeBandsItem,
   ReplaceFareMatrixRequest,
   ScopeInput,
@@ -25,55 +34,65 @@ import {
   type PricingMatrix,
   type PricingMetadata,
   type PricingPolicy,
-  type PricingValidation,
 } from '../api/admin-pricing-queries'
+import { useAdminPricingVersions } from '../api/admin-pricing-list'
 
 const props = defineProps<{
   cinemas: PricingCinema[]
   anchorCinemaId: string
+  initialCinemaIds: string[]
   canManage: boolean
+  configurationOptions?: PricingMatrix['options']
   initial?: PricingDetail
   readOnly?: boolean
 }>()
 
-const emit = defineEmits<{
-  close: []
-  changed: []
-  locked: [value: boolean]
-}>()
+const emit = defineEmits<{ close: [] }>()
 
-type CellIdentity = Omit<CellInput, 'state' | 'amount'>
-type DraftValue = {
+type Identity = Omit<CellInput, 'state' | 'amount'>
+type Value = {
   state: OptionsCellStatesItem
   amount: string
 }
 
 const actions = useAdminPricingActions(() => props.canManage)
 const policy = ref<PricingPolicy | null>(props.initial?.policy ?? null)
-const sourceMatrix = ref<PricingMatrix | null>(props.initial?.matrix ?? null)
-const step = ref(props.initial ? 4 : 1)
+const anchorId = ref(props.initial ? props.anchorCinemaId : '')
+const options = ref<PricingMatrix['options'] | undefined>(
+  props.initial?.matrix.options ?? props.configurationOptions,
+)
+const confirmedOptions = ref(Boolean(props.initial))
 const busy = ref(false)
 const requiresReload = ref(false)
 const error = ref('')
 const notice = ref('')
-const validation = ref<PricingValidation | null>(null)
+const step = ref(1)
+const targetStatus = ref<'DRAFT' | 'PUBLISHED'>('DRAFT')
 const pendingCreate = ref<CreateCinemaPricingPolicyRequest | null>(null)
-const formElement = ref<HTMLFormElement | null>(null)
 const baseline = ref('')
+const formElement = ref<HTMLFormElement | null>(null)
+
+const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
 
 const metadata = reactive<PricingMetadata>({
   name: props.initial?.policy.name ?? '',
   description: props.initial?.policy.description ?? '',
   dayGroup: props.initial?.policy.dayGroup ?? 'WEEKDAY',
-  cinemaIds: [...(props.initial?.policy.cinemaIds ?? [props.anchorCinemaId])],
+  cinemaIds: [...(props.initial?.policy.cinemaIds ?? props.initialCinemaIds)],
 })
 
-const selectedScopeKeys = ref<string[]>([])
-const selectedCategories = ref<ReplaceFareMatrixRequest['ticketCategories']>([])
-const selectedSeats = ref<ReplaceFareMatrixRequest['seatTypes']>([])
-const values = ref<Record<string, DraftValue>>({})
+const formats = ref<OptionsContentFormatsItem[]>([])
+const experiences = ref<OptionsExperienceTypesItem[]>([])
+const scopes = ref<ScopeInput[]>([])
+const categories = ref<ReplaceFareMatrixRequest['ticketCategories']>([])
+const seats = ref<ReplaceFareMatrixRequest['seatTypes']>([])
+const values = ref<Record<string, Value>>({})
 const activeScopeKey = ref('')
 const activeTime = ref<OptionsTimeBandsItem>('BEFORE_17')
+
+const quoteCinema = ref(metadata.cinemaIds[0] ?? '')
+const quoteExperience = ref('')
+const quoteFormat = ref('')
 const quoteTime = ref('17:00')
 const quoteSeat = ref('')
 const quoteCategory = ref('')
@@ -86,10 +105,10 @@ const steps = [
 ]
 
 const readOnly = computed(
-  () => props.readOnly || (policy.value !== null && policy.value.status !== 'DRAFT'),
+  () => Boolean(props.readOnly) || (policy.value !== null && policy.value.status !== 'DRAFT'),
 )
 
-const waitingForCreateResult = computed(() => pendingCreate.value !== null && policy.value === null)
+const waitingForCreation = computed(() => pendingCreate.value !== null && policy.value === null)
 
 const editable = computed(
   () =>
@@ -97,41 +116,19 @@ const editable = computed(
     !readOnly.value &&
     !busy.value &&
     !requiresReload.value &&
-    !waitingForCreateResult.value,
-)
-
-const options = computed(() => sourceMatrix.value?.options)
-
-const scopeOptions = computed(() =>
-  (options.value?.experienceTypes ?? []).flatMap((experienceType) =>
-    (options.value?.contentFormats ?? []).map((contentFormat) => ({
-      experienceType,
-      contentFormat,
-      key: pricingScopeKey({ experienceType, contentFormat }),
-      label: `${pricingLabel(experienceType)} · ${contentFormat}`,
-    })),
-  ),
-)
-
-const scopes = computed<ScopeInput[]>(() =>
-  scopeOptions.value
-    .filter((item) => selectedScopeKeys.value.includes(item.key))
-    .map((item) => ({
-      experienceType: item.experienceType,
-      contentFormat: item.contentFormat,
-    })),
+    !waitingForCreation.value,
 )
 
 const entries = computed(() =>
   scopes.value.flatMap((scope) =>
     (options.value?.timeBands ?? []).flatMap((timeBand) =>
-      selectedCategories.value.flatMap((ticketCategory) =>
-        selectedSeats.value.map((seatType) => {
-          const identity: CellIdentity = {
+      seats.value.flatMap((seatType) =>
+        categories.value.map((ticketCategory) => {
+          const identity: Identity = {
             ...scope,
             timeBand,
-            ticketCategory,
             seatType,
+            ticketCategory,
           }
 
           return { ...identity, key: pricingCellKey(identity) }
@@ -141,15 +138,13 @@ const entries = computed(() =>
   ),
 )
 
-function blankValue(): DraftValue {
-  return { state: 'UNCONFIGURED', amount: '' }
-}
-
 watch(
   entries,
   (items) => {
     for (const item of items) {
-      if (!values.value[item.key]) values.value[item.key] = blankValue()
+      if (!values.value[item.key]) {
+        values.value[item.key] = { state: 'UNCONFIGURED', amount: '' }
+      }
     }
   },
   { immediate: true, flush: 'sync' },
@@ -165,50 +160,25 @@ watch(
   { immediate: true, flush: 'sync' },
 )
 
-watch(
-  selectedSeats,
-  (items) => {
-    if (!items.some((item) => item === quoteSeat.value)) {
-      quoteSeat.value = items[0] ?? ''
-    }
-  },
-  { immediate: true },
+const contextValue = computed<PricingContext | null>(() =>
+  policy.value
+    ? {
+        cinemaId: anchorId.value,
+        policyId: policy.value.policyId,
+        versionId: policy.value.id,
+      }
+    : null,
 )
 
-watch(
-  selectedCategories,
-  (items) => {
-    if (!items.some((item) => item === quoteCategory.value)) {
-      quoteCategory.value = items[0] ?? ''
-    }
-  },
-  { immediate: true },
+const versions = useAdminPricingVersions(
+  contextValue,
+  () => props.canManage && readOnly.value && contextValue.value !== null,
 )
 
-const activeScope = computed(() =>
-  scopes.value.find((item) => pricingScopeKey(item) === activeScopeKey.value),
-)
-
-const grid = computed(() =>
-  selectedSeats.value.map((seatType) => ({
-    seatType,
-    option: options.value?.seatTypes.find((item) => item.seatType === seatType),
-    cells: selectedCategories.value.flatMap((ticketCategory) => {
-      const scope = activeScope.value
-      if (!scope) return []
-
-      const key = pricingCellKey({
-        ...scope,
-        timeBand: activeTime.value,
-        seatType,
-        ticketCategory,
-      })
-
-      const value = values.value[key]
-      return value ? [{ key, ticketCategory, value }] : []
-    }),
-  })),
-)
+function context(): PricingContext {
+  if (!contextValue.value) throw new Error('Chưa có bản nháp.')
+  return { ...contextValue.value }
+}
 
 function metadataValue(): PricingMetadata {
   return {
@@ -219,7 +189,7 @@ function metadataValue(): PricingMetadata {
   }
 }
 
-function metadataFingerprint(value: PricingMetadata): string {
+function metadataKey(value: PricingMetadata): string {
   return JSON.stringify({
     ...value,
     name: value.name.trim(),
@@ -231,9 +201,10 @@ function metadataFingerprint(value: PricingMetadata): string {
 const snapshot = computed(() =>
   JSON.stringify({
     metadata: metadataValue(),
-    scopes: [...selectedScopeKeys.value].sort(),
-    categories: [...selectedCategories.value].sort(),
-    seats: [...selectedSeats.value].sort(),
+    targetStatus: targetStatus.value,
+    scopes: scopes.value.map(pricingScopeKey).sort(),
+    categories: [...categories.value].sort(),
+    seats: [...seats.value].sort(),
     cells: entries.value
       .map((item) => ({
         key: item.key,
@@ -250,18 +221,63 @@ const missingCount = computed(
   () => entries.value.filter((item) => values.value[item.key]?.state === 'UNCONFIGURED').length,
 )
 
-const canPublish = computed(
-  () =>
-    editable.value &&
-    !dirty.value &&
-    validation.value?.canPublish === true &&
-    validation.value.version === policy.value?.version,
+const activeScope = computed(() =>
+  scopes.value.find((item) => pricingScopeKey(item) === activeScopeKey.value),
 )
 
-function applyMatrix(matrix: PricingMatrix): void {
-  sourceMatrix.value = matrix
+const grid = computed(() =>
+  seats.value.map((seatType) => ({
+    seatType,
+    option: options.value?.seatTypes.find((item) => item.seatType === seatType),
+    cells: categories.value.flatMap((ticketCategory) => {
+      if (!activeScope.value) return []
+
+      const key = pricingCellKey({
+        ...activeScope.value,
+        timeBand: activeTime.value,
+        seatType,
+        ticketCategory,
+      })
+      const value = values.value[key]
+
+      return value ? [{ key, ticketCategory, value }] : []
+    }),
+  })),
+)
+
+function rebuildScopes(): void {
+  scopes.value = experiences.value.flatMap((experienceType) =>
+    formats.value.map((contentFormat) => ({ experienceType, contentFormat })),
+  )
+}
+
+function configureNew(value: PricingMatrix['options']): void {
+  categories.value = [...value.ticketCategories]
+  seats.value = value.seatTypes.map((item) => item.seatType)
+  formats.value = value.contentFormats.filter((item) => item === '2D')
+
+  if (!formats.value.length && value.contentFormats[0]) {
+    formats.value = [value.contentFormats[0]]
+  }
+
+  experiences.value = [...value.experienceTypes]
+  rebuildScopes()
+}
+
+function hydrate(detail: PricingDetail): void {
+  policy.value = detail.policy
+  options.value = detail.matrix.options
+  confirmedOptions.value = true
+
+  Object.assign(metadata, {
+    name: detail.policy.name,
+    description: detail.policy.description,
+    dayGroup: detail.policy.dayGroup,
+    cinemaIds: [...detail.policy.cinemaIds],
+  })
+
   values.value = Object.fromEntries(
-    matrix.cells.map((cell) => [
+    detail.matrix.cells.map((cell) => [
       pricingCellKey(cell),
       {
         state: cell.state,
@@ -269,76 +285,57 @@ function applyMatrix(matrix: PricingMatrix): void {
       },
     ]),
   )
-  selectedScopeKeys.value = matrix.scopes.map(pricingScopeKey)
-  selectedCategories.value = matrix.ticketCategories.length
-    ? [...matrix.ticketCategories]
-    : matrix.status === 'DRAFT'
-      ? ['ADULT']
-      : []
-  selectedSeats.value = [...matrix.seatTypes]
-
-  if (policy.value) {
-    policy.value = {
-      ...policy.value,
-      version: matrix.version,
-      status: matrix.status,
-      dayGroup: matrix.dayGroup,
-    }
-  }
+  formats.value = [...new Set(detail.matrix.scopes.map((item) => item.contentFormat))]
+  experiences.value = [...new Set(detail.matrix.scopes.map((item) => item.experienceType))]
+  categories.value = [...detail.matrix.ticketCategories]
+  seats.value = [...detail.matrix.seatTypes]
+  scopes.value = detail.matrix.scopes.map((item) => ({ ...item }))
+  targetStatus.value = detail.policy.status === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT'
+  baseline.value = snapshot.value
 }
 
-if (props.initial) applyMatrix(props.initial.matrix)
+if (props.initial) {
+  hydrate(props.initial)
+} else if (options.value) {
+  configureNew(options.value)
+}
+
 baseline.value = snapshot.value
 
-watch(snapshot, () => {
-  validation.value = null
-  notice.value = ''
-})
-
-watch(
-  () => busy.value || dirty.value || requiresReload.value || waitingForCreateResult.value,
-  (value) => emit('locked', value),
-  { immediate: true, flush: 'sync' },
-)
-
-function context(): PricingContext {
-  if (!policy.value) throw new Error('Chưa có bản nháp để thực hiện thao tác.')
-
-  return {
-    cinemaId: props.anchorCinemaId,
-    policyId: policy.value.policyId,
-    versionId: policy.value.id,
-  }
-}
-
 function parseAmount(text: string): number | null {
-  const normalized = text.trim()
+  const value = text.trim()
 
-  if (!/^(?:0|[1-9][0-9]*|[1-9][0-9]{0,2}(?:\.[0-9]{3})+)(?:,[0-9]{1,2})?$/.test(normalized)) {
+  if (!/^(?:0|[1-9][0-9]*|[1-9][0-9]{0,2}(?:\.[0-9]{3})+)(?:,[0-9]{1,2})?$/.test(value)) {
     return null
   }
 
-  const amount = Number(normalized.replace(/\./g, '').replace(',', '.'))
+  const amount = Number(value.replace(/\./g, '').replace(',', '.'))
 
-  return Number.isFinite(amount) && amount >= 0 && amount <= 9_999_999_999.99 ? amount : null
+  return Number.isFinite(amount) && amount <= 9_999_999_999.99 ? amount : null
 }
 
-function amountLabel(amount: number): string {
+function money(value: number): string {
   return `${new Intl.NumberFormat('vi-VN', {
     maximumFractionDigits: 2,
-  }).format(amount)}đ`
+  }).format(value)}đ`
 }
 
-function cellLabel(value: DraftValue): string {
-  if (value.state === 'UNCONFIGURED') return 'Chưa nhập giá'
-  if (value.state === 'NOT_APPLICABLE') return 'Không áp dụng'
+function changeMode(value: Value, event: Event): void {
+  if (!(event.target instanceof HTMLSelectElement)) return
 
-  const amount = parseAmount(value.amount)
-  return amount === null ? 'Số tiền chưa hợp lệ' : amountLabel(amount)
+  value.state =
+    event.target.value === 'NOT_APPLICABLE'
+      ? 'NOT_APPLICABLE'
+      : value.amount.trim()
+        ? 'PRICED'
+        : 'UNCONFIGURED'
 }
 
-function cellError(value: DraftValue): boolean {
-  return value.state === 'PRICED' && parseAmount(value.amount) === null
+function changeAmount(value: Value, event: Event): void {
+  if (!(event.target instanceof HTMLInputElement)) return
+
+  value.amount = event.target.value
+  value.state = value.amount.trim() ? 'PRICED' : 'UNCONFIGURED'
 }
 
 function validateMetadata(): PricingMetadata {
@@ -348,77 +345,88 @@ function validateMetadata(): PricingMetadata {
     throw new Error(result.error.issues[0]?.message ?? 'Kiểm tra thông tin bảng giá.')
   }
 
-  if (!result.data.cinemaIds.includes(props.anchorCinemaId)) {
-    throw new Error('Phạm vi cần giữ cụm rạp đang mở để tiếp tục quản lý bản nháp này.')
+  if (policy.value && !result.data.cinemaIds.includes(anchorId.value)) {
+    throw new Error('Cần giữ cụm rạp đang mở trong phạm vi của phiên bản này.')
   }
 
   return result.data
 }
 
-function matrixRequest(): ReplaceFareMatrixRequest {
-  const current = policy.value
-  if (!current) throw new Error('Chưa có bản nháp.')
-
-  if (!scopes.value.length || !selectedSeats.value.length) {
-    throw new Error('Chọn ít nhất một phạm vi chiếu và một loại ghế.')
+function validateDefinition(): void {
+  if (!options.value || !scopes.value.length || !seats.value.length) {
+    throw new Error('Chọn ít nhất một định dạng, loại phòng và hạng ghế.')
   }
 
-  if (!selectedCategories.value.includes('ADULT')) {
+  if (!categories.value.includes('ADULT')) {
     throw new Error('Bảng giá phải có đối tượng vé người lớn.')
   }
 
-  const uniformFares = new Map<string, number>()
+  if (
+    scopes.value.some(
+      (scope) =>
+        !options.value?.experienceTypes.some((item) => item === scope.experienceType) ||
+        !options.value?.contentFormats.some((item) => item === scope.contentFormat),
+    ) ||
+    seats.value.some((seat) => !options.value?.seatTypes.some((item) => item.seatType === seat)) ||
+    categories.value.some(
+      (category) => !options.value?.ticketCategories.some((item) => item === category),
+    )
+  ) {
+    throw new Error('Lựa chọn cấu hình đã thay đổi. Hãy tải lại bảng giá.')
+  }
+}
 
-  function requireSameAmount(key: string, amount: number, message: string): void {
-    const previous = uniformFares.get(key)
+function matrixRequest(expectedVersion: number): ReplaceFareMatrixRequest {
+  validateDefinition()
+  const uniform = new Map<string, number>()
+
+  function sameFare(key: string, amount: number, message: string): void {
+    const previous = uniform.get(key)
     if (previous !== undefined && previous !== amount) throw new Error(message)
-    uniformFares.set(key, amount)
+    uniform.set(key, amount)
   }
 
   const cells: CellInput[] = entries.value.map((item) => {
-    const value = values.value[item.key] ?? blankValue()
-    const identity: CellIdentity = {
+    const value = values.value[item.key]
+    const identity: Identity = {
       experienceType: item.experienceType,
       contentFormat: item.contentFormat,
       timeBand: item.timeBand,
-      ticketCategory: item.ticketCategory,
       seatType: item.seatType,
+      ticketCategory: item.ticketCategory,
     }
 
-    if (value.state !== 'PRICED') {
-      return { ...identity, state: value.state }
+    if (!value || value.state !== 'PRICED') {
+      return {
+        ...identity,
+        state: value?.state ?? 'UNCONFIGURED',
+      }
     }
 
     const amount = parseAmount(value.amount)
 
     if (amount === null) {
       throw new Error(
-        `Kiểm tra giá ${pricingSeatLabel(item.seatType)}, ` +
+        `Giá chưa hợp lệ: ${pricingSeatLabel(item.seatType)}, ` +
           `${pricingLabel(item.ticketCategory)}, ${item.contentFormat}, ` +
           `${pricingLabel(item.timeBand)}.`,
       )
     }
 
     if (item.experienceType === 'PREMIUM_CINEMA') {
-      requireSameAmount(
-        JSON.stringify([
-          'premium',
-          item.experienceType,
-          item.contentFormat,
-          item.timeBand,
-          item.seatType,
-        ]),
+      sameFare(
+        JSON.stringify(['premium', item.contentFormat, item.timeBand, item.seatType]),
         amount,
-        'Rạp cao cấp phải có cùng giá giữa các đối tượng vé cho cùng định dạng, khung giờ và ghế.',
+        'Rạp cao cấp cần cùng giá giữa các đối tượng vé cho cùng định dạng, giờ và ghế.',
       )
     }
 
     if (item.seatType === 'COUPLE') {
       if (metadata.dayGroup !== 'HOLIDAY' && amount !== 200_000) {
-        throw new Error('Giá ghế đôi ngoài Lễ, Tết phải là 200.000đ/cặp cho cả hai khung giờ.')
+        throw new Error('Ghế đôi ngoài Lễ, Tết phải là 200.000đ/cặp cả ngày.')
       }
 
-      requireSameAmount(
+      sameFare(
         JSON.stringify([
           'couple',
           item.experienceType,
@@ -426,112 +434,89 @@ function matrixRequest(): ReplaceFareMatrixRequest {
           metadata.dayGroup === 'HOLIDAY' ? item.timeBand : 'ALL_DAY',
         ]),
         amount,
-        'Giá ghế đôi phải đồng nhất giữa các đối tượng vé trong cùng phạm vi áp dụng.',
+        'Giá ghế đôi phải đồng nhất giữa các đối tượng vé trong cùng phạm vi.',
       )
     }
 
-    return { ...identity, state: value.state, amount }
+    return { ...identity, state: 'PRICED', amount }
   })
 
   return {
-    expectedVersion: current.version,
-    scopes: scopes.value.map((scope) => ({ ...scope })),
-    ticketCategories: [...selectedCategories.value],
-    seatTypes: [...selectedSeats.value],
+    expectedVersion,
+    scopes: scopes.value.map((item) => ({ ...item })),
+    ticketCategories: [...categories.value],
+    seatTypes: [...seats.value],
     cells,
   }
 }
 
-function handleWriteError(cause: unknown): void {
-  error.value = pricingErrorMessage(cause)
-  const status = pricingErrorStatus(cause)
+async function ensureDraft(): Promise<void> {
+  if (!policy.value) {
+    if (!pendingCreate.value) {
+      pendingCreate.value = {
+        ...validateMetadata(),
+        clientRequestId: crypto.randomUUID(),
+      }
+      anchorId.value = pendingCreate.value.cinemaIds[0] ?? ''
+    }
 
-  if (status !== 400 && status !== 422) {
-    requiresReload.value = true
+    try {
+      policy.value = await actions.create.mutateAsync({
+        cinemaId: anchorId.value,
+        request: pendingCreate.value,
+      })
+    } catch (cause: unknown) {
+      const status = pricingErrorStatus(cause)
+      if (status === 400 || status === 422) pendingCreate.value = null
+      throw cause
+    }
   }
+
+  if (!confirmedOptions.value) {
+    const detail = await actions.loadDetail(context())
+
+    if (detail.matrix.requiredCellCount > 0) {
+      requiresReload.value = true
+      throw new Error('Bản nháp đã có cấu hình trên máy chủ. Hãy tải lại trước khi tiếp tục.')
+    }
+
+    policy.value = detail.policy
+    options.value = detail.matrix.options
+    confirmedOptions.value = true
+
+    if (!scopes.value.length) configureNew(detail.matrix.options)
+  }
+
+  pendingCreate.value = null
 }
 
-async function syncMetadata(): Promise<void> {
-  const current = policy.value
-  if (!current) throw new Error('Chưa có bản nháp.')
-
-  const next = validateMetadata()
-  const previous: PricingMetadata = {
-    name: current.name,
-    description: current.description,
-    dayGroup: current.dayGroup,
-    cinemaIds: [...current.cinemaIds],
-  }
-
-  if (metadataFingerprint(previous) === metadataFingerprint(next)) return
-
-  try {
-    policy.value = await actions.metadata.mutateAsync({
-      context: context(),
-      request: {
-        ...next,
-        expectedVersion: current.version,
-      },
-    })
-    validation.value = null
-    emit('changed')
-  } catch (cause: unknown) {
-    handleWriteError(cause)
-    throw cause
-  }
+async function focusStep(): Promise<void> {
+  await nextTick()
+  formElement.value?.querySelector<HTMLElement>('[data-step-focus]')?.focus()
 }
 
 async function nextStep(): Promise<void> {
-  if (busy.value || requiresReload.value || !props.canManage) return
-
+  if (busy.value || requiresReload.value || !props.canManage || readOnly.value) return
   error.value = ''
 
   try {
-    if (step.value === 1 && !readOnly.value) validateMetadata()
+    if (step.value === 1) {
+      validateMetadata()
 
-    if (step.value === 2 && !readOnly.value) {
-      busy.value = true
-
-      if (!policy.value) {
-        if (!pendingCreate.value) {
-          pendingCreate.value = {
-            ...validateMetadata(),
-            clientRequestId: crypto.randomUUID(),
-          }
-        }
-
-        try {
-          policy.value = await actions.create.mutateAsync({
-            cinemaId: props.anchorCinemaId,
-            request: pendingCreate.value,
-          })
-          emit('changed')
-        } catch (cause: unknown) {
-          const status = pricingErrorStatus(cause)
-
-          if (status === 400 || status === 422) pendingCreate.value = null
-          throw cause
-        }
-      } else {
-        await syncMetadata()
+      if (!options.value) {
+        busy.value = true
+        await ensureDraft()
+        notice.value = 'Đã lưu thông tin nháp. Chọn định dạng và loại phòng để tiếp tục.'
+        return
       }
 
-      if (!sourceMatrix.value) {
-        const detail = await actions.loadDetail(context())
-        policy.value = detail.policy
-        applyMatrix(detail.matrix)
-        baseline.value = snapshot.value
-      }
-
-      pendingCreate.value = null
+      validateDefinition()
     }
 
-    if (step.value === 3 && !readOnly.value) {
-      matrixRequest()
-    }
+    if (step.value === 3) matrixRequest(policy.value?.version ?? 0)
 
     step.value = Math.min(4, step.value + 1)
-    await focusHeading()
+    await focusStep()
   } catch (cause: unknown) {
     error.value = pricingErrorMessage(cause)
   } finally {
@@ -540,27 +525,20 @@ async function nextStep(): Promise<void> {
 }
 
 async function previousStep(): Promise<void> {
-  if (busy.value || waitingForCreateResult.value || requiresReload.value) return
+  if (busy.value || requiresReload.value || waitingForCreation.value) return
   step.value = Math.max(1, step.value - 1)
-  await focusHeading()
+  await focusStep()
 }
 
-async function focusHeading(): Promise<void> {
-  await nextTick()
-  formElement.value?.querySelector<HTMLElement>('[data-step-heading]')?.focus()
-}
-
-async function saveDraft(): Promise<void> {
-  if (!editable.value || !policy.value) return
+async function save(): Promise<void> {
+  if (!editable.value) return
 
   error.value = ''
   notice.value = ''
 
-  let prepared: ReplaceFareMatrixRequest
-
   try {
     validateMetadata()
-    prepared = matrixRequest()
+    matrixRequest(policy.value?.version ?? 0)
   } catch (cause: unknown) {
     error.value = pricingErrorMessage(cause)
     return
@@ -568,165 +546,280 @@ async function saveDraft(): Promise<void> {
 
   busy.value = true
 
-  try {
-    await syncMetadata()
+  let stage: 'create' | 'metadata' | 'matrix' | 'validation' | 'publish' = 'create'
 
-    const current = policy.value
-    const result = await actions.matrix.mutateAsync({
-      context: context(),
-      request: {
-        ...prepared,
-        expectedVersion: current.version,
-      },
+  try {
+    await ensureDraft()
+
+    let currentPolicy = policy.value
+
+    if (!currentPolicy) {
+      throw new Error('Chưa xác nhận được bản nháp.')
+    }
+
+    const currentContext: PricingContext = {
+      cinemaId: anchorId.value,
+      policyId: currentPolicy.policyId,
+      versionId: currentPolicy.id,
+    }
+
+    const nextMetadata = validateMetadata()
+    const previousMetadata: PricingMetadata = {
+      name: currentPolicy.name,
+      description: currentPolicy.description,
+      dayGroup: currentPolicy.dayGroup,
+      cinemaIds: [...currentPolicy.cinemaIds],
+    }
+
+    if (metadataKey(previousMetadata) !== metadataKey(nextMetadata)) {
+      stage = 'metadata'
+
+      currentPolicy = await actions.metadata.mutateAsync({
+        context: currentContext,
+        request: {
+          ...nextMetadata,
+          expectedVersion: currentPolicy.version,
+        },
+      })
+
+      policy.value = currentPolicy
+    }
+
+    stage = 'matrix'
+
+    const matrix = await actions.matrix.mutateAsync({
+      context: currentContext,
+      request: matrixRequest(currentPolicy.version),
     })
 
-    applyMatrix(result)
+    currentPolicy = {
+      ...currentPolicy,
+      version: matrix.version,
+      status: matrix.status,
+      dayGroup: matrix.dayGroup,
+    }
+
+    policy.value = currentPolicy
     baseline.value = snapshot.value
-    validation.value = null
-    notice.value = 'Đã lưu bản nháp. Chưa công bố bảng giá.'
-    emit('changed')
+
+    if (targetStatus.value === 'PUBLISHED') {
+      stage = 'validation'
+
+      const result = await actions.validation.mutateAsync(currentContext)
+
+      if (result.version !== currentPolicy.version) {
+        requiresReload.value = true
+        throw new Error('Bảng giá đã thay đổi. Hãy tải lại trước khi công bố.')
+      }
+
+      if (!result.canPublish) {
+        error.value = [
+          `Chưa thể công bố: còn ${result.missingCellCount} ô chưa nhập.`,
+          ...result.issues.map((issue) => issue.message),
+        ].join(' ')
+
+        return
+      }
+
+      stage = 'publish'
+
+      currentPolicy = await actions.publication.mutateAsync({
+        context: currentContext,
+        request: {
+          expectedVersion: currentPolicy.version,
+        },
+      })
+
+      policy.value = currentPolicy
+    }
+
+    emit('close')
   } catch (cause: unknown) {
-    handleWriteError(cause)
-  } finally {
-    busy.value = false
-  }
-}
+    error.value = pricingErrorMessage(cause)
 
-async function validateDraft(): Promise<void> {
-  if (!editable.value || dirty.value || !policy.value) return
-
-  busy.value = true
-  error.value = ''
-  notice.value = ''
-
-  try {
-    const result = await actions.validation.mutateAsync(context())
+    const status = pricingErrorStatus(cause)
 
     if (
-      result.version !== policy.value.version ||
-      result.revision !== policy.value.revision ||
-      result.status !== policy.value.status
+      (stage === 'metadata' || stage === 'matrix' || stage === 'publish') &&
+      status !== 400 &&
+      status !== 422
     ) {
       requiresReload.value = true
-      throw new Error('Bản giá đã thay đổi. Hãy tải lại trước khi công bố.')
     }
-
-    validation.value = result
-    notice.value = result.canPublish
-      ? 'Bản nháp đã đủ điều kiện công bố.'
-      : 'Bản nháp chưa đủ điều kiện công bố. Xem các vấn đề bên dưới.'
-  } catch (cause: unknown) {
-    error.value = pricingErrorMessage(cause)
   } finally {
     busy.value = false
   }
 }
 
-async function publishDraft(): Promise<void> {
-  if (!canPublish.value || !policy.value) return
-  if (!window.confirm('Công bố bảng giá này? Phiên bản đã công bố sẽ chỉ được xem.')) return
-
-  busy.value = true
-  error.value = ''
-
-  try {
-    policy.value = await actions.publication.mutateAsync({
-      context: context(),
-      request: { expectedVersion: policy.value.version },
-    })
-
-    if (sourceMatrix.value) {
-      sourceMatrix.value = {
-        ...sourceMatrix.value,
-        status: policy.value.status,
-        version: policy.value.version,
-      }
-    }
-
-    validation.value = null
-    baseline.value = snapshot.value
-    notice.value = 'Đã công bố bảng giá.'
-    emit('changed')
-  } catch (cause: unknown) {
-    handleWriteError(cause)
-  } finally {
-    busy.value = false
-  }
-}
-
-async function reloadDraft(): Promise<void> {
+async function reload(): Promise<void> {
   if (busy.value || !policy.value || !props.canManage) return
-  if (dirty.value && !window.confirm('Bỏ phần chưa lưu và tải lại bảng giá từ máy chủ?')) return
+  if (dirty.value && !window.confirm('Bỏ phần chưa lưu và tải lại bảng giá?')) return
 
   busy.value = true
   error.value = ''
 
   try {
-    const detail = await actions.loadDetail(context())
-    policy.value = detail.policy
-
-    Object.assign(metadata, {
-      name: detail.policy.name,
-      description: detail.policy.description,
-      dayGroup: detail.policy.dayGroup,
-      cinemaIds: [...detail.policy.cinemaIds],
-    })
-
-    applyMatrix(detail.matrix)
-    requiresReload.value = false
+    hydrate(await actions.loadDetail(context()))
     pendingCreate.value = null
-    baseline.value = snapshot.value
-    validation.value = null
-    notice.value = 'Đã tải lại dữ liệu mới nhất.'
+    requiresReload.value = false
+    notice.value = 'Đã tải dữ liệu mới nhất.'
   } catch (cause: unknown) {
     error.value = pricingErrorMessage(cause)
   } finally {
     busy.value = false
   }
 }
+
+async function changeVersion(event: Event): Promise<void> {
+  const target = event.target
+
+  if (!(target instanceof HTMLSelectElement) || busy.value || !readOnly.value) {
+    return
+  }
+
+  const versionId = target.value
+  const selected = versions.data.value?.find((item) => item.id === versionId)
+
+  if (!selected) return
+
+  busy.value = true
+  error.value = ''
+
+  try {
+    const detail = await actions.loadDetail({
+      cinemaId: anchorId.value,
+      policyId: selected.policyId,
+      versionId: selected.id,
+    })
+
+    hydrate(detail)
+  } catch (cause: unknown) {
+    error.value = pricingErrorMessage(cause)
+  } finally {
+    busy.value = false
+  }
+}
+
+const quoteExperiences = computed(() => [
+  ...new Set(scopes.value.map((item) => item.experienceType)),
+])
+
+const quoteFormats = computed(() =>
+  scopes.value
+    .filter((item) => item.experienceType === quoteExperience.value)
+    .map((item) => item.contentFormat),
+)
+
+watch(
+  () => [...metadata.cinemaIds],
+  (items) => {
+    if (!items.some((item) => item === quoteCinema.value)) quoteCinema.value = items[0] ?? ''
+  },
+  { immediate: true },
+)
+
+watch(
+  quoteExperiences,
+  (items) => {
+    if (!items.some((item) => item === quoteExperience.value)) {
+      quoteExperience.value = items[0] ?? ''
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  quoteFormats,
+  (items) => {
+    if (!items.some((item) => item === quoteFormat.value)) quoteFormat.value = items[0] ?? ''
+  },
+  { immediate: true },
+)
+
+watch(
+  seats,
+  (items) => {
+    if (!items.some((item) => item === quoteSeat.value)) quoteSeat.value = items[0] ?? ''
+  },
+  { immediate: true },
+)
+
+watch(
+  categories,
+  (items) => {
+    if (!items.some((item) => item === quoteCategory.value)) {
+      quoteCategory.value = items[0] ?? ''
+    }
+  },
+  { immediate: true },
+)
 
 const quote = computed(() => {
   if (!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(quoteTime.value)) {
-    return 'Nhập giờ bắt đầu hợp lệ.'
+    return { label: 'Nhập giờ hợp lệ', unit: '', time: '' }
   }
 
   const timeBand = quoteTime.value < '17:00' ? 'BEFORE_17' : 'FROM_17'
-  const entry = entries.value.find(
-    (item) =>
-      pricingScopeKey(item) === activeScopeKey.value &&
-      item.timeBand === timeBand &&
-      item.seatType === quoteSeat.value &&
-      item.ticketCategory === quoteCategory.value,
+  const item = entries.value.find(
+    (entry) =>
+      entry.experienceType === quoteExperience.value &&
+      entry.contentFormat === quoteFormat.value &&
+      entry.timeBand === timeBand &&
+      entry.seatType === quoteSeat.value &&
+      entry.ticketCategory === quoteCategory.value,
   )
 
-  if (!entry) return 'Chưa chọn đủ phạm vi, hạng ghế và đối tượng vé.'
+  if (!item || !metadata.cinemaIds.includes(quoteCinema.value)) {
+    return { label: 'Chưa có tổ hợp phù hợp', unit: '', time: pricingLabel(timeBand) }
+  }
 
-  const value = values.value[entry.key] ?? blankValue()
-  const unit = options.value?.seatTypes.find((item) => item.seatType === entry.seatType)?.unit
+  const value = values.value[item.key]
+  const unit = options.value?.seatTypes.find((seat) => seat.seatType === item.seatType)?.unit
 
-  return `${pricingLabel(timeBand)} · ${cellLabel(value)}${
-    value.state === 'PRICED' && unit ? ` / ${pricingLabel(unit)}` : ''
-  }`
+  if (!value || value.state === 'UNCONFIGURED') {
+    return { label: 'Chưa nhập giá', unit: '', time: pricingLabel(timeBand) }
+  }
+
+  if (value.state === 'NOT_APPLICABLE') {
+    return { label: 'Không áp dụng', unit: '', time: pricingLabel(timeBand) }
+  }
+
+  const amount = parseAmount(value.amount)
+
+  return {
+    label: amount === null ? 'Giá chưa hợp lệ' : money(amount),
+    unit: unit ? pricingLabel(unit) : '',
+    time: pricingLabel(timeBand),
+  }
 })
 
 function confirmLeave(): boolean {
   if (busy.value) return false
 
-  if (waitingForCreateResult.value) {
+  if (waitingForCreation.value) {
     return window.confirm(
-      'Chưa xác định được kết quả tạo bản nháp. Quay lại danh sách để kiểm tra trước khi tạo thêm?',
+      'Chưa xác định được kết quả tạo. Đóng và kiểm tra danh sách trước khi tạo thêm?',
     )
   }
 
-  return !dirty.value || window.confirm('Bỏ các thay đổi chưa lưu của bảng giá?')
+  return readOnly.value || !dirty.value || window.confirm('Bỏ thay đổi chưa lưu của bảng giá?')
 }
 
 function close(): void {
   if (confirmLeave()) emit('close')
 }
 
+function handleOpenChange(open: boolean): void {
+  if (!open) close()
+}
+
+function restoreFocus(event: Event): void {
+  event.preventDefault()
+  if (returnFocus?.isConnected) returnFocus.focus()
+}
+
 function preventUnload(event: BeforeUnloadEvent): void {
-  if (!dirty.value && !busy.value && !waitingForCreateResult.value) return
+  if (readOnly.value || (!dirty.value && !busy.value && !waitingForCreation.value)) return
   event.preventDefault()
   event.returnValue = ''
 }
@@ -734,540 +827,481 @@ function preventUnload(event: BeforeUnloadEvent): void {
 onBeforeRouteLeave(confirmLeave)
 onBeforeRouteUpdate(confirmLeave)
 onMounted(() => window.addEventListener('beforeunload', preventUnload))
-onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', preventUnload)
-  emit('locked', false)
-})
+onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
 </script>
 
 <template>
-  <form
-    ref="formElement"
-    class="pricing-workflow-create"
-    :aria-busy="busy"
-    novalidate
-    @submit.prevent="step < 4 ? nextStep() : saveDraft()"
-  >
-    <header class="pricing-workflow__heading">
-      <div>
-        <h2>
-          {{ readOnly ? 'Tra cứu bảng giá' : policy ? 'Chỉnh sửa bản nháp' : 'Tạo bảng giá' }}
-        </h2>
-        <p v-if="policy">Phiên bản {{ policy.revision }} · {{ pricingLabel(policy.status) }}</p>
-      </div>
-      <AppButton type="button" variant="secondary" :disabled="busy" @click="close">
-        Quay lại danh sách
-      </AppButton>
-    </header>
-
-    <nav class="pricing-workflow__progress" aria-label="Các bước thiết lập bảng giá">
-      <ol>
-        <li
-          v-for="(title, index) in steps"
-          :key="title"
-          :class="{ 'is-current': step === index + 1 }"
-          :aria-current="step === index + 1 ? 'step' : undefined"
-        >
-          <span class="pricing-workflow__number">{{ index + 1 }}</span>
-          <strong>{{ title }}</strong>
-        </li>
-      </ol>
-    </nav>
-
-    <section class="pricing-workflow__card">
-      <h2 data-step-heading tabindex="-1">{{ steps[step - 1] }}</h2>
-
-      <template v-if="step === 1">
-        <div class="pricing-workflow__fields">
-          <label class="admin-reference__field">
-            <span>Tên bảng giá *</span>
-            <input
-              v-model="metadata.name"
-              class="admin-reference__input"
-              maxlength="120"
-              :disabled="!editable"
-              autocomplete="off"
-            />
-          </label>
-          <label class="admin-reference__field">
-            <span>Trạng thái</span>
-            <input
-              class="admin-reference__input"
-              :value="pricingLabel(policy?.status ?? 'DRAFT')"
-              readonly
-            />
-          </label>
-        </div>
-
-        <label class="admin-reference__field">
-          <span>Mô tả</span>
-          <textarea
-            v-model="metadata.description"
-            class="admin-reference__input"
-            maxlength="1000"
-            rows="3"
-            :disabled="!editable"
-          />
-        </label>
-
-        <fieldset class="pricing-editor__choices" :disabled="!editable">
-          <legend>Cụm rạp áp dụng *</legend>
-          <label v-for="cinema in cinemas" :key="cinema.id" class="pricing-editor__check">
-            <input
-              v-model="metadata.cinemaIds"
-              type="checkbox"
-              :value="cinema.id"
-              :disabled="cinema.id === anchorCinemaId"
-            />
-            <span> {{ cinema.name }}{{ cinema.active ? '' : ' · Ngừng hoạt động' }} </span>
-          </label>
-        </fieldset>
-
-        <p class="pricing-workflow__help">
-          Có thể áp dụng một bảng giá cho nhiều cụm rạp. Giữ cụm rạp đang mở trong phạm vi để tiếp
-          tục quản lý bảng giá trong phiên này. Định dạng và loại hình chiếu được chọn ở bước nhập
-          giá.
-        </p>
-      </template>
-
-      <template v-else-if="step === 2">
-        <label class="admin-reference__field">
-          <span>Nhóm ngày *</span>
-          <select v-model="metadata.dayGroup" class="admin-reference__input" :disabled="!editable">
-            <option value="WEEKDAY">Ngày thường</option>
-            <option value="WEEKEND">Cuối tuần</option>
-            <option value="HOLIDAY">Lễ, Tết</option>
-          </select>
-        </label>
-
-        <div class="pricing-workflow__summary">
-          <div>
-            <strong>Trước 17:00</strong>
-            <p>00:00 ≤ giờ bắt đầu &lt; 17:00</p>
-          </div>
-          <div>
-            <strong>Từ 17:00</strong>
-            <p>17:00 ≤ giờ bắt đầu ≤ 23:59</p>
-          </div>
-        </div>
-
-        <p class="pricing-workflow__help">
-          Mỗi bảng giá thuộc một nhóm ngày. Chọn trực tiếp bảng Lễ, Tết cho suất chiếu thuộc dịp lễ;
-          ưu tiên bảng lễ và không tự suy luận lịch lễ theo ngày tháng. Giá là giá bán trọn gói,
-          không cộng phụ thu.
-        </p>
-
-        <p v-if="!policy" class="pricing-workflow__help">
-          Chọn “Tiếp tục” để lưu thông tin bản nháp và tải các lựa chọn cấu hình từ hệ thống. Bản
-          nháp chưa được công bố.
-        </p>
-
-        <p v-if="waitingForCreateResult" class="pricing-workflow__help" role="status">
-          Thông tin tạo đang được giữ nguyên. “Tiếp tục” gửi lại cùng mã yêu cầu để kiểm tra kết
-          quả, tránh tạo trùng bản nháp.
-        </p>
-      </template>
-
-      <template v-else-if="step === 3">
-        <template v-if="options">
-          <fieldset class="pricing-editor__choices" :disabled="!editable">
-            <legend>Loại hình và định dạng cần nhập giá riêng *</legend>
-            <label v-for="item in scopeOptions" :key="item.key" class="pricing-editor__check">
-              <input v-model="selectedScopeKeys" type="checkbox" :value="item.key" />
-              <span>{{ item.label }}</span>
-            </label>
-          </fieldset>
-
-          <div class="pricing-workflow__fields">
-            <fieldset class="pricing-editor__choices" :disabled="!editable">
-              <legend>Đối tượng vé</legend>
-              <label
-                v-for="category in options.ticketCategories"
-                :key="category"
-                class="pricing-editor__check"
-              >
-                <input
-                  v-model="selectedCategories"
-                  type="checkbox"
-                  :value="category"
-                  :disabled="category === 'ADULT'"
-                />
-                <span>{{ pricingLabel(category) }}</span>
-              </label>
-            </fieldset>
-
-            <fieldset class="pricing-editor__choices" :disabled="!editable">
-              <legend>Hạng ghế *</legend>
-              <label
-                v-for="seat in options.seatTypes"
-                :key="seat.seatType"
-                class="pricing-editor__check"
-              >
-                <input v-model="selectedSeats" type="checkbox" :value="seat.seatType" />
-                <span>
-                  {{ pricingSeatLabel(seat.seatType) }} · {{ pricingLabel(seat.unit) }} ·
-                  {{ seat.capacity }} chỗ
-                </span>
-              </label>
-            </fieldset>
-          </div>
-
-          <div class="pricing-workflow__fields">
-            <label class="admin-reference__field">
-              <span>Phạm vi đang nhập</span>
-              <select v-model="activeScopeKey" class="admin-reference__input" :disabled="busy">
-                <option value="">Chọn phạm vi</option>
-                <option
-                  v-for="item in scopeOptions.filter((item) =>
-                    selectedScopeKeys.includes(item.key),
-                  )"
-                  :key="item.key"
-                  :value="item.key"
-                >
-                  {{ item.label }}
-                </option>
-              </select>
-            </label>
-
-            <label class="admin-reference__field">
-              <span>Khung giờ</span>
-              <select v-model="activeTime" class="admin-reference__input" :disabled="busy">
-                <option v-for="time in options.timeBands" :key="time" :value="time">
-                  {{ pricingLabel(time) }}
-                </option>
-              </select>
-            </label>
-          </div>
-
-          <p role="status">
-            {{ entries.length }} ô trong phạm vi đã chọn · {{ missingCount }} ô chưa nhập.
-          </p>
-
-          <div
-            v-if="activeScope && selectedCategories.length && selectedSeats.length"
-            class="pricing-workflow-table__scroll"
-            role="region"
-            aria-label="Bảng nhập giá vé"
-            tabindex="0"
-          >
-            <table class="pricing-workflow-table__table" role="table">
-              <caption class="admin-visually-hidden">
-                Giá bán riêng cho từng đối tượng vé và hạng ghế
-              </caption>
-              <thead role="rowgroup">
-                <tr role="row">
-                  <th scope="col" role="columnheader">Hạng ghế / đơn vị</th>
-                  <th
-                    v-for="category in selectedCategories"
-                    :key="category"
-                    scope="col"
-                    role="columnheader"
-                  >
-                    {{ pricingLabel(category) }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody role="rowgroup">
-                <tr v-for="row in grid" :key="row.seatType" role="row">
-                  <th scope="row" role="rowheader">
-                    {{ pricingSeatLabel(row.seatType) }}
-                    <small v-if="row.option" class="pricing-workflow-table__unit">
-                      {{ pricingLabel(row.option.unit) }} · {{ row.option.capacity }} chỗ
-                    </small>
-                  </th>
-                  <td
-                    v-for="cell in row.cells"
-                    :key="cell.key"
-                    :data-label="pricingLabel(cell.ticketCategory)"
-                    role="cell"
-                  >
-                    <label class="admin-reference__field">
-                      <span class="admin-visually-hidden">
-                        Trạng thái {{ pricingSeatLabel(row.seatType) }},
-                        {{ pricingLabel(cell.ticketCategory) }}
-                      </span>
-                      <select
-                        v-model="cell.value.state"
-                        class="admin-reference__input"
-                        :disabled="!editable"
-                      >
-                        <option v-for="state in options.cellStates" :key="state" :value="state">
-                          {{ pricingLabel(state) }}
-                        </option>
-                      </select>
-                    </label>
-
-                    <label
-                      v-if="cell.value.state === 'PRICED'"
-                      class="admin-reference__field pricing-editor__amount"
-                    >
-                      <span class="admin-visually-hidden">
-                        Giá {{ activeScope.contentFormat }}, {{ pricingLabel(activeTime) }},
-                        {{ pricingSeatLabel(row.seatType) }},
-                        {{ pricingLabel(cell.ticketCategory) }}
-                      </span>
-                      <input
-                        v-model="cell.value.amount"
-                        class="admin-reference__input pricing-workflow-table__input"
-                        type="text"
-                        inputmode="decimal"
-                        maxlength="24"
-                        autocomplete="off"
-                        placeholder="Chưa nhập số tiền"
-                        :disabled="!editable"
-                        :aria-invalid="cellError(cell.value)"
-                      />
-                      <small v-if="cellError(cell.value)" class="pricing-error">
-                        Nhập số tiền hợp lệ, ví dụ 55.000 hoặc 55000.
-                      </small>
-                    </label>
-                    <p v-else>{{ cellLabel(cell.value) }}</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p v-else>Chọn phạm vi, đối tượng vé và hạng ghế để nhập giá.</p>
-
-          <div class="pricing-workflow-table__notes">
-            <p>2D và 3D nhập giá riêng. Chuyển phạm vi hoặc khung giờ vẫn giữ phần đang nhập.</p>
-            <p>Chưa nhập khác với giá 0đ. “Không áp dụng” nghĩa là không bán tổ hợp đó.</p>
-            <p>
-              Ghế đôi ngoài Lễ, Tết: 200.000đ/cặp cả ngày. Giá Lễ, Tết được nhập riêng. Giá ghế đôi
-              đồng nhất giữa các đối tượng vé.
-            </p>
-            <p>
-              Với rạp cao cấp, cùng định dạng, khung giờ và hạng ghế dùng chung giá giữa các đối
-              tượng vé.
-            </p>
-          </div>
-        </template>
-        <p v-else>Chưa tải được lựa chọn cấu hình. Quay lại bước trước để thử tải lại.</p>
-      </template>
-
-      <template v-else>
-        <dl class="pricing-workflow__summary">
-          <div>
-            <dt>Tên bảng giá</dt>
-            <dd>{{ metadata.name }}</dd>
-          </div>
-          <div>
-            <dt>Nhóm ngày</dt>
-            <dd>{{ pricingLabel(metadata.dayGroup) }}</dd>
-          </div>
-          <div>
-            <dt>Cụm rạp</dt>
-            <dd>
-              {{
-                metadata.cinemaIds
-                  .map((id) => cinemas.find((cinema) => cinema.id === id)?.name ?? id)
-                  .join(', ')
-              }}
-            </dd>
-          </div>
-          <div>
-            <dt>Phạm vi chiếu</dt>
-            <dd>
-              {{
-                scopeOptions
-                  .filter((item) => selectedScopeKeys.includes(item.key))
-                  .map((item) => item.label)
-                  .join(', ') || 'Chưa chọn'
-              }}
-            </dd>
-          </div>
-          <div>
-            <dt>Mức độ hoàn chỉnh</dt>
-            <dd>{{ entries.length }} ô · {{ missingCount }} ô chưa nhập</dd>
-          </div>
-          <div>
-            <dt>Trạng thái</dt>
-            <dd>{{ pricingLabel(policy?.status ?? 'DRAFT') }}</dd>
-          </div>
-        </dl>
-
-        <p class="pricing-workflow__help">
-          Có thể lưu bản nháp khi còn ô chưa nhập. Công bố cần kiểm tra dữ liệu đã lưu và được
-          backend xác nhận đủ điều kiện.
-        </p>
-
-        <h3>Thử tra giá một tổ hợp</h3>
-        <div class="pricing-workflow__fields">
-          <label class="admin-reference__field">
-            <span>Loại hình và định dạng</span>
-            <select v-model="activeScopeKey" class="admin-reference__input" :disabled="busy">
-              <option value="">Chọn phạm vi</option>
-              <option
-                v-for="item in scopeOptions.filter((item) => selectedScopeKeys.includes(item.key))"
-                :key="item.key"
-                :value="item.key"
-              >
-                {{ item.label }}
-              </option>
-            </select>
-          </label>
-          <label class="admin-reference__field">
-            <span>Giờ bắt đầu suất chiếu</span>
-            <input
-              v-model="quoteTime"
-              class="admin-reference__input"
-              type="time"
-              :disabled="busy"
-            />
-          </label>
-          <label class="admin-reference__field">
-            <span>Hạng ghế</span>
-            <select v-model="quoteSeat" class="admin-reference__input" :disabled="busy">
-              <option value="">Chọn hạng ghế</option>
-              <option v-for="seat in selectedSeats" :key="seat" :value="seat">
-                {{ pricingSeatLabel(seat) }}
-              </option>
-            </select>
-          </label>
-          <label class="admin-reference__field">
-            <span>Đối tượng vé</span>
-            <select v-model="quoteCategory" class="admin-reference__input" :disabled="busy">
-              <option value="">Chọn đối tượng vé</option>
-              <option v-for="category in selectedCategories" :key="category" :value="category">
-                {{ pricingLabel(category) }}
-              </option>
-            </select>
-          </label>
-        </div>
-
-        <p class="pricing-workflow__notice" role="status">{{ quote }}</p>
-        <p class="pricing-workflow__help">
-          Tra giá theo nội dung bảng đang xem{{ dirty ? ', có thay đổi chưa lưu' : '' }}. Giá bán
-          trọn gói, không cộng phụ thu. Phần tra cứu này không kiểm tra phòng chiếu thực tế và không
-          phải báo giá đặt vé.
-        </p>
-
-        <div v-if="validation" aria-live="polite">
-          <p>
-            {{ validation.canPublish ? 'Đủ điều kiện công bố' : 'Kết quả kiểm tra' }}
-            · {{ validation.missingCellCount }} ô còn thiếu.
-          </p>
-          <ul v-if="validation.issues.length" class="pricing-editor__issues">
-            <li v-for="(issue, index) in validation.issues" :key="`${issue.code}:${index}`">
-              <strong>{{ issue.message }}</strong>
-              <span v-if="issue.cell">
-                — {{ pricingLabel(issue.cell.experienceType) }}, {{ issue.cell.contentFormat }},
-                {{ pricingLabel(issue.cell.timeBand) }},
-                {{ pricingSeatLabel(issue.cell.seatType) }},
-                {{ pricingLabel(issue.cell.ticketCategory) }}
-              </span>
-              <small>{{ issue.code }}</small>
-            </li>
-          </ul>
-        </div>
-      </template>
-
-      <p v-if="error" class="pricing-error" role="alert">{{ error }}</p>
-      <p v-if="notice" class="pricing-workflow__notice" role="status">{{ notice }}</p>
-      <p v-if="busy" role="status">Đang xử lý…</p>
-      <p v-if="dirty && !readOnly" role="status">Có thay đổi chưa lưu.</p>
-
-      <footer class="pricing-workflow__actions">
-        <AppButton
-          v-if="step > 1"
-          type="button"
-          variant="secondary"
-          :disabled="busy || requiresReload || waitingForCreateResult"
-          @click="previousStep"
-        >
-          Quay lại
-        </AppButton>
-
-        <AppButton
-          v-if="requiresReload && policy"
-          type="button"
-          variant="secondary"
-          :loading="busy"
-          @click="reloadDraft"
-        >
-          Tải lại bảng giá
-        </AppButton>
-
-        <AppButton
-          v-if="step < 4"
-          type="submit"
-          :loading="busy"
-          :disabled="!canManage || requiresReload"
-        >
-          Tiếp tục
-        </AppButton>
-
-        <template v-else-if="!readOnly">
-          <AppButton type="submit" :loading="busy" :disabled="!editable || !dirty">
-            Lưu bản nháp
-          </AppButton>
-          <AppButton
+  <DialogRoot :open="true" @update:open="handleOpenChange">
+    <DialogPortal>
+      <DialogOverlay class="price-dialog-overlay" />
+      <DialogContent
+        class="price-dialog"
+        :class="{ 'price-dialog--preview': readOnly }"
+        @escape-key-down.prevent="close"
+        @pointer-down-outside.prevent
+        @close-auto-focus="restoreFocus"
+      >
+        <header class="price-dialog-head">
+          <DialogTitle>
+            {{ readOnly ? 'Tra cứu giá vé' : initial ? 'Chỉnh sửa bảng giá' : 'Tạo bảng giá vé' }}
+          </DialogTitle>
+          <button
+            class="price-button price-button--icon price-button--ghost"
             type="button"
-            variant="secondary"
-            :disabled="!editable || dirty"
-            @click="validateDraft"
+            aria-label="Đóng"
+            :disabled="busy"
+            @click="close"
           >
-            Kiểm tra dữ liệu đã lưu
-          </AppButton>
-          <AppButton type="button" :disabled="!canPublish" @click="publishDraft">
-            Công bố bảng giá
-          </AppButton>
-        </template>
-      </footer>
-    </section>
-  </form>
+            <svg class="price-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12 M6 18L18 6" />
+            </svg>
+          </button>
+        </header>
+
+        <DialogDescription class="price-visually-hidden">
+          {{
+            readOnly
+              ? 'Tra cứu giá theo cụm rạp, loại phòng, định dạng, giờ và đối tượng vé.'
+              : 'Thiết lập thông tin, loại ngày, giá vé và kiểm tra trước khi lưu.'
+          }}
+        </DialogDescription>
+
+        <form
+          ref="formElement"
+          class="price-dialog-form"
+          :aria-busy="busy"
+          novalidate
+          @submit.prevent="readOnly ? undefined : step < 4 ? nextStep() : save()"
+        >
+          <div class="price-dialog-body">
+            <nav v-if="!readOnly" class="price-stepper" aria-label="Các bước thiết lập bảng giá">
+              <ol>
+                <li
+                  v-for="(title, index) in steps"
+                  :key="title"
+                  class="price-step"
+                  :class="{ 'is-active': step === index + 1, 'is-done': step > index + 1 }"
+                  :aria-current="step === index + 1 ? 'step' : undefined"
+                >
+                  <i aria-hidden="true">{{ step > index + 1 ? '✓' : index + 1 }}</i>
+                  <span>{{ title }}</span>
+                  <span class="price-visually-hidden">{{ index + 1 }}. {{ title }}</span>
+                </li>
+              </ol>
+            </nav>
+
+            <p v-if="error" class="price-notice price-notice--error" role="alert">{{ error }}</p>
+            <p v-if="notice" class="price-notice price-notice--info" role="status">{{ notice }}</p>
+
+            <template v-if="readOnly">
+              <div class="price-notice price-notice--info">
+                {{ metadata.description || 'Bảng giá được chọn trực tiếp theo suất chiếu.' }}
+              </div>
+              <label v-if="versions.data.value?.length" class="price-history">
+                <span>Phiên bản</span>
+                <select
+                  class="price-control"
+                  :value="policy?.id"
+                  :disabled="busy"
+                  @change="changeVersion"
+                >
+                  <option
+                    v-for="version in versions.data.value"
+                    :key="version.id"
+                    :value="version.id"
+                  >
+                    {{ version.revision }} · {{ pricingLabel(version.status) }}
+                  </option>
+                </select>
+              </label>
+              <p v-if="versions.isError.value" class="price-note" role="status">
+                Chưa tải được lịch sử phiên bản.
+              </p>
+            </template>
+
+            <template v-else-if="step === 1">
+              <h3 class="price-visually-hidden" data-step-focus tabindex="-1">
+                Thông tin và phạm vi
+              </h3>
+              <div class="price-form-grid">
+                <label class="price-field price-full">
+                  <span>Tên bảng giá *</span>
+                  <input
+                    v-model="metadata.name"
+                    class="price-control"
+                    maxlength="120"
+                    autocomplete="off"
+                    :disabled="!editable"
+                  />
+                </label>
+
+                <label class="price-field price-full">
+                  <span>Mô tả ngắn</span>
+                  <textarea
+                    v-model="metadata.description"
+                    class="price-control"
+                    maxlength="1000"
+                    :disabled="!editable"
+                  />
+                </label>
+
+                <label class="price-field">
+                  <span>Trạng thái khi lưu</span>
+                  <select v-model="targetStatus" class="price-control" :disabled="!editable">
+                    <option value="DRAFT">Bản nháp</option>
+                    <option value="PUBLISHED">Công bố khi lưu</option>
+                  </select>
+                </label>
+
+                <fieldset class="price-checks" :disabled="!editable || !options">
+                  <legend>Định dạng cần nhập giá riêng *</legend>
+                  <label v-for="format in options?.contentFormats ?? []" :key="format">
+                    <input
+                      v-model="formats"
+                      type="checkbox"
+                      :value="format"
+                      @change="rebuildScopes"
+                    />
+                    {{ format }}
+                  </label>
+                </fieldset>
+
+                <fieldset class="price-checks price-full" :disabled="!editable">
+                  <legend>Phạm vi cụm rạp *</legend>
+                  <label v-for="cinema in cinemas" :key="cinema.id">
+                    <input
+                      v-model="metadata.cinemaIds"
+                      type="checkbox"
+                      :value="cinema.id"
+                      :disabled="policy !== null && cinema.id === anchorId"
+                    />
+                    {{ cinema.name }}
+                  </label>
+                </fieldset>
+
+                <fieldset class="price-checks price-full" :disabled="!editable || !options">
+                  <legend>Loại phòng áp dụng *</legend>
+                  <label v-for="experience in options?.experienceTypes ?? []" :key="experience">
+                    <input
+                      v-model="experiences"
+                      type="checkbox"
+                      :value="experience"
+                      @change="rebuildScopes"
+                    />
+                    {{ pricingLabel(experience) }}
+                  </label>
+                </fieldset>
+
+                <div class="price-notice price-notice--info price-full">
+                  {{
+                    options
+                      ? 'Mọi tổ hợp của định dạng được chọn cần có giá hoặc được đánh dấu “Không áp dụng” trước khi công bố.'
+                      : 'Chưa có dữ liệu cấu hình. Nhập thông tin và chọn “Tiếp tục” để lưu bản nháp, tải lựa chọn từ hệ thống rồi hoàn tất phạm vi.'
+                  }}
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="step === 2">
+              <h3 class="price-visually-hidden" data-step-focus tabindex="-1">
+                Loại ngày và khung giờ
+              </h3>
+              <div class="price-form-grid">
+                <label class="price-field price-full">
+                  <span>Mẫu loại ngày</span>
+                  <select v-model="metadata.dayGroup" class="price-control" :disabled="!editable">
+                    <option value="WEEKDAY">Ngày thường</option>
+                    <option value="WEEKEND">Cuối tuần</option>
+                    <option value="HOLIDAY">Lễ/Tết</option>
+                  </select>
+                </label>
+
+                <div class="price-notice price-notice--info price-full">
+                  Chọn trực tiếp bảng giá này cho suất chiếu. Mẫu lễ/Tết không tự suy luận ngày lễ
+                  theo lịch. Các mẫu chỉ xác định loại ngày; giá cần được nhập riêng.
+                </div>
+
+                <div class="price-time-card">
+                  <h3>Trước 17:00</h3>
+                  <p>00:00 ≤ giờ bắt đầu &lt; 17:00</p>
+                </div>
+                <div class="price-time-card">
+                  <h3>Từ 17:00</h3>
+                  <p>17:00 ≤ giờ bắt đầu ≤ 23:59</p>
+                </div>
+
+                <p class="price-note price-full">
+                  Ví dụ: 16:59 thuộc nhóm đầu, 17:00 thuộc nhóm sau. Bảng giá là giá bán trọn gói,
+                  không cộng phụ thu.
+                </p>
+              </div>
+            </template>
+
+            <template v-else-if="step === 3">
+              <h3 class="price-visually-hidden" data-step-focus tabindex="-1">Nhập giá vé</h3>
+
+              <div class="price-context">
+                <select
+                  v-model="activeScopeKey"
+                  class="price-control"
+                  aria-label="Loại phòng và định dạng nhập giá"
+                  :disabled="busy"
+                >
+                  <option
+                    v-for="scope in scopes"
+                    :key="pricingScopeKey(scope)"
+                    :value="pricingScopeKey(scope)"
+                  >
+                    {{ pricingLabel(scope.experienceType) }} · {{ scope.contentFormat }}
+                  </option>
+                </select>
+                <select
+                  v-model="activeTime"
+                  class="price-control"
+                  aria-label="Khung giờ nhập giá"
+                  :disabled="busy"
+                >
+                  <option v-for="time in options?.timeBands ?? []" :key="time" :value="time">
+                    {{ pricingLabel(time) }}
+                  </option>
+                </select>
+                <span class="price-chip">VNĐ · {{ pricingLabel(metadata.dayGroup) }}</span>
+                <span class="price-chip">{{ missingCount }} ô chưa nhập</span>
+              </div>
+
+              <div class="price-table-wrap" tabindex="0" aria-label="Ma trận nhập giá">
+                <table class="price-table price-matrix">
+                  <thead>
+                    <tr>
+                      <th scope="col">Hạng ghế / đơn vị</th>
+                      <th v-for="category in categories" :key="category" scope="col">
+                        {{ pricingLabel(category) }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="row in grid" :key="row.seatType">
+                      <th scope="row">
+                        <b>{{ pricingSeatLabel(row.seatType) }}</b>
+                        <span v-if="row.option" class="price-cell-sub">
+                          /{{ pricingLabel(row.option.unit) }} · {{ row.option.capacity }} chỗ
+                        </span>
+                      </th>
+                      <td v-for="cell in row.cells" :key="cell.key">
+                        <select
+                          class="price-control price-cell-mode"
+                          :value="
+                            cell.value.state === 'NOT_APPLICABLE' ? 'NOT_APPLICABLE' : 'PRICED'
+                          "
+                          :disabled="!editable"
+                          :aria-label="`Trạng thái ${pricingSeatLabel(row.seatType)}, ${pricingLabel(cell.ticketCategory)}`"
+                          @change="changeMode(cell.value, $event)"
+                        >
+                          <option value="PRICED">Nhập giá</option>
+                          <option value="NOT_APPLICABLE">Không áp dụng</option>
+                        </select>
+                        <input
+                          class="price-control price-cell-input"
+                          type="text"
+                          inputmode="decimal"
+                          autocomplete="off"
+                          maxlength="24"
+                          placeholder="Chưa nhập"
+                          :value="cell.value.amount"
+                          :disabled="!editable || cell.value.state === 'NOT_APPLICABLE'"
+                          :aria-label="`Giá ${activeScope?.contentFormat ?? ''}, ${pricingLabel(activeTime)}, ${pricingSeatLabel(row.seatType)}, ${pricingLabel(cell.ticketCategory)}`"
+                          :aria-invalid="
+                            cell.value.state === 'PRICED' && parseAmount(cell.value.amount) === null
+                          "
+                          @input="changeAmount(cell.value, $event)"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="price-notice price-notice--info price-space-top">
+                Ô trống = chưa nhập. Giá 0 = miễn phí. “Không áp dụng” = không bán tổ hợp này. Ghế
+                đôi tính /cặp; mỗi định dạng nhập độc lập.
+              </div>
+              <p class="price-note">
+                Ghế đôi ngoài Lễ/Tết: 200.000đ/cặp cả ngày. Giá ghế đôi đồng nhất giữa các đối tượng
+                vé. Rạp cao cấp dùng cùng giá giữa các đối tượng cho cùng định dạng, khung giờ và
+                hạng ghế.
+              </p>
+            </template>
+
+            <template v-else>
+              <h3 class="price-visually-hidden" data-step-focus tabindex="-1">
+                Kiểm tra và xem trước
+              </h3>
+
+              <div
+                class="price-notice"
+                :class="{ 'price-notice--success': entries.length > 0 && missingCount === 0 }"
+              >
+                {{
+                  missingCount
+                    ? `Còn ${missingCount} ô chưa nhập. Chỉ có thể lưu bản nháp.`
+                    : 'Tất cả tổ hợp đã có giá hoặc được đánh dấu không áp dụng.'
+                }}
+              </div>
+
+              <dl class="price-detail-grid">
+                <div>
+                  <dt>Tên bảng giá</dt>
+                  <dd>{{ metadata.name }}</dd>
+                </div>
+                <div>
+                  <dt>Loại ngày</dt>
+                  <dd>{{ pricingLabel(metadata.dayGroup) }}</dd>
+                </div>
+                <div class="price-full">
+                  <dt>Cụm rạp</dt>
+                  <dd>
+                    {{
+                      metadata.cinemaIds
+                        .map((id) => cinemas.find((item) => item.id === id)?.name ?? id)
+                        .join(', ')
+                    }}
+                  </dd>
+                </div>
+                <div class="price-full">
+                  <dt>Loại phòng</dt>
+                  <dd>{{ experiences.map(pricingLabel).join(', ') }}</dd>
+                </div>
+                <div>
+                  <dt>Định dạng</dt>
+                  <dd>{{ formats.join(' / ') }}</dd>
+                </div>
+                <div>
+                  <dt>Trạng thái khi lưu</dt>
+                  <dd>
+                    {{
+                      targetStatus === 'PUBLISHED' ? 'Công bố sau khi kiểm tra hợp lệ' : 'Bản nháp'
+                    }}
+                  </dd>
+                </div>
+              </dl>
+              <h3 class="price-section-title">Thử tra giá một tổ hợp</h3>
+            </template>
+
+            <template v-if="readOnly || step === 4">
+              <div class="price-form-grid">
+                <label class="price-field">
+                  <span>Cụm rạp</span>
+                  <select v-model="quoteCinema" class="price-control" :disabled="busy">
+                    <option v-for="id in metadata.cinemaIds" :key="id" :value="id">
+                      {{ cinemas.find((item) => item.id === id)?.name ?? id }}
+                    </option>
+                  </select>
+                </label>
+                <label class="price-field">
+                  <span>Loại phòng</span>
+                  <select v-model="quoteExperience" class="price-control" :disabled="busy">
+                    <option v-for="item in quoteExperiences" :key="item" :value="item">
+                      {{ pricingLabel(item) }}
+                    </option>
+                  </select>
+                </label>
+                <label class="price-field">
+                  <span>Định dạng</span>
+                  <select v-model="quoteFormat" class="price-control" :disabled="busy">
+                    <option v-for="item in quoteFormats" :key="item" :value="item">
+                      {{ item }}
+                    </option>
+                  </select>
+                </label>
+                <label class="price-field">
+                  <span>Giờ bắt đầu</span>
+                  <input v-model="quoteTime" class="price-control" type="time" :disabled="busy" />
+                </label>
+                <label class="price-field">
+                  <span>Hạng ghế</span>
+                  <select v-model="quoteSeat" class="price-control" :disabled="busy">
+                    <option v-for="item in seats" :key="item" :value="item">
+                      {{ pricingSeatLabel(item) }}
+                    </option>
+                  </select>
+                </label>
+                <label class="price-field">
+                  <span>Đối tượng vé</span>
+                  <select v-model="quoteCategory" class="price-control" :disabled="busy">
+                    <option v-for="item in categories" :key="item" :value="item">
+                      {{ pricingLabel(item) }}
+                    </option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="price-explain" aria-live="polite">
+                <p class="price-note">
+                  {{ metadata.name }} · {{ pricingLabel(metadata.dayGroup) }} · {{ quote.time }}
+                </p>
+                <p class="price-explain-value">
+                  <strong>{{ quote.label }}</strong>
+                  <span v-if="quote.unit" class="price-unit">/{{ quote.unit }}</span>
+                </p>
+                <p class="price-note">
+                  {{ quoteFormat }} · Giá bán cuối cùng theo bảng, không cộng phụ thu. Khả năng áp
+                  dụng cho phòng thực tế cần được kiểm tra khi lập suất chiếu.
+                </p>
+              </div>
+            </template>
+          </div>
+
+          <footer class="price-dialog-foot">
+            <button
+              v-if="!readOnly && step > 1"
+              class="price-button"
+              type="button"
+              :disabled="busy || requiresReload || waitingForCreation"
+              @click="previousStep"
+            >
+              Quay lại
+            </button>
+
+            <button class="price-button" type="button" :disabled="busy" @click="close">
+              {{ readOnly ? 'Đóng' : 'Hủy' }}
+            </button>
+
+            <button
+              v-if="requiresReload && policy"
+              class="price-button"
+              type="button"
+              :disabled="busy"
+              @click="reload"
+            >
+              Tải lại
+            </button>
+
+            <button
+              v-if="!readOnly && step < 4"
+              class="price-button price-button--primary"
+              type="submit"
+              :disabled="busy || requiresReload || !canManage"
+            >
+              {{ busy ? 'Đang xử lý…' : 'Tiếp tục' }}
+              <svg class="price-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12h16 M14 6l6 6-6 6" />
+              </svg>
+            </button>
+
+            <button
+              v-else-if="!readOnly"
+              class="price-button price-button--primary"
+              type="submit"
+              :disabled="!editable || (!dirty && targetStatus !== 'PUBLISHED')"
+            >
+              {{ busy ? 'Đang lưu…' : 'Lưu bảng giá' }}
+              <svg class="price-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12l5 5L20 6" />
+              </svg>
+            </button>
+          </footer>
+        </form>
+      </DialogContent>
+    </DialogPortal>
+  </DialogRoot>
 </template>
-
-<style scoped>
-.pricing-editor__choices {
-  display: grid;
-  align-content: start;
-  gap: var(--space-3);
-  min-width: 0;
-  margin: 0;
-  padding: var(--space-4);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-.pricing-editor__choices legend {
-  padding-inline: var(--space-2);
-  color: var(--color-text-primary);
-  font-weight: var(--font-weight-semibold);
-}
-
-.pricing-editor__check {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  color: var(--color-text-primary);
-  line-height: var(--line-height-base);
-}
-
-.pricing-editor__check input {
-  flex: 0 0 auto;
-  margin-top: var(--space-1);
-  accent-color: var(--color-primary);
-}
-
-.pricing-editor__amount {
-  margin-top: var(--space-3);
-}
-
-.pricing-editor__issues {
-  display: grid;
-  gap: var(--space-3);
-  padding-left: var(--space-5);
-  overflow-wrap: anywhere;
-}
-
-.pricing-editor__issues small {
-  display: block;
-  margin-top: var(--space-1);
-}
-
-textarea.admin-reference__input {
-  min-height: var(--control-height-lg);
-  resize: vertical;
-}
-</style>
