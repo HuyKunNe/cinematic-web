@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import { useQueryClient } from '@tanstack/vue-query'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
@@ -11,6 +12,10 @@ import {
   type PricingPolicy,
 } from '../api/admin-pricing-queries'
 import { useAdminPricingList, useAdminPricingRowDetails } from '../api/admin-pricing-list'
+import {
+  pricingDraftCreationErrorMessage,
+  useCreatePricingDraftFromPublished,
+} from '../api/admin-pricing-draft'
 import AdminPricingWorkflowCreate from '../components/AdminPricingWorkflowCreate.vue'
 import AdminPricingPublishedQuoteDialog from '../components/AdminPricingPublishedQuoteDialog.vue'
 
@@ -30,6 +35,7 @@ const pageSize = 8
 const refreshing = ref(false)
 const openingId = ref('')
 const requestError = ref('')
+const notice = ref('')
 
 const dialogMode = ref<'create' | 'edit' | 'preview' | 'quote' | null>(null)
 const dialogDetail = ref<PricingDetail>()
@@ -38,6 +44,7 @@ const dialogInitialCinemaIds = ref<string[]>([])
 
 const listing = useAdminPricingList(canManage, cinemaId)
 const actions = useAdminPricingActions(canManage)
+const drafts = useCreatePricingDraftFromPublished(canManage)
 
 const filteredPolicies = computed(() => {
   const keyword = search.value.trim().toLocaleLowerCase('vi-VN')
@@ -71,7 +78,17 @@ const configurationOptions = computed(() => {
   return undefined
 })
 
-const busy = computed(() => refreshing.value || listing.loading.value || openingId.value !== '')
+const busy = computed(
+  () => refreshing.value || listing.loading.value || openingId.value !== '' || drafts.pending.value,
+)
+
+const recovery = computed(() =>
+  drafts.needsRecovery.value && openingId.value === '' ? drafts.checkpoint.value : null,
+)
+
+const unknownDraftResult = computed(
+  () => drafts.needsRecovery.value && !drafts.checkpoint.value?.created,
+)
 
 const hasFilters = computed(() =>
   Boolean(search.value || status.value || dayGroup.value || cinemaId.value),
@@ -86,6 +103,7 @@ const lastResult = computed(() => Math.min(page.value * pageSize, filteredPolici
 watch([search, status, dayGroup, cinemaId], () => {
   page.value = 1
   requestError.value = ''
+  notice.value = ''
 })
 
 watch(pageCount, (count) => {
@@ -140,8 +158,34 @@ function isComplete(policy: PricingPolicy): boolean {
   return rowDetails.value.get(policy.id)?.data?.matrix.coverageComplete === true
 }
 
+function chooseAnchor(policy: PricingPolicy, preferredCinemaId: string): string | undefined {
+  const availableIds = new Set((listing.cinemas.data.value ?? []).map((item) => item.id))
+
+  if (policy.cinemaIds.includes(preferredCinemaId) && availableIds.has(preferredCinemaId)) {
+    return preferredCinemaId
+  }
+
+  return policy.cinemaIds.find((id) => availableIds.has(id))
+}
+
+function showDetail(detail: PricingDetail, anchor: string, edit: boolean): void {
+  dialogDetail.value = detail
+  dialogCinemaId.value = anchor
+  dialogInitialCinemaIds.value = [...detail.policy.cinemaIds]
+
+  if (edit && detail.policy.status === 'DRAFT') {
+    dialogMode.value = 'edit'
+  } else if (detail.policy.status === 'PUBLISHED') {
+    dialogMode.value = 'quote'
+  } else {
+    dialogMode.value = 'preview'
+  }
+}
+
 function openCreate(): void {
-  if (!canManage.value || busy.value) return
+  if (!canManage.value || busy.value || drafts.needsRecovery.value) {
+    return
+  }
 
   const cinemas = listing.cinemas.data.value ?? []
   if (!cinemas.length) return
@@ -149,18 +193,48 @@ function openCreate(): void {
   dialogDetail.value = undefined
   dialogCinemaId.value = cinemaId.value || cinemas[0]?.id || ''
   dialogInitialCinemaIds.value = cinemaId.value ? [cinemaId.value] : cinemas.map((item) => item.id)
+  notice.value = ''
   dialogMode.value = 'create'
 }
 
+async function openCreatedDraft(created: PricingPolicy): Promise<void> {
+  const checkpoint = drafts.checkpoint.value
+
+  const currentMetadata = listing.policies.value.find((item) => item.id === created.id) ?? created
+
+  const anchor = chooseAnchor(currentMetadata, checkpoint?.cinemaId ?? cinemaId.value)
+
+  if (!anchor) {
+    throw new Error(
+      'Bản nháp đã được tạo nhưng chưa tìm thấy cụm rạp phù hợp để mở. Hãy tải lại danh sách.',
+    )
+  }
+
+  const detail = await actions.loadDetail({
+    cinemaId: anchor,
+    policyId: created.policyId,
+    versionId: created.id,
+  })
+
+  if (!canManage.value) {
+    throw new Error('Bạn không còn quyền mở bản nháp này.')
+  }
+
+  showDetail(detail, anchor, true)
+  drafts.markOpened(detail.policy.id)
+
+  notice.value =
+    detail.policy.status === 'DRAFT'
+      ? `Đang chỉnh sửa bản nháp phiên bản ${detail.policy.revision}.`
+      : `Phiên bản ${detail.policy.revision} hiện ở trạng thái ${pricingLabel(detail.policy.status).toLocaleLowerCase('vi-VN')}.`
+}
+
 async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
-  if (!canManage.value || busy.value) return
+  if (!canManage.value || busy.value || drafts.needsRecovery.value) {
+    return
+  }
 
-  const availableIds = new Set((listing.cinemas.data.value ?? []).map((item) => item.id))
-
-  const anchor =
-    cinemaId.value && policy.cinemaIds.includes(cinemaId.value)
-      ? cinemaId.value
-      : policy.cinemaIds.find((id) => availableIds.has(id))
+  const anchor = chooseAnchor(policy, cinemaId.value)
 
   if (!anchor) {
     requestError.value = 'Không tìm thấy cụm rạp phù hợp để mở bảng giá.'
@@ -169,6 +243,7 @@ async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
 
   openingId.value = policy.id
   requestError.value = ''
+  notice.value = ''
 
   try {
     const detail = await actions.loadDetail({
@@ -179,26 +254,51 @@ async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
 
     if (!canManage.value) return
 
-    dialogDetail.value = detail
-    dialogCinemaId.value = anchor
-    dialogInitialCinemaIds.value = [...detail.policy.cinemaIds]
-
-    if (edit && detail.policy.status === 'DRAFT') {
-      dialogMode.value = 'edit'
-    } else if (detail.policy.status === 'PUBLISHED') {
-      dialogMode.value = 'quote'
-    } else {
-      dialogMode.value = 'preview'
+    if (edit && detail.policy.status === 'PUBLISHED') {
+      const created = await drafts.start(anchor, detail.policy)
+      await openCreatedDraft(created)
+      return
     }
+
+    showDetail(detail, anchor, edit)
   } catch (error: unknown) {
-    requestError.value = pricingErrorMessage(error)
+    requestError.value = pricingDraftCreationErrorMessage(error)
+  } finally {
+    openingId.value = ''
+  }
+}
+
+async function resumeDraft(): Promise<void> {
+  if (!canManage.value || busy.value || dialogMode.value !== null) {
+    return
+  }
+
+  const checkpoint = drafts.checkpoint.value
+  if (!checkpoint) return
+
+  openingId.value = checkpoint.source.id
+  requestError.value = ''
+
+  try {
+    const created = await drafts.resume()
+    await openCreatedDraft(created)
+  } catch (error: unknown) {
+    requestError.value = pricingDraftCreationErrorMessage(error)
   } finally {
     openingId.value = ''
   }
 }
 
 async function refresh(): Promise<void> {
-  if (!canManage.value || refreshing.value || dialogMode.value !== null) return
+  if (
+    !canManage.value ||
+    refreshing.value ||
+    openingId.value !== '' ||
+    drafts.pending.value ||
+    dialogMode.value !== null
+  ) {
+    return
+  }
 
   refreshing.value = true
   requestError.value = ''
@@ -218,6 +318,29 @@ async function closeDialog(): Promise<void> {
   dialogDetail.value = undefined
   await refresh()
 }
+
+function confirmLeave(): boolean {
+  if (drafts.pending.value) return false
+
+  if (unknownDraftResult.value) {
+    return window.confirm(
+      'Chưa xác định được kết quả tạo bản nháp. Rời trang sẽ mất mã thử lại đang giữ. Bạn muốn rời trang và kiểm tra danh sách trước khi tạo thêm?',
+    )
+  }
+
+  return true
+}
+
+function preventUnload(event: BeforeUnloadEvent): void {
+  if (!drafts.pending.value && !unknownDraftResult.value) return
+
+  event.preventDefault()
+  event.returnValue = ''
+}
+
+onBeforeRouteLeave(confirmLeave)
+onMounted(() => window.addEventListener('beforeunload', preventUnload))
+onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
 </script>
 
 <template>
@@ -231,7 +354,7 @@ async function closeDialog(): Promise<void> {
         v-if="canManage"
         class="price-button price-button--primary"
         type="button"
-        :disabled="busy || !listing.cinemas.data.value?.length"
+        :disabled="busy || drafts.needsRecovery.value || !listing.cinemas.data.value?.length"
         @click="openCreate"
       >
         <svg class="price-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -259,12 +382,50 @@ async function closeDialog(): Promise<void> {
       <p v-if="listing.cinemas.isError.value" class="price-notice price-notice--error" role="alert">
         {{ pricingErrorMessage(listing.cinemas.error.value) }}
       </p>
+
       <p v-if="listing.errors.value.length" class="price-notice price-notice--error" role="alert">
         Một phần danh sách chưa tải được.
         {{ pricingErrorMessage(listing.errors.value[0]) }}
       </p>
+
       <p v-if="requestError" class="price-notice price-notice--error" role="alert">
         {{ requestError }}
+      </p>
+
+      <div v-if="recovery" class="price-notice price-notice--info" role="status">
+        <div>
+          <p>
+            {{
+              recovery.created
+                ? `Đã tạo phiên bản ${recovery.created.revision} của “${recovery.source.name}” nhưng chưa mở được nội dung.`
+                : `Chưa xác định được kết quả tạo bản nháp từ “${recovery.source.name}”.`
+            }}
+          </p>
+
+          <div class="price-actions">
+            <button
+              class="price-button price-button--small"
+              type="button"
+              :disabled="busy"
+              @click="resumeDraft"
+            >
+              {{ recovery.created ? 'Mở phiên bản đã tạo' : 'Thử lại cùng yêu cầu' }}
+            </button>
+
+            <button
+              class="price-button price-button--small"
+              type="button"
+              :disabled="busy"
+              @click="refresh"
+            >
+              Tải lại danh sách
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p v-if="notice && !dialogMode" class="price-notice price-notice--info" role="status">
+        {{ notice }}
       </p>
 
       <div class="price-card">
@@ -376,15 +537,20 @@ async function closeDialog(): Promise<void> {
                 </th>
               </tr>
             </thead>
+
             <tbody>
               <tr v-for="policy in visiblePolicies" :key="policy.policyId">
                 <td>
                   <b>{{ policy.name }}</b>
                   <span class="price-cell-sub">{{ formatsLabel(policy) }}</span>
                 </td>
+
                 <td>
-                  <span class="price-chip">{{ pricingLabel(policy.dayGroup) }}</span>
+                  <span class="price-chip">
+                    {{ pricingLabel(policy.dayGroup) }}
+                  </span>
                 </td>
+
                 <td>
                   <template v-if="appliesToAll(policy)">Toàn hệ thống</template>
                   <template v-else>
@@ -393,11 +559,13 @@ async function closeDialog(): Promise<void> {
                     </span>
                   </template>
                 </td>
+
                 <td>
                   <span class="price-badge" :class="{ 'price-badge--success': isComplete(policy) }">
                     {{ completenessLabel(policy) }}
                   </span>
                 </td>
+
                 <td>
                   <span
                     class="price-badge"
@@ -406,24 +574,34 @@ async function closeDialog(): Promise<void> {
                     {{ pricingLabel(policy.status) }}
                   </span>
                 </td>
+
                 <td>
                   <div class="price-actions">
                     <button
                       class="price-button price-button--small"
                       type="button"
-                      :disabled="openingId !== ''"
+                      :disabled="openingId !== '' || drafts.needsRecovery.value"
                       :aria-busy="openingId === policy.id"
                       @click="openPolicy(policy, false)"
                     >
                       {{ openingId === policy.id ? 'Đang mở…' : 'Tra giá' }}
                     </button>
+
                     <button
-                      v-if="policy.status === 'DRAFT'"
+                      v-if="policy.status === 'DRAFT' || policy.status === 'PUBLISHED'"
                       class="price-button price-button--icon price-button--ghost"
                       type="button"
-                      :aria-label="`Chỉnh sửa ${policy.name}`"
-                      title="Chỉnh sửa bảng giá"
-                      :disabled="openingId !== ''"
+                      :aria-label="
+                        policy.status === 'PUBLISHED'
+                          ? `Tạo bản nháp chỉnh sửa ${policy.name}`
+                          : `Chỉnh sửa ${policy.name}`
+                      "
+                      :title="
+                        policy.status === 'PUBLISHED'
+                          ? `Tạo bản nháp từ phiên bản ${policy.revision}`
+                          : 'Chỉnh sửa bản nháp'
+                      "
+                      :disabled="openingId !== '' || drafts.needsRecovery.value"
                       @click="openPolicy(policy, true)"
                     >
                       <svg class="price-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -445,6 +623,7 @@ async function closeDialog(): Promise<void> {
                 : '0 kết quả'
             }}
           </span>
+
           <div class="price-actions">
             <button
               class="price-button price-button--page"
@@ -455,7 +634,9 @@ async function closeDialog(): Promise<void> {
             >
               ‹
             </button>
+
             <span class="price-chip">{{ page }} / {{ pageCount }}</span>
+
             <button
               class="price-button price-button--page"
               type="button"
