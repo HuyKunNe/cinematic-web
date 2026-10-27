@@ -40,6 +40,7 @@ export * from './create2Params';
 export * from './createCinemaPricingPolicyRequest';
 export * from './createCinemaPricingPolicyRequestDayGroup';
 export * from './createCinemaRequest';
+export * from './createPricingPolicyDraftRequest';
 export * from './createRangeParams';
 export * from './createRoomLayoutRequest';
 export * from './createRoomRequest';
