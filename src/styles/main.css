@@ -20,6 +20,7 @@
 @import './admin-room-seats-responsive.css';
 @import './admin-showtime-create.css';
 @import './admin-pricing-policies.css';
+@import './admin-pricing-modal.css';
 
 /* Navigation styles remain imported by their owning layouts. */
 @theme {
