@@ -6,8 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  GenerateShowSeatsParams,
-  GenerateShowSeatsRequest,
   GetShowSeatsByShowtimeParams,
   HoldShowSeatRequest,
   ShowSeatBookingRequest,
@@ -105,18 +103,6 @@ export const makeShowSeatAvailable = (
     },
       );
     }
-  export const generateShowSeats = (
-    generateShowSeatsRequest: GenerateShowSeatsRequest,
-    params: GenerateShowSeatsParams,
- ) => {
-      return apiRequest<ShowSeatResponse[]>(
-      {url: `/api/v1/show-seats`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: generateShowSeatsRequest,
-        params
-    },
-      );
-    }
   export const getShowSeatById = (
     showSeatId: string,
  ) => {
@@ -131,5 +117,4 @@ export type HoldShowSeatResult = NonNullable<Awaited<ReturnType<typeof holdShowS
 export type BookShowSeatResult = NonNullable<Awaited<ReturnType<typeof bookShowSeat>>>
 export type MakeShowSeatAvailableResult = NonNullable<Awaited<ReturnType<typeof makeShowSeatAvailable>>>
 export type GetShowSeatsByShowtimeResult = NonNullable<Awaited<ReturnType<typeof getShowSeatsByShowtime>>>
-export type GenerateShowSeatsResult = NonNullable<Awaited<ReturnType<typeof generateShowSeats>>>
 export type GetShowSeatByIdResult = NonNullable<Awaited<ReturnType<typeof getShowSeatById>>>

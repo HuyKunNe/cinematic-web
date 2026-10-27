@@ -53,6 +53,7 @@ export * from './createSeatRangeRequest';
 export * from './createSeatRangeRequestSeatType';
 export * from './createSeatRequest';
 export * from './createSeatRequestSeatType';
+export * from './createShowtimeBatchRequest';
 export * from './createShowtimeRequest';
 export * from './errorBody';
 export * from './fareMatrixResponse';

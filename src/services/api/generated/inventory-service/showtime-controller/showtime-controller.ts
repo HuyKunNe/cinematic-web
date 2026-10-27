@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  CreateShowtimeBatchRequest,
   CreateShowtimeRequest,
   GetBookableShowtimesParams,
   GetShowtimesByTimeRangeParams,
@@ -52,6 +53,16 @@ import { apiRequest } from '../../../../http/axios-instance';
       {url: `/api/v1/showtimes`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createShowtimeRequest
+    },
+      );
+    }
+  export const createShowtimeBatch = (
+    createShowtimeBatchRequest: CreateShowtimeBatchRequest,
+ ) => {
+      return apiRequest<ShowtimeResponse[]>(
+      {url: `/api/v1/showtimes/batch`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createShowtimeBatchRequest
     },
       );
     }
@@ -116,6 +127,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 export type UpdateShowtimeResult = NonNullable<Awaited<ReturnType<typeof updateShowtime>>>
 export type GetShowtimesByTimeRangeResult = NonNullable<Awaited<ReturnType<typeof getShowtimesByTimeRange>>>
 export type CreateShowtimeResult = NonNullable<Awaited<ReturnType<typeof createShowtime>>>
+export type CreateShowtimeBatchResult = NonNullable<Awaited<ReturnType<typeof createShowtimeBatch>>>
 export type OpenShowtimeForBookingResult = NonNullable<Awaited<ReturnType<typeof openShowtimeForBooking>>>
 export type CompleteShowtimeResult = NonNullable<Awaited<ReturnType<typeof completeShowtime>>>
 export type CloseShowtimeResult = NonNullable<Awaited<ReturnType<typeof closeShowtime>>>
