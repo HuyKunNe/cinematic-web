@@ -11,6 +11,7 @@ import {
 import {
   pricingErrorMessage,
   pricingLabel,
+  pricingMinuteLabel,
   pricingSeatLabel,
   useAdminPricingActions,
   type PricingCinema,
@@ -31,19 +32,17 @@ const props = defineProps<{
   canManage: boolean
   initial: PricingDetail
 }>()
-
 const emit = defineEmits<{ close: [] }>()
 
 const detail = ref<PricingDetail>(props.initial)
 const versionId = ref(props.initial.policy.id)
 const loadingVersion = ref(false)
 const versionError = ref('')
-
 const cinemaId = ref(props.anchorCinemaId)
 const experienceType = ref('')
 const contentFormat = ref('')
 const seatType = ref('')
-const ticketCategory = ref('')
+const ticketGroupId = ref('')
 const time = ref('17:00')
 
 function vietnamToday(): string {
@@ -53,18 +52,13 @@ function vietnamToday(): string {
     month: '2-digit',
     day: '2-digit',
   }).formatToParts(new Date())
-
   const part = (type: string) => parts.find((item) => item.type === type)?.value ?? ''
-
   return `${part('year')}-${part('month')}-${part('day')}`
 }
 
 const date = ref(vietnamToday())
-
 const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
-
 const actions = useAdminPricingActions(() => props.canManage)
-
 const versions = useAdminPricingVersions(
   () => ({
     cinemaId: props.anchorCinemaId,
@@ -73,86 +67,77 @@ const versions = useAdminPricingVersions(
   }),
   () => props.canManage,
 )
-
 const publishedVersions = computed(() =>
   (versions.data.value ?? []).filter((item) => item.status === 'PUBLISHED'),
 )
-
 const availableCinemas = computed(() =>
   props.cinemas.filter((item) => detail.value.policy.cinemaIds.includes(item.id)),
 )
-
 const experiences = computed(() => [
   ...new Set(detail.value.matrix.scopes.map((item) => item.experienceType)),
 ])
-
 const formats = computed(() =>
   detail.value.matrix.scopes
     .filter((item) => item.experienceType === experienceType.value)
     .map((item) => item.contentFormat),
 )
+const defaultGroup = computed(() =>
+  detail.value.matrix.ticketGroups.find(
+    (item) => item.id === detail.value.matrix.defaultTicketGroupId,
+  ),
+)
+const selectedGroup = computed(() =>
+  detail.value.matrix.ticketGroups.find(
+    (item) => item.id === (ticketGroupId.value || detail.value.matrix.defaultTicketGroupId),
+  ),
+)
 
 watch(
   availableCinemas,
   (items) => {
-    if (!items.some((item) => item.id === cinemaId.value)) {
-      cinemaId.value = items[0]?.id ?? ''
-    }
+    if (!items.some((item) => item.id === cinemaId.value)) cinemaId.value = items[0]?.id ?? ''
   },
   { immediate: true, flush: 'sync' },
 )
-
 watch(
   experiences,
   (items) => {
-    if (!items.some((item) => item === experienceType.value)) {
-      experienceType.value = items[0] ?? ''
-    }
+    if (!items.some((item) => item === experienceType.value)) experienceType.value = items[0] ?? ''
   },
   { immediate: true, flush: 'sync' },
 )
-
 watch(
   formats,
   (items) => {
-    if (!items.some((item) => item === contentFormat.value)) {
-      contentFormat.value = items[0] ?? ''
-    }
+    if (!items.some((item) => item === contentFormat.value)) contentFormat.value = items[0] ?? ''
   },
   { immediate: true, flush: 'sync' },
 )
-
 watch(
   () => detail.value.matrix.seatTypes,
   (items) => {
-    if (!items.some((item) => item === seatType.value)) {
-      seatType.value = items[0] ?? ''
-    }
+    if (!items.some((item) => item === seatType.value)) seatType.value = items[0] ?? ''
   },
   { immediate: true, flush: 'sync' },
 )
-
 watch(
-  () => detail.value.matrix.ticketCategories,
+  () => detail.value.matrix.ticketGroups,
   (items) => {
-    if (!items.some((item) => item === ticketCategory.value)) {
-      ticketCategory.value = items[0] ?? ''
-    }
+    if (ticketGroupId.value && !items.some((item) => item.id === ticketGroupId.value))
+      ticketGroupId.value = ''
   },
   { immediate: true, flush: 'sync' },
 )
 
 const quoteInput = computed<PublishedPricingQuoteInput | null>(() => {
   const current = detail.value
-
   if (
     !props.canManage ||
     loadingVersion.value ||
     current.policy.status !== 'PUBLISHED' ||
     current.matrix.status !== 'PUBLISHED'
-  ) {
+  )
     return null
-  }
 
   const parsed = publishedQuoteFormSchema.safeParse({
     cinemaId: cinemaId.value,
@@ -161,18 +146,16 @@ const quoteInput = computed<PublishedPricingQuoteInput | null>(() => {
     experienceType: experienceType.value,
     contentFormat: contentFormat.value,
     seatType: seatType.value,
-    ticketCategory: ticketCategory.value,
+    ticketGroupId: ticketGroupId.value,
   })
-
   if (!parsed.success) return null
 
   const selected = parsed.data
-  const seatOption = current.matrix.options.seatTypes.find(
-    (item) => item.seatType === selected.seatType,
-  )
+  const seat = current.matrix.options.seatTypes.find((item) => item.seatType === selected.seatType)
+  const group = selected.ticketGroupId || current.matrix.defaultTicketGroupId
 
   if (
-    !seatOption ||
+    !seat ||
     !availableCinemas.value.some((item) => item.id === selected.cinemaId) ||
     !current.matrix.scopes.some(
       (item) =>
@@ -180,10 +163,9 @@ const quoteInput = computed<PublishedPricingQuoteInput | null>(() => {
         item.contentFormat === selected.contentFormat,
     ) ||
     !current.matrix.seatTypes.some((item) => item === selected.seatType) ||
-    !current.matrix.ticketCategories.some((item) => item === selected.ticketCategory)
-  ) {
+    !current.matrix.ticketGroups.some((item) => item.id === group)
+  )
     return null
-  }
 
   return {
     context: {
@@ -196,12 +178,14 @@ const quoteInput = computed<PublishedPricingQuoteInput | null>(() => {
       experienceType: selected.experienceType,
       contentFormat: selected.contentFormat,
       seatType: selected.seatType,
-      ticketCategory: selected.ticketCategory,
+      ...(selected.ticketGroupId ? { ticketGroupId: selected.ticketGroupId } : {}),
     },
     revision: current.policy.revision,
     dayGroup: current.policy.dayGroup,
-    unit: seatOption.unit,
-    capacityPerUnit: seatOption.capacity,
+    unit: seat.unit,
+    capacityPerUnit: seat.capacity,
+    timeBands: current.matrix.timeBands,
+    defaultTicketGroupId: current.matrix.defaultTicketGroupId,
   }
 })
 
@@ -209,25 +193,24 @@ const quoteQuery = useAdminPublishedPricingQuote(
   quoteInput,
   () => props.canManage && !loadingVersion.value,
 )
-
-const result = computed(() => {
-  if (!quoteInput.value || quoteQuery.isFetching.value || !quoteQuery.isSuccess.value) {
-    return undefined
-  }
-
-  return quoteQuery.data.value
-})
-
+const result = computed(() =>
+  quoteInput.value && !quoteQuery.isFetching.value && quoteQuery.isSuccess.value
+    ? quoteQuery.data.value
+    : undefined,
+)
+const resultGroup = computed(() =>
+  detail.value.matrix.ticketGroups.find((item) => item.id === result.value?.fare.ticketGroupId),
+)
+const resultBand = computed(() =>
+  detail.value.matrix.timeBands.find((item) => item.id === result.value?.fare.timeBandId),
+)
 const notApplicable = computed(
   () => pricingQuoteErrorCode(quoteQuery.error.value) === 'INVENTORY_PRICING_FARE_NOT_APPLICABLE',
 )
 
 function money(amount: number): string {
-  return `${new Intl.NumberFormat('vi-VN', {
-    maximumFractionDigits: 2,
-  }).format(amount)}đ`
+  return `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(amount)}đ`
 }
-
 function localDateTime(startsAt: string, timeZone: string): string {
   return new Intl.DateTimeFormat('vi-VN', {
     timeZone,
@@ -239,14 +222,9 @@ function localDateTime(startsAt: string, timeZone: string): string {
 
 async function changeVersion(event: Event): Promise<void> {
   const target = event.target
-
-  if (!(target instanceof HTMLSelectElement) || loadingVersion.value || !props.canManage) {
-    return
-  }
-
+  if (!(target instanceof HTMLSelectElement) || loadingVersion.value || !props.canManage) return
   const selectedId = target.value
   const selected = publishedVersions.value.find((item) => item.id === selectedId)
-
   if (!selected) return
 
   versionId.value = selected.id
@@ -259,15 +237,12 @@ async function changeVersion(event: Event): Promise<void> {
       policyId: selected.policyId,
       versionId: selected.id,
     })
-
-    if (loaded.policy.status !== 'PUBLISHED') {
+    if (loaded.policy.status !== 'PUBLISHED')
       throw new Error('Phiên bản được chọn chưa được công bố.')
-    }
-
     detail.value = loaded
-  } catch (error: unknown) {
+  } catch (cause: unknown) {
     versionId.value = detail.value.policy.id
-    versionError.value = pricingErrorMessage(error)
+    versionError.value = pricingErrorMessage(cause)
   } finally {
     loadingVersion.value = false
   }
@@ -276,11 +251,9 @@ async function changeVersion(event: Event): Promise<void> {
 function close(): void {
   emit('close')
 }
-
 function handleOpenChange(open: boolean): void {
   if (!open) close()
 }
-
 function restoreFocus(event: Event): void {
   event.preventDefault()
   if (returnFocus?.isConnected) returnFocus.focus()
@@ -299,7 +272,6 @@ function restoreFocus(event: Event): void {
       >
         <header class="price-dialog-head">
           <DialogTitle>Tra cứu giá vé</DialogTitle>
-
           <button
             class="price-button price-button--icon price-button--ghost"
             type="button"
@@ -311,10 +283,9 @@ function restoreFocus(event: Event): void {
             </svg>
           </button>
         </header>
-
         <DialogDescription class="price-visually-hidden">
           Tra giá bảng đã công bố theo cụm rạp, ngày giờ chiếu, loại phòng, định dạng, hạng ghế và
-          đối tượng vé.
+          nhóm vé.
         </DialogDescription>
 
         <form class="price-dialog-form" @submit.prevent>
@@ -323,11 +294,9 @@ function restoreFocus(event: Event): void {
               {{ detail.policy.description || 'Bảng giá được chọn trực tiếp theo suất chiếu.' }}
               Giá được lấy từ hệ thống theo phiên bản đã công bố.
             </p>
-
             <p v-if="!canManage" class="price-notice price-notice--error" role="alert">
               Bạn không có quyền tra giá.
             </p>
-
             <p v-if="versionError" class="price-notice price-notice--error" role="alert">
               {{ versionError }}
             </p>
@@ -345,8 +314,7 @@ function restoreFocus(event: Event): void {
                 </option>
               </select>
             </label>
-
-            <p v-if="versions.isError.value" class="price-note" role="status">
+            <p v-if="versions.isError.value" class="price-note">
               Chưa tải được lịch sử phiên bản. Bạn vẫn có thể tra giá phiên bản đang mở.
             </p>
 
@@ -363,7 +331,6 @@ function restoreFocus(event: Event): void {
                   </option>
                 </select>
               </label>
-
               <label class="price-field">
                 <span>Loại phòng</span>
                 <select
@@ -376,7 +343,6 @@ function restoreFocus(event: Event): void {
                   </option>
                 </select>
               </label>
-
               <label class="price-field">
                 <span>Định dạng</span>
                 <select
@@ -384,12 +350,9 @@ function restoreFocus(event: Event): void {
                   class="price-control"
                   :disabled="loadingVersion || !canManage"
                 >
-                  <option v-for="item in formats" :key="item" :value="item">
-                    {{ item }}
-                  </option>
+                  <option v-for="item in formats" :key="item" :value="item">{{ item }}</option>
                 </select>
               </label>
-
               <label class="price-field">
                 <span>Ngày chiếu</span>
                 <input
@@ -399,7 +362,6 @@ function restoreFocus(event: Event): void {
                   :disabled="loadingVersion || !canManage"
                 />
               </label>
-
               <label class="price-field">
                 <span>Giờ bắt đầu</span>
                 <input
@@ -410,7 +372,6 @@ function restoreFocus(event: Event): void {
                   :disabled="loadingVersion || !canManage"
                 />
               </label>
-
               <label class="price-field">
                 <span>Hạng ghế</span>
                 <select
@@ -423,23 +384,30 @@ function restoreFocus(event: Event): void {
                   </option>
                 </select>
               </label>
-
               <label class="price-field">
-                <span>Đối tượng vé</span>
+                <span>Nhóm vé</span>
                 <select
-                  v-model="ticketCategory"
+                  v-model="ticketGroupId"
                   class="price-control"
                   :disabled="loadingVersion || !canManage"
                 >
-                  <option v-for="item in detail.matrix.ticketCategories" :key="item" :value="item">
-                    {{ pricingLabel(item) }}
+                  <option value="">Mặc định: {{ defaultGroup?.name }}</option>
+                  <option
+                    v-for="group in detail.matrix.ticketGroups"
+                    :key="group.id"
+                    :value="group.id"
+                  >
+                    {{ group.name }}
                   </option>
                 </select>
+                <span v-if="selectedGroup?.eligibilityDescription" class="price-note">{{
+                  selectedGroup.eligibilityDescription
+                }}</span>
               </label>
-
               <p class="price-note price-full">
                 Ngày và giờ nhập theo giờ Việt Nam, UTC+07:00. Hệ thống tính khung giá theo múi giờ
-                của cụm rạp.
+                của cụm rạp. Điều kiện nhóm vé chỉ được hiển thị để đối chiếu, không suy luận từ
+                tên.
               </p>
             </div>
 
@@ -452,7 +420,6 @@ function restoreFocus(event: Event): void {
                 {{ detail.policy.name }} · {{ pricingLabel(detail.policy.dayGroup) }} · Phiên bản
                 {{ detail.policy.revision }}
               </p>
-
               <p
                 v-if="loadingVersion || quoteQuery.isFetching.value"
                 class="price-explain-value"
@@ -460,16 +427,12 @@ function restoreFocus(event: Event): void {
               >
                 <strong>Đang tra giá…</strong>
               </p>
-
               <p v-else-if="!quoteInput" class="price-explain-value">
                 <strong>Chọn đủ thông tin tra giá</strong>
               </p>
-
               <template v-else-if="quoteQuery.isError.value">
                 <p class="price-explain-value">
-                  <strong>
-                    {{ notApplicable ? 'Không áp dụng' : 'Chưa tra được giá' }}
-                  </strong>
+                  <strong>{{ notApplicable ? 'Không áp dụng' : 'Chưa tra được giá' }}</strong>
                 </p>
                 <p class="price-note" role="alert">
                   {{ pricingQuoteErrorMessage(quoteQuery.error.value) }}
@@ -483,21 +446,23 @@ function restoreFocus(event: Event): void {
                   Thử lại
                 </button>
               </template>
-
               <template v-else-if="result">
                 <p class="price-explain-value">
                   <strong>{{ money(result.fare.amount) }}</strong>
-                  <span class="price-unit"> /{{ pricingLabel(result.fare.unit) }} </span>
+                  <span class="price-unit">/{{ pricingLabel(result.fare.unit) }}</span>
                 </p>
                 <p class="price-note">
                   {{ pricingLabel(result.fare.experienceType) }} · {{ result.fare.contentFormat }} ·
-                  {{ pricingSeatLabel(result.fare.seatType) }} ·
-                  {{ pricingLabel(result.fare.ticketCategory) }}
+                  {{ pricingSeatLabel(result.fare.seatType) }} · {{ resultGroup?.name }}
                 </p>
                 <p class="price-note">
-                  {{ localDateTime(result.localStartsAt, result.cinemaTimeZone) }}
-                  · {{ result.cinemaTimeZone }} ·
-                  {{ pricingLabel(result.fare.timeBand) }}
+                  {{ localDateTime(result.localStartsAt, result.cinemaTimeZone) }} ·
+                  {{ result.cinemaTimeZone }}
+                </p>
+                <p v-if="resultBand" class="price-note">
+                  {{ resultBand.name }} · {{ pricingMinuteLabel(resultBand.startMinute) }}–{{
+                    pricingMinuteLabel(resultBand.endMinute)
+                  }}
                 </p>
                 <p class="price-note">
                   Một đơn vị giá tương ứng {{ result.capacityPerUnit }} chỗ. Giá bán trọn gói, không
@@ -505,14 +470,12 @@ function restoreFocus(event: Event): void {
                   {{ result.fare.amount === 0 ? 'Giá 0đ là miễn phí.' : '' }}
                 </p>
               </template>
-
               <p class="price-note">
-                Tra theo bảng đã chọn; không tự xác định lịch Lễ/Tết. Kết quả này chưa xác nhận
-                phòng, ghế còn trống hoặc giá trị đơn đặt vé.
+                Tra theo bảng đã chọn; không tự xác định lịch Lễ/Tết. Kết quả chưa xác nhận phòng,
+                ghế còn trống hoặc giá trị đơn đặt vé.
               </p>
             </div>
           </div>
-
           <footer class="price-dialog-foot">
             <button class="price-button" type="button" @click="close">Đóng</button>
           </footer>

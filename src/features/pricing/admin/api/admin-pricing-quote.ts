@@ -3,18 +3,19 @@ import { useQuery } from '@tanstack/vue-query'
 import { z } from 'zod'
 import { quote } from '@/services/api/generated/inventory-service/pricing-fare-quote-controller/pricing-fare-quote-controller'
 import {
-  CellResponseTimeBand,
   CellResponseUnit,
   PricingFareQuoteResponseDayGroup,
   QuotePricingFareRequestContentFormat,
   QuotePricingFareRequestExperienceType,
   QuotePricingFareRequestSeatType,
-  QuotePricingFareRequestTicketCategory,
   type QuotePricingFareRequest,
 } from '@/services/api/generated/inventory-service/model'
 import {
+  pricingCellSchema,
+  pricingContainsMinute,
   pricingErrorMessage,
   type PricingContext,
+  type PricingMatrix,
   type PricingPolicy,
 } from './admin-pricing-queries'
 
@@ -27,18 +28,18 @@ export const publishedQuoteFormSchema = z.object({
   experienceType: z.nativeEnum(QuotePricingFareRequestExperienceType),
   contentFormat: z.nativeEnum(QuotePricingFareRequestContentFormat),
   seatType: z.nativeEnum(QuotePricingFareRequestSeatType),
-  ticketCategory: z.nativeEnum(QuotePricingFareRequestTicketCategory),
+  ticketGroupId: z.union([uuid, z.literal('')]),
 })
 
-const quoteRequestSchema = z.object({
+const requestSchema = z.object({
   startsAt: z.string().datetime({ offset: true }),
   experienceType: z.nativeEnum(QuotePricingFareRequestExperienceType),
   contentFormat: z.nativeEnum(QuotePricingFareRequestContentFormat),
   seatType: z.nativeEnum(QuotePricingFareRequestSeatType),
-  ticketCategory: z.nativeEnum(QuotePricingFareRequestTicketCategory),
+  ticketGroupId: uuid.optional(),
 })
 
-const quoteResponseSchema = z.object({
+const responseSchema = z.object({
   policyId: uuid,
   policyVersionId: uuid,
   revision: z.number().int().positive(),
@@ -47,15 +48,9 @@ const quoteResponseSchema = z.object({
   localStartsAt: z.string().datetime({ offset: true }),
   dayGroup: z.nativeEnum(PricingFareQuoteResponseDayGroup),
   capacityPerUnit: z.number().int().positive(),
-  fare: z.object({
-    experienceType: z.nativeEnum(QuotePricingFareRequestExperienceType),
-    contentFormat: z.nativeEnum(QuotePricingFareRequestContentFormat),
-    timeBand: z.nativeEnum(CellResponseTimeBand),
-    ticketCategory: z.nativeEnum(QuotePricingFareRequestTicketCategory),
-    seatType: z.nativeEnum(QuotePricingFareRequestSeatType),
+  fare: pricingCellSchema.extend({
     state: z.literal('PRICED'),
     amount: z.number().finite().nonnegative(),
-    unit: z.nativeEnum(CellResponseUnit),
   }),
 })
 
@@ -66,55 +61,42 @@ export type PublishedPricingQuoteInput = {
   dayGroup: PricingPolicy['dayGroup']
   unit: CellResponseUnit
   capacityPerUnit: number
+  timeBands: PricingMatrix['timeBands']
+  defaultTicketGroupId: string
 }
 
 export function pricingQuoteErrorCode(error: unknown): string | null {
-  if (
-    typeof error === 'object' &&
+  return typeof error === 'object' &&
     error !== null &&
     'code' in error &&
     typeof error.code === 'string'
-  ) {
-    return error.code
-  }
-
-  return null
+    ? error.code
+    : null
 }
 
 export function pricingQuoteErrorMessage(error: unknown): string {
   const code = pricingQuoteErrorCode(error)
 
   if (code === 'INVENTORY_PRICING_FARE_NOT_APPLICABLE') {
-    return 'Bảng giá này không bán tổ hợp loại phòng, định dạng, ghế và đối tượng đã chọn.'
+    return 'Bảng giá không áp dụng cho giờ chiếu hoặc tổ hợp đã chọn.'
   }
-
   if (code === 'INVENTORY_PRICING_POLICY_VERSION_NOT_PUBLISHED') {
-    return 'Phiên bản này chưa được công bố. Hãy tải lại danh sách bảng giá.'
+    return 'Phiên bản này chưa được công bố. Hãy tải lại danh sách.'
   }
-
   if (code === 'INVENTORY_PRICING_POLICY_DATA_INCONSISTENT') {
     return 'Dữ liệu bảng giá chưa nhất quán. Hãy tải lại và kiểm tra phiên bản.'
   }
-
   if (code === 'INVENTORY_CINEMA_TIME_ZONE_INVALID') {
     return 'Múi giờ của cụm rạp không hợp lệ. Cần cập nhật cấu hình cụm rạp.'
   }
-
   if (code === 'INVENTORY_INVALID_PRICING_FARE_QUOTE') {
     return 'Thông tin tra giá chưa hợp lệ. Kiểm tra ngày, giờ và tổ hợp đã chọn.'
-  }
-
-  if (error instanceof z.ZodError) {
-    return 'Phản hồi tra giá không đúng contract hiện tại. Hãy thử tải lại.'
   }
 
   return pricingErrorMessage(error)
 }
 
-function localTimeBand(
-  startsAt: string,
-  timeZone: string,
-): CellResponseTimeBand {
+function localMinute(startsAt: string, timeZone: string): number {
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone,
     hour: '2-digit',
@@ -126,12 +108,10 @@ function localTimeBand(
   const minute = Number(parts.find((item) => item.type === 'minute')?.value)
 
   if (!Number.isInteger(hour) || !Number.isInteger(minute)) {
-    throw new Error('Không xác nhận được giờ địa phương trong phản hồi tra giá.')
+    throw new Error('Không xác nhận được giờ địa phương của kết quả tra giá.')
   }
 
-  return hour * 60 + minute < 17 * 60
-    ? CellResponseTimeBand.BEFORE_17
-    : CellResponseTimeBand.FROM_17
+  return hour * 60 + minute
 }
 
 export function useAdminPublishedPricingQuote(
@@ -139,67 +119,46 @@ export function useAdminPublishedPricingQuote(
   enabled: MaybeRefOrGetter<boolean>,
 ) {
   return useQuery({
-    queryKey: computed(
-      () => ['pricing', 'admin', 'published-quote', toValue(input)] as const,
-    ),
+    queryKey: computed(() => ['pricing', 'admin', 'published-quote', toValue(input)] as const),
     enabled: computed(() => toValue(enabled) && toValue(input) !== null),
     queryFn: async ({ queryKey }) => {
-      if (!toValue(enabled)) {
-        throw new Error('Bạn không có quyền tra giá.')
-      }
+      if (!toValue(enabled)) throw new Error('Bạn không có quyền tra giá.')
 
       const selected = queryKey[3]
-
-      if (!selected) {
-        throw new Error('Chưa chọn đủ thông tin tra giá.')
-      }
+      if (!selected) throw new Error('Chưa chọn đủ thông tin tra giá.')
 
       const context: PricingContext = {
         cinemaId: uuid.parse(selected.context.cinemaId),
         policyId: uuid.parse(selected.context.policyId),
         versionId: uuid.parse(selected.context.versionId),
       }
-
-      const request = quoteRequestSchema.parse({
-        ...selected.request,
-      }) satisfies QuotePricingFareRequest
-
-      const response = quoteResponseSchema.parse(
-        await quote(
-          context.cinemaId,
-          context.policyId,
-          context.versionId,
-          request,
-        ),
+      const request = requestSchema.parse(selected.request) satisfies QuotePricingFareRequest
+      const response = responseSchema.parse(
+        await quote(context.cinemaId, context.policyId, context.versionId, request),
       )
+
+      const bands = selected.timeBands.filter((band) =>
+        pricingContainsMinute(band, localMinute(request.startsAt, response.cinemaTimeZone)),
+      )
+      const expectedGroup = request.ticketGroupId ?? selected.defaultTicketGroupId
 
       if (
         response.cinemaId !== context.cinemaId ||
         response.policyId !== context.policyId ||
         response.policyVersionId !== context.versionId ||
         response.revision !== selected.revision ||
-        response.dayGroup !== selected.dayGroup
-      ) {
-        throw new Error('Kết quả tra giá không thuộc phiên bản hoặc cụm rạp đang xem.')
-      }
-
-      if (
+        response.dayGroup !== selected.dayGroup ||
         response.fare.experienceType !== request.experienceType ||
         response.fare.contentFormat !== request.contentFormat ||
-        response.fare.ticketCategory !== request.ticketCategory ||
+        response.fare.ticketGroupId !== expectedGroup ||
         response.fare.seatType !== request.seatType ||
         response.fare.unit !== selected.unit ||
-        response.capacityPerUnit !== selected.capacityPerUnit
-      ) {
-        throw new Error('Kết quả tra giá không khớp tổ hợp đã chọn.')
-      }
-
-      if (
+        response.capacityPerUnit !== selected.capacityPerUnit ||
         Date.parse(response.localStartsAt) !== Date.parse(request.startsAt) ||
-        response.fare.timeBand !==
-          localTimeBand(request.startsAt, response.cinemaTimeZone)
+        bands.length !== 1 ||
+        bands[0]?.id !== response.fare.timeBandId
       ) {
-        throw new Error('Giờ địa phương hoặc khung giá trong phản hồi chưa nhất quán.')
+        throw new Error('Kết quả tra giá không khớp phiên bản, giờ chiếu hoặc tổ hợp đã chọn.')
       }
 
       return response

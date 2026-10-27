@@ -11,8 +11,12 @@ export interface CreateShowtimeRequest {
   roomId: string;
   startsAt: string;
   endsAt: string;
-  /** @minimum 0.01 */
-  basePrice: number;
+  /**
+     * Legacy provisional price. Required only when no pricing version is selected. Must be omitted when pricingPolicyVersionId is supplied.
+     * @deprecated
+     * @minimum 0.01
+     */
+  basePrice?: number;
   /** Published layout belonging to roomId. Required when the room has a published matrix layout. */
   roomLayoutId?: string;
   /** Active screening version belonging to movieId. Its content format must be supported by the room. */
@@ -23,4 +27,6 @@ export interface CreateShowtimeRequest {
      * @maximum 120
      */
   breakMinutes: number;
+  /** Exact published pricing version applicable to the room's cinema. Seat prices use its configured default ticket group. */
+  pricingPolicyVersionId?: string;
 }
