@@ -15,7 +15,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const publish = (
+  export const publishPricingPolicyVersion = (
     cinemaId: string,
     policyId: string,
     versionId: string,
@@ -28,7 +28,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const validate = (
+  export const validatePricingPolicyFareMatrix = (
     cinemaId: string,
     policyId: string,
     versionId: string,
@@ -38,5 +38,5 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type PublishResult = NonNullable<Awaited<ReturnType<typeof publish>>>
-export type ValidateResult = NonNullable<Awaited<ReturnType<typeof validate>>>
+  export type PublishPricingPolicyVersionResult = NonNullable<Awaited<ReturnType<typeof publishPricingPolicyVersion>>>
+export type ValidatePricingPolicyFareMatrixResult = NonNullable<Awaited<ReturnType<typeof validatePricingPolicyFareMatrix>>>

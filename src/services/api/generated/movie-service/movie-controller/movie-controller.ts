@@ -18,7 +18,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const findById = (
+  export const findMovieById = (
     id: string,
  ) => {
       return apiRequest<MovieResponse>(
@@ -26,7 +26,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const update = (
+  export const updateMovie = (
     id: string,
     updateMovieRequest: UpdateMovieRequest,
  ) => {
@@ -37,7 +37,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const _delete = (
+  export const deleteMovie = (
     id: string,
  ) => {
       return apiRequest<void>(
@@ -60,7 +60,7 @@ export const updateMovieMetadata = (
     },
       );
     }
-  export const findAll = (
+  export const findAllMovies = (
 
  ) => {
       return apiRequest<MovieResponse[]>(
@@ -68,7 +68,7 @@ export const updateMovieMetadata = (
     },
       );
     }
-  export const create = (
+  export const createMovie = (
     createMovieRequest: CreateMovieRequest,
  ) => {
       return apiRequest<MovieResponse>(
@@ -90,10 +90,10 @@ export const getMovieCatalog = (
     },
       );
     }
-  export type FindByIdResult = NonNullable<Awaited<ReturnType<typeof findById>>>
-export type UpdateResult = NonNullable<Awaited<ReturnType<typeof update>>>
-export type _DeleteResult = NonNullable<Awaited<ReturnType<typeof _delete>>>
+  export type FindMovieByIdResult = NonNullable<Awaited<ReturnType<typeof findMovieById>>>
+export type UpdateMovieResult = NonNullable<Awaited<ReturnType<typeof updateMovie>>>
+export type DeleteMovieResult = NonNullable<Awaited<ReturnType<typeof deleteMovie>>>
 export type UpdateMovieMetadataResult = NonNullable<Awaited<ReturnType<typeof updateMovieMetadata>>>
-export type FindAllResult = NonNullable<Awaited<ReturnType<typeof findAll>>>
-export type CreateResult = NonNullable<Awaited<ReturnType<typeof create>>>
+export type FindAllMoviesResult = NonNullable<Awaited<ReturnType<typeof findAllMovies>>>
+export type CreateMovieResult = NonNullable<Awaited<ReturnType<typeof createMovie>>>
 export type GetMovieCatalogResult = NonNullable<Awaited<ReturnType<typeof getMovieCatalog>>>

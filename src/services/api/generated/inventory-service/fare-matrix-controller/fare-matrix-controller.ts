@@ -14,7 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const get2 = (
+  export const getPricingFareMatrix = (
     cinemaId: string,
     policyId: string,
     versionId: string,
@@ -24,7 +24,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const replace2 = (
+  export const replacePricingFareMatrix = (
     cinemaId: string,
     policyId: string,
     versionId: string,
@@ -37,5 +37,5 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type Get2Result = NonNullable<Awaited<ReturnType<typeof get2>>>
-export type Replace2Result = NonNullable<Awaited<ReturnType<typeof replace2>>>
+  export type GetPricingFareMatrixResult = NonNullable<Awaited<ReturnType<typeof getPricingFareMatrix>>>
+export type ReplacePricingFareMatrixResult = NonNullable<Awaited<ReturnType<typeof replacePricingFareMatrix>>>

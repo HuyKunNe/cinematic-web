@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  Create2Params,
+  CreateRoomParams,
   CreateRoomRequest,
   GetActiveRoomsParams,
   GetManagedRoomsParams,
@@ -18,7 +18,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const getById2 = (
+  export const getRoomById = (
     roomId: string,
  ) => {
       return apiRequest<RoomResponse>(
@@ -26,7 +26,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const update2 = (
+  export const updateRoom = (
     roomId: string,
     updateRoomRequest: UpdateRoomRequest,
  ) => {
@@ -46,9 +46,9 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const create2 = (
+  export const createRoom = (
     createRoomRequest: CreateRoomRequest,
-    params: Create2Params,
+    params: CreateRoomParams,
  ) => {
       return apiRequest<RoomResponse>(
       {url: `/api/v1/rooms`, method: 'POST',
@@ -67,8 +67,8 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type GetById2Result = NonNullable<Awaited<ReturnType<typeof getById2>>>
-export type Update2Result = NonNullable<Awaited<ReturnType<typeof update2>>>
+  export type GetRoomByIdResult = NonNullable<Awaited<ReturnType<typeof getRoomById>>>
+export type UpdateRoomResult = NonNullable<Awaited<ReturnType<typeof updateRoom>>>
 export type GetActiveRoomsResult = NonNullable<Awaited<ReturnType<typeof getActiveRooms>>>
-export type Create2Result = NonNullable<Awaited<ReturnType<typeof create2>>>
+export type CreateRoomResult = NonNullable<Awaited<ReturnType<typeof createRoom>>>
 export type GetManagedRoomsResult = NonNullable<Awaited<ReturnType<typeof getManagedRooms>>>

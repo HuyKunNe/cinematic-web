@@ -14,7 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const createDraft = (
+  export const createPricingPolicyDraftFromPublished = (
     cinemaId: string,
     policyId: string,
     sourceVersionId: string,
@@ -27,4 +27,4 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type CreateDraftResult = NonNullable<Awaited<ReturnType<typeof createDraft>>>
+  export type CreatePricingPolicyDraftFromPublishedResult = NonNullable<Awaited<ReturnType<typeof createPricingPolicyDraftFromPublished>>>

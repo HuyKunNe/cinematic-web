@@ -8,7 +8,7 @@
 import type {
   CreateShowtimeRequest,
   GetBookableShowtimesParams,
-  GetByTimeRangeParams,
+  GetShowtimesByTimeRangeParams,
   ShowtimeResponse,
   UpdateShowtimeRequest
 } from '../model';
@@ -17,7 +17,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const getById = (
+  export const getShowtimeById = (
     showtimeId: string,
  ) => {
       return apiRequest<ShowtimeResponse>(
@@ -25,7 +25,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const update = (
+  export const updateShowtime = (
     showtimeId: string,
     updateShowtimeRequest: UpdateShowtimeRequest,
  ) => {
@@ -36,8 +36,8 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const getByTimeRange = (
-    params: GetByTimeRangeParams,
+  export const getShowtimesByTimeRange = (
+    params: GetShowtimesByTimeRangeParams,
  ) => {
       return apiRequest<ShowtimeResponse[]>(
       {url: `/api/v1/showtimes`, method: 'GET',
@@ -45,7 +45,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const create = (
+  export const createShowtime = (
     createShowtimeRequest: CreateShowtimeRequest,
  ) => {
       return apiRequest<unknown>(
@@ -55,7 +55,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const openForBooking = (
+  export const openShowtimeForBooking = (
     showtimeId: string,
  ) => {
       return apiRequest<ShowtimeResponse>(
@@ -63,7 +63,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const complete = (
+  export const completeShowtime = (
     showtimeId: string,
  ) => {
       return apiRequest<ShowtimeResponse>(
@@ -71,7 +71,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const close = (
+  export const closeShowtime = (
     showtimeId: string,
  ) => {
       return apiRequest<ShowtimeResponse>(
@@ -79,7 +79,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const cancel = (
+  export const cancelShowtime = (
     showtimeId: string,
  ) => {
       return apiRequest<ShowtimeResponse>(
@@ -87,7 +87,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const getByRoomId = (
+  export const getShowtimesByRoom = (
     roomId: string,
  ) => {
       return apiRequest<ShowtimeResponse[]>(
@@ -95,7 +95,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const getByMovieId = (
+  export const getShowtimesByMovie = (
     movieId: string,
  ) => {
       return apiRequest<ShowtimeResponse[]>(
@@ -112,14 +112,14 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type GetByIdResult = NonNullable<Awaited<ReturnType<typeof getById>>>
-export type UpdateResult = NonNullable<Awaited<ReturnType<typeof update>>>
-export type GetByTimeRangeResult = NonNullable<Awaited<ReturnType<typeof getByTimeRange>>>
-export type CreateResult = NonNullable<Awaited<ReturnType<typeof create>>>
-export type OpenForBookingResult = NonNullable<Awaited<ReturnType<typeof openForBooking>>>
-export type CompleteResult = NonNullable<Awaited<ReturnType<typeof complete>>>
-export type CloseResult = NonNullable<Awaited<ReturnType<typeof close>>>
-export type CancelResult = NonNullable<Awaited<ReturnType<typeof cancel>>>
-export type GetByRoomIdResult = NonNullable<Awaited<ReturnType<typeof getByRoomId>>>
-export type GetByMovieIdResult = NonNullable<Awaited<ReturnType<typeof getByMovieId>>>
+  export type GetShowtimeByIdResult = NonNullable<Awaited<ReturnType<typeof getShowtimeById>>>
+export type UpdateShowtimeResult = NonNullable<Awaited<ReturnType<typeof updateShowtime>>>
+export type GetShowtimesByTimeRangeResult = NonNullable<Awaited<ReturnType<typeof getShowtimesByTimeRange>>>
+export type CreateShowtimeResult = NonNullable<Awaited<ReturnType<typeof createShowtime>>>
+export type OpenShowtimeForBookingResult = NonNullable<Awaited<ReturnType<typeof openShowtimeForBooking>>>
+export type CompleteShowtimeResult = NonNullable<Awaited<ReturnType<typeof completeShowtime>>>
+export type CloseShowtimeResult = NonNullable<Awaited<ReturnType<typeof closeShowtime>>>
+export type CancelShowtimeResult = NonNullable<Awaited<ReturnType<typeof cancelShowtime>>>
+export type GetShowtimesByRoomResult = NonNullable<Awaited<ReturnType<typeof getShowtimesByRoom>>>
+export type GetShowtimesByMovieResult = NonNullable<Awaited<ReturnType<typeof getShowtimesByMovie>>>
 export type GetBookableShowtimesResult = NonNullable<Awaited<ReturnType<typeof getBookableShowtimes>>>

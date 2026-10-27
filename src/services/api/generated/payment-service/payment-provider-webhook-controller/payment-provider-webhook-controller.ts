@@ -9,15 +9,15 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const handle = (
+  export const handlePaymentProviderWebhook = (
     provider: string,
-    handleBody: string,
+    handlePaymentProviderWebhookBody: string,
  ) => {
       return apiRequest<string>(
       {url: `/api/v1/payments/webhooks/${provider}`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: handleBody
+      data: handlePaymentProviderWebhookBody
     },
       );
     }
-  export type HandleResult = NonNullable<Awaited<ReturnType<typeof handle>>>
+  export type HandlePaymentProviderWebhookResult = NonNullable<Awaited<ReturnType<typeof handlePaymentProviderWebhook>>>

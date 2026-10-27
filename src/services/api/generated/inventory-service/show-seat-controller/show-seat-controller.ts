@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  GenerateParams,
+  GenerateShowSeatsParams,
   GenerateShowSeatsRequest,
-  GetByShowtimeIdParams,
+  GetShowSeatsByShowtimeParams,
   HoldShowSeatRequest,
   ShowSeatBookingRequest,
   ShowSeatResponse
@@ -39,7 +39,7 @@ export const makeShowSeatUnavailable = (
     },
       );
     }
-  export const release = (
+  export const releaseShowSeat = (
     showSeatId: string,
     showSeatBookingRequest: ShowSeatBookingRequest,
  ) => {
@@ -51,19 +51,9 @@ export const makeShowSeatUnavailable = (
       );
     }
   /**
- * Requires inventory:write.
- *
- * The seat must be AVAILABLE and expiresAt must be in the future.
- * The showtime must be OPEN_FOR_BOOKING and start in the future.
- * Its room and cinema must both be active.
- *
- * Returns HTTP 409 with INVENTORY_SHOWTIME_NOT_BOOKABLE
- * when showtime eligibility is not satisfied.
- *
- * This endpoint does not reuse an existing HELD seat.
  * @summary Hold an available show seat
  */
-export const hold = (
+export const holdShowSeat = (
     showSeatId: string,
     holdShowSeatRequest: HoldShowSeatRequest,
  ) => {
@@ -74,7 +64,7 @@ export const hold = (
     },
       );
     }
-  export const book = (
+  export const bookShowSeat = (
     showSeatId: string,
     showSeatBookingRequest: ShowSeatBookingRequest,
  ) => {
@@ -106,8 +96,8 @@ export const makeShowSeatAvailable = (
     },
       );
     }
-  export const getByShowtimeId = (
-    params: GetByShowtimeIdParams,
+  export const getShowSeatsByShowtime = (
+    params: GetShowSeatsByShowtimeParams,
  ) => {
       return apiRequest<ShowSeatResponse[]>(
       {url: `/api/v1/show-seats`, method: 'GET',
@@ -115,9 +105,9 @@ export const makeShowSeatAvailable = (
     },
       );
     }
-  export const generate = (
+  export const generateShowSeats = (
     generateShowSeatsRequest: GenerateShowSeatsRequest,
-    params: GenerateParams,
+    params: GenerateShowSeatsParams,
  ) => {
       return apiRequest<ShowSeatResponse[]>(
       {url: `/api/v1/show-seats`, method: 'POST',
@@ -127,7 +117,7 @@ export const makeShowSeatAvailable = (
     },
       );
     }
-  export const getById4 = (
+  export const getShowSeatById = (
     showSeatId: string,
  ) => {
       return apiRequest<ShowSeatResponse>(
@@ -136,10 +126,10 @@ export const makeShowSeatAvailable = (
       );
     }
   export type MakeShowSeatUnavailableResult = NonNullable<Awaited<ReturnType<typeof makeShowSeatUnavailable>>>
-export type ReleaseResult = NonNullable<Awaited<ReturnType<typeof release>>>
-export type HoldResult = NonNullable<Awaited<ReturnType<typeof hold>>>
-export type BookResult = NonNullable<Awaited<ReturnType<typeof book>>>
+export type ReleaseShowSeatResult = NonNullable<Awaited<ReturnType<typeof releaseShowSeat>>>
+export type HoldShowSeatResult = NonNullable<Awaited<ReturnType<typeof holdShowSeat>>>
+export type BookShowSeatResult = NonNullable<Awaited<ReturnType<typeof bookShowSeat>>>
 export type MakeShowSeatAvailableResult = NonNullable<Awaited<ReturnType<typeof makeShowSeatAvailable>>>
-export type GetByShowtimeIdResult = NonNullable<Awaited<ReturnType<typeof getByShowtimeId>>>
-export type GenerateResult = NonNullable<Awaited<ReturnType<typeof generate>>>
-export type GetById4Result = NonNullable<Awaited<ReturnType<typeof getById4>>>
+export type GetShowSeatsByShowtimeResult = NonNullable<Awaited<ReturnType<typeof getShowSeatsByShowtime>>>
+export type GenerateShowSeatsResult = NonNullable<Awaited<ReturnType<typeof generateShowSeats>>>
+export type GetShowSeatByIdResult = NonNullable<Awaited<ReturnType<typeof getShowSeatById>>>

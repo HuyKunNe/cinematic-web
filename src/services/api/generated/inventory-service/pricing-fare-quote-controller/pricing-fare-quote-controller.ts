@@ -14,7 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const quote = (
+  export const quotePricingFare = (
     cinemaId: string,
     policyId: string,
     versionId: string,
@@ -27,4 +27,4 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type QuoteResult = NonNullable<Awaited<ReturnType<typeof quote>>>
+  export type QuotePricingFareResult = NonNullable<Awaited<ReturnType<typeof quotePricingFare>>>

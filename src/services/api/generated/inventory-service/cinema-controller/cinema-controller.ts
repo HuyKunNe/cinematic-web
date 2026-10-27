@@ -17,7 +17,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const getById3 = (
+  export const getCinemaById = (
     cinemaId: string,
  ) => {
       return apiRequest<CinemaResponse>(
@@ -25,7 +25,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const update3 = (
+  export const updateCinema = (
     cinemaId: string,
     updateCinemaRequest: UpdateCinemaRequest,
  ) => {
@@ -45,7 +45,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const create3 = (
+  export const createCinema = (
     createCinemaRequest: CreateCinemaRequest,
  ) => {
       return apiRequest<CinemaResponse>(
@@ -64,8 +64,8 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type GetById3Result = NonNullable<Awaited<ReturnType<typeof getById3>>>
-export type Update3Result = NonNullable<Awaited<ReturnType<typeof update3>>>
+  export type GetCinemaByIdResult = NonNullable<Awaited<ReturnType<typeof getCinemaById>>>
+export type UpdateCinemaResult = NonNullable<Awaited<ReturnType<typeof updateCinema>>>
 export type GetActiveCinemasResult = NonNullable<Awaited<ReturnType<typeof getActiveCinemas>>>
-export type Create3Result = NonNullable<Awaited<ReturnType<typeof create3>>>
+export type CreateCinemaResult = NonNullable<Awaited<ReturnType<typeof createCinema>>>
 export type GetManagedCinemasResult = NonNullable<Awaited<ReturnType<typeof getManagedCinemas>>>

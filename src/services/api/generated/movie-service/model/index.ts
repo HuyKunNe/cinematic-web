@@ -22,6 +22,7 @@ export * from './getMovieCatalogGenresStatus';
 export * from './getMovieCatalogParams';
 export * from './getMovieCatalogSort';
 export * from './getMovieCatalogStatus';
+export * from './listMovieScreeningVersionsParams';
 export * from './listParams';
 export * from './movieHeroConfigurationResponse';
 export * from './movieResponse';

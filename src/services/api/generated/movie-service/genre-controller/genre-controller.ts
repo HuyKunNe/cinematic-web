@@ -15,7 +15,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const findById1 = (
+  export const findGenreById = (
     id: string,
  ) => {
       return apiRequest<GenreResponse>(
@@ -23,7 +23,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const update1 = (
+  export const updateGenre = (
     id: string,
     updateGenreRequest: UpdateGenreRequest,
  ) => {
@@ -34,7 +34,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const delete1 = (
+  export const deleteGenre = (
     id: string,
  ) => {
       return apiRequest<void>(
@@ -42,7 +42,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const findAll1 = (
+  export const findAll = (
 
  ) => {
       return apiRequest<GenreResponse[]>(
@@ -50,7 +50,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const create2 = (
+  export const createGenre = (
     createGenreRequest: CreateGenreRequest,
  ) => {
       return apiRequest<GenreResponse>(
@@ -60,8 +60,8 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type FindById1Result = NonNullable<Awaited<ReturnType<typeof findById1>>>
-export type Update1Result = NonNullable<Awaited<ReturnType<typeof update1>>>
-export type Delete1Result = NonNullable<Awaited<ReturnType<typeof delete1>>>
-export type FindAll1Result = NonNullable<Awaited<ReturnType<typeof findAll1>>>
-export type Create2Result = NonNullable<Awaited<ReturnType<typeof create2>>>
+  export type FindGenreByIdResult = NonNullable<Awaited<ReturnType<typeof findGenreById>>>
+export type UpdateGenreResult = NonNullable<Awaited<ReturnType<typeof updateGenre>>>
+export type DeleteGenreResult = NonNullable<Awaited<ReturnType<typeof deleteGenre>>>
+export type FindAllResult = NonNullable<Awaited<ReturnType<typeof findAll>>>
+export type CreateGenreResult = NonNullable<Awaited<ReturnType<typeof createGenre>>>

@@ -9,7 +9,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const unlock = (
+  export const unlockUserAccount = (
     userId: string,
  ) => {
       return apiRequest<void>(
@@ -17,7 +17,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const lock = (
+  export const lockUserAccount = (
     userId: string,
  ) => {
       return apiRequest<void>(
@@ -25,7 +25,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const enable = (
+  export const enableUserAccount = (
     userId: string,
  ) => {
       return apiRequest<void>(
@@ -33,7 +33,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const disable = (
+  export const disableUserAccount = (
     userId: string,
  ) => {
       return apiRequest<void>(
@@ -41,7 +41,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type UnlockResult = NonNullable<Awaited<ReturnType<typeof unlock>>>
-export type LockResult = NonNullable<Awaited<ReturnType<typeof lock>>>
-export type EnableResult = NonNullable<Awaited<ReturnType<typeof enable>>>
-export type DisableResult = NonNullable<Awaited<ReturnType<typeof disable>>>
+  export type UnlockUserAccountResult = NonNullable<Awaited<ReturnType<typeof unlockUserAccount>>>
+export type LockUserAccountResult = NonNullable<Awaited<ReturnType<typeof lockUserAccount>>>
+export type EnableUserAccountResult = NonNullable<Awaited<ReturnType<typeof enableUserAccount>>>
+export type DisableUserAccountResult = NonNullable<Awaited<ReturnType<typeof disableUserAccount>>>

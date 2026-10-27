@@ -14,7 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const get = (
+  export const getRoomContentFormats = (
     roomId: string,
  ) => {
       return apiRequest<RoomContentFormatsResponse>(
@@ -22,7 +22,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const replace1 = (
+  export const replaceRoomContentFormats = (
     roomId: string,
     replaceRoomContentFormatsRequest: ReplaceRoomContentFormatsRequest,
  ) => {
@@ -33,5 +33,5 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type GetResult = NonNullable<Awaited<ReturnType<typeof get>>>
-export type Replace1Result = NonNullable<Awaited<ReturnType<typeof replace1>>>
+  export type GetRoomContentFormatsResult = NonNullable<Awaited<ReturnType<typeof getRoomContentFormats>>>
+export type ReplaceRoomContentFormatsResult = NonNullable<Awaited<ReturnType<typeof replaceRoomContentFormats>>>

@@ -14,7 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const replace = (
+  export const replaceShowtimePricing = (
     showtimeId: string,
     replaceShowtimePricingRequest: ReplaceShowtimePricingRequest,
  ) => {
@@ -25,4 +25,4 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type ReplaceResult = NonNullable<Awaited<ReturnType<typeof replace>>>
+  export type ReplaceShowtimePricingResult = NonNullable<Awaited<ReturnType<typeof replaceShowtimePricing>>>

@@ -13,7 +13,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const get4 = (
+  export const getCinemaRoomCapacities = (
     cinemaId: string,
  ) => {
       return apiRequest<CinemaRoomCapacitiesResponse>(
@@ -21,4 +21,4 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type Get4Result = NonNullable<Awaited<ReturnType<typeof get4>>>
+  export type GetCinemaRoomCapacitiesResult = NonNullable<Awaited<ReturnType<typeof getCinemaRoomCapacities>>>

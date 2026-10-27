@@ -9,15 +9,15 @@ import type {
   ApiResponseBookingResponse,
   ApiResponsePageResponseBookingResponse,
   CreateBookingRequest,
-  FindAllParams
+  FindAllBookingsParams
 } from '../model';
 
 import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const findAll = (
-    params?: FindAllParams,
+  export const findAllBookings = (
+    params?: FindAllBookingsParams,
  ) => {
       return apiRequest<ApiResponsePageResponseBookingResponse>(
       {url: `/api/v1/bookings`, method: 'GET',
@@ -25,7 +25,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const create = (
+  export const createBooking = (
     createBookingRequest: CreateBookingRequest,
  ) => {
       return apiRequest<ApiResponseBookingResponse>(
@@ -35,7 +35,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const cancel = (
+  export const cancelBooking = (
     bookingId: string,
  ) => {
       return apiRequest<ApiResponseBookingResponse>(
@@ -51,7 +51,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type FindAllResult = NonNullable<Awaited<ReturnType<typeof findAll>>>
-export type CreateResult = NonNullable<Awaited<ReturnType<typeof create>>>
-export type CancelResult = NonNullable<Awaited<ReturnType<typeof cancel>>>
+  export type FindAllBookingsResult = NonNullable<Awaited<ReturnType<typeof findAllBookings>>>
+export type CreateBookingResult = NonNullable<Awaited<ReturnType<typeof createBooking>>>
+export type CancelBookingResult = NonNullable<Awaited<ReturnType<typeof cancelBooking>>>
 export type FindByIdResult = NonNullable<Awaited<ReturnType<typeof findById>>>

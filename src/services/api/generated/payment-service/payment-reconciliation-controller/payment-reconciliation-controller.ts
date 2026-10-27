@@ -15,7 +15,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const resolve = (
+  export const resolvePaymentReconciliation = (
     reconciliationCaseId: string,
     resolveReconciliationRequest: ResolveReconciliationRequest,
  ) => {
@@ -26,7 +26,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const reject = (
+  export const rejectPaymentReconciliation = (
     reconciliationCaseId: string,
     rejectReconciliationRequest: RejectReconciliationRequest,
  ) => {
@@ -37,5 +37,5 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type ResolveResult = NonNullable<Awaited<ReturnType<typeof resolve>>>
-export type RejectResult = NonNullable<Awaited<ReturnType<typeof reject>>>
+  export type ResolvePaymentReconciliationResult = NonNullable<Awaited<ReturnType<typeof resolvePaymentReconciliation>>>
+export type RejectPaymentReconciliationResult = NonNullable<Awaited<ReturnType<typeof rejectPaymentReconciliation>>>

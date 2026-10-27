@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  Create1Params,
-  CreateRangeParams,
+  CreateSeatParams,
+  CreateSeatRangeParams,
   CreateSeatRangeRequest,
   CreateSeatRequest,
   GetActiveSeatsParams,
@@ -22,7 +22,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const getById1 = (
+  export const getSeatById = (
     seatId: string,
  ) => {
       return apiRequest<SeatResponse>(
@@ -30,7 +30,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const update1 = (
+  export const updateSeat = (
     seatId: string,
     updateSeatRequest: UpdateSeatRequest,
  ) => {
@@ -50,9 +50,9 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const create1 = (
+  export const createSeat = (
     createSeatRequest: CreateSeatRequest,
-    params: Create1Params,
+    params: CreateSeatParams,
  ) => {
       return apiRequest<SeatResponse>(
       {url: `/api/v1/seats`, method: 'POST',
@@ -62,9 +62,9 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const createRange = (
+  export const createSeatRange = (
     createSeatRangeRequest: CreateSeatRangeRequest,
-    params: CreateRangeParams,
+    params: CreateSeatRangeParams,
  ) => {
       return apiRequest<SeatResponse[]>(
       {url: `/api/v1/seats/range`, method: 'POST',
@@ -119,10 +119,10 @@ export const getManagedSeats = (
     },
       );
     }
-  export type GetById1Result = NonNullable<Awaited<ReturnType<typeof getById1>>>
-export type Update1Result = NonNullable<Awaited<ReturnType<typeof update1>>>
+  export type GetSeatByIdResult = NonNullable<Awaited<ReturnType<typeof getSeatById>>>
+export type UpdateSeatResult = NonNullable<Awaited<ReturnType<typeof updateSeat>>>
 export type GetActiveSeatsResult = NonNullable<Awaited<ReturnType<typeof getActiveSeats>>>
-export type Create1Result = NonNullable<Awaited<ReturnType<typeof create1>>>
-export type CreateRangeResult = NonNullable<Awaited<ReturnType<typeof createRange>>>
+export type CreateSeatResult = NonNullable<Awaited<ReturnType<typeof createSeat>>>
+export type CreateSeatRangeResult = NonNullable<Awaited<ReturnType<typeof createSeatRange>>>
 export type UpdateSeatActiveStateResult = NonNullable<Awaited<ReturnType<typeof updateSeatActiveState>>>
 export type GetManagedSeatsResult = NonNullable<Awaited<ReturnType<typeof getManagedSeats>>>

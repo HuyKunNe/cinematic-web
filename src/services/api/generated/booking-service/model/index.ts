@@ -13,6 +13,7 @@ export * from './bookingResponseStatus';
 export * from './bookingSeatResponse';
 export * from './createBookingRequest';
 export * from './errorBody';
+export * from './findAllBookingsParams';
 export * from './findAllParams';
 export * from './pageInfo';
 export * from './pageResponseBookingResponse';

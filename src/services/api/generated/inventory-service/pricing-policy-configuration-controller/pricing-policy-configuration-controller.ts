@@ -14,7 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const replace3 = (
+  export const replacePricingPolicyConfiguration = (
     cinemaId: string,
     policyId: string,
     versionId: string,
@@ -27,4 +27,4 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type Replace3Result = NonNullable<Awaited<ReturnType<typeof replace3>>>
+  export type ReplacePricingPolicyConfigurationResult = NonNullable<Awaited<ReturnType<typeof replacePricingPolicyConfiguration>>>

@@ -15,7 +15,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const get1 = (
+  export const getCinemaPricingPolicyVersion = (
     cinemaId: string,
     policyId: string,
     versionId: string,
@@ -25,7 +25,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const replaceDraft = (
+  export const replaceCinemaPricingPolicyDraft = (
     cinemaId: string,
     policyId: string,
     versionId: string,
@@ -38,7 +38,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const listLatest = (
+  export const listLatestCinemaPricingPolicies = (
     cinemaId: string,
  ) => {
       return apiRequest<CinemaPricingPolicyVersionResponse[]>(
@@ -46,7 +46,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const create4 = (
+  export const createCinemaPricingPolicy = (
     cinemaId: string,
     createCinemaPricingPolicyRequest: CreateCinemaPricingPolicyRequest,
  ) => {
@@ -57,7 +57,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const listVersions = (
+  export const listCinemaPricingPolicyVersions = (
     cinemaId: string,
     policyId: string,
  ) => {
@@ -66,8 +66,8 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type Get1Result = NonNullable<Awaited<ReturnType<typeof get1>>>
-export type ReplaceDraftResult = NonNullable<Awaited<ReturnType<typeof replaceDraft>>>
-export type ListLatestResult = NonNullable<Awaited<ReturnType<typeof listLatest>>>
-export type Create4Result = NonNullable<Awaited<ReturnType<typeof create4>>>
-export type ListVersionsResult = NonNullable<Awaited<ReturnType<typeof listVersions>>>
+  export type GetCinemaPricingPolicyVersionResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyVersion>>>
+export type ReplaceCinemaPricingPolicyDraftResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyDraft>>>
+export type ListLatestCinemaPricingPoliciesResult = NonNullable<Awaited<ReturnType<typeof listLatestCinemaPricingPolicies>>>
+export type CreateCinemaPricingPolicyResult = NonNullable<Awaited<ReturnType<typeof createCinemaPricingPolicy>>>
+export type ListCinemaPricingPolicyVersionsResult = NonNullable<Awaited<ReturnType<typeof listCinemaPricingPolicyVersions>>>

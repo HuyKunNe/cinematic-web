@@ -14,7 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const requestRefund = (
+  export const requestPaymentRefund = (
     paymentId: string,
     refundPaymentRequest: RefundPaymentRequest,
  ) => {
@@ -25,4 +25,4 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type RequestRefundResult = NonNullable<Awaited<ReturnType<typeof requestRefund>>>
+  export type RequestPaymentRefundResult = NonNullable<Awaited<ReturnType<typeof requestPaymentRefund>>>
