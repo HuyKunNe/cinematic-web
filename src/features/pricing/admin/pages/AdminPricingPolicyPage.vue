@@ -12,6 +12,7 @@ import {
 } from '../api/admin-pricing-queries'
 import { useAdminPricingList, useAdminPricingRowDetails } from '../api/admin-pricing-list'
 import AdminPricingWorkflowCreate from '../components/AdminPricingWorkflowCreate.vue'
+import AdminPricingPublishedQuoteDialog from '../components/AdminPricingPublishedQuoteDialog.vue'
 
 const auth = useAuthStore()
 const queryClient = useQueryClient()
@@ -30,7 +31,7 @@ const refreshing = ref(false)
 const openingId = ref('')
 const requestError = ref('')
 
-const dialogMode = ref<'create' | 'edit' | 'preview' | null>(null)
+const dialogMode = ref<'create' | 'edit' | 'preview' | 'quote' | null>(null)
 const dialogDetail = ref<PricingDetail>()
 const dialogCinemaId = ref('')
 const dialogInitialCinemaIds = ref<string[]>([])
@@ -117,6 +118,7 @@ function formatsLabel(policy: PricingPolicy): string {
   if (!matrix) return 'Giá bán cố định'
 
   const formats = [...new Set(matrix.scopes.map((scope) => scope.contentFormat))]
+
   return formats.length ? `${formats.join(' / ')} · Giá bán cố định` : 'Chưa chọn định dạng'
 }
 
@@ -154,6 +156,7 @@ async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
   if (!canManage.value || busy.value) return
 
   const availableIds = new Set((listing.cinemas.data.value ?? []).map((item) => item.id))
+
   const anchor =
     cinemaId.value && policy.cinemaIds.includes(cinemaId.value)
       ? cinemaId.value
@@ -179,7 +182,14 @@ async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
     dialogDetail.value = detail
     dialogCinemaId.value = anchor
     dialogInitialCinemaIds.value = [...detail.policy.cinemaIds]
-    dialogMode.value = edit && detail.policy.status === 'DRAFT' ? 'edit' : 'preview'
+
+    if (edit && detail.policy.status === 'DRAFT') {
+      dialogMode.value = 'edit'
+    } else if (detail.policy.status === 'PUBLISHED') {
+      dialogMode.value = 'quote'
+    } else {
+      dialogMode.value = 'preview'
+    }
   } catch (error: unknown) {
     requestError.value = pricingErrorMessage(error)
   } finally {
@@ -459,8 +469,18 @@ async function closeDialog(): Promise<void> {
         </footer>
       </div>
 
+      <AdminPricingPublishedQuoteDialog
+        v-if="dialogMode === 'quote' && dialogDetail"
+        :key="`quote:${dialogDetail.policy.id}`"
+        :cinemas="listing.cinemas.data.value ?? []"
+        :anchor-cinema-id="dialogCinemaId"
+        :can-manage="canManage"
+        :initial="dialogDetail"
+        @close="closeDialog"
+      />
+
       <AdminPricingWorkflowCreate
-        v-if="dialogMode"
+        v-else-if="dialogMode"
         :key="dialogDetail?.policy.id ?? 'new-pricing-policy'"
         :cinemas="listing.cinemas.data.value ?? []"
         :anchor-cinema-id="dialogCinemaId"
