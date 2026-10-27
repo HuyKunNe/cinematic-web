@@ -24,6 +24,8 @@ const loadAdminShowtimesPage = () =>
   import('../features/showtimes/admin/pages/AdminShowtimesPage.vue')
 const loadAdminShowtimeCreatePage = () =>
   import('../features/showtimes/admin/pages/AdminShowtimeCreatePage.vue')
+const loadAdminPricingPolicyPage = () =>
+  import('../features/pricing/admin/pages/AdminPricingPolicyPage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -125,7 +127,6 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
     },
   },
-
   {
     path: ROUTE_PATHS.LOGIN,
     name: ROUTE_NAMES.LOGIN,
@@ -159,7 +160,6 @@ const routes: RouteRecordRaw[] = [
     },
     meta: { layout: 'auth', title: 'Không đủ quyền' },
   },
-
   {
     path: ROUTE_PATHS.ADMIN,
     name: ROUTE_NAMES.ADMIN,
@@ -295,8 +295,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_PRICING_POLICY,
     name: ROUTE_NAMES.ADMIN_PRICING_POLICY,
-    component: loadAdminReferencePage,
-    props: { module: 'pricing' },
+    component: loadAdminPricingPolicyPage,
     meta: {
       layout: 'admin',
       title: 'Quản lý bảng giá vé',
