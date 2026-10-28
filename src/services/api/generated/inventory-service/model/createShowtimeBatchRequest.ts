@@ -8,8 +8,10 @@
 import type { CreateShowtimeRequest } from './createShowtimeRequest';
 
 export interface CreateShowtimeBatchRequest {
+  /** Stable identifier for this batch creation attempt. Reuse with identical items to retrieve the original successful result. Use a new identifier when editing items. */
+  clientRequestId: string;
   /**
-     * Showtimes to create atomically. Contains between 1 and 50 items. Response order matches request order.
+     * Between 1 and 50 showtimes in request order. Item order is part of the idempotency payload.
      * @minItems 0
      * @maxItems 50
      */

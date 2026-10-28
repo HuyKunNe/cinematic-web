@@ -701,19 +701,16 @@ function moveGroup(index: number, direction: number): void {
 function changeState(value: CellValue, event: Event): void {
   const target = event.target
   if (!(target instanceof HTMLSelectElement) || !editable.value) return
-  if (
-    target.value !== 'PRICED' &&
-    target.value !== 'UNCONFIGURED' &&
-    target.value !== 'NOT_APPLICABLE'
-  )
-    return
+  const selected = options.value?.cellStates.find((state) => state === target.value)
+  if (!selected) return
 
-  value.state = target.value
+  value.state = selected
   if (value.state !== 'PRICED') value.amount = ''
 }
 function changeAmount(value: CellValue, event: Event): void {
   const target = event.target
-  if (!(target instanceof HTMLInputElement) || !editable.value) return
+  if (!(target instanceof HTMLInputElement) || !editable.value || value.state === 'NOT_APPLICABLE')
+    return
   value.amount = target.value
   value.state = value.amount.trim() ? 'PRICED' : 'UNCONFIGURED'
 }
@@ -1589,6 +1586,20 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                             >
                           </th>
                           <td v-for="cell in row.cells" :key="cell.key">
+                            <select
+                              :value="cell.value.state"
+                              :disabled="!editable"
+                              :aria-label="`Trạng thái giá ${pricingSeatLabel(row.seatType)}, ${cell.group.name}, ${table.band.name}`"
+                              @change="changeState(cell.value, $event)"
+                            >
+                              <option
+                                v-for="state in options?.cellStates ?? []"
+                                :key="state"
+                                :value="state"
+                              >
+                                {{ pricingLabel(state) }}
+                              </option>
+                            </select>
                             <div class="pricing-money-input">
                               <input
                                 type="text"
@@ -1598,12 +1609,17 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                                 :value="cell.value.amount"
                                 :disabled="!editable || cell.value.state === 'NOT_APPLICABLE'"
                                 :aria-invalid="Boolean(fieldError(cell.key))"
+                                :aria-describedby="
+                                  fieldError(cell.key) ? `pm-cell-error-${cell.key}` : undefined
+                                "
                                 :aria-label="`Giá ${pricingSeatLabel(row.seatType)}, ${cell.group.name}, ${table.band.name}`"
                                 @input="changeAmount(cell.value, $event)"
                               />
                               <span>đ/{{ row.option?.unit === 'PAIR' ? 'cặp' : 'ghế' }}</span>
                             </div>
-                            <p class="pricing-field-error">{{ fieldError(cell.key) }}</p>
+                            <p :id="`pm-cell-error-${cell.key}`" class="pricing-field-error">
+                              {{ fieldError(cell.key) }}
+                            </p>
                           </td>
                         </tr>
                       </tbody>
@@ -1679,7 +1695,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
           </div>
 
           <footer class="pricing-dialog__foot">
-            <span v-if="readOnly"> 'Phiên bản chỉ xem' </span>
+            <span v-if="readOnly">Phiên bản chỉ xem</span>
             <div>
               <button class="price-button" type="button" :disabled="busy" @click="close">
                 {{ readOnly ? 'Đóng' : 'Hủy' }}
