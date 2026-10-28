@@ -1949,46 +1949,118 @@ dialog.drawer {
 
 .pricing-config-row {
   display: grid;
-  grid-template-columns: minmax(130px, 1.4fr) minmax(90px, 0.8fr) minmax(90px, 0.8fr) auto;
-  gap: 9px;
-  align-items: start;
-  padding: 11px;
+  grid-template-columns:
+    minmax(0, 1.4fr)
+    minmax(90px, 0.8fr)
+    minmax(90px, 0.8fr)
+    auto;
+  gap: 10px 12px;
+  align-items: end;
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fbfcfd;
 }
 
 .pricing-config-row--group {
-  grid-template-columns: minmax(160px, 1.4fr) minmax(85px, 0.7fr) auto auto;
+  grid-template-columns:
+    minmax(0, 1.4fr)
+    minmax(90px, 0.75fr)
+    minmax(125px, auto)
+    auto;
+}
+
+.pricing-config-row > .pricing-field {
+  min-width: 0;
+}
+
+.pricing-config-row > .pricing-field input,
+.pricing-config-row > .pricing-field select {
+  min-width: 0;
+}
+
+.pricing-config-row > .pricing-field-error {
+  grid-column: 1 / -1;
+  min-height: 0;
+  margin: -3px 0 0;
 }
 
 .pricing-required {
+  align-self: end;
   flex-direction: row;
   align-items: center;
-  padding-top: 12px;
+  gap: 8px;
+  min-height: var(--pricing-modal-input-height);
+  padding: 0;
   white-space: nowrap;
 }
 
 .pricing-required input {
+  flex: 0 0 15px;
   width: 15px;
   min-height: 15px;
+  margin: 0;
   accent-color: var(--accent);
 }
 
 .pricing-config-actions {
   display: flex;
-  gap: 4px;
+  align-self: end;
   align-items: center;
-  padding-top: 17px;
+  gap: 5px;
+  min-height: var(--pricing-modal-input-height);
+  padding: 0;
 }
 
 .pricing-config-actions button {
-  min-width: 32px;
-  min-height: 32px;
-  padding: 4px 7px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 4px 8px;
   font-size: 11px;
 }
 
+@media (max-width: 760px) {
+  .pricing-config-row,
+  .pricing-config-row--group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+  }
+
+  .pricing-config-row > .pricing-field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .pricing-config-row > .pricing-field-error {
+    grid-column: 1 / -1;
+  }
+
+  .pricing-config-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    min-height: 36px;
+  }
+
+  .pricing-required {
+    min-height: var(--pricing-modal-input-height);
+  }
+}
+
+@media (max-width: 440px) {
+  .pricing-config-row,
+  .pricing-config-row--group {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pricing-config-row > .pricing-field:first-child,
+  .pricing-config-row > .pricing-field-error,
+  .pricing-config-actions {
+    grid-column: 1;
+  }
+
+  .pricing-config-actions {
+    justify-content: flex-start;
+  }
+}
 .secondary {
   border-color: var(--line);
   color: var(--ink);
