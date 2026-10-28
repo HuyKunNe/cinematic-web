@@ -34,7 +34,7 @@ const refreshing = ref(false)
 const openingId = ref('')
 const requestError = ref('')
 const notice = ref('')
-const dialogMode = ref<'create' | 'edit' | 'preview' | 'quote' | null>(null)
+const dialogMode = ref<'create' | 'edit' | 'revise' | 'preview' | 'quote' | null>(null)
 const dialogDetail = ref<PricingDetail>()
 const dialogCinemaId = ref('')
 const dialogInitialCinemaIds = ref<string[]>([])
@@ -141,9 +141,11 @@ function showDetail(detail: PricingDetail, anchor: string, edit: boolean): void 
   dialogMode.value =
     edit && detail.policy.status === 'DRAFT'
       ? 'edit'
-      : detail.policy.status === 'PUBLISHED'
-        ? 'quote'
-        : 'preview'
+      : edit && detail.policy.status === 'PUBLISHED'
+        ? 'revise'
+        : detail.policy.status === 'PUBLISHED'
+          ? 'quote'
+          : 'preview'
 }
 function openCreate(): void {
   if (!canManage.value || busy.value || drafts.needsRecovery.value) return
@@ -177,6 +179,27 @@ async function openCreatedDraft(created: PricingPolicy): Promise<void> {
       ? `Đang chỉnh sửa bản nháp phiên bản ${detail.policy.revision}.`
       : `Phiên bản ${detail.policy.revision} hiện ở trạng thái ${pricingLabel(detail.policy.status).toLocaleLowerCase('vi-VN')}.`
 }
+
+async function createPublishedDraft(): Promise<PricingDetail> {
+  const source = dialogDetail.value
+  const anchor = dialogCinemaId.value
+  if (!canManage.value || dialogMode.value !== 'revise' || source?.policy.status !== 'PUBLISHED') {
+    throw new Error('Chưa xác định được bảng giá đã công bố để chỉnh sửa.')
+  }
+
+  const created = await drafts.start(anchor, source.policy)
+  const detail = await actions.loadDetail({
+    cinemaId: anchor,
+    policyId: created.policyId,
+    versionId: created.id,
+  })
+  if (!canManage.value) throw new Error('Bạn không còn quyền mở bản nháp này.')
+  if (detail.policy.status !== 'DRAFT' || detail.policy.version !== created.version) {
+    throw new Error('Bản nháp đã thay đổi. Hãy tải lại danh sách trước khi tiếp tục.')
+  }
+  return detail
+}
+
 async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
   if (!canManage.value || busy.value || drafts.needsRecovery.value) return
   const anchor = chooseAnchor(policy, cinemaId.value)
@@ -194,10 +217,7 @@ async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
       versionId: policy.id,
     })
     if (!canManage.value) return
-    if (edit && detail.policy.status === 'PUBLISHED') {
-      await openCreatedDraft(await drafts.start(anchor, detail.policy))
-      return
-    }
+
     showDetail(detail, anchor, edit)
   } catch (cause: unknown) {
     requestError.value = pricingDraftCreationErrorMessage(cause)
@@ -559,6 +579,8 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
         :initial="dialogDetail"
         :can-manage="canManage"
         :read-only="dialogMode === 'preview'"
+        :create-draft="dialogMode === 'revise' ? createPublishedDraft : undefined"
+        @draft-ready="drafts.markOpened"
         @close="closeDialog"
       />
     </template>

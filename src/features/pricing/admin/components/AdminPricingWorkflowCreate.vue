@@ -48,9 +48,10 @@ const props = defineProps<{
   initial?: PricingDetail
   readOnly?: boolean
   lookup?: boolean
+  createDraft?: () => Promise<PricingDetail>
 }>()
 
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: []; draftReady: [versionId: string] }>()
 
 type TimeRow = {
   key: string
@@ -84,6 +85,9 @@ const savedMatrix = ref<PricingMatrix | null>(null)
 const options = ref<PricingMatrix['options'] | undefined>(props.configurationOptions)
 const anchorId = ref(props.initial ? props.anchorCinemaId : '')
 const pendingCreate = ref<CreateCinemaPricingPolicyRequest | null>(null)
+const pendingRevision = ref(
+  Boolean(props.createDraft && props.initial?.policy.status === 'PUBLISHED'),
+)
 
 const busy = ref(false)
 const publishing = ref(false)
@@ -120,7 +124,9 @@ const baselineMatrix = ref('')
 const readOnly = computed(
   () =>
     Boolean(props.readOnly || props.lookup) ||
-    (policy.value !== null && policy.value.status !== 'DRAFT'),
+    (policy.value !== null &&
+      policy.value.status !== 'DRAFT' &&
+      !(pendingRevision.value && policy.value.status === 'PUBLISHED')),
 )
 const waitingForCreation = computed(() => pendingCreate.value !== null && policy.value === null)
 const editable = computed(
@@ -839,6 +845,99 @@ async function prepareDraft(): Promise<void> {
   applyMatrix(detail.matrix, detail.matrix.scopes.length === 0)
 }
 
+function copiedDefinitionIds<T extends { id: string }>(
+  source: T[],
+  copied: T[],
+  fingerprint: (item: T) => string,
+): Map<string, string> {
+  const copiedIds = new Map(copied.map((item) => [fingerprint(item), item.id] as const))
+  if (source.length !== copied.length || copiedIds.size !== copied.length) {
+    throw new Error('Cấu hình bản nháp không khớp phiên bản nguồn. Hãy tải lại danh sách.')
+  }
+  return new Map(
+    source.map((item) => {
+      const id = copiedIds.get(fingerprint(item))
+      if (!id) throw new Error('Không đối chiếu được cấu hình bản nháp với phiên bản nguồn.')
+      return [item.id, id] as const
+    }),
+  )
+}
+
+async function materializeRevision(): Promise<void> {
+  const source = savedMatrix.value
+  if (!pendingRevision.value || !source || !props.createDraft) {
+    throw new Error('Chưa xác định được phiên bản nguồn để tạo bản nháp.')
+  }
+
+  const snapshot = {
+    metadata: metadataValue(),
+    bands: bands.value.map((row) => ({ ...row })),
+    groups: groups.value.map((row) => ({ ...row })),
+    scopes: scopes.value.map((scope) => ({ ...scope })),
+    seats: [...seats.value],
+    cells: entries.value.map((entry) => ({
+      scope: { ...entry.scope },
+      bandKey: entry.band.key,
+      groupKey: entry.group.key,
+      seatType: entry.seatType,
+      value: { ...values.value[entry.key]! },
+    })),
+    removalAccepted: removalAccepted.value,
+  }
+
+  const draft = await props.createDraft()
+  if (
+    draft.policy.status !== 'DRAFT' ||
+    draft.matrix.status !== 'DRAFT' ||
+    draft.policy.policyId !== source.policyId ||
+    draft.policy.id === source.policyVersionId
+  ) {
+    throw new Error('Chưa xác nhận được bản nháp mới. Hãy kiểm tra lại danh sách phiên bản.')
+  }
+
+  const bandIds = copiedDefinitionIds(source.timeBands, draft.matrix.timeBands, (band) =>
+    JSON.stringify([band.name, band.startMinute, band.endMinute, band.sortOrder]),
+  )
+  const groupIds = copiedDefinitionIds(source.ticketGroups, draft.matrix.ticketGroups, (group) =>
+    JSON.stringify([group.name, group.eligibilityDescription, group.defaultGroup, group.sortOrder]),
+  )
+
+  const nextBands = snapshot.bands.map((row) => {
+    if (!row.id) return row
+    const id = bandIds.get(row.id)
+    if (!id) throw new Error('Không đối chiếu được ID khung giờ.')
+    return { ...row, key: id, id }
+  })
+  const nextGroups = snapshot.groups.map((row) => {
+    if (!row.id) return row
+    const id = groupIds.get(row.id)
+    if (!id) throw new Error('Không đối chiếu được ID nhóm vé.')
+    return { ...row, key: id, id }
+  })
+  const nextValues = Object.fromEntries(
+    snapshot.cells.map((cell) => [
+      cellKey(
+        cell.scope,
+        bandIds.get(cell.bandKey) ?? cell.bandKey,
+        groupIds.get(cell.groupKey) ?? cell.groupKey,
+        cell.seatType,
+      ),
+      cell.value,
+    ]),
+  )
+
+  hydrate(draft)
+  Object.assign(metadata, snapshot.metadata)
+  bands.value = nextBands
+  groups.value = nextGroups
+  restoreSelection(snapshot.scopes, snapshot.seats)
+  values.value = nextValues
+  pendingRevision.value = false
+  await nextTick()
+  removalAccepted.value = snapshot.removalAccepted
+  emit('draftReady', draft.policy.id)
+}
+
 async function save(): Promise<void> {
   if (busy.value || requiresReload.value || readOnly.value || !props.canManage) return
   showErrors.value = true
@@ -876,6 +975,10 @@ async function save(): Promise<void> {
   let committed = false
 
   try {
+    if (pendingRevision.value) {
+      await materializeRevision()
+      committed = true
+    }
     let current = policy.value
     if (!current) throw new Error('Chưa xác nhận được bản nháp.')
 
@@ -1192,16 +1295,18 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               <span
                 class="pricing-status"
                 :class="{
-                  'is-draft': !policy || policy.status === 'DRAFT',
-                  'is-published': policy?.status === 'PUBLISHED',
+                  'is-draft': pendingRevision || !policy || policy.status === 'DRAFT',
+                  'is-published': !pendingRevision && policy?.status === 'PUBLISHED',
                 }"
               >
                 {{
-                  policy?.status === 'PUBLISHED'
-                    ? 'Đã phát hành · Chỉ xem'
-                    : policy?.status === 'RETIRED'
-                      ? 'Ngừng áp dụng · Chỉ xem'
-                      : 'Bản nháp'
+                  pendingRevision
+                    ? 'Chỉnh sửa chưa lưu'
+                    : policy?.status === 'PUBLISHED'
+                      ? 'Đã phát hành · Chỉ xem'
+                      : policy?.status === 'RETIRED'
+                        ? 'Ngừng áp dụng · Chỉ xem'
+                        : 'Bản nháp'
                 }}
               </span>
             </p>
