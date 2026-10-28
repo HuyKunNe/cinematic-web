@@ -72,6 +72,12 @@
   background: var(--price-paper);
 }
 
+.pricing-setup .pricing-dialog__head > div {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .pricing-setup .pricing-eyebrow {
   margin: 0 0 var(--price-space-1);
   color: var(--price-muted);
@@ -84,25 +90,30 @@
   color: var(--price-ink);
   font-size: var(--pm-title-size);
   font-weight: var(--price-weight-bold);
+  overflow-wrap: anywhere;
 }
 
 .pricing-setup .pricing-dialog__name {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--pm-row-gap);
+  gap: var(--pm-field-gap) var(--pm-row-gap);
+  min-width: 0;
   margin: var(--price-space-1) 0 0;
   color: var(--price-muted);
   font-size: var(--pm-body-size);
+  overflow-wrap: anywhere;
 }
 
 .pricing-setup .pricing-status {
+  max-width: 100%;
   padding: var(--price-space-1) var(--price-space-2);
   border-radius: var(--pm-status-radius);
   background: var(--price-badge-background);
   color: var(--price-badge-text);
   font-size: var(--pm-small-size);
   font-weight: var(--price-weight-semibold);
+  overflow-wrap: anywhere;
 }
 
 .pricing-setup .pricing-status.is-draft {

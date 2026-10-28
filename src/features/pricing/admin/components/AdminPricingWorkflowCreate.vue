@@ -47,6 +47,7 @@ const props = defineProps<{
   configurationOptions?: PricingMatrix['options']
   initial?: PricingDetail
   readOnly?: boolean
+  lookup?: boolean
 }>()
 
 const emit = defineEmits<{ close: [] }>()
@@ -117,7 +118,9 @@ const baselineDefinitions = ref('')
 const baselineMatrix = ref('')
 
 const readOnly = computed(
-  () => Boolean(props.readOnly) || (policy.value !== null && policy.value.status !== 'DRAFT'),
+  () =>
+    Boolean(props.readOnly || props.lookup) ||
+    (policy.value !== null && policy.value.status !== 'DRAFT'),
 )
 const waitingForCreation = computed(() => pendingCreate.value !== null && policy.value === null)
 const editable = computed(
@@ -287,6 +290,10 @@ const versions = useAdminPricingVersions(
   currentContext,
   () => props.canManage && readOnly.value && currentContext.value !== null,
 )
+const visibleVersions = computed(() => {
+  const items = versions.data.value ?? []
+  return props.lookup ? items.filter((item) => item.status === 'PUBLISHED') : items
+})
 
 function context(): PricingContext {
   const current = currentContext.value
@@ -1051,19 +1058,24 @@ async function changeVersion(event: Event): Promise<void> {
   const target = event.target
   if (!(target instanceof HTMLSelectElement) || busy.value || !readOnly.value) return
   const id = target.value
-  const selected = versions.data.value?.find((version) => version.id === id)
+  const selected = visibleVersions.value.find((version) => version.id === id)
   if (!selected) return
 
   busy.value = true
   error.value = ''
   try {
-    hydrate(
-      await actions.loadDetail({
-        cinemaId: anchorId.value,
-        policyId: selected.policyId,
-        versionId: selected.id,
-      }),
-    )
+    const loaded = await actions.loadDetail({
+      cinemaId: anchorId.value,
+      policyId: selected.policyId,
+      versionId: selected.id,
+    })
+    if (
+      props.lookup &&
+      (loaded.policy.status !== 'PUBLISHED' || loaded.matrix.status !== 'PUBLISHED')
+    ) {
+      throw new Error('Phiên bản được chọn chưa được phát hành. Hãy tải lại danh sách.')
+    }
+    hydrate(loaded)
   } catch (cause: unknown) {
     error.value = pricingErrorMessage(cause)
   } finally {
@@ -1118,7 +1130,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               CHÍNH SÁCH VÉ
               <template v-if="policy"> · PHIÊN BẢN {{ policy.revision }}</template>
             </p>
-            <DialogTitle>Thiết lập bảng giá</DialogTitle>
+            <DialogTitle>{{ lookup ? 'Tra cứu giá vé' : 'Thiết lập bảng giá' }}</DialogTitle>
             <p class="pricing-dialog__name">
               {{ metadata.name || 'Bảng giá mới' }}
               <span
@@ -1141,7 +1153,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
           <button
             class="price-button price-button--icon price-button--ghost"
             type="button"
-            aria-label="Đóng thiết lập bảng giá"
+            :aria-label="lookup ? 'Đóng tra cứu giá vé' : 'Đóng thiết lập bảng giá'"
             :disabled="busy"
             @click="close"
           >
@@ -1150,7 +1162,11 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
         </header>
 
         <DialogDescription class="price-visually-hidden">
-          Thiết lập phạm vi, khung giờ, nhóm vé và giá bán theo từng hạng ghế.
+          {{
+            lookup
+              ? 'Xem toàn bộ bảng giá đã phát hành theo loại phòng, định dạng, khung giờ, nhóm vé và hạng ghế. Bảng giá chỉ xem.'
+              : 'Thiết lập phạm vi, khung giờ, nhóm vé và giá bán theo từng hạng ghế.'
+          }}
         </DialogDescription>
 
         <form
@@ -1168,7 +1184,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               <p v-if="error" class="price-notice price-notice--error" role="alert">{{ error }}</p>
             </div>
 
-            <label v-if="readOnly && versions.data.value?.length" class="price-history">
+            <label v-if="readOnly && visibleVersions.length" class="price-history">
               <span>Phiên bản</span>
               <select
                 class="price-control"
@@ -1176,11 +1192,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 :disabled="busy"
                 @change="changeVersion"
               >
-                <option
-                  v-for="version in versions.data.value"
-                  :key="version.id"
-                  :value="version.id"
-                >
+                <option v-for="version in visibleVersions" :key="version.id" :value="version.id">
                   {{ version.revision }} · {{ pricingLabel(version.status) }}
                 </option>
               </select>
@@ -1488,7 +1500,9 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
 
                 <div v-if="savedMatrix" class="pm-context">
                   <label class="pricing-field">
-                    <span>Loại phòng và định dạng đang nhập</span>
+                    <span>{{
+                      readOnly ? 'Loại phòng và định dạng' : 'Loại phòng và định dạng đang nhập'
+                    }}</span>
                     <select v-model="activeScopeKey" :disabled="busy">
                       <option
                         v-for="scope in scopes"
