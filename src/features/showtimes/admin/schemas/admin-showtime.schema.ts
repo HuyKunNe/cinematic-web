@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { ShowtimeResponseStatus } from '@/services/api/generated/inventory-service/model/showtimeResponseStatus'
+import { ShowtimeScreeningVersionResponseContentFormat } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponseContentFormat'
+import { ShowtimeScreeningVersionResponsePresentationType } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponsePresentationType'
 
 export const showtimeStatusLabels: Record<ShowtimeResponseStatus, string> = {
   SCHEDULED: 'Đã lên lịch',
@@ -14,7 +16,38 @@ export const showtimeStatusOptions = Object.entries(showtimeStatusLabels).map(([
   label,
 }))
 
+export const showtimePresentationLabels: Record<
+  ShowtimeScreeningVersionResponsePresentationType,
+  string
+> = {
+  SUBTITLED: 'Phụ đề',
+  DUBBED: 'Lồng tiếng',
+  NO_SUBTITLES: 'Không phụ đề',
+}
+
+const uuid = z.string().uuid()
 const timestamp = z.string().datetime({ offset: true })
+
+const screeningVersionSchema = z.object({
+  id: uuid,
+  version: z.number().int().nonnegative(),
+  contentFormat: z.nativeEnum(ShowtimeScreeningVersionResponseContentFormat),
+  audioLanguage: z.string().trim().min(1).max(100),
+  presentationType: z.nativeEnum(ShowtimeScreeningVersionResponsePresentationType),
+  subtitleLanguage: z
+    .string()
+    .trim()
+    .max(100)
+    .nullish()
+    .transform((value) => value ?? undefined),
+})
+
+const schedulingSchema = z.object({
+  movieRevision: z.number().int().nonnegative(),
+  durationMinutes: z.number().int().positive(),
+  breakMinutes: z.number().int().min(0).max(120),
+  readyAt: timestamp,
+})
 
 export const adminShowtimeSchema = z
   .object({
@@ -28,6 +61,8 @@ export const adminShowtimeSchema = z
     endsAt: timestamp,
     status: z.nativeEnum(ShowtimeResponseStatus),
     roomLayoutId: z.string().uuid().nullish(),
+    screeningVersion: screeningVersionSchema.nullish().transform((value) => value ?? undefined),
+    scheduling: schedulingSchema.nullish().transform((value) => value ?? undefined),
   })
   .refine(
     (value) => Date.parse(value.endsAt) > Date.parse(value.startsAt),

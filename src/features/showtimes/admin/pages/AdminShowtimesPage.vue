@@ -14,9 +14,11 @@ import { RouterLink, useRoute } from 'vue-router'
 import { useAdminShowtimeMoviesQuery, useAdminShowtimesQuery } from '../api/admin-showtime-queries'
 import {
   showtimeErrorMessage,
+  showtimePresentationLabels,
   showtimeStatusLabels,
   showtimeStatusOptions,
 } from '../schemas/admin-showtime.schema'
+
 const PAGE_SIZE = 20
 const DAY_MILLISECONDS = 24 * 60 * 60 * 1000
 
@@ -84,7 +86,9 @@ const filteredRows = computed(() => {
 
   return rows.value.filter(
     (item) =>
-      (!keyword || movieTitle(item.movieId).toLocaleLowerCase('vi').includes(keyword)) &&
+      (!keyword ||
+        movieTitle(item.movieId).toLocaleLowerCase('vi').includes(keyword) ||
+        item.movieId.toLocaleLowerCase('vi').includes(keyword)) &&
       (!cinemaId.value || item.cinemaId === cinemaId.value) &&
       (!roomId.value || item.roomId === roomId.value) &&
       (!status.value || item.status === status.value),
@@ -302,7 +306,7 @@ async function reload() {
                 <th scope="col">Giờ chiếu</th>
                 <th scope="col">Phim</th>
                 <th scope="col">Rạp / Phòng</th>
-                <th scope="col">Định dạng</th>
+                <th scope="col">Định dạng / phiên bản</th>
                 <th scope="col">Trạng thái</th>
               </tr>
             </thead>
@@ -310,16 +314,48 @@ async function reload() {
             <tbody>
               <tr v-for="item in pageRows" :key="item.id">
                 <th scope="row">
-                  <time :datetime="item.startsAt">
-                    {{ formatCinemaTime(item.startsAt) }}
-                  </time>
+                  <div>
+                    <time :datetime="item.startsAt">
+                      {{ formatCinemaTime(item.startsAt) }}
+                    </time>
+                    –
+                    <time :datetime="item.endsAt">
+                      {{ formatCinemaTime(item.endsAt) }}
+                    </time>
+                  </div>
+                  <div
+                    v-if="getCinemaDateKey(item.endsAt) !== getCinemaDateKey(item.startsAt)"
+                    class="admin-reference__muted"
+                  >
+                    Kết thúc ngày {{ formatCinemaDateKey(getCinemaDateKey(item.endsAt)) }}
+                  </div>
+                  <div v-if="item.scheduling" class="admin-reference__muted">
+                    Nghỉ {{ item.scheduling.breakMinutes }} phút
+                  </div>
                 </th>
                 <td>{{ movieTitle(item.movieId) }}</td>
                 <td>
                   <div>{{ item.cinemaName }}</div>
                   <div>{{ item.roomName }}</div>
                 </td>
-                <td>—</td>
+                <td>
+                  <template v-if="item.screeningVersion">
+                    <div>
+                      {{ item.screeningVersion.contentFormat }} ·
+                      {{ showtimePresentationLabels[item.screeningVersion.presentationType] }}
+                    </div>
+                    <div class="admin-reference__muted">
+                      Âm thanh: {{ item.screeningVersion.audioLanguage }}
+                    </div>
+                    <div
+                      v-if="item.screeningVersion.subtitleLanguage"
+                      class="admin-reference__muted"
+                    >
+                      Ngôn ngữ phụ đề: {{ item.screeningVersion.subtitleLanguage }}
+                    </div>
+                  </template>
+                  <span v-else class="admin-reference__muted"> Chưa có thông tin phiên bản </span>
+                </td>
                 <td>{{ showtimeStatusLabels[item.status] }}</td>
               </tr>
 

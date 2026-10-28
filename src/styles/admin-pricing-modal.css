@@ -431,8 +431,17 @@
   background: var(--price-soft);
 }
 
+.pricing-setup .pricing-band__heading > div:first-child {
+  min-width: 0;
+}
+
+.pricing-setup .pricing-band__heading > .pricing-config-actions {
+  flex: 0 0 auto;
+}
+
 .pricing-setup .pricing-band__heading h3 {
   margin: 0;
+  overflow-wrap: anywhere;
   font-size: var(--pm-body-size);
   font-weight: var(--price-weight-semibold);
 }
@@ -452,6 +461,7 @@
 .pricing-setup .pricing-table {
   width: 100%;
   min-width: var(--pm-table-min-width);
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -461,12 +471,18 @@
   border-bottom: var(--price-border) solid var(--price-line);
   text-align: left;
   vertical-align: top;
+  overflow-wrap: anywhere;
 }
 
 .pricing-setup .pricing-table thead th {
+  width: var(--pm-cell-width);
   background: var(--pm-row-background);
   color: var(--price-muted);
   font-size: var(--pm-small-size);
+}
+
+.pricing-setup .pricing-table thead th:first-child {
+  width: var(--pm-seat-width);
 }
 
 .pricing-setup .pricing-table tbody th {
@@ -486,7 +502,6 @@
   min-width: var(--pm-cell-width);
 }
 
-.pricing-setup .pricing-table select,
 .pricing-setup .pricing-money-input input {
   width: 100%;
   min-height: var(--pm-cell-height);
@@ -503,10 +518,11 @@
   display: flex;
   align-items: center;
   gap: var(--pm-field-gap);
-  margin-top: var(--pm-field-gap);
+  margin-top: 0;
 }
 
 .pricing-setup .pricing-money-input input {
+  flex: 1 1 0;
   min-width: 0;
   font-size: var(--pm-body-size);
   font-variant-numeric: tabular-nums;
@@ -580,6 +596,7 @@
 .pricing-setup .pricing-dialog__foot {
   display: flex;
   flex: 0 0 auto;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: var(--price-space-3);
@@ -599,6 +616,8 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--price-space-2);
+  max-width: 100%;
+  margin-inline-start: auto;
 }
 
 @variant admin-reference-mobile {
