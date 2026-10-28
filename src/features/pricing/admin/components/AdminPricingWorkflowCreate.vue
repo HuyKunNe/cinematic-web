@@ -448,6 +448,16 @@ function parseAmount(text: string): number | null {
   return Number.isFinite(amount) && amount <= 9_999_999_999.99 ? amount : null
 }
 
+const lookupMoneyFormat = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 })
+
+function lookupFareLabel(value: CellValue): string {
+  if (value.state === 'NOT_APPLICABLE') return 'Không áp dụng'
+  if (value.state !== 'PRICED') return 'Chưa nhập'
+
+  const amount = parseAmount(value.amount)
+  return amount === null ? 'Giá không hợp lệ' : `${lookupMoneyFormat.format(amount)}đ`
+}
+
 const issues = computed<Issue[]>(() => {
   const result: Issue[] = []
   const parsed = pricingMetadataSchema.safeParse(metadataValue())
@@ -1799,7 +1809,13 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                             >
                           </th>
                           <td v-for="cell in row.cells" :key="cell.key">
-                            <div class="pricing-money-input">
+                            <div v-if="lookup" class="pm-fare-display">
+                              <strong>{{ lookupFareLabel(cell.value) }}</strong>
+                              <small v-if="cell.value.state === 'PRICED' && row.option">
+                                {{ row.option.unit === 'PAIR' ? 'Giá cả cặp' : 'Giá mỗi ghế' }}
+                              </small>
+                            </div>
+                            <div v-else class="pricing-money-input">
                               <input
                                 type="text"
                                 inputmode="decimal"
@@ -1832,7 +1848,11 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                                 cell.value.state === 'NOT_APPLICABLE' ? 'Nhập giá' : 'Không áp dụng'
                               }}
                             </button>
-                            <p :id="`pm-cell-error-${cell.key}`" class="pricing-field-error">
+                            <p
+                              v-if="!lookup"
+                              :id="`pm-cell-error-${cell.key}`"
+                              class="pricing-field-error"
+                            >
                               {{ fieldError(cell.key) }}
                             </p>
                           </td>

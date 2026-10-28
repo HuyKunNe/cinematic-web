@@ -786,3 +786,22 @@
     justify-content: flex-start;
   }
 }
+.pricing-setup .pm-fare-display {
+  display: grid;
+  align-content: start;
+  gap: var(--price-space-1);
+  min-height: var(--pm-cell-height);
+  color: var(--price-ink);
+  font-size: var(--pm-body-size);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.pricing-setup .pm-fare-display > strong {
+  font-weight: var(--price-weight-semibold);
+}
+
+.pricing-setup .pm-fare-display > small {
+  color: var(--price-muted);
+  font-size: var(--pm-small-size);
+}
