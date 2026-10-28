@@ -563,27 +563,12 @@ const issues = computed<Issue[]>(() => {
       continue
     }
 
-    if (entry.scope.experienceType === 'PREMIUM_CINEMA') {
+    if (entry.scope.experienceType === 'PREMIUM_CINEMA' && entry.seatType !== 'COUPLE') {
       checkUniform(
         JSON.stringify(['premium', entry.scope.contentFormat, entry.band.key, entry.seatType]),
         amount,
         entry.key,
         'Rạp cao cấp cần cùng giá giữa các nhóm vé cho cùng định dạng, khung giờ và hạng ghế.',
-      )
-    }
-    if (entry.seatType === 'COUPLE') {
-      checkUniform(
-        JSON.stringify([
-          'couple',
-          entry.scope.experienceType,
-          entry.scope.contentFormat,
-          metadata.dayGroup === 'HOLIDAY' ? entry.band.key : 'ALL_DAY',
-        ]),
-        amount,
-        entry.key,
-        metadata.dayGroup === 'HOLIDAY'
-          ? 'Ghế đôi cần cùng giá giữa các nhóm vé trong cùng khung giờ.'
-          : 'Ghế đôi ngoài Lễ/Tết cần cùng giá giữa các nhóm vé và khung giờ.',
       )
     }
   }
@@ -1634,11 +1619,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                   <span><i class="is-na" />Không áp dụng</span>
                   <span><i class="is-zero" />0đ là giá hợp lệ</span>
                 </div>
-                <p class="pm-note pm-space">
-                  Mỗi định dạng nhập độc lập, không cộng phụ thu. Rạp cao cấp dùng cùng giá giữa các
-                  nhóm vé cho cùng định dạng, giờ và ghế. Ghế đôi đồng nhất giữa các nhóm; ngoài
-                  Lễ/Tết còn đồng nhất giữa các khung giờ.
-                </p>
 
                 <div
                   v-if="needsRemovalReview && !readOnly"
