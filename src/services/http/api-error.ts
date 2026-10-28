@@ -30,15 +30,61 @@ export interface ApiError {
   retryable: boolean
 }
 
-function readHeader(headers: any, name: string): string | null {
-  if (!headers) return null
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
-  const value = AxiosHeaders.from(headers).get(name)
+function readText(value: unknown): string | null {
   return typeof value === 'string' ? value : null
 }
 
+function readHeader(headers: unknown, name: string): string | null {
+  if (headers instanceof AxiosHeaders) {
+    return readText(headers.get(name))
+  }
+
+  if (!isRecord(headers)) return null
+
+  const normalizedName = name.toLowerCase()
+
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === normalizedName) {
+      return readText(value)
+    }
+  }
+
+  return null
+}
+
+function readBackendError(value: unknown): Record<string, unknown> | null {
+  if (!isRecord(value)) return null
+
+  const error = value['error']
+  return isRecord(error) ? error : null
+}
+
+function readFieldErrors(value: unknown): BackendFieldErrorDto[] {
+  if (!Array.isArray(value)) return []
+
+  const items: unknown[] = value
+  const result: BackendFieldErrorDto[] = []
+
+  for (const item of items) {
+    if (!isRecord(item)) continue
+
+    const field = item['field']
+    const message = item['message']
+
+    if (typeof field === 'string' && typeof message === 'string') {
+      result.push({ field, message })
+    }
+  }
+
+  return result
+}
+
 export function normalizeApiError(error: unknown): ApiError {
-  if (!axios.isAxiosError(error)) {
+  if (!axios.isAxiosError<unknown>(error)) {
     return {
       status: null,
       code: null,
@@ -51,22 +97,15 @@ export function normalizeApiError(error: unknown): ApiError {
     }
   }
 
-  const data = error.response?.data as BackendErrorEnvelopeDto | undefined
-  const backendError = data?.error
+  const backendError = readBackendError(error.response?.data)
   const status = error.response?.status ?? null
-  const details = backendError?.details
 
   return {
     status,
-    code: backendError?.code ?? null,
-    message: backendError?.message || error.message || 'Không thể kết nối dịch vụ.',
-    category: backendError?.category ?? null,
-    fieldErrors: Array.isArray(details)
-      ? details.filter(
-          (item): item is BackendFieldErrorDto =>
-            Boolean(item) && typeof item.field === 'string' && typeof item.message === 'string',
-        )
-      : [],
+    code: readText(backendError?.['code']),
+    message: readText(backendError?.['message']) || error.message || 'Không thể kết nối dịch vụ.',
+    category: readText(backendError?.['category']),
+    fieldErrors: readFieldErrors(backendError?.['details']),
     requestId: readHeader(error.response?.headers, 'x-request-id'),
     correlationId: readHeader(error.response?.headers, 'x-correlation-id'),
     retryable: status === null || status >= 500,

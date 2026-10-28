@@ -698,14 +698,14 @@ function moveGroup(index: number, direction: number): void {
   groups.value = next
 }
 
-function changeState(value: CellValue, event: Event): void {
-  const target = event.target
-  if (!(target instanceof HTMLSelectElement) || !editable.value) return
-  const selected = options.value?.cellStates.find((state) => state === target.value)
-  if (!selected) return
+function toggleApplicability(value: CellValue): void {
+  if (!editable.value) return
+  const nextState: OptionsCellStatesItem =
+    value.state === 'NOT_APPLICABLE' ? 'UNCONFIGURED' : 'NOT_APPLICABLE'
+  if (!options.value?.cellStates.includes(nextState)) return
 
-  value.state = selected
-  if (value.state !== 'PRICED') value.amount = ''
+  value.state = nextState
+  value.amount = ''
 }
 function changeAmount(value: CellValue, event: Event): void {
   const target = event.target
@@ -1586,26 +1586,16 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                             >
                           </th>
                           <td v-for="cell in row.cells" :key="cell.key">
-                            <select
-                              :value="cell.value.state"
-                              :disabled="!editable"
-                              :aria-label="`Trạng thái giá ${pricingSeatLabel(row.seatType)}, ${cell.group.name}, ${table.band.name}`"
-                              @change="changeState(cell.value, $event)"
-                            >
-                              <option
-                                v-for="state in options?.cellStates ?? []"
-                                :key="state"
-                                :value="state"
-                              >
-                                {{ pricingLabel(state) }}
-                              </option>
-                            </select>
                             <div class="pricing-money-input">
                               <input
                                 type="text"
                                 inputmode="decimal"
                                 maxlength="24"
-                                placeholder="Nhập giá"
+                                :placeholder="
+                                  cell.value.state === 'NOT_APPLICABLE'
+                                    ? 'Không áp dụng'
+                                    : 'Nhập giá'
+                                "
                                 :value="cell.value.amount"
                                 :disabled="!editable || cell.value.state === 'NOT_APPLICABLE'"
                                 :aria-invalid="Boolean(fieldError(cell.key))"
@@ -1617,6 +1607,18 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                               />
                               <span>đ/{{ row.option?.unit === 'PAIR' ? 'cặp' : 'ghế' }}</span>
                             </div>
+                            <button
+                              v-if="!readOnly"
+                              class="price-button price-button--small pm-space"
+                              type="button"
+                              :disabled="!editable"
+                              :aria-label="`${cell.value.state === 'NOT_APPLICABLE' ? 'Cho phép nhập giá' : 'Không áp dụng giá'} ${pricingSeatLabel(row.seatType)}, ${cell.group.name}, ${table.band.name}`"
+                              @click="toggleApplicability(cell.value)"
+                            >
+                              {{
+                                cell.value.state === 'NOT_APPLICABLE' ? 'Nhập giá' : 'Không áp dụng'
+                              }}
+                            </button>
                             <p :id="`pm-cell-error-${cell.key}`" class="pricing-field-error">
                               {{ fieldError(cell.key) }}
                             </p>
