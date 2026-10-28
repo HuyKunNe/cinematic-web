@@ -2,6 +2,12 @@
 import { computed, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { useBookingSeatsQuery } from '../api/booking-queries'
+import {
+  bookingQuoteSeatKey,
+  bookingSeatQuoteErrorMessage,
+  MAX_QUOTED_SEATS,
+  useBookingSeatQuote,
+} from '../api/booking-seat-quote'
 import { bookingSeatStatusLabels, formatBookingMoney } from '../mappers/booking-seat.mapper'
 import type { BookingSeat, SelectedBookingSeat } from '../models/booking-seat.model'
 
@@ -47,11 +53,32 @@ const chosenSeats = computed(() =>
   ),
 )
 
-const totalMinor = computed(() =>
-  chosenSeats.value.reduce((sum, seat) => sum + (seat.priceMinor ?? 0), 0),
+const quoteQuery = useBookingSeatQuote(
+  () => props.showtimeId,
+  () => chosenSeats.value.map((seat) => seat.seatNumber),
+  ready,
+)
+const quote = computed(() =>
+  ready.value &&
+  chosenSeats.value.length > 0 &&
+  quoteQuery.isSuccess.value &&
+  !quoteQuery.isFetching.value
+    ? quoteQuery.data.value
+    : undefined,
+)
+const quotedPrices = computed(
+  () =>
+    new Map(
+      (quote.value?.seats ?? []).map(
+        (seat) => [bookingQuoteSeatKey(seat.seatNumber), seat.priceMinor] as const,
+      ),
+    ),
 )
 
-const capacity = computed(() => chosenSeats.value.reduce((sum, seat) => sum + seat.capacity, 0))
+function quotedPriceLabel(seat: BookingSeat): string {
+  const amount = quotedPrices.value.get(bookingQuoteSeatKey(seat.seatNumber))
+  return amount === undefined ? 'Chưa xác nhận' : formatBookingMoney(amount)
+}
 
 const hasAvailableSeats = computed(() => seats.value.some((seat) => seat.selectable))
 
@@ -67,6 +94,10 @@ function toggleSeat(seat: BookingSeat) {
   if (isSelected(seat)) {
     selection.value = selection.value.filter((item) => item.id !== seat.id)
   } else {
+    if (chosenSeats.value.length >= MAX_QUOTED_SEATS) {
+      selectionNotice.value = `Mỗi lần chỉ báo giá tối đa ${MAX_QUOTED_SEATS} đơn vị ghế.`
+      return
+    }
     selection.value = [...selection.value, { id: seat.id, priceMinor: seat.priceMinor }]
   }
 }
@@ -173,22 +204,37 @@ watch(
         <ul class="booking-summary__seats">
           <li v-for="seat in chosenSeats" :key="seat.id">
             <span>{{ seat.seatNumber }} · {{ seat.typeLabel }}</span>
-            <strong>{{ formatBookingMoney(seat.priceMinor ?? 0) }}</strong>
+            <strong>{{ quotedPriceLabel(seat) }}</strong>
           </li>
         </ul>
 
-        <dl class="booking-summary__totals">
+        <p v-if="!ready" class="booking-note" role="status">
+          Đang chờ danh sách ghế hợp lệ để báo giá.
+        </p>
+        <p v-else-if="quoteQuery.isFetching.value" class="booking-note" role="status">
+          Đang xác nhận giá vé…
+        </p>
+        <div v-else-if="quoteQuery.isError.value">
+          <p class="booking-error" role="alert">
+            {{ bookingSeatQuoteErrorMessage(quoteQuery.error.value) }}
+          </p>
+          <AppButton variant="ghost" size="sm" @click="query.refetch()">
+            Làm mới ghế và báo giá
+          </AppButton>
+        </div>
+
+        <dl v-if="quote" class="booking-summary__totals">
           <div>
             <dt>Đơn vị ghế</dt>
-            <dd>{{ chosenSeats.length }}</dd>
+            <dd>{{ quote.seatCount }}</dd>
           </div>
           <div>
             <dt>Sức chứa</dt>
-            <dd>{{ capacity }} người</dd>
+            <dd>{{ quote.capacity }} người</dd>
           </div>
           <div>
             <dt>Tạm tính</dt>
-            <dd>{{ formatBookingMoney(totalMinor) }}</dd>
+            <dd>{{ formatBookingMoney(quote.totalMinor) }}</dd>
           </div>
         </dl>
 
@@ -207,8 +253,8 @@ watch(
       </template>
 
       <p class="booking-note">
-        Ghế đôi là một lựa chọn cho hai người; giá hiển thị đã tính cho cả ghế. Giá cuối cùng được
-        xác nhận khi đặt vé.
+        Báo giá áp dụng nhóm vé mặc định của bảng giá đang gán cho suất chiếu. Ghế đôi tính giá cho
+        cả cặp. Ghế đã chọn chưa được giữ.
       </p>
     </aside>
   </div>

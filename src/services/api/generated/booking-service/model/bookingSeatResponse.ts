@@ -13,8 +13,8 @@ export interface BookingSeatResponse {
   seatNumber?: string;
   seatType?: string;
   price?: number;
-  /** Requested ticket group. Null means the customer did not request a specific group. */
   requestedTicketGroupId: string;
-  /** Ticket group applied by Inventory. Null before reservation or for legacy snapshots. */
   ticketGroupId: string;
+  /** Ticket-group name captured during reservation. Null before reservation or for legacy snapshots. */
+  ticketGroupName: string;
 }

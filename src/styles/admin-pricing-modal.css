@@ -605,10 +605,9 @@
 }
 
 .pricing-setup .pricing-dialog__foot {
-  display: flex;
+  display: grid;
   flex: 0 0 auto;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--price-space-3);
   min-height: var(--pm-footer-height);
@@ -618,8 +617,10 @@
 }
 
 .pricing-setup .pricing-dialog__foot > span {
+  min-width: 0;
   color: var(--price-muted);
   font-size: var(--pm-small-size);
+  overflow-wrap: anywhere;
 }
 
 .pricing-setup .pricing-dialog__foot > div {
@@ -627,6 +628,7 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--price-space-2);
+  min-width: 0;
   max-width: 100%;
   margin-inline-start: auto;
 }
@@ -651,15 +653,24 @@
   }
 
   .pricing-setup .pricing-dialog__foot {
-    align-items: flex-start;
-  }
-
-  .pricing-setup .pricing-dialog__foot > span {
-    flex: 1 1 0;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
   }
 
   .pricing-setup .pricing-dialog__foot > div {
-    flex: 0 1 auto;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: stretch;
+    width: 100%;
+    margin-inline-start: 0;
+  }
+
+  .pricing-setup .pricing-dialog__foot > div > .price-button {
+    min-width: 0;
+    min-height: var(--pm-control-height);
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 
