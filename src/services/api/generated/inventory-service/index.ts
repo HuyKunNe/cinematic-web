@@ -15,3 +15,4 @@ export * from './show-seat-controller/show-seat-controller';
 export * from './showtime-controller/showtime-controller';
 export * from './showtime-pricing-controller/showtime-pricing-controller';
 export * from './showtime-seat-map-controller/showtime-seat-map-controller';
+export * from './showtime-seat-quote-controller/showtime-seat-quote-controller';

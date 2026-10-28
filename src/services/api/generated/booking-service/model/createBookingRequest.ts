@@ -12,7 +12,6 @@ export interface CreateBookingRequest {
      * @maxLength 100
      */
   clientRequestId: string;
-  /** Showtime resource ID: UUID v5 for imported data or UUID v7 for generated data */
   showtimeId: string;
   /**
      * @minItems 1
@@ -20,4 +19,9 @@ export interface CreateBookingRequest {
      * @items.maxLength 20
      */
   seatNumbers: string[];
+  /**
+     * Expected total seat price in VND from the latest seat quote. Inventory rejects the reservation when the stored seat-price total differs.
+     * @minimum 0
+     */
+  expectedTotalAmount?: number;
 }

@@ -13,6 +13,7 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useAdminShowtimeMoviesQuery, useAdminShowtimesQuery } from '../api/admin-showtime-queries'
 import AdminShowtimePricingDialog from '../components/AdminShowtimePricingDialog.vue'
+import AdminShowtimeOpenDialog from '../components/AdminShowtimeOpenDialog.vue'
 import {
   showtimeErrorMessage,
   showtimePresentationLabels,
@@ -32,8 +33,11 @@ const canManage = computed(
 const canEditPricing = computed(
   () => canManage.value && auth.hasPermission(APP_PERMISSIONS.INVENTORY_MANAGE),
 )
+
 const pricingShowtimeId = ref('')
 const pricingMovieTitle = ref('')
+const openingShowtimeId = ref('')
+const openingMovieTitle = ref('')
 
 function today() {
   return getCinemaDateKey(new Date().toISOString())
@@ -135,13 +139,32 @@ function moveDay(direction: -1 | 1) {
 }
 
 function openPricing(item: AdminShowtime): void {
-  if (!canEditPricing.value || item.status !== 'SCHEDULED' || pricingShowtimeId.value) return
+  if (
+    !canEditPricing.value ||
+    item.status !== 'SCHEDULED' ||
+    pricingShowtimeId.value ||
+    openingShowtimeId.value
+  )
+    return
 
   pricingMovieTitle.value = movieTitle(item.movieId)
   pricingShowtimeId.value = item.id
 }
 
-async function afterPricingSaved(): Promise<void> {
+function openBooking(item: AdminShowtime): void {
+  if (
+    !canManage.value ||
+    item.status !== 'SCHEDULED' ||
+    pricingShowtimeId.value ||
+    openingShowtimeId.value
+  )
+    return
+
+  openingMovieTitle.value = movieTitle(item.movieId)
+  openingShowtimeId.value = item.id
+}
+
+async function afterShowtimeChanged(): Promise<void> {
   if (canManage.value && validDate.value) await showtimes.refetch()
 }
 
@@ -326,7 +349,7 @@ async function reload() {
                 <th scope="col">Rạp / Phòng</th>
                 <th scope="col">Định dạng / phiên bản</th>
                 <th scope="col">Trạng thái</th>
-                <th v-if="canEditPricing" scope="col">Thao tác</th>
+                <th scope="col">Thao tác</th>
               </tr>
             </thead>
 
@@ -376,23 +399,33 @@ async function reload() {
                   <span v-else class="admin-reference__muted"> Chưa có thông tin phiên bản </span>
                 </td>
                 <td>{{ showtimeStatusLabels[item.status] }}</td>
-                <td v-if="canEditPricing">
-                  <AppButton
-                    v-if="item.status === 'SCHEDULED'"
-                    type="button"
-                    variant="secondary"
-                    :disabled="refreshing"
-                    :aria-label="`Chọn bảng giá cho ${movieTitle(item.movieId)} lúc ${formatCinemaTime(item.startsAt)}`"
-                    @click="openPricing(item)"
-                  >
-                    Bảng giá
-                  </AppButton>
+                <td>
+                  <div v-if="item.status === 'SCHEDULED'" class="admin-showtimes__actions">
+                    <AppButton
+                      v-if="canEditPricing"
+                      type="button"
+                      variant="secondary"
+                      :disabled="refreshing"
+                      :aria-label="`Chọn bảng giá cho ${movieTitle(item.movieId)} lúc ${formatCinemaTime(item.startsAt)}`"
+                      @click="openPricing(item)"
+                    >
+                      Bảng giá
+                    </AppButton>
+                    <AppButton
+                      type="button"
+                      :disabled="refreshing"
+                      :aria-label="`Mở bán ${movieTitle(item.movieId)} lúc ${formatCinemaTime(item.startsAt)}`"
+                      @click="openBooking(item)"
+                    >
+                      Mở bán
+                    </AppButton>
+                  </div>
                   <span v-else class="admin-reference__muted">—</span>
                 </td>
               </tr>
 
               <tr v-if="pageRows.length === 0">
-                <td :colspan="canEditPricing ? 6 : 5" class="admin-reference__empty">
+                <td colspan="6" class="admin-reference__empty">
                   {{
                     !validDate
                       ? 'Chọn ngày hợp lệ.'
@@ -447,14 +480,30 @@ async function reload() {
         :showtime-id="pricingShowtimeId"
         :movie-title="pricingMovieTitle"
         :can-manage="canEditPricing"
-        @saved="afterPricingSaved"
+        @saved="afterShowtimeChanged"
         @close="pricingShowtimeId = ''"
+      />
+      <AdminShowtimeOpenDialog
+        v-if="openingShowtimeId"
+        :key="openingShowtimeId"
+        :showtime-id="openingShowtimeId"
+        :movie-title="openingMovieTitle"
+        :can-manage="canManage"
+        @opened="afterShowtimeChanged"
+        @close="openingShowtimeId = ''"
       />
     </template>
   </section>
 </template>
 
 <style scoped>
+[data-reference='admin-showtimes'] .admin-showtimes__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 [data-reference='admin-showtimes'] .admin-showtimes__error {
   color: var(--color-error);
 }
