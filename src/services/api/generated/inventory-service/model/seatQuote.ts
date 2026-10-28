@@ -6,12 +6,17 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { SeatQuoteSeatType } from './seatQuoteSeatType';
+import type { SeatQuoteUnit } from './seatQuoteUnit';
 
 export interface SeatQuote {
   showSeatId: string;
   seatNumber: string;
   seatType: SeatQuoteSeatType;
   capacity: number;
-  /** Price for one inventory seat. For COUPLE, this is the entire pair price. */
+  ticketGroupId: string;
+  ticketGroupName: string;
+  eligibilityDescription: string;
+  unit: SeatQuoteUnit;
+  /** Price for one inventory seat. COUPLE uses the entire pair price. */
   price: number;
 }

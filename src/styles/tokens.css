@@ -641,7 +641,7 @@
   --admin-cinema-heading-size: clamp(2rem, 3vw, 2.75rem);
   --admin-cinema-heading-tracking: 0.14em;
   --admin-cinema-table-min-width: 50rem;
-  --admin-cinema-dialog-width: 36rem;
+  --admin-cinema-dialog-width: 56rem;
   --admin-cinema-dialog-layer: calc(var(--z-modal) + 1);
   --admin-cinema-city-dropdown-layer: calc(var(--admin-cinema-dialog-layer) + 1);
   --admin-cinema-menu-width: 12rem;
@@ -672,7 +672,7 @@
   --admin-room-editor-dialog-width: 52rem;
   --admin-room-editor-preview-width: 20rem;
   --admin-room-editor-preview-min-width: 16rem;
-  
+
   /* Movie detail */
   --detail-page-gutter: clamp(1.25rem, 4vw, 3.5rem);
   --detail-poster-width: 18.75rem;
