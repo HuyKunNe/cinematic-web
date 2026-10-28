@@ -12,11 +12,13 @@ import {
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useAdminShowtimeMoviesQuery, useAdminShowtimesQuery } from '../api/admin-showtime-queries'
+import AdminShowtimePricingDialog from '../components/AdminShowtimePricingDialog.vue'
 import {
   showtimeErrorMessage,
   showtimePresentationLabels,
   showtimeStatusLabels,
   showtimeStatusOptions,
+  type AdminShowtime,
 } from '../schemas/admin-showtime.schema'
 
 const PAGE_SIZE = 20
@@ -27,6 +29,11 @@ const auth = useAuthStore()
 const canManage = computed(
   () => auth.isAuthenticated && auth.isAdmin && auth.hasPermission(APP_PERMISSIONS.SHOWTIME_MANAGE),
 )
+const canEditPricing = computed(
+  () => canManage.value && auth.hasPermission(APP_PERMISSIONS.INVENTORY_MANAGE),
+)
+const pricingShowtimeId = ref('')
+const pricingMovieTitle = ref('')
 
 function today() {
   return getCinemaDateKey(new Date().toISOString())
@@ -125,6 +132,17 @@ function moveDay(direction: -1 | 1) {
   date.value = getCinemaDateKey(
     new Date(Date.parse(range.from) + direction * DAY_MILLISECONDS).toISOString(),
   )
+}
+
+function openPricing(item: AdminShowtime): void {
+  if (!canEditPricing.value || item.status !== 'SCHEDULED' || pricingShowtimeId.value) return
+
+  pricingMovieTitle.value = movieTitle(item.movieId)
+  pricingShowtimeId.value = item.id
+}
+
+async function afterPricingSaved(): Promise<void> {
+  if (canManage.value && validDate.value) await showtimes.refetch()
 }
 
 async function reload() {
@@ -308,6 +326,7 @@ async function reload() {
                 <th scope="col">Rạp / Phòng</th>
                 <th scope="col">Định dạng / phiên bản</th>
                 <th scope="col">Trạng thái</th>
+                <th v-if="canEditPricing" scope="col">Thao tác</th>
               </tr>
             </thead>
 
@@ -357,10 +376,23 @@ async function reload() {
                   <span v-else class="admin-reference__muted"> Chưa có thông tin phiên bản </span>
                 </td>
                 <td>{{ showtimeStatusLabels[item.status] }}</td>
+                <td v-if="canEditPricing">
+                  <AppButton
+                    v-if="item.status === 'SCHEDULED'"
+                    type="button"
+                    variant="secondary"
+                    :disabled="refreshing"
+                    :aria-label="`Chọn bảng giá cho ${movieTitle(item.movieId)} lúc ${formatCinemaTime(item.startsAt)}`"
+                    @click="openPricing(item)"
+                  >
+                    Bảng giá
+                  </AppButton>
+                  <span v-else class="admin-reference__muted">—</span>
+                </td>
               </tr>
 
               <tr v-if="pageRows.length === 0">
-                <td colspan="5" class="admin-reference__empty">
+                <td :colspan="canEditPricing ? 6 : 5" class="admin-reference__empty">
                   {{
                     !validDate
                       ? 'Chọn ngày hợp lệ.'
@@ -408,6 +440,16 @@ async function reload() {
           </nav>
         </footer>
       </section>
+
+      <AdminShowtimePricingDialog
+        v-if="pricingShowtimeId"
+        :key="pricingShowtimeId"
+        :showtime-id="pricingShowtimeId"
+        :movie-title="pricingMovieTitle"
+        :can-manage="canEditPricing"
+        @saved="afterPricingSaved"
+        @close="pricingShowtimeId = ''"
+      />
     </template>
   </section>
 </template>
