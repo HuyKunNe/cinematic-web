@@ -202,21 +202,46 @@ async function createPublishedDraft(): Promise<PricingDetail> {
 
 async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
   if (!canManage.value || busy.value || drafts.needsRecovery.value) return
+
   const anchor = chooseAnchor(policy, cinemaId.value)
   if (!anchor) {
     requestError.value = 'Không tìm thấy cụm rạp phù hợp để mở bảng giá.'
     return
   }
+
   openingId.value = policy.id
   requestError.value = ''
   notice.value = ''
+
   try {
+    let selected = policy
+
+    if (!edit) {
+      const versions = await actions.loadVersions(anchor, policy.policyId)
+      const candidate = versions.find((version) => version.status === 'PUBLISHED') ?? versions[0]
+
+      if (!candidate) {
+        throw new Error('Không tìm thấy phiên bản bảng giá trong phạm vi đang xem.')
+      }
+
+      selected = candidate
+    }
+
+    if (!canManage.value) return
+
     const detail = await actions.loadDetail({
       cinemaId: anchor,
-      policyId: policy.policyId,
-      versionId: policy.id,
+      policyId: selected.policyId,
+      versionId: selected.id,
     })
+
     if (!canManage.value) return
+
+    if (!edit && selected.status === 'PUBLISHED' && detail.policy.status !== 'PUBLISHED') {
+      throw new Error(
+        'Phiên bản công bố đã thay đổi trạng thái. Hãy tải lại danh sách trước khi tra giá.',
+      )
+    }
 
     showDetail(detail, anchor, edit)
   } catch (cause: unknown) {
@@ -225,6 +250,7 @@ async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
     openingId.value = ''
   }
 }
+
 async function resumeDraft(): Promise<void> {
   if (!canManage.value || busy.value || dialogMode.value !== null) return
   const checkpoint = drafts.checkpoint.value
@@ -456,7 +482,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 <th scope="col">Loại ngày</th>
                 <th scope="col">Phạm vi áp dụng</th>
                 <th scope="col">Mức độ hoàn chỉnh</th>
-                <th scope="col">Trạng thái</th>
+                <th scope="col">Trạng thái phiên bản</th>
                 <th scope="col"><span class="price-visually-hidden">Thao tác</span></th>
               </tr>
             </thead>
@@ -508,13 +534,13 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                       type="button"
                       :aria-label="
                         policy.status === 'PUBLISHED'
-                          ? `Tạo bản nháp chỉnh sửa ${policy.name}`
-                          : `Chỉnh sửa ${policy.name}`
+                          ? `Chỉnh sửa phiên bản công bố ${policy.revision} của ${policy.name}`
+                          : `Chỉnh sửa bản nháp phiên bản ${policy.revision} của ${policy.name}`
                       "
                       :title="
                         policy.status === 'PUBLISHED'
-                          ? `Tạo bản nháp từ phiên bản ${policy.revision}`
-                          : 'Chỉnh sửa bản nháp'
+                          ? `Chỉnh sửa phiên bản ${policy.revision}; chỉ tạo bản nháp khi lưu`
+                          : `Chỉnh sửa bản nháp phiên bản ${policy.revision}`
                       "
                       :disabled="openingId !== '' || drafts.needsRecovery.value"
                       @click="openPolicy(policy, true)"

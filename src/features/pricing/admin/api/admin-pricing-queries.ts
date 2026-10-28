@@ -713,6 +713,23 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
     onSuccess: invalidate,
   })
 
+  async function loadVersions(cinemaId: string, policyId: string): Promise<PricingPolicy[]> {
+    requireAccess()
+
+    const cinema = uuid.parse(cinemaId)
+    const policy = uuid.parse(policyId)
+
+    return queryClient.fetchQuery({
+      queryKey: ['pricing', 'admin', 'versions', cinema, policy],
+      queryFn: async () => {
+        requireAccess()
+        return parsePolicies(await listCinemaPricingPolicyVersions(cinema, policy), cinema, policy)
+      },
+      staleTime: 0,
+      retry: false,
+    })
+  }
+
   async function loadDetail(context: PricingContext): Promise<PricingDetail> {
     requireAccess()
 
@@ -734,6 +751,7 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
     matrix,
     validation,
     publication,
+    loadVersions,
     loadDetail,
   }
 }
