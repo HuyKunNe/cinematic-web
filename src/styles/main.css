@@ -49,3 +49,8 @@
 @custom-variant admin-showtime-compact (@media (max-width: 72rem));
 @custom-variant admin-showtime-stack (@media (max-width: 56rem));
 @custom-variant admin-showtime-mobile (@media (max-width: 38rem));
+
+/* Use each configuration card's available width for its row layout. */
+@custom-variant pricing-time-compact (@container pricing-configuration (max-width: 28rem));
+@custom-variant pricing-group-compact (@container pricing-configuration (max-width: 47.5rem));
+@custom-variant pricing-config-narrow (@media (max-width: 27.5rem));

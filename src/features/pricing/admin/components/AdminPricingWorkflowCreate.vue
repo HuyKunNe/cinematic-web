@@ -254,9 +254,6 @@ const dirty = computed(
     (targetStatus.value === 'PUBLISHED' && policy.value?.status === 'DRAFT'),
 )
 
-const missingCount = computed(
-  () => entries.value.filter((entry) => values.value[entry.key]?.state === 'UNCONFIGURED').length,
-)
 const activeScope = computed(() =>
   scopes.value.find((scope) => pricingScopeKey(scope) === activeScopeKey.value),
 )
@@ -1520,7 +1517,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                       </option>
                     </select>
                   </label>
-                  <span class="price-chip">{{ missingCount }} ô chưa nhập</span>
                 </div>
 
                 <section
@@ -1683,15 +1679,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
           </div>
 
           <footer class="pricing-dialog__foot">
-            <span>
-              {{
-                readOnly
-                  ? 'Phiên bản chỉ xem'
-                  : showErrors && issues.length
-                    ? `${issues.length} lỗi cần xử lý`
-                    : `${missingCount} ô chưa nhập · Giá bán theo bảng`
-              }}
-            </span>
+            <span v-if="readOnly"> 'Phiên bản chỉ xem' </span>
             <div>
               <button class="price-button" type="button" :disabled="busy" @click="close">
                 {{ readOnly ? 'Đóng' : 'Hủy' }}
