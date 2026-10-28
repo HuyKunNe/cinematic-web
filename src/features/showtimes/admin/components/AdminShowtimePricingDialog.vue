@@ -9,11 +9,8 @@ import {
   DialogRoot,
   DialogTitle,
 } from 'reka-ui'
-import {
-  formatCinemaDateKey,
-  formatCinemaTime,
-  getCinemaDateKey,
-} from '@/utils/cinema-time'
+import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
+import { AdminPricingVersionPreview } from '@/features/pricing'
 import {
   showtimePricingErrorMessage,
   showtimePricingNeedsReload,
@@ -45,9 +42,7 @@ const notice = ref('')
 
 const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
 
-const currentVersionId = computed(
-  () => data.value?.showtime.pricingPolicyVersionId ?? '',
-)
+const currentVersionId = computed(() => data.value?.showtime.pricingPolicyVersionId ?? '')
 const publishedVersions = computed(
   () => data.value?.versions.filter((item) => item.status === 'PUBLISHED') ?? [],
 )
@@ -62,9 +57,7 @@ const unavailableCurrent = computed(
     currentVersionId.value !== '' &&
     !publishedVersions.value.some((item) => item.id === currentVersionId.value),
 )
-const dirty = computed(
-  () => data.value !== null && selectedId.value !== currentVersionId.value,
-)
+const dirty = computed(() => data.value !== null && selectedId.value !== currentVersionId.value)
 const editable = computed(
   () =>
     props.canManage &&
@@ -223,17 +216,15 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               {{ notice }}
             </p>
 
-            <p
-              v-if="requiresReload && data && !loading"
-              class="price-notice"
-              role="status"
-            >
+            <p v-if="requiresReload && data && !loading" class="price-notice" role="status">
               Cần tải lại dữ liệu trước khi lưu tiếp. Lựa chọn đang nhập chưa được tự gửi lại.
             </p>
 
             <template v-if="data">
               <div class="price-explain">
-                <p class="price-note"><strong>{{ movieTitle }}</strong></p>
+                <p class="price-note">
+                  <strong>{{ movieTitle }}</strong>
+                </p>
                 <p class="price-note">
                   {{ data.showtime.cinemaName }} · {{ data.showtime.roomName }}
                 </p>
@@ -265,27 +256,16 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 Suất không còn ở trạng thái “Đã lên lịch”, nên không thể thay đổi bảng giá.
               </p>
 
-              <p
-                v-if="!data.showtime.screeningVersion"
-                class="price-notice price-space-top"
-              >
+              <p v-if="!data.showtime.screeningVersion" class="price-notice price-space-top">
                 Suất chưa có phiên bản chiếu đã lưu nên chưa đủ thông tin để gán bảng giá.
               </p>
 
               <div class="price-form-grid price-space-top">
                 <label class="price-field price-full">
                   <span>Phiên bản bảng giá</span>
-                  <select
-                    v-model="selectedId"
-                    class="price-control"
-                    :disabled="!editable"
-                  >
+                  <select v-model="selectedId" class="price-control" :disabled="!editable">
                     <option value="">Chưa gán bảng giá</option>
-                    <option
-                      v-if="unavailableCurrent"
-                      :value="currentVersionId"
-                      disabled
-                    >
+                    <option v-if="unavailableCurrent" :value="currentVersionId" disabled>
                       {{
                         currentPolicy
                           ? showtimePricingVersionLabel(currentPolicy)
@@ -307,6 +287,14 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 </label>
               </div>
 
+              <AdminPricingVersionPreview
+                v-if="selectedVersion && !loading && !requiresReload && canManage"
+                :cinema-id="data.showtime.cinemaId"
+                :policy-id="selectedVersion.policyId"
+                :version-id="selectedVersion.id"
+                :can-manage="canManage"
+              />
+
               <p
                 v-if="!publishedVersions.length && !loading"
                 class="price-notice price-notice--info price-space-top"
@@ -314,31 +302,23 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 Cụm rạp chưa có phiên bản bảng giá đã công bố để lựa chọn.
               </p>
 
-              <p
-                v-if="dirty && selectedId === ''"
-                class="price-notice price-space-top"
-              >
+              <p v-if="dirty && selectedId === ''" class="price-notice price-space-top">
                 Bạn đang bỏ bảng giá của suất chiếu. Suất cần được gán bảng giá trước khi mở bán.
               </p>
 
               <p class="price-note price-space-top">
-                Chọn trực tiếp bảng giá Ngày thường, Cuối tuần hoặc Lễ/Tết phù hợp.
-                Hệ thống kiểm tra loại phòng, định dạng, giờ chiếu và hạng ghế khi lưu.
+                Chọn trực tiếp bảng giá Ngày thường, Cuối tuần hoặc Lễ/Tết phù hợp. Hệ thống kiểm
+                tra loại phòng, định dạng, giờ chiếu và hạng ghế khi lưu.
               </p>
               <p class="price-note">
-                Giá ghế được áp dụng theo nhóm vé mặc định của bảng giá.
-                Giá ghế đôi là giá cho cả cặp; mỗi định dạng có giá riêng, không cộng phụ thu.
+                Giá ghế được áp dụng theo nhóm vé mặc định của bảng giá. Giá ghế đôi là giá cho cả
+                cặp; mỗi định dạng có giá riêng, không cộng phụ thu.
               </p>
             </template>
           </div>
 
           <footer class="price-dialog-foot">
-            <button
-              class="price-button"
-              type="button"
-              :disabled="saving"
-              @click="close"
-            >
+            <button class="price-button" type="button" :disabled="saving" @click="close">
               Đóng
             </button>
             <button
@@ -349,11 +329,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
             >
               Tải lại dữ liệu
             </button>
-            <button
-              class="price-button price-button--primary"
-              type="submit"
-              :disabled="!canSave"
-            >
+            <button class="price-button price-button--primary" type="submit" :disabled="!canSave">
               {{ saving ? 'Đang lưu…' : 'Lưu bảng giá' }}
             </button>
           </footer>
@@ -366,9 +342,62 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
 <style scoped>
 .price-dialog.showtime-pricing-dialog {
   --price-dialog-width: 44rem;
+
+  min-width: 0;
+}
+
+.showtime-pricing-dialog,
+.showtime-pricing-dialog * {
+  box-sizing: border-box;
+}
+
+.showtime-pricing-dialog .price-dialog-head {
+  min-width: 0;
+}
+
+.showtime-pricing-dialog .price-dialog-head h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .showtime-pricing-dialog .price-dialog-form {
   flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.showtime-pricing-dialog .price-dialog-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.showtime-pricing-dialog .price-note {
+  overflow-wrap: anywhere;
+}
+
+.showtime-pricing-dialog .price-control {
+  max-width: 100%;
+}
+
+.showtime-pricing-dialog .price-dialog-foot {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--price-space-2);
+  min-width: 0;
+}
+
+.showtime-pricing-dialog .price-dialog-foot > .price-button {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 </style>

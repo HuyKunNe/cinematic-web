@@ -24,4 +24,8 @@ export interface BookingResponse {
   version?: number;
   createdAt?: string;
   updatedAt?: string;
+  /** Total number of people accommodated by the selected seats. Each COUPLE seat contributes two people. Null when any seat-type snapshot is unavailable or unsupported. */
+  readonly capacity: number;
+  /** Number of selected inventory seats. A COUPLE seat counts as one inventory seat. Null when the seat list is unavailable. */
+  readonly seatCount: number;
 }

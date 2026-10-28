@@ -5,6 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
+import type { BookingSeatResponseUnit } from './bookingSeatResponseUnit';
 
 export interface BookingSeatResponse {
   id?: string;
@@ -12,9 +13,14 @@ export interface BookingSeatResponse {
   showtimeId?: string;
   seatNumber?: string;
   seatType?: string;
+  /** Price for one inventory seat. For COUPLE, this is the entire pair price. */
   price?: number;
   requestedTicketGroupId: string;
   ticketGroupId: string;
   /** Ticket-group name captured during reservation. Null before reservation or for legacy snapshots. */
   ticketGroupName: string;
+  /** Number of people accommodated by this inventory seat. COUPLE accommodates two people. Null when the seat-type snapshot is unavailable or unsupported. */
+  readonly capacity: number;
+  /** Pricing unit for the stored price. COUPLE uses PAIR; its price covers the entire pair. Null when the seat-type snapshot is unavailable or unsupported. */
+  readonly unit: BookingSeatResponseUnit;
 }

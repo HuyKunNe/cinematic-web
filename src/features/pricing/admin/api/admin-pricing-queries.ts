@@ -462,6 +462,40 @@ function detailKey(context: PricingContext) {
   ] as const
 }
 
+export function useAdminPricingDetailQuery(
+  enabled: MaybeRefOrGetter<boolean>,
+  cinemaId: MaybeRefOrGetter<string>,
+  policyId: MaybeRefOrGetter<string>,
+  versionId: MaybeRefOrGetter<string>,
+) {
+  return useQuery({
+    ...queryOptions,
+    queryKey: computed(() =>
+      detailKey({
+        cinemaId: toValue(cinemaId),
+        policyId: toValue(policyId),
+        versionId: toValue(versionId),
+      }),
+    ),
+    enabled: computed(
+      () =>
+        toValue(enabled) &&
+        [toValue(cinemaId), toValue(policyId), toValue(versionId)].every(
+          (value) => uuid.safeParse(value).success,
+        ),
+    ),
+    queryFn: ({ queryKey }) => {
+      if (!toValue(enabled)) throw new Error('Không có quyền tải bảng giá.')
+      return readDetail({
+        cinemaId: queryKey[3],
+        policyId: queryKey[4],
+        versionId: queryKey[5],
+      })
+    },
+    placeholderData: () => undefined,
+  })
+}
+
 export function useAdminPricingQueries(
   enabled: MaybeRefOrGetter<boolean>,
   cinemaId: MaybeRefOrGetter<string>,
@@ -512,31 +546,7 @@ export function useAdminPricingQueries(
     },
   })
 
-  const detail = useQuery({
-    ...queryOptions,
-    queryKey: computed(() =>
-      detailKey({
-        cinemaId: toValue(cinemaId),
-        policyId: toValue(policyId),
-        versionId: toValue(versionId),
-      }),
-    ),
-    enabled: computed(
-      () =>
-        toValue(enabled) &&
-        [toValue(cinemaId), toValue(policyId), toValue(versionId)].every(
-          (value) => uuid.safeParse(value).success,
-        ),
-    ),
-    queryFn: ({ queryKey }) => {
-      requireAccess()
-      return readDetail({
-        cinemaId: queryKey[3],
-        policyId: queryKey[4],
-        versionId: queryKey[5],
-      })
-    },
-  })
+  const detail = useAdminPricingDetailQuery(enabled, cinemaId, policyId, versionId)
 
   return { cinemas, policies, versions, detail }
 }
