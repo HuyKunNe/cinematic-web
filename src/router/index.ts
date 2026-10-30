@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { ADMIN_ROLES, APP_PERMISSIONS } from '../config/authorization'
+import { ADMIN_ROLES, APP_PERMISSIONS, APP_ROLES } from '../config/authorization'
 import { authorizationGuard } from './guards'
 import { ROUTE_NAMES, ROUTE_PATHS } from './route-constants'
 import type { RouteRecordRaw } from 'vue-router'
@@ -26,6 +26,10 @@ const loadAdminShowtimeCreatePage = () =>
   import('../features/showtimes/admin/pages/AdminShowtimeCreatePage.vue')
 const loadAdminPricingPolicyPage = () =>
   import('../features/pricing/admin/pages/AdminPricingPolicyPage.vue')
+
+const loadAdminBookingsPage = () => import('../features/booking/admin/pages/AdminBookingsPage.vue')
+const loadAdminBookingDetailPage = () =>
+  import('../features/booking/admin/pages/AdminBookingDetailPage.vue')
 
 const routes: RouteRecordRaw[] = [
   {
@@ -246,15 +250,26 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ADMIN_BOOKINGS,
     name: ROUTE_NAMES.ADMIN_BOOKINGS,
-    component: loadAdminReferencePage,
-    props: { module: 'bookings' },
+    component: loadAdminBookingsPage,
     meta: {
       layout: 'admin',
-      title: 'Booking quản trị',
+      title: 'Đơn đặt vé',
       requiresAuth: true,
-      roles: ADMIN_ROLES,
+      roles: [APP_ROLES.ADMIN],
     },
   },
+  {
+    path: ROUTE_PATHS.ADMIN_BOOKING_DETAIL,
+    name: ROUTE_NAMES.ADMIN_BOOKING_DETAIL,
+    component: loadAdminBookingDetailPage,
+    meta: {
+      layout: 'admin',
+      title: 'Chi tiết đơn đặt vé',
+      requiresAuth: true,
+      roles: [APP_ROLES.ADMIN],
+    },
+  },
+
   {
     path: ROUTE_PATHS.ADMIN_USERS,
     name: ROUTE_NAMES.ADMIN_USERS,

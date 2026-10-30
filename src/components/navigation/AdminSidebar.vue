@@ -82,6 +82,10 @@ function isActive(routeName: AdminRouteName): boolean {
     return true
   }
 
+  if (routeName === ROUTE_NAMES.ADMIN_BOOKINGS && route.name === ROUTE_NAMES.ADMIN_BOOKING_DETAIL) {
+    return true
+  }
+
   return route.name === routeName || route.matched.some((record) => record.name === routeName)
 }
 </script>

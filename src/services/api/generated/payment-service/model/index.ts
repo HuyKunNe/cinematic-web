@@ -7,17 +7,23 @@
  */
 
 export * from './apiResponsePageResponsePaymentManagementResponse';
+export * from './apiResponsePageResponsePaymentTransactionManagementResponse';
 export * from './apiResponsePaymentManagementResponse';
 export * from './errorBody';
 export * from './financialAuditRecordResponse';
 export * from './financialAuditRecordResponseAction';
 export * from './financialAuditRecordResponseActorType';
 export * from './listBookingPaymentsForAdminParams';
+export * from './listPaymentTransactionsForAdminParams';
 export * from './pageInfo';
 export * from './pageResponsePaymentManagementResponse';
+export * from './pageResponsePaymentTransactionManagementResponse';
 export * from './paymentManagementResponse';
 export * from './paymentManagementResponseRefundStatus';
 export * from './paymentManagementResponseStatus';
+export * from './paymentTransactionManagementResponse';
+export * from './paymentTransactionManagementResponseStatus';
+export * from './paymentTransactionManagementResponseTransactionType';
 export * from './reconciliationOperationResult';
 export * from './reconciliationOperationResultReconciliationStatus';
 export * from './reconciliationOperationResultRefundStatus';

@@ -1,5 +1,5 @@
 import type { AppPermission, AppRole } from './authorization'
-import { ADMIN_ROLES, APP_PERMISSIONS } from './authorization'
+import { ADMIN_ROLES, APP_PERMISSIONS, APP_ROLES } from './authorization'
 import { ROUTE_NAMES } from '../router/route-constants'
 
 export type AdminRouteName =
@@ -98,7 +98,7 @@ export const ADMIN_NAVIGATION: readonly AdminNavigationItem[] = [
     routeName: ROUTE_NAMES.ADMIN_BOOKINGS,
     icon: 'bookings',
     group: 'operations',
-    roles: ADMIN_ROLES,
+    roles: [APP_ROLES.ADMIN],
   },
   {
     label: 'Khuyến mãi',

@@ -7,8 +7,10 @@
  */
 import type {
   ApiResponsePageResponsePaymentManagementResponse,
+  ApiResponsePageResponsePaymentTransactionManagementResponse,
   ApiResponsePaymentManagementResponse,
-  ListBookingPaymentsForAdminParams
+  ListBookingPaymentsForAdminParams,
+  ListPaymentTransactionsForAdminParams
 } from '../model';
 
 import { apiRequest } from '../../../../http/axios-instance';
@@ -27,6 +29,16 @@ export const getPaymentForAdmin = (
     },
       );
     }
+  export const listPaymentTransactionsForAdmin = (
+    paymentId: string,
+    params?: ListPaymentTransactionsForAdminParams,
+ ) => {
+      return apiRequest<ApiResponsePageResponsePaymentTransactionManagementResponse>(
+      {url: `/api/v1/payments/management/${paymentId}/transactions`, method: 'GET',
+        params
+    },
+      );
+    }
   /**
  * Requires the ADMIN role and payment:read permission. Results are ordered by paymentAttempt descending, then id descending. An empty page means no matching payment record exists.
  * @summary List payment attempts for a booking
@@ -42,4 +54,5 @@ export const listBookingPaymentsForAdmin = (
       );
     }
   export type GetPaymentForAdminResult = NonNullable<Awaited<ReturnType<typeof getPaymentForAdmin>>>
+export type ListPaymentTransactionsForAdminResult = NonNullable<Awaited<ReturnType<typeof listPaymentTransactionsForAdmin>>>
 export type ListBookingPaymentsForAdminResult = NonNullable<Awaited<ReturnType<typeof listBookingPaymentsForAdmin>>>

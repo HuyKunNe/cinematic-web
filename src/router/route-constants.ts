@@ -9,7 +9,7 @@ export const ROUTE_NAMES = {
   BOOKING: 'booking',
   ACCOUNT: 'account',
   ACCOUNT_BOOKINGS: 'account-bookings',
-
+  
   LOGIN: 'login',
   AUTH_CALLBACK: 'auth-callback',
   AUTH_REQUIRED: 'auth-required',
@@ -25,6 +25,7 @@ export const ROUTE_NAMES = {
   ADMIN_SHOWTIME_CREATE: 'admin-showtime-create',
   ADMIN_PRICING_POLICY: 'admin-pricing-policy',
   ADMIN_BOOKINGS: 'admin-bookings',
+  ADMIN_BOOKING_DETAIL: 'admin-booking-detail',
   ADMIN_PROMOTIONS: 'admin-promotions',
   ADMIN_USERS: 'admin-users',
 
@@ -58,6 +59,7 @@ export const ROUTE_PATHS = {
   ADMIN_SHOWTIME_CREATE: '/admin/showtimes/new',
   ADMIN_PRICING_POLICY: '/admin/pricing-policies',
   ADMIN_BOOKINGS: '/admin/bookings',
+  ADMIN_BOOKING_DETAIL: '/admin/bookings/:bookingId',
   ADMIN_PROMOTIONS: '/admin/promotions',
   ADMIN_USERS: '/admin/users',
 
