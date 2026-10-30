@@ -17,6 +17,8 @@ export * from './createBookingRequest';
 export * from './errorBody';
 export * from './findAllBookingsParams';
 export * from './findAllParams';
+export * from './listBookingsForAdminParams';
+export * from './listBookingsForAdminStatus';
 export * from './pageInfo';
 export * from './pageResponseBookingResponse';
 export * from './validationError';
