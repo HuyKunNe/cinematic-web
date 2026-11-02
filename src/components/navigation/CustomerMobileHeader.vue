@@ -48,9 +48,10 @@ function closeMenu(restoreFocus = true) {
   menuOpen.value = false
 }
 
-function requestSearch() {
+async function requestSearch() {
+  closeMenu(false)
+  await nextTick()
   emit('searchRequest')
-  closeMenu()
 }
 
 async function requestLocation(event: MouseEvent) {

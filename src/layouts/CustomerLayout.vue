@@ -1,29 +1,75 @@
 <script setup lang="ts">
-import { readonly, ref, shallowRef, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { nextTick, readonly, ref, shallowRef, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import CustomerHeader from '@/components/navigation/CustomerHeader.vue'
 import CustomerMobileHeader from '@/components/navigation/CustomerMobileHeader.vue'
 import MobileBottomNav from '@/components/navigation/MobileBottomNav.vue'
+import AppContainer from '@/components/ui/AppContainer.vue'
 import {
   CinemaLocationDialog,
   provideCinemaLocationDialog,
   useCinemaLocation,
 } from '@/features/cinemas'
+import { ROUTE_NAMES } from '@/router/route-constants'
 import '@/styles/customer-navigation.css'
 
-const emit = defineEmits<{
-  searchRequest: []
-}>()
-
 const route = useRoute()
+const router = useRouter()
+
 const locationOpen = ref(false)
 const locationTrigger = shallowRef<HTMLButtonElement | null>(null)
+const searchError = ref('')
+let openingSearch = false
 
 const { locationLabel, locationDescription } = useCinemaLocation()
 
 function openLocation(trigger: HTMLButtonElement) {
   locationTrigger.value = trigger
   locationOpen.value = true
+}
+
+async function openMovieSearch() {
+  if (openingSearch) return
+
+  openingSearch = true
+  searchError.value = ''
+  locationOpen.value = false
+
+  try {
+    if (route.name !== ROUTE_NAMES.MOVIES) {
+      const failure = await router.push({
+        name: ROUTE_NAMES.MOVIES,
+      })
+
+      if (failure) {
+        searchError.value = 'Chưa thể mở trang tìm phim. Vui lòng thử lại.'
+        return
+      }
+    }
+
+    await nextTick()
+
+    // Người dùng có thể chuyển trang trong lúc chờ điều hướng.
+    if (route.name !== ROUTE_NAMES.MOVIES) return
+
+    const input = document.getElementById('movies-search-input')
+
+    if (!(input instanceof HTMLInputElement)) {
+      searchError.value = 'Chưa thể mở ô tìm phim. Vui lòng tải lại trang và thử lại.'
+      return
+    }
+
+    input.focus({ preventScroll: true })
+    input.scrollIntoView({
+      block: 'center',
+      inline: 'nearest',
+      behavior: 'auto',
+    })
+  } catch {
+    searchError.value = 'Chưa thể mở trang tìm phim. Vui lòng thử lại.'
+  } finally {
+    openingSearch = false
+  }
 }
 
 provideCinemaLocationDialog({
@@ -35,16 +81,18 @@ watch(
   () => route.fullPath,
   () => {
     locationOpen.value = false
+    searchError.value = ''
   },
 )
 </script>
+
 <template>
   <div class="customer-layout">
     <CustomerHeader
       :location-label="locationLabel"
       :location-description="locationDescription"
       :location-open="locationOpen"
-      @search-request="emit('searchRequest')"
+      @search-request="openMovieSearch"
       @location-request="openLocation"
     />
 
@@ -52,11 +100,17 @@ watch(
       :location-label="locationLabel"
       :location-description="locationDescription"
       :location-open="locationOpen"
-      @search-request="emit('searchRequest')"
+      @search-request="openMovieSearch"
       @location-request="openLocation"
     />
 
     <main class="customer-layout__main">
+      <AppContainer v-if="searchError" class="customer-layout__search-feedback">
+        <p class="customer-layout__search-error" role="alert">
+          {{ searchError }}
+        </p>
+      </AppContainer>
+
       <RouterView />
     </main>
 
@@ -65,3 +119,16 @@ watch(
     <CinemaLocationDialog v-model:open="locationOpen" :return-focus-to="locationTrigger" />
   </div>
 </template>
+
+<style scoped>
+.customer-layout__search-feedback {
+  padding-block: var(--space-3);
+}
+
+.customer-layout__search-error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+</style>
