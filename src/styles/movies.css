@@ -456,3 +456,83 @@
 .movies-card__age {
   pointer-events: none;
 }
+.movies-search {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0 0 var(--space-5);
+}
+
+.movies-search__label {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.movies-search__controls {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.movies-search__input {
+  display: block;
+  flex: 1 1 0;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-base);
+}
+
+.movies-search__input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.movies-search__clear {
+  flex: 0 0 auto;
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.movies-search__input:hover,
+.movies-search__clear:hover {
+  border-color: var(--color-primary);
+}
+
+.movies-search__clear:hover {
+  background: var(--color-surface-raised);
+}
+
+.movies-search__input:focus-visible,
+.movies-search__clear:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+
+.movies-search__help {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+.movies-results__query {
+  overflow-wrap: anywhere;
+}

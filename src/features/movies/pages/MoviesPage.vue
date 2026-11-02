@@ -13,6 +13,7 @@ import type { CatalogMovieStatus, MovieGenre } from '../models/movie.model'
 type MovieSort = 'release-desc' | 'release-asc' | 'title-asc'
 
 const PAGE_SIZE = 8
+
 const { data, isPending, isError, isFetching, refetch, scopeKey, catalogueLocationLabel } =
   useMoviesProgramme()
 
@@ -34,6 +35,9 @@ const selectedStatus = computed<CatalogMovieStatus>({
     })
   },
 })
+
+const searchInput = ref<HTMLInputElement | null>(null)
+const searchText = ref('')
 const selectedGenre = ref('')
 const selectedSort = ref<MovieSort>('release-desc')
 const shownLimit = ref(PAGE_SIZE)
@@ -60,6 +64,20 @@ const sortOptions: {
   { value: 'title-asc', label: 'Tên phim A–Z' },
 ]
 
+function normalizeMovieSearch(value: string): string {
+  return value
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase('vi')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+}
+
+const searchLabel = computed(() => searchText.value.trim().replace(/\s+/g, ' '))
+const searchTerm = computed(() => normalizeMovieSearch(searchText.value))
+const hasActiveFilters = computed(() => Boolean(searchTerm.value || selectedGenre.value))
+
 const hasData = computed(() => data.value !== undefined)
 
 const genreOptions = computed(() => {
@@ -83,7 +101,8 @@ const filteredMovies = computed(() => {
   const movies = (data.value ?? []).filter(
     (movie) =>
       movie.status === selectedStatus.value &&
-      (!selectedGenre.value || movie.genres.some((genre) => genre.id === selectedGenre.value)),
+      (!selectedGenre.value || movie.genres.some((genre) => genre.id === selectedGenre.value)) &&
+      (!searchTerm.value || normalizeMovieSearch(movie.title).includes(searchTerm.value)),
   )
 
   return movies.sort((first, second) => {
@@ -116,7 +135,23 @@ const statusDescription = computed(() =>
   selectedStatus.value === 'NOW_SHOWING' ? 'đang chiếu' : 'sắp chiếu',
 )
 
-watch([selectedStatus, selectedGenre, selectedSort, scopeKey], () => {
+const emptyTitle = computed(() =>
+  hasActiveFilters.value ? 'Không có phim phù hợp' : `Chưa có phim ${statusDescription.value}`,
+)
+
+const emptyDescription = computed(() => {
+  if (searchTerm.value) {
+    return 'Thử từ khóa khác, xóa từ khóa hoặc thay đổi thể loại, trạng thái phim và rạp đã chọn.'
+  }
+
+  if (selectedGenre.value) {
+    return 'Hãy thử chọn thể loại khác hoặc tất cả thể loại.'
+  }
+
+  return 'Danh sách phim sẽ được cập nhật trong thời gian tới.'
+})
+
+watch([selectedStatus, selectedGenre, selectedSort, searchTerm, scopeKey], () => {
   shownLimit.value = PAGE_SIZE
 })
 
@@ -124,12 +159,17 @@ watch([scopeKey, selectedStatus], () => {
   selectedGenre.value = ''
 })
 
-// Xóa bộ lọc nếu thể loại không còn trong catalog mới.
+// Xóa bộ lọc nếu thể loại không còn trong danh mục mới.
 watch(genreOptions, (genres) => {
   if (selectedGenre.value && !genres.some((genre) => genre.id === selectedGenre.value)) {
     selectedGenre.value = ''
   }
 })
+
+function clearSearch() {
+  searchText.value = ''
+  searchInput.value?.focus()
+}
 
 function loadMore() {
   if (isFetching.value || !hasMore.value) return
@@ -154,6 +194,42 @@ function retry() {
 
     <AppContainer>
       <section class="movies-browser" aria-label="Danh sách phim" :aria-busy="isFetching">
+        <form
+          class="movies-search"
+          role="search"
+          aria-label="Tìm phim trong danh sách"
+          @submit.prevent
+        >
+          <label class="movies-search__label" for="movies-search-input"> Tìm theo tên phim </label>
+
+          <div class="movies-search__controls">
+            <input
+              id="movies-search-input"
+              ref="searchInput"
+              v-model="searchText"
+              class="movies-search__input"
+              name="movie-search"
+              type="search"
+              autocomplete="off"
+              placeholder="Nhập tên phim có dấu hoặc không dấu"
+              aria-describedby="movies-search-help"
+            />
+
+            <button
+              v-if="searchText"
+              class="movies-search__clear"
+              type="button"
+              @click="clearSearch"
+            >
+              Xóa
+            </button>
+          </div>
+
+          <p id="movies-search-help" class="movies-search__help">
+            Kết quả áp dụng cho trạng thái phim, thể loại và rạp đang chọn.
+          </p>
+        </form>
+
         <div class="movies-toolbar">
           <div class="movies-status-group" role="group" aria-label="Trạng thái phim">
             <button
@@ -174,7 +250,7 @@ function retry() {
 
           <div class="movies-filter-group">
             <label class="movies-filter-control" for="movies-genre-filter">
-              <span class="movies-sr-only"> Lọc theo thể loại </span>
+              <span class="movies-sr-only">Lọc theo thể loại</span>
 
               <select id="movies-genre-filter" v-model="selectedGenre" :disabled="isPending">
                 <option value="">Tất cả thể loại</option>
@@ -185,7 +261,7 @@ function retry() {
             </label>
 
             <label class="movies-filter-control" for="movies-sort-filter">
-              <span class="movies-sr-only"> Sắp xếp phim </span>
+              <span class="movies-sr-only">Sắp xếp phim</span>
 
               <select id="movies-sort-filter" v-model="selectedSort" :disabled="isPending">
                 <option v-for="option in sortOptions" :key="option.value" :value="option.value">
@@ -207,6 +283,10 @@ function retry() {
         >
           <strong>{{ filteredMovies.length }} phim</strong>
           {{ statusDescription }} tại {{ catalogueLocationLabel }}
+
+          <span v-if="searchTerm" class="movies-results__query">
+            khớp với “{{ searchLabel }}”.
+          </span>
 
           <span v-if="filteredMovies.length" class="movies-results__shown">
             Đang hiển thị {{ visibleMovies.length }} / {{ filteredMovies.length }} phim.
@@ -243,12 +323,8 @@ function retry() {
 
           <AppEmptyState
             v-if="!visibleMovies.length"
-            :title="selectedGenre ? 'Không có phim phù hợp' : `Chưa có phim ${statusDescription}`"
-            :description="
-              selectedGenre
-                ? 'Hãy thử chọn thể loại khác hoặc tất cả thể loại.'
-                : 'Danh sách phim sẽ được cập nhật trong thời gian tới.'
-            "
+            :title="emptyTitle"
+            :description="emptyDescription"
           />
 
           <template v-else>
