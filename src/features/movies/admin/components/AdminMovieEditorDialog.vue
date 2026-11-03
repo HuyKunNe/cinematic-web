@@ -12,6 +12,7 @@ import {
 } from 'reka-ui'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
+import AdminMovieScreeningFields from './AdminMovieScreeningFields.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
 import type { MovieResponse } from '@/services/api/generated/movie-service/model'
@@ -19,6 +20,7 @@ import {
   useAdminMovieDetailQuery,
   useAdminMovieGenresQuery,
   useSaveAdminMovieMutation,
+  type SaveAdminMovieVariables,
 } from '../api/admin-movie-queries'
 import {
   adminMovieErrorMessage,
@@ -29,6 +31,14 @@ import {
   movieStatusOptions,
   toAdminMovieRequest,
 } from '../schemas/admin-movie.schema'
+import {
+  adminMovieScreeningErrorMessage,
+  createAdminMovieScreeningRow,
+  readAdminMovieScreeningRows,
+  toAdminMovieCreateRequest,
+  toAdminMovieUpdateRequest,
+  type AdminMovieScreeningRow,
+} from '../schemas/admin-movie-screening.schema'
 
 const props = defineProps<{
   movieId: string | null
@@ -50,6 +60,11 @@ const genresQuery = useAdminMovieGenresQuery(canManage)
 const mutation = useSaveAdminMovieMutation()
 
 const ready = ref(props.movieId === null)
+const screeningRows = ref<AdminMovieScreeningRow[]>(
+  props.movieId === null ? [createAdminMovieScreeningRow()] : [],
+)
+const screeningError = ref('')
+const requiresReload = ref(false)
 const requestError = ref('')
 const formElement = ref<HTMLFormElement | null>(null)
 const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -69,22 +84,6 @@ const {
   validateOnMount: false,
 })
 
-watch(
-  [detail.data, detail.isFetching, detail.isSuccess],
-  ([movie, fetching, success]) => {
-    if (ready.value || fetching || !success || !movie || movie.id !== props.movieId) {
-      return
-    }
-
-    resetForm({ values: createAdminMovieFormValues(movie) })
-    touched.value = {}
-    serverErrors.value = {}
-    requestError.value = ''
-    ready.value = true
-  },
-  { immediate: true },
-)
-
 const genres = computed(() =>
   (genresQuery.data.value ?? []).flatMap((genre) =>
     genre.id && genre.name ? [{ id: genre.id, name: genre.name }] : [],
@@ -102,6 +101,7 @@ const busy = computed(() => isSubmitting.value || mutation.isPending.value)
 const formAvailable = computed(
   () =>
     ready.value &&
+    !requiresReload.value &&
     canManage.value &&
     genresQuery.isSuccess.value &&
     !genresQuery.isFetching.value &&
@@ -162,6 +162,35 @@ type MovieFormField = (typeof formFieldNames)[number]
 
 const touched = ref<Partial<Record<MovieFormField, boolean>>>({})
 const serverErrors = ref<Partial<Record<MovieFormField, string>>>({})
+watch(
+  [detail.data, detail.isFetching, detail.isSuccess],
+  ([movie, fetching, success]) => {
+    if (ready.value || fetching || !success || !movie || movie.id !== props.movieId) return
+
+    try {
+      const rows = readAdminMovieScreeningRows(movie)
+      resetForm({ values: createAdminMovieFormValues(movie) })
+      screeningRows.value = rows
+      touched.value = {}
+      serverErrors.value = {}
+      requestError.value = ''
+      screeningError.value = ''
+      ready.value = true
+    } catch (cause: unknown) {
+      requestError.value = adminMovieScreeningErrorMessage(cause)
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  screeningRows,
+  () => {
+    screeningError.value = ''
+    if (!requiresReload.value) requestError.value = ''
+  },
+  { deep: true },
+)
 
 const visibleErrors = computed(() => {
   const result: Partial<Record<MovieFormField, string>> = {}
@@ -254,16 +283,43 @@ const save = handleSubmit(
       return
     }
 
+    let variables: SaveAdminMovieVariables
+
+    try {
+      const base = toAdminMovieRequest(validatedValues)
+      variables =
+        props.movieId === null
+          ? {
+              movieId: null,
+              input: toAdminMovieCreateRequest(base, screeningRows.value),
+            }
+          : {
+              movieId: props.movieId,
+              input: toAdminMovieUpdateRequest(base, screeningRows.value),
+            }
+    } catch (cause: unknown) {
+      screeningError.value = adminMovieScreeningErrorMessage(cause)
+      await nextTick()
+      document.getElementById('admin-movie-screening-fields')?.focus()
+      return
+    }
+
     let savedMovie: MovieResponse
 
     try {
-      savedMovie = await mutation.mutateAsync({
-        movieId: props.movieId,
-        input: toAdminMovieRequest(validatedValues),
-      })
+      savedMovie = await mutation.mutateAsync(variables)
     } catch (error) {
       if (isApiError(error)) {
+        if (error.status === 409) requiresReload.value = true
+        if (error.code?.includes('SCREENING_VERSION')) {
+          screeningError.value = adminMovieScreeningErrorMessage(error)
+        }
         for (const item of error.fieldErrors) {
+          if (item.field.startsWith('screeningVersions')) {
+            screeningError.value ||=
+              'Kiểm tra định dạng, âm thanh và phụ đề của các phiên bản chiếu.'
+            continue
+          }
           const field = formFieldNames.find(
             (name) =>
               name === item.field || (name === 'genreIds' && item.field.startsWith('genreIds[')),
@@ -272,7 +328,7 @@ const save = handleSubmit(
           if (field) serverErrors.value[field] = item.message
         }
       }
-      if (!Object.values(serverErrors.value).some(Boolean)) {
+      if (!Object.values(serverErrors.value).some(Boolean) && !screeningError.value) {
         requestError.value = adminMovieErrorMessage(error, 'Không thể lưu phim.')
       }
       return
@@ -288,13 +344,14 @@ const save = handleSubmit(
 )
 
 function submit(event: Event) {
-  if (busy.value || !canManage.value) {
+  if (busy.value || !canManage.value || requiresReload.value) {
     event.preventDefault()
     return
   }
 
   requestError.value = ''
   serverErrors.value = {}
+  screeningError.value = ''
   return save(event)
 }
 </script>
@@ -317,7 +374,7 @@ function submit(event: Event) {
             </DialogTitle>
 
             <DialogDescription class="admin-movies__muted">
-              Thông tin cơ bản, trạng thái và thể loại của phim.
+              Thông tin phim, thể loại và các phiên bản chiếu được lưu cùng nhau.
             </DialogDescription>
           </div>
 
@@ -341,7 +398,7 @@ function submit(event: Event) {
           </template>
 
           <p v-else-if="detail.isSuccess.value" class="admin-movies__error" role="alert">
-            Không nhận được chi tiết phim hợp lệ.
+            {{ requestError || 'Không nhận được chi tiết phim hợp lệ.' }}
           </p>
         </div>
 
@@ -367,7 +424,10 @@ function submit(event: Event) {
         </div>
 
         <form v-if="ready" ref="formElement" class="admin-movie-form" novalidate @submit="submit">
-          <fieldset class="admin-movie-form__fields" :disabled="busy || !canManage">
+          <fieldset
+            class="admin-movie-form__fields"
+            :disabled="busy || !canManage || requiresReload"
+          >
             <div class="admin-movie-form__grid">
               <div v-for="field in inputFields" :key="field.name" class="admin-movie-form__field">
                 <label :for="`admin-movie-${field.name}`">
@@ -472,6 +532,12 @@ function submit(event: Event) {
                 {{ visibleErrors.genreIds }}
               </p>
             </fieldset>
+            <AdminMovieScreeningFields
+              v-model="screeningRows"
+              :creating="movieId === null"
+              :disabled="busy || !canManage || requiresReload"
+              :error="screeningError"
+            />
           </fieldset>
 
           <div v-if="!selectedGenresExist" class="admin-movies__feedback">

@@ -220,9 +220,11 @@ const versionEmptyMessage = computed(() => {
   if (selectedRoom.value?.contentFormats.length === 0) {
     return 'Phòng chưa được cấu hình định dạng nội dung hỗ trợ.'
   }
+
   if (!(screeningVersions.data.value ?? []).length) {
-    return 'Phim chưa có phiên bản chiếu đang hoạt động.'
+    return 'Phim chưa có phiên bản chiếu đang hoạt động. Vào Phim → Sửa phim để thêm hoặc kích hoạt phiên bản, sau đó tải lại lựa chọn.'
   }
+
   return 'Không có phiên bản chiếu phù hợp với định dạng phòng hỗ trợ.'
 })
 

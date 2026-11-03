@@ -13,6 +13,7 @@ import type {
   GetMovieCatalogParams,
   MovieResponse,
   PageResponseMovieResponse,
+  UpdateMovieRequest,
 } from '@/services/api/generated/movie-service/model'
 import type { ApiError } from '@/services/http/api-error'
 
@@ -67,24 +68,25 @@ export function useAdminMovieDetailQuery(
   )
 }
 
-type SaveAdminMovieVariables = {
-  movieId: string | null
-  input: CreateMovieRequest
-}
+export type SaveAdminMovieVariables =
+  { movieId: null; input: CreateMovieRequest } | { movieId: string; input: UpdateMovieRequest }
 
 export function useSaveAdminMovieMutation() {
   const queryClient = useQueryClient()
 
   return useMutation<MovieResponse, ApiError, SaveAdminMovieVariables>({
-    mutationFn: ({ movieId, input }) =>
-      movieId ? updateMovie(movieId, input) : createMovie(input),
+    mutationFn: (variables) =>
+      variables.movieId === null
+        ? createMovie(variables.input)
+        : updateMovie(variables.movieId, variables.input),
 
     retry: false,
 
-    onSuccess: () => {
+    onSuccess: (movie) => {
+      if (movie.id) queryClient.setQueryData(adminMovieKeys.detail(movie.id), movie)
       void queryClient.invalidateQueries({
         predicate: ({ queryKey }) =>
-          ['movies', 'home', 'booking'].some((root) => queryKey[0] === root),
+          ['movies', 'home', 'booking', 'showtimes'].some((root) => queryKey[0] === root),
       })
     },
   })

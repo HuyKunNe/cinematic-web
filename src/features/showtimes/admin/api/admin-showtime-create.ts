@@ -112,6 +112,8 @@ export function useShowtimeCreationOptions(
 
   const movies = useQuery({
     ...queryOptions,
+        refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     queryKey: ['showtimes', 'admin', 'create', 'movies'],
     enabled: computed(() => toValue(enabled)),
     queryFn: async () => {
@@ -154,6 +156,8 @@ export function useShowtimeCreationOptions(
 
   const screeningVersions = useQuery({
     ...queryOptions,
+        refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     queryKey: computed(
       () => ['showtimes', 'admin', 'create', 'screening-versions', toValue(movieId)] as const,
     ),
