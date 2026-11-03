@@ -12,6 +12,7 @@ export interface PaymentTransactionManagementResponse {
   id: string;
   paymentId: string;
   provider: string;
+  /** Transaction type. Always CHARGE. */
   transactionType: PaymentTransactionManagementResponseTransactionType;
   /** Stored operation attempt number. Distinct from Payment.paymentAttempt. */
   attemptNumber: number;

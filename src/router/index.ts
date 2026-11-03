@@ -53,12 +53,11 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.CINEMAS,
     name: ROUTE_NAMES.CINEMAS,
-    component: loadPlaceholder,
-    props: {
-      title: 'Rạp',
-      description: 'Danh sách rạp sẽ lấy từ Inventory Service.',
+    component: () => import('../features/cinemas/pages/CinemasPage.vue'),
+    meta: {
+      layout: 'customer',
+      title: 'Hệ thống rạp',
     },
-    meta: { layout: 'customer', title: 'Rạp' },
   },
   {
     path: ROUTE_PATHS.SHOWTIMES,

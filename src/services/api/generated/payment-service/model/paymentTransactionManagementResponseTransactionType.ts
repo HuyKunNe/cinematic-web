@@ -6,11 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Transaction type. Always CHARGE.
+ */
 export type PaymentTransactionManagementResponseTransactionType = typeof PaymentTransactionManagementResponseTransactionType[keyof typeof PaymentTransactionManagementResponseTransactionType];
 
 
 export const PaymentTransactionManagementResponseTransactionType = {
   CHARGE: 'CHARGE',
-  REFUND: 'REFUND',
-  RECONCILIATION: 'RECONCILIATION',
 } as const;
