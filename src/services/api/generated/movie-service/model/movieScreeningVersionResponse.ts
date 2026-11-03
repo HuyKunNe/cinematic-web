@@ -8,7 +8,10 @@
 import type { MovieScreeningVersionResponseContentFormat } from './movieScreeningVersionResponseContentFormat';
 import type { MovieScreeningVersionResponsePresentationType } from './movieScreeningVersionResponsePresentationType';
 
-export interface MovieScreeningVersionResponse {
+/**
+ * @nullable
+ */
+export type MovieScreeningVersionResponse = {
   id: string;
   movieId: string;
   /** Content format. Wire values are 2D and 3D. */
@@ -20,4 +23,4 @@ export interface MovieScreeningVersionResponse {
   active: boolean;
   /** @minimum 0 */
   version: number;
-}
+} | null;

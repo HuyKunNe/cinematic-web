@@ -7,7 +7,6 @@
  */
 
 /**
- * Confirmed age classification. Null when unknown.
  * @nullable
  */
 export type MovieResponseAgeRating = typeof MovieResponseAgeRating[keyof typeof MovieResponseAgeRating] | null;

@@ -8,6 +8,7 @@
 import type { GenreResponse } from './genreResponse';
 import type { MovieResponseAgeRating } from './movieResponseAgeRating';
 import type { MovieResponseStatus } from './movieResponseStatus';
+import type { MovieScreeningVersionResponse } from './movieScreeningVersionResponse';
 
 export interface MovieResponse {
   id?: string;
@@ -22,14 +23,10 @@ export interface MovieResponse {
   version?: number;
   createdAt?: string;
   updatedAt?: string;
-  /**
-     * Landscape artwork URL. Null when unavailable.
-     * @nullable
-     */
+  /** @nullable */
   backdropUrl?: string | null;
-  /**
-     * Confirmed age classification. Null when unknown.
-     * @nullable
-     */
+  /** @nullable */
   ageRating?: MovieResponseAgeRating;
+  /** @nullable */
+  screeningVersions?: (MovieScreeningVersionResponse | null)[] | null;
 }

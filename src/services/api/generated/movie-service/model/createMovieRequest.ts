@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CreateMovieRequestStatus } from './createMovieRequestStatus';
+import type { CreateMovieScreeningVersionRequest } from './createMovieScreeningVersionRequest';
 
 export interface CreateMovieRequest {
   /**
@@ -34,4 +35,10 @@ export interface CreateMovieRequest {
   status: CreateMovieRequestStatus;
   /** @minItems 1 */
   genreIds: string[];
+  /**
+     * @minItems 1
+     * @maxItems 2147483647
+     * @nullable
+     */
+  screeningVersions?: (CreateMovieScreeningVersionRequest | null)[] | null;
 }

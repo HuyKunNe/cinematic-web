@@ -5,6 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
+import type { SaveMovieScreeningVersionRequest } from './saveMovieScreeningVersionRequest';
 import type { UpdateMovieRequestStatus } from './updateMovieRequestStatus';
 
 export interface UpdateMovieRequest {
@@ -34,4 +35,6 @@ export interface UpdateMovieRequest {
   status: UpdateMovieRequestStatus;
   /** @minItems 1 */
   genreIds: string[];
+  /** @nullable */
+  screeningVersions?: (SaveMovieScreeningVersionRequest | null)[] | null;
 }

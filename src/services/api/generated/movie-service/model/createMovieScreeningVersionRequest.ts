@@ -10,8 +10,9 @@ import type { CreateMovieScreeningVersionRequestPresentationType } from './creat
 
 /**
  * Screening-version definition. SUBTITLED requires a nonblank subtitleLanguage. DUBBED and NO_SUBTITLES require an omitted, null or blank subtitleLanguage.
+ * @nullable
  */
-export interface CreateMovieScreeningVersionRequest {
+export type CreateMovieScreeningVersionRequest = {
   /** Content format. Wire values are 2D and 3D. */
   contentFormat: CreateMovieScreeningVersionRequestContentFormat;
   /**
@@ -29,4 +30,4 @@ export interface CreateMovieScreeningVersionRequest {
      * @nullable
      */
   subtitleLanguage?: string | null;
-}
+} | null;

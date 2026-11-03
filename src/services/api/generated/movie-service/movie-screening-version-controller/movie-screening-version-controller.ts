@@ -24,7 +24,7 @@ export const updateMovieScreeningVersionActive = (
     versionId: string,
     updateMovieScreeningVersionActiveRequest: UpdateMovieScreeningVersionActiveRequest,
  ) => {
-      return apiRequest<MovieScreeningVersionResponse>(
+      return apiRequest<MovieScreeningVersionResponse | null>(
       {url: `/api/v1/movies/${movieId}/screening-versions/${versionId}/active`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: updateMovieScreeningVersionActiveRequest
@@ -38,7 +38,7 @@ export const listMovieScreeningVersions = (
     movieId: string,
     params?: ListMovieScreeningVersionsParams,
  ) => {
-      return apiRequest<MovieScreeningVersionResponse[]>(
+      return apiRequest<(MovieScreeningVersionResponse | null)[]>(
       {url: `/api/v1/movies/${movieId}/screening-versions`, method: 'GET',
         params
     },
@@ -49,12 +49,12 @@ export const listMovieScreeningVersions = (
  */
 export const createMovieScreeningVersion = (
     movieId: string,
-    createMovieScreeningVersionRequest: CreateMovieScreeningVersionRequest,
+    createMovieScreeningVersionRequestNull: CreateMovieScreeningVersionRequest | null,
  ) => {
-      return apiRequest<MovieScreeningVersionResponse>(
+      return apiRequest<MovieScreeningVersionResponse | null>(
       {url: `/api/v1/movies/${movieId}/screening-versions`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: createMovieScreeningVersionRequest
+      data: createMovieScreeningVersionRequestNull
     },
       );
     }
@@ -65,7 +65,7 @@ export const getMovieScreeningVersion = (
     movieId: string,
     versionId: string,
  ) => {
-      return apiRequest<MovieScreeningVersionResponse>(
+      return apiRequest<MovieScreeningVersionResponse | null>(
       {url: `/api/v1/movies/${movieId}/screening-versions/${versionId}`, method: 'GET'
     },
       );
