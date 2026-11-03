@@ -16,7 +16,10 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const updateMovieScreeningVersionActive = (
+  /**
+ * @summary Activate or deactivate a screening version
+ */
+export const updateMovieScreeningVersionActive = (
     movieId: string,
     versionId: string,
     updateMovieScreeningVersionActiveRequest: UpdateMovieScreeningVersionActiveRequest,
@@ -28,7 +31,10 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const listMovieScreeningVersions = (
+  /**
+ * @summary List screening versions belonging to a movie
+ */
+export const listMovieScreeningVersions = (
     movieId: string,
     params?: ListMovieScreeningVersionsParams,
  ) => {
@@ -38,7 +44,10 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const createMovieScreeningVersion = (
+  /**
+ * @summary Create a screening version
+ */
+export const createMovieScreeningVersion = (
     movieId: string,
     createMovieScreeningVersionRequest: CreateMovieScreeningVersionRequest,
  ) => {
@@ -49,7 +58,10 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const getMovieScreeningVersion = (
+  /**
+ * @summary Get a screening version belonging to a movie
+ */
+export const getMovieScreeningVersion = (
     movieId: string,
     versionId: string,
  ) => {

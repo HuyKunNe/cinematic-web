@@ -9,12 +9,15 @@ import type { MovieScreeningVersionResponseContentFormat } from './movieScreenin
 import type { MovieScreeningVersionResponsePresentationType } from './movieScreeningVersionResponsePresentationType';
 
 export interface MovieScreeningVersionResponse {
-  id?: string;
-  movieId?: string;
-  contentFormat?: MovieScreeningVersionResponseContentFormat;
-  audioLanguage?: string;
-  presentationType?: MovieScreeningVersionResponsePresentationType;
-  subtitleLanguage?: string;
-  active?: boolean;
-  version?: number;
+  id: string;
+  movieId: string;
+  /** Content format. Wire values are 2D and 3D. */
+  contentFormat: MovieScreeningVersionResponseContentFormat;
+  audioLanguage: string;
+  presentationType: MovieScreeningVersionResponsePresentationType;
+  /** @nullable */
+  subtitleLanguage: string | null;
+  active: boolean;
+  /** @minimum 0 */
+  version: number;
 }

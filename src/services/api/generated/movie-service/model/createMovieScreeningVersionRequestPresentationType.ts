@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Presentation type: SUBTITLED, DUBBED or NO_SUBTITLES.
+ */
 export type CreateMovieScreeningVersionRequestPresentationType = typeof CreateMovieScreeningVersionRequestPresentationType[keyof typeof CreateMovieScreeningVersionRequestPresentationType];
 
 

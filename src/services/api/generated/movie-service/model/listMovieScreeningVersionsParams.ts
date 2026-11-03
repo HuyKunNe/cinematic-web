@@ -7,5 +7,8 @@
  */
 
 export type ListMovieScreeningVersionsParams = {
+/**
+ * Optional active-state filter; omit to return all versions.
+ */
 active?: boolean;
 };

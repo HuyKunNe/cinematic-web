@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Content format. Wire values are 2D and 3D.
+ */
 export type MovieScreeningVersionResponseContentFormat = typeof MovieScreeningVersionResponseContentFormat[keyof typeof MovieScreeningVersionResponseContentFormat];
 
 

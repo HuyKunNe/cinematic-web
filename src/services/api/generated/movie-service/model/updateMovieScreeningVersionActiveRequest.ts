@@ -7,6 +7,11 @@
  */
 
 export interface UpdateMovieScreeningVersionActiveRequest {
+  /**
+     * Latest screening-version revision returned by the API. A stale revision causes HTTP 409.
+     * @minimum 0
+     */
   expectedVersion: number;
+  /** Desired active state. Both true and false are valid. */
   active: boolean;
 }
