@@ -8,6 +8,7 @@ import type { ApiError } from '@/services/http/api-error'
 export const movieStatuses = ['UPCOMING', 'NOW_SHOWING', 'ENDED', 'INACTIVE'] as const
 
 export type AdminMovieStatus = (typeof movieStatuses)[number]
+export type AdminMovieBaseRequest = Omit<CreateMovieRequest, 'screeningVersions'>
 
 export const movieStatusLabels: Record<AdminMovieStatus, string> = {
   UPCOMING: 'Sắp chiếu',
@@ -93,7 +94,7 @@ export function createAdminMovieFormValues(movie?: MovieResponse): AdminMovieFor
   }
 }
 
-export function toAdminMovieRequest(values: AdminMovieFormOutput): CreateMovieRequest {
+export function toAdminMovieRequest(values: AdminMovieFormOutput): AdminMovieBaseRequest {
   return {
     title: values.title,
     description: values.description || undefined,

@@ -45,16 +45,17 @@ export const listMovieScreeningVersions = (
       );
     }
   /**
+ * Creates an immutable definition. An identical movie, image format, projection technology, audio language, presentation type and subtitle language combination is rejected.
  * @summary Create a screening version
  */
 export const createMovieScreeningVersion = (
     movieId: string,
-    createMovieScreeningVersionRequestNull: CreateMovieScreeningVersionRequest | null,
+    createMovieScreeningVersionRequest: CreateMovieScreeningVersionRequest,
  ) => {
       return apiRequest<MovieScreeningVersionResponse | null>(
       {url: `/api/v1/movies/${movieId}/screening-versions`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: createMovieScreeningVersionRequestNull
+      data: createMovieScreeningVersionRequest
     },
       );
     }

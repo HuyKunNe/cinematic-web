@@ -68,7 +68,11 @@ export const updateMovieMetadata = (
     },
       );
     }
-  export const createMovie = (
+  /**
+ * Requires movie:manage. screeningVersions is required and must contain at least one unique definition. Missing format fields default to STANDARD projection in 2D.
+ * @summary Create a movie with screening versions
+ */
+export const createMovie = (
     createMovieRequest: CreateMovieRequest,
  ) => {
       return apiRequest<MovieResponse>(

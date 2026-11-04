@@ -150,6 +150,7 @@ export * from './showtimeSchedulingResponse';
 export * from './showtimeScreeningVersionResponse';
 export * from './showtimeScreeningVersionResponseContentFormat';
 export * from './showtimeScreeningVersionResponsePresentationType';
+export * from './showtimeScreeningVersionResponseProjectionTechnology';
 export * from './showtimeSeatMapElementResponse';
 export * from './showtimeSeatMapElementResponseKind';
 export * from './showtimeSeatMapMatrixResponse';

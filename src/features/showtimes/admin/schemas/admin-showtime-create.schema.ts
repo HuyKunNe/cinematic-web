@@ -66,6 +66,7 @@ export const showtimeDraftSchema = z
     roomId: uuid,
     movieId: uuid,
     movieScreeningVersionId: uuid,
+    pricingPolicyVersionId: uuid.or(z.literal('')),
     breakMinutes: showtimeBreakMinutesSchema,
     date: z
       .string()
@@ -77,7 +78,6 @@ export const showtimeDraftSchema = z
     message: 'Ngày hoặc giờ bắt đầu không hợp lệ.',
   })
 
-// Luồng lập lịch chưa gán bảng giá không gửi basePrice hoặc pricingPolicyVersionId.
 export const scheduleShowtimeRequestSchema = z
   .object({
     movieId: uuid,
@@ -86,6 +86,7 @@ export const scheduleShowtimeRequestSchema = z
     endsAt: timestamp,
     roomLayoutId: uuid.optional(),
     movieScreeningVersionId: uuid,
+    pricingPolicyVersionId: uuid.optional(),
     breakMinutes: z.number().int().min(0).max(120),
   })
   .strict()

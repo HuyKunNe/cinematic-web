@@ -6,7 +6,12 @@ import type {
 } from '@/services/api/generated/movie-service/model'
 import { SaveMovieScreeningVersionRequestContentFormat } from '@/services/api/generated/movie-service/model/saveMovieScreeningVersionRequestContentFormat'
 import { SaveMovieScreeningVersionRequestPresentationType } from '@/services/api/generated/movie-service/model/saveMovieScreeningVersionRequestPresentationType'
-import { adminMovieErrorMessage, isApiError } from './admin-movie.schema'
+import { SaveMovieScreeningVersionRequestProjectionTechnology } from '@/services/api/generated/movie-service/model/saveMovieScreeningVersionRequestProjectionTechnology'
+import {
+  adminMovieErrorMessage,
+  isApiError,
+  type AdminMovieBaseRequest,
+} from './admin-movie.schema'
 
 const uuid = z.string().uuid()
 const counter = z.number().int().nonnegative()
@@ -14,6 +19,20 @@ const counter = z.number().int().nonnegative()
 export const screeningFormatOptions = Object.values(
   SaveMovieScreeningVersionRequestContentFormat,
 ).map((value) => ({ value, label: value }))
+
+const screeningProjectionLabels: Record<
+  SaveMovieScreeningVersionRequestProjectionTechnology,
+  string
+> = {
+  STANDARD: 'Tiêu chuẩn',
+  IMAX: 'IMAX',
+  FOUR_DX: '4DX',
+  SCREEN_X: 'ScreenX',
+}
+
+export const screeningProjectionOptions = Object.values(
+  SaveMovieScreeningVersionRequestProjectionTechnology,
+).map((value) => ({ value, label: screeningProjectionLabels[value] }))
 
 export const screeningPresentationOptions = [
   { value: 'SUBTITLED', label: 'Có phụ đề' },
@@ -29,6 +48,7 @@ const screeningRowSchema = z.object({
   id: uuid.nullable(),
   expectedVersion: counter.nullable(),
   contentFormat: z.nativeEnum(SaveMovieScreeningVersionRequestContentFormat),
+  projectionTechnology: z.nativeEnum(SaveMovieScreeningVersionRequestProjectionTechnology),
   audioLanguage: z
     .string()
     .trim()
@@ -39,59 +59,70 @@ const screeningRowSchema = z.object({
   active: z.boolean(),
 })
 
-const screeningRowsSchema = z.array(screeningRowSchema).superRefine((rows, context) => {
-  const definitions = new Set<string>()
-  const ids = new Set<string>()
+const screeningRowsSchema = z
+  .array(screeningRowSchema)
+  .min(1, 'Chọn ít nhất một phiên bản chiếu.')
+  .superRefine((rows, context) => {
+    const definitions = new Set<string>()
+    const ids = new Set<string>()
 
-  rows.forEach((row, index) => {
-    const report = (message: string) =>
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: [index],
-        message,
-      })
+    rows.forEach((row, index) => {
+      const report = (message: string) =>
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [index],
+          message,
+        })
 
-    if ((row.id === null) !== (row.expectedVersion === null)) {
-      report('Phiên bản có sẵn phải giữ đúng ID và version đã tải.')
-    }
+      if ((row.id === null) !== (row.expectedVersion === null)) {
+        report('Phiên bản có sẵn phải giữ đúng ID và version đã tải.')
+      }
 
-    if (row.presentationType === 'SUBTITLED' && !row.subtitleLanguage) {
-      report('Phiên bản có phụ đề phải nhập ngôn ngữ phụ đề.')
-    }
+      if (row.presentationType === 'SUBTITLED' && !row.subtitleLanguage) {
+        report('Phiên bản có phụ đề phải nhập ngôn ngữ phụ đề.')
+      }
 
-    if (row.presentationType !== 'SUBTITLED' && row.subtitleLanguage) {
-      report('Phiên bản lồng tiếng hoặc không phụ đề phải để trống ngôn ngữ phụ đề.')
-    }
+      if (row.presentationType !== 'SUBTITLED' && row.subtitleLanguage) {
+        report('Phiên bản lồng tiếng hoặc không phụ đề phải để trống ngôn ngữ phụ đề.')
+      }
 
-    const definition = JSON.stringify([
-      row.contentFormat,
-      row.audioLanguage,
-      row.presentationType,
-      row.subtitleLanguage,
-    ])
+      const definition = JSON.stringify([
+        row.contentFormat,
+        row.projectionTechnology,
+        row.audioLanguage,
+        row.presentationType,
+        row.subtitleLanguage,
+      ])
 
-    if (definitions.has(definition)) report('Định nghĩa phiên bản bị trùng.')
-    definitions.add(definition)
+      if (definitions.has(definition)) report('Định nghĩa phiên bản bị trùng.')
+      definitions.add(definition)
 
-    if (row.id !== null) {
-      if (ids.has(row.id)) report('ID phiên bản bị trùng.')
-      ids.add(row.id)
-    }
+      if (row.id !== null) {
+        if (ids.has(row.id)) report('ID phiên bản bị trùng.')
+        ids.add(row.id)
+      }
+    })
   })
-})
 
 export type AdminMovieScreeningRow = z.infer<typeof screeningRowSchema>
 
 let nextRowKey = 0
 
-export function createAdminMovieScreeningRow(): AdminMovieScreeningRow {
+export function createAdminMovieScreeningRow(
+  selection: Partial<
+    Pick<AdminMovieScreeningRow, 'contentFormat' | 'projectionTechnology'>
+  > = {},
+): AdminMovieScreeningRow {
   nextRowKey += 1
 
   return {
     key: 'new-screening-' + nextRowKey,
     id: null,
     expectedVersion: null,
-    contentFormat: '2D',
+    contentFormat: selection.contentFormat ?? SaveMovieScreeningVersionRequestContentFormat['2D'],
+    projectionTechnology:
+      selection.projectionTechnology ??
+      SaveMovieScreeningVersionRequestProjectionTechnology.STANDARD,
     audioLanguage: '',
     presentationType: 'SUBTITLED',
     subtitleLanguage: '',
@@ -132,6 +163,7 @@ export function readAdminMovieScreeningRows(movie: MovieResponse): AdminMovieScr
 function definition(row: AdminMovieScreeningRow) {
   return {
     contentFormat: row.contentFormat,
+    projectionTechnology: row.projectionTechnology,
     audioLanguage: row.audioLanguage,
     presentationType: row.presentationType,
     subtitleLanguage: row.presentationType === 'SUBTITLED' ? row.subtitleLanguage : undefined,
@@ -139,7 +171,7 @@ function definition(row: AdminMovieScreeningRow) {
 }
 
 export function toAdminMovieCreateRequest(
-  base: CreateMovieRequest,
+  base: AdminMovieBaseRequest,
   rows: AdminMovieScreeningRow[],
 ): CreateMovieRequest {
   const parsed = screeningRowsSchema.parse(rows)
@@ -159,7 +191,7 @@ export function toAdminMovieCreateRequest(
 }
 
 export function toAdminMovieUpdateRequest(
-  base: CreateMovieRequest,
+  base: AdminMovieBaseRequest,
   rows: AdminMovieScreeningRow[],
 ): UpdateMovieRequest {
   return {
@@ -186,7 +218,7 @@ export function adminMovieScreeningErrorMessage(error: unknown): string {
   if (isApiError(error)) {
     switch (error.code) {
       case 'INVALID_MOVIE_SCREENING_VERSION':
-        return 'Kiểm tra định dạng, ngôn ngữ âm thanh và phụ đề của phiên bản chiếu.'
+        return 'Kiểm tra định dạng, công nghệ chiếu, ngôn ngữ âm thanh và phụ đề của phiên bản chiếu.'
       case 'MOVIE_SCREENING_VERSION_CONFLICT':
         return 'Phiên bản chiếu đã thay đổi. Đóng và mở lại form trước khi lưu tiếp.'
       case 'MOVIE_SCREENING_VERSION_IMMUTABLE':

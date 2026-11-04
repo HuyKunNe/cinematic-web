@@ -13,6 +13,7 @@ import {
   screeningVersionLabel,
   showtimeCreationErrorMessage,
   showtimeCreationStatus,
+  showtimePricingVersionLabel,
   useCreateAdminShowtimeMutation,
   useShowtimeCreationOptions,
 } from '../api/admin-showtime-create'
@@ -42,6 +43,7 @@ const form = reactive<ShowtimeDraftValues>({
   roomId: '',
   movieId: '',
   movieScreeningVersionId: '',
+  pricingPolicyVersionId: '',
   breakMinutes: '',
   date: getCinemaDateKey(new Date().toISOString()),
   startTime: '',
@@ -59,7 +61,7 @@ const locked = computed(
   () => submitting.value || refreshing.value || uncertainResult.value || created.value !== null,
 )
 
-const { cinemas, movies, rooms, screeningVersions } = useShowtimeCreationOptions(
+const { cinemas, movies, rooms, screeningVersions, pricingVersions } = useShowtimeCreationOptions(
   () => canManage.value && created.value === null,
   () => form.cinemaId,
   () => form.movieId,
@@ -102,6 +104,9 @@ const compatibleVersions = computed(() => {
 const selectedVersion = computed(() =>
   compatibleVersions.value.find((item) => item.id === form.movieScreeningVersionId),
 )
+const selectedPricingVersion = computed(() =>
+  (pricingVersions.data.value ?? []).find((item) => item.id === form.pricingPolicyVersionId),
+)
 
 const layoutQuery = useAdminShowtimePublishedLayoutQuery(
   () => form.roomId,
@@ -127,11 +132,16 @@ const loadingOptions = computed(
     movies.isFetching.value ||
     rooms.isFetching.value ||
     screeningVersions.isFetching.value ||
+    pricingVersions.isFetching.value ||
     layoutQuery.isFetching.value,
 )
 const catalogError = computed(
   () =>
-    cinemas.error.value ?? movies.error.value ?? rooms.error.value ?? screeningVersions.error.value,
+    cinemas.error.value ??
+    movies.error.value ??
+    rooms.error.value ??
+    screeningVersions.error.value ??
+    pricingVersions.error.value,
 )
 
 const now = useNow({
@@ -179,6 +189,7 @@ const creationRequest = computed<CreateShowtimeRequest | null>(() => {
   const room = selectedRoom.value
   const movie = selectedMovie.value
   const version = selectedVersion.value
+  const pricingVersion = selectedPricingVersion.value
   const start = startsAt.value
   const end = estimatedEndsAt.value
 
@@ -191,6 +202,8 @@ const creationRequest = computed<CreateShowtimeRequest | null>(() => {
     !start ||
     !end ||
     !layoutReady.value ||
+    !pricingVersions.isSuccess.value ||
+    (parsed.success && parsed.data.pricingPolicyVersionId !== '' && !pricingVersion) ||
     timingError.value
   ) {
     return null
@@ -204,6 +217,7 @@ const creationRequest = computed<CreateShowtimeRequest | null>(() => {
     endsAt: end,
     breakMinutes: parsed.data.breakMinutes,
     ...(selectedLayout.value ? { roomLayoutId: selectedLayout.value.id } : {}),
+    ...(pricingVersion ? { pricingPolicyVersionId: pricingVersion.id } : {}),
   }
 })
 
@@ -232,6 +246,8 @@ const choiceFields = computed(() => [
   {
     key: 'cinemaId' as const,
     label: 'Rạp',
+    required: true,
+    placeholder: 'Chọn rạp',
     wide: true,
     options: (cinemas.data.value ?? []).map((item) => ({
       value: item.id,
@@ -248,6 +264,8 @@ const choiceFields = computed(() => [
   {
     key: 'movieId' as const,
     label: 'Phim',
+    required: true,
+    placeholder: 'Chọn phim',
     wide: true,
     options: (movies.data.value ?? []).map((item) => ({
       value: item.id,
@@ -264,6 +282,8 @@ const choiceFields = computed(() => [
   {
     key: 'roomId' as const,
     label: 'Phòng',
+    required: true,
+    placeholder: 'Chọn phòng',
     wide: false,
     options: selectedCinema.value
       ? (rooms.data.value ?? []).map((item) => ({ value: item.id, label: item.name }))
@@ -279,6 +299,8 @@ const choiceFields = computed(() => [
   {
     key: 'movieScreeningVersionId' as const,
     label: 'Phiên bản chiếu',
+    required: true,
+    placeholder: 'Chọn phiên bản chiếu',
     wide: false,
     options: compatibleVersions.value.map((item) => ({
       value: item.id,
@@ -296,14 +318,50 @@ const choiceFields = computed(() => [
     contextHelp: 'Chọn phim và phòng trước.',
     empty: versionEmptyMessage.value,
   },
+  {
+    key: 'pricingPolicyVersionId' as const,
+    label: 'Bảng giá',
+    required: false,
+    placeholder: 'Không gán bảng giá khi tạo',
+    wide: true,
+    options: (pricingVersions.data.value ?? []).map((item) => ({
+      value: item.id,
+      label: showtimePricingVersionLabel(item),
+    })),
+    loading: pricingVersions.isFetching.value,
+    success: pricingVersions.isSuccess.value,
+    error: pricingVersions.error.value,
+    disabled:
+      !selectedCinema.value || pricingVersions.isFetching.value || pricingVersions.isError.value,
+    context: Boolean(selectedCinema.value),
+    contextHelp: 'Chọn rạp trước. Có thể lập lịch trước và gán bảng giá sau.',
+    empty: 'Rạp chưa có phiên bản bảng giá đã công bố.',
+  },
 ])
 
 watch(
   () => form.cinemaId,
   () => {
     form.roomId = ''
+    form.pricingPolicyVersionId = ''
   },
   { flush: 'sync' },
+)
+watch(
+  [() => pricingVersions.data.value, () => pricingVersions.isFetching.value],
+  () => {
+    if (
+      locked.value ||
+      pricingVersions.isFetching.value ||
+      !form.pricingPolicyVersionId
+    ) {
+      return
+    }
+
+    if (!(pricingVersions.data.value ?? []).some((item) => item.id === form.pricingPolicyVersionId)) {
+      form.pricingPolicyVersionId = ''
+    }
+  },
 )
 watch(
   [() => form.movieId, () => form.roomId],
@@ -384,6 +442,7 @@ async function reloadOptions(): Promise<void> {
   if (!canManage.value || locked.value || loadingOptions.value) return
 
   const reloadRooms = Boolean(selectedCinema.value)
+  const reloadPricing = Boolean(selectedCinema.value)
   const reloadVersions = Boolean(selectedMovie.value)
 
   refreshing.value = true
@@ -392,6 +451,7 @@ async function reloadOptions(): Promise<void> {
   try {
     const requests: Promise<unknown>[] = [cinemas.refetch(), movies.refetch()]
     if (reloadRooms) requests.push(rooms.refetch())
+    if (reloadPricing) requests.push(pricingVersions.refetch())
     if (reloadVersions) requests.push(screeningVersions.refetch())
 
     await Promise.allSettled(requests)
@@ -467,8 +527,8 @@ async function submit(): Promise<void> {
 
     <template v-else>
       <p class="showtime-create__notice">
-        Suất mới được lưu ở trạng thái “Đã lên lịch”, chưa gán bảng giá và chưa mở bán. Cần gán bảng
-        giá đã công bố trước khi mở bán vé.
+        Suất mới được lưu ở trạng thái “Đã lên lịch” và chưa mở bán. Có thể chọn phiên bản bảng giá
+        đã công bố ngay khi tạo hoặc gán sau trước khi mở bán vé.
       </p>
 
       <p v-if="requestError" class="showtime-create__notice showtime-create__error" role="alert">
@@ -494,8 +554,8 @@ async function submit(): Promise<void> {
         <strong>Đã lập lịch thành công.</strong>
         <p>
           {{ created.cinemaName }} · {{ created.roomName }} ·
-          {{ instantToLocal(created.startsAt).replace('T', ' ') }}. Trạng thái: Đã lên lịch; chưa
-          gán bảng giá.
+          {{ instantToLocal(created.startsAt).replace('T', ' ') }}. Trạng thái: Đã lên lịch;
+          {{ created.pricingPolicyVersionId ? 'đã gán bảng giá.' : 'chưa gán bảng giá.' }}
         </p>
         <RouterLink
           class="admin-reference__link-button"
@@ -536,16 +596,19 @@ async function submit(): Promise<void> {
                   class="admin-reference__field"
                   :class="{ 'showtime-create__field-wide': field.wide }"
                 >
-                  <span>{{ field.label }} *</span>
+                  <span>
+                    {{ field.label }}
+                    <template v-if="field.required">*</template>
+                  </span>
                   <select
                     v-model="form[field.key]"
                     class="admin-reference__input"
-                    required
+                    :required="field.required"
                     :disabled="field.disabled"
                     :aria-describedby="`${field.key}-feedback`"
                   >
                     <option value="">
-                      {{ field.loading ? 'Đang tải…' : `Chọn ${field.label.toLowerCase()}` }}
+                      {{ field.loading ? 'Đang tải…' : field.placeholder }}
                     </option>
                     <option
                       v-for="option in field.options"
@@ -712,7 +775,13 @@ async function submit(): Promise<void> {
                 <p class="admin-reference__eyebrow">Thông tin áp dụng</p>
                 <h2 id="showtime-summary-title">Tóm tắt suất chiếu</h2>
               </div>
-              <span class="showtime-create__badge">Chưa gán bảng giá</span>
+              <span class="showtime-create__badge">
+                {{
+                  created?.pricingPolicyVersionId || selectedPricingVersion
+                    ? 'Đã chọn bảng giá'
+                    : 'Chưa gán bảng giá'
+                }}
+              </span>
             </header>
 
             <div class="showtime-create__panel-body">
@@ -733,6 +802,16 @@ async function submit(): Promise<void> {
                   <dt>Phiên bản</dt>
                   <dd>
                     {{ selectedVersion ? screeningVersionLabel(selectedVersion) : 'Chưa chọn' }}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Bảng giá</dt>
+                  <dd>
+                    {{
+                      selectedPricingVersion
+                        ? showtimePricingVersionLabel(selectedPricingVersion)
+                        : created?.pricingPolicyVersionId ?? 'Chưa gán'
+                    }}
                   </dd>
                 </div>
                 <div>
@@ -761,11 +840,21 @@ async function submit(): Promise<void> {
                 </div>
               </dl>
 
-              <div class="showtime-create__notice">
+              <div
+                v-if="!created?.pricingPolicyVersionId && !selectedPricingVersion"
+                class="showtime-create__notice"
+              >
                 <strong>Chưa có giá vé</strong>
                 <p>
                   Lưu lịch không tạo giá tạm và không hiểu giá chưa cấu hình là 0đ. Cần gán bảng giá
                   đã công bố để xác định giá vé trước khi mở bán.
+                </p>
+              </div>
+
+              <div v-else class="showtime-create__notice">
+                <strong>Sẽ tạo giá ghế theo bảng giá đã chọn</strong>
+                <p>
+                  Backend xác nhận bảng giá, ngữ cảnh suất chiếu và sinh giá ghế khi lưu.
                 </p>
               </div>
 

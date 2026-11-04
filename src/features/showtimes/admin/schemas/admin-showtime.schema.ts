@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { ShowtimeResponseStatus } from '@/services/api/generated/inventory-service/model/showtimeResponseStatus'
 import { ShowtimeScreeningVersionResponseContentFormat } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponseContentFormat'
 import { ShowtimeScreeningVersionResponsePresentationType } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponsePresentationType'
+import { ShowtimeScreeningVersionResponseProjectionTechnology } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponseProjectionTechnology'
 
 export const showtimeStatusLabels: Record<ShowtimeResponseStatus, string> = {
   SCHEDULED: 'Đã lên lịch',
@@ -25,6 +26,16 @@ export const showtimePresentationLabels: Record<
   NO_SUBTITLES: 'Không phụ đề',
 }
 
+export const showtimeProjectionTechnologyLabels: Record<
+  ShowtimeScreeningVersionResponseProjectionTechnology,
+  string
+> = {
+  STANDARD: 'Tiêu chuẩn',
+  IMAX: 'IMAX',
+  FOUR_DX: '4DX',
+  SCREEN_X: 'ScreenX',
+}
+
 const uuid = z.string().uuid()
 const timestamp = z.string().datetime({ offset: true })
 
@@ -32,6 +43,7 @@ const screeningVersionSchema = z.object({
   id: uuid,
   version: z.number().int().nonnegative(),
   contentFormat: z.nativeEnum(ShowtimeScreeningVersionResponseContentFormat),
+  projectionTechnology: z.nativeEnum(ShowtimeScreeningVersionResponseProjectionTechnology),
   audioLanguage: z.string().trim().min(1).max(100),
   presentationType: z.nativeEnum(ShowtimeScreeningVersionResponsePresentationType),
   subtitleLanguage: z

@@ -7,6 +7,7 @@
  */
 import type { MovieScreeningVersionResponseContentFormat } from './movieScreeningVersionResponseContentFormat';
 import type { MovieScreeningVersionResponsePresentationType } from './movieScreeningVersionResponsePresentationType';
+import type { MovieScreeningVersionResponseProjectionTechnology } from './movieScreeningVersionResponseProjectionTechnology';
 
 /**
  * @nullable
@@ -16,6 +17,8 @@ export type MovieScreeningVersionResponse = {
   movieId: string;
   /** Content format. Wire values are 2D and 3D. */
   contentFormat: MovieScreeningVersionResponseContentFormat;
+  /** Projection technology independent from the 2D/3D image format. */
+  projectionTechnology: MovieScreeningVersionResponseProjectionTechnology;
   audioLanguage: string;
   presentationType: MovieScreeningVersionResponsePresentationType;
   /** @nullable */

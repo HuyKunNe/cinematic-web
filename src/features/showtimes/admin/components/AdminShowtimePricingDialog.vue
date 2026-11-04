@@ -18,7 +18,10 @@ import {
   useAdminShowtimePricing,
   type ShowtimePricingEditorData,
 } from '../api/admin-showtime-pricing'
-import { showtimeStatusLabels } from '../schemas/admin-showtime.schema'
+import {
+  showtimeProjectionTechnologyLabels,
+  showtimeStatusLabels,
+} from '../schemas/admin-showtime.schema'
 
 const props = defineProps<{
   showtimeId: string
@@ -234,6 +237,12 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 <p class="price-note">
                   {{ showtimeStatusLabels[data.showtime.status] }}
                   <template v-if="data.showtime.screeningVersion">
+                    ·
+                    {{
+                      showtimeProjectionTechnologyLabels[
+                        data.showtime.screeningVersion.projectionTechnology
+                      ]
+                    }}
                     · {{ data.showtime.screeningVersion.contentFormat }}
                   </template>
                 </p>

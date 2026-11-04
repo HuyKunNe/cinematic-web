@@ -7,11 +7,15 @@
  */
 import type { ShowtimeScreeningVersionResponseContentFormat } from './showtimeScreeningVersionResponseContentFormat';
 import type { ShowtimeScreeningVersionResponsePresentationType } from './showtimeScreeningVersionResponsePresentationType';
+import type { ShowtimeScreeningVersionResponseProjectionTechnology } from './showtimeScreeningVersionResponseProjectionTechnology';
 
 export interface ShowtimeScreeningVersionResponse {
   id?: string;
   version?: number;
+  /** Image format. Wire values are 2D and 3D. */
   contentFormat?: ShowtimeScreeningVersionResponseContentFormat;
+  /** Projection technology pinned when the showtime was created. */
+  projectionTechnology?: ShowtimeScreeningVersionResponseProjectionTechnology;
   audioLanguage?: string;
   presentationType?: ShowtimeScreeningVersionResponsePresentationType;
   subtitleLanguage?: string;

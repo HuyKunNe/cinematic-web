@@ -36,9 +36,8 @@ export interface CreateMovieRequest {
   /** @minItems 1 */
   genreIds: string[];
   /**
+     * At least one screening version is required.
      * @minItems 1
-     * @maxItems 2147483647
-     * @nullable
      */
-  screeningVersions?: (CreateMovieScreeningVersionRequest | null)[] | null;
+  screeningVersions: CreateMovieScreeningVersionRequest[];
 }

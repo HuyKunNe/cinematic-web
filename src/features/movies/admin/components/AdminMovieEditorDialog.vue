@@ -317,7 +317,7 @@ const save = handleSubmit(
         for (const item of error.fieldErrors) {
           if (item.field.startsWith('screeningVersions')) {
             screeningError.value ||=
-              'Kiểm tra định dạng, âm thanh và phụ đề của các phiên bản chiếu.'
+              'Kiểm tra định dạng, công nghệ chiếu, âm thanh và phụ đề của các phiên bản chiếu.'
             continue
           }
           const field = formFieldNames.find(

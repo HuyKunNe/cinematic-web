@@ -22,6 +22,7 @@ import {
 } from '../api/admin-showtime-open'
 import {
   showtimePresentationLabels,
+  showtimeProjectionTechnologyLabels,
   showtimeStatusLabels,
 } from '../schemas/admin-showtime.schema'
 
@@ -206,7 +207,12 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                   {{ dateTime(detail.startsAt) }} – {{ dateTime(detail.endsAt) }}
                 </p>
                 <p v-if="detail.screeningVersion" class="price-note">
-                  {{ detail.screeningVersion.contentFormat }} ·
+                  {{
+                    showtimeProjectionTechnologyLabels[
+                      detail.screeningVersion.projectionTechnology
+                    ]
+                  }}
+                  · {{ detail.screeningVersion.contentFormat }} ·
                   {{ showtimePresentationLabels[detail.screeningVersion.presentationType] }}
                   · Âm thanh {{ detail.screeningVersion.audioLanguage }}
                 </p>

@@ -17,6 +17,7 @@ import AdminShowtimeOpenDialog from '../components/AdminShowtimeOpenDialog.vue'
 import {
   showtimeErrorMessage,
   showtimePresentationLabels,
+  showtimeProjectionTechnologyLabels,
   showtimeStatusLabels,
   showtimeStatusOptions,
   type AdminShowtime,
@@ -383,7 +384,12 @@ async function reload() {
                 <td>
                   <template v-if="item.screeningVersion">
                     <div>
-                      {{ item.screeningVersion.contentFormat }} ·
+                      {{
+                        showtimeProjectionTechnologyLabels[
+                          item.screeningVersion.projectionTechnology
+                        ]
+                      }}
+                      · {{ item.screeningVersion.contentFormat }} ·
                       {{ showtimePresentationLabels[item.screeningVersion.presentationType] }}
                     </div>
                     <div class="admin-reference__muted">
