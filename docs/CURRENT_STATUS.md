@@ -2,7 +2,10 @@
 
 ## Last source inspection
 
-2026-11-06 — roadmap task A0.1.
+2026-11-06 — roadmap tasks A0.1 and A0.2 (separate rounds).
+
+A0.2 started from Frontend `8c081d0` with a clean working tree. The revisions and
+uncommitted-file notes below describe the earlier A0.1 inspection.
 
 Inspected local checkouts:
 
@@ -217,23 +220,33 @@ or product-data request was performed during this check.
 
 ## Roadmap handoff and remaining work
 
-A0.1 updates the source status and confirms the projection schemas in local runtime
-OpenAPI. This does not complete A0.2 or certify any A/U implementation group.
+A0.1 updated the source status and confirmed projection schemas in local runtime OpenAPI.
 
-Next is A0.2: normalize generated APIs using the existing script after confirming the
-running service provenance, reconcile affected controller/DTO contracts and update the
-API inventory. Preserve/review the user's existing generated changes before regeneration.
-The presence of projection fields in generated files alone does not prove when or how
-they were generated. `npm run api` targets all five services, not only Movie/Inventory.
+A0.2 ran `npm run api` using Orval 8.38.0 against all five configured local services.
+All five reported success; generated content already matched HEAD, so no generated
+source edits were needed. Static comparison found exact operation-ID/export matches:
+Movie 19, User 7, Inventory 66, Booking 6 and Payment 5. No Notification paths were found.
+The npm PowerShell wrapper emitted a prefix-path access warning, but Orval completed
+with exit code 0. No dependencies were installed or changed.
 
-Snapshot limitations observed in this audit:
+Reviewed the screening-version and matrix request/response markers against Backend
+DTOs/enums/controllers, plus Admin booking/payment lookup and Payment security.
+Updated the API inventory and generation notes. Refreshed Movie/Inventory snapshots
+with export timestamps, SHA-256, inspected source revision and explicit runtime limits.
+The old Movie metadata placeholders and old Inventory export were replaced. The old
+Inventory snapshot's sale-scopes/preview operations are absent from current runtime/source;
+do not restore those endpoints based on the old snapshot.
 
-- `openapi/movie-service.metadata.md` still contains revision/export placeholders.
-- `openapi/inventory-service.metadata.md` records a 2026-10-21 export at an older revision.
-- Neither metadata file establishes provenance for the runtime responses read today.
+Runtime build provenance remains unconfirmed: all five `/actuator/info` responses were
+`{}`. Backend HEAD identifies inspected source, not the running binaries. The scoped
+contract markers match source; this does not certify every DTO, permission or business
+operation. See `docs/api/OPENAPI_GENERATION.md` and snapshot metadata for the review scope.
+User/Booking/Payment were generated from live specs; no snapshots were added for them.
 
-After A0.2, compare the existing A1 implementation against each criterion before
-choosing a missing subtask. Then follow `docs/ROADMAP.md` integration order. Do not
+Next, compare the existing A1 implementation against each criterion before choosing
+a missing subtask. Projection fields/enums required by A1.1 are already present and
+were regenerated in A0.2; audit A1.2's supported combinations rather than assuming the
+checkbox editor is missing. Then follow `docs/ROADMAP.md` integration order. Do not
 reimplement the already-wired matrix/pricing/showtime/booking flows on the assumption
 that the October status is current. Keep R28 Notification deferred.
 
@@ -253,7 +266,8 @@ No historical automated or browser result was independently established by this 
 
 Manual follow-up (pending, not results):
 
-1. Confirm runtime build revision and all five Orval inputs before A0.2 generation.
+1. Establish runtime build provenance before claiming snapshots came from an exact BE
+   commit. All five Orval inputs were reachable and generation completed in A0.2.
 2. Exercise movie create/edit with multiple language variants, ID/version preservation,
    empty/duplicate rejection and immutable persisted definitions.
 3. Save/reload matrix drafts with empty rows/columns and COUPLE seats; verify publication,
