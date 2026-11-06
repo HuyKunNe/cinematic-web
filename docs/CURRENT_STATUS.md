@@ -2,218 +2,263 @@
 
 ## Last source inspection
 
-2026-10-19
+2026-11-06 — roadmap task A0.1.
 
-Inspected revisions:
+Inspected local checkouts:
 
-- Frontend main: 3d47e0f
-- Backend main: dc6209debcd6b7cf350f1e9d2b2d71a8ad5adfc7
+- Frontend: `E:/java/cinematic-web`, branch `main`, HEAD `667bfb94683c91c8c68d823e1e148093d01ae069`.
+- Frontend origin: `https://github.com/HuyKunNe/cinematic-web.git`.
+- Backend (read-only): `E:/java/cinema-system`, HEAD `ac0915521d5562d4836ab1d95a5a3883a835148a`.
+- Backend origin: `https://github.com/HuyKunNe/cinema-system.git`.
 
-These revisions identify inspected source.
-They do not establish successful browser or automated verification.
+No fetch was performed; these are local revisions, not a claim about the latest remote state.
+The Frontend already had uncommitted changes in `package-lock.json` and generated
+Movie/Inventory files. Backend had an uncommitted `note.md`. Those changes were
+preserved. Findings below describe the inspected working tree, not just HEAD.
+
+Recent source evidence includes:
+
+- `576a110`: showtime projection and pricing selections.
+- `a9ae417`: nested screening versions in movie create/update and refreshed showtime options.
+- `e0abe47`: generated Payment refund API removal.
+- `d4768fc`: customer header search connected to the movie catalog.
+- `bb245d5`: read-only Admin booking detail with stored seat fares.
+
+Source inspection and OpenAPI reads do not establish successful business operations,
+browser behavior, persistence round trips or automated verification.
 
 ## Working constraints
 
-- Both repositories are read-only for the assistant.
-- The user applies and commits proposed changes.
-- Do not run tests, lint, type checking, build or formatting unless requested.
-- Do not modify generated API files manually.
-- Do not treat proposed changes as applied until confirmed in source.
+- For this task, the user authorized Frontend working-tree edits. Backend remains read-only.
+- Do not overwrite existing uncommitted changes, create commits or push.
+- Do not run tests, lint, type checking, build or repository-wide formatting unless requested.
+- Do not modify generated API files manually or add dependencies without approval.
+- R28 Notification remains deferred; do not add its UI, routes or clients.
 
-## Application architecture
+## Architecture and visual source
 
-Use package.json and package-lock.json for dependency versions.
+Use `package.json` and `package-lock.json` for actual dependency versions and scripts.
+Bootstrap remains in `src/main.ts` and `src/App.vue`; routes are in `src/router/index.ts`.
+Vue Query owns server state; Pinia owns cross-route client state; feature composables
+own local editor behavior. Feature queries wrap the generated Axios clients and shared HTTP infrastructure.
 
-Current foundations include:
+`npm run api` invokes Orval with `orval.config.ts`, using `axios-functions` and runtime
+OpenAPI at localhost ports 8081 through 8085. Reviewed snapshots are under `openapi/`.
+No generation was performed during A0.1.
 
-- Vue and TypeScript.
-- Vite and Vue Router.
-- Pinia and TanStack Vue Query.
-- Axios and Orval.
-- oidc-client-ts.
-- Tailwind CSS and Reka UI.
-- VeeValidate and Zod.
+Use `docs/design/reference/html-convert/README.md`, relevant HTML/CSS references and
+`src/styles/tokens.css`. The reference README and room-layout HTML/CSS were read in
+this audit. No UI was changed or visually verified. Reference data is illustrative.
 
-Application bootstrap is in src/main.ts and src/App.vue.
-Routes are composed in src/router/index.ts.
+Some guidance is stale: `docs/DESIGN_SYSTEM.md` still calls Figma the visual source,
+and `docs/AI_CONTEXT.md` still describes matrix persistence as absent. Follow the
+current user instructions, `AGENTS.md`, HTML references and inspected source. Figma
+was not accessed. Reconciliation of those documents is outside this A0.1 change.
 
-Vue Query owns server state.
-Pinia owns cross-route client state.
-Feature composables own local editor behavior.
+## Implementation and verification ledger
 
-Orval uses axios-functions.
-Its current inputs are runtime OpenAPI URLs.
-Reviewed snapshots also exist under openapi/.
+“API wired” means a reachable page/component calls feature queries or mutations backed
+by generated clients. It does not mean the operation was exercised against Backend.
+Browser/manual interaction and automated checks were not run for any row in this audit.
 
-## Visual source
+| Area | Code present | API wired in source | Browser/manual | Automated checks |
+| --- | --- | --- | --- | --- |
+| Admin dashboard | Yes | Movie, cinema and schedule reads; not proof of complete reporting | Not run | Not run |
+| Admin movies and genres | Yes | Reads and mutations, including nested screening versions | Not run | Not run |
+| Admin cinemas, rooms and room formats | Yes | Management queries and mutations | Not run | Not run |
+| Admin room seat catalog | Yes | Published seat-map reads and catalog seat activity changes | Not run | Not run |
+| Admin room matrix | Yes | Load, create draft, save, publish and copy published layout | Not run | Not run |
+| Admin pricing | Yes | List/detail, draft/configuration/fares, publish, lookup and previews | Not run | Not run |
+| Admin showtimes | Yes | Day-range list, creation, pricing assignment and opening for booking | Not run | Not run |
+| Admin bookings | Yes | Admin search/list and read-only detail | Not run | Not run |
+| Admin payment operations | Generated lookup clients exist | No payment lookup/reconciliation UI wired in inspected booking pages | Not run | Not run |
+| Admin users and promotions | Reference pages | No management integration in those routes | Not run | Not run |
+| Customer home, movie catalog/detail | Yes | Movie/programme reads and header search | Not run | Not run |
+| Customer cinemas | List page and cinema selection | Location/programme reads; no dedicated cinema-detail route | Not run | Not run |
+| Customer booking start and seat selection | Yes | Context, seat/status reads and server quote; selection remains local | Not run | Not run |
+| Customer login/callback | Yes | OIDC authorization code flow with PKCE | Not run | Not run |
+| Customer standalone showtimes, account and booking history | Placeholders | No completed page integration | Not run | Not run |
 
-Use docs/design/reference/html-convert and its README.
+## Admin movies and screening versions
 
-Preserve shared Admin navigation and shell styling.
-Use existing tokens instead of a separate palette.
-Do not use Figma unless explicitly requested.
+Evidence:
 
-Reference sample data is illustrative and must not become
-unverified application data.
+- `src/features/movies/admin/components/AdminMovieScreeningFields.vue`.
+- `src/features/movies/admin/components/AdminMovieEditorDialog.vue`.
+- `src/features/movies/admin/schemas/admin-movie-screening.schema.ts`.
+- `src/features/movies/admin/api/admin-movie-queries.ts`.
 
-## Implemented application areas
+The editor already has a checkbox matrix for projection technology and image format.
+New rows default to STANDARD and 2D. A selected combination can contain multiple
+language configurations. Persisted definitions are disabled in the editor, while
+activity can be changed. Existing rows retain their ID and expectedVersion.
 
-Customer source includes:
+Create/update request mappers send `screeningVersions` within the movie request.
+Validation rejects empty lists and duplicate complete definitions, including format,
+projection, audio language, presentation type and subtitle language. New movie
+versions must be active. These are observed code paths, not verified save results.
 
-- Home and cinema-scoped programme selection.
-- Movie listing and movie detail.
-- Booking start and local seat selection.
-- OIDC login and callback handling.
+A1.2/A1.3 therefore already have substantial implementation. The matrix renders the
+cross-product of the generated format and projection enums. Enum presence alone is
+not evidence of a supported-combination policy; confirm Backend constraints before
+marking the roadmap's supported-combination requirement complete.
 
-Admin source includes:
+## Admin room matrix and catalog
 
-- Navigation and dashboard.
-- Movie and genre management.
-- Cinema management.
-- Room management.
-- Dedicated room seat catalog management.
-- Table-based room layout editing.
+The October status describing a local-only matrix and geometry-only Backend is obsolete.
 
-These entries describe source implementation, not verified runtime behavior.
+Evidence:
 
-## Room seat catalog
+- `src/features/rooms/admin/pages/AdminRoomLayoutPage.vue`.
+- `src/features/rooms/admin/components/AdminSeatMatrixEditor.vue`.
+- `src/features/rooms/admin/composables/use-admin-seat-matrix.ts`.
+- `src/features/rooms/admin/mappers/admin-room-matrix.mapper.ts`.
+- `src/features/rooms/admin/api/admin-room-matrix-queries.ts`.
+- `src/features/rooms/admin/api/admin-room-matrix-publication.ts`.
+- `src/features/rooms/admin/api/admin-room-matrix-copy.ts`.
 
-AdminRoomSeatsPage remains separate from the layout editor.
+The page loads layout versions/content and has draft creation, save, publish and copy
+from published layout mutations. It checks response identity/version/content,
+refreshes relevant queries and requires reload after uncertain/conflicting results.
+Unsaved-change route guards remain. Published content is read-only in the editor.
 
-It supports:
+The mapper preserves row/column dimensions, reconstructs null cells from indexed
+seats and sends matrix dimensions plus occupied positions. Empty rows and trailing
+columns do not depend on seat catalog ordering. A COUPLE seat spans two columns;
+only its starting position is sent. The second cell is reserved, not a second seat.
+This supersedes the old one-cell description.
 
-- Room and cinema context.
-- Reads of managed catalog seats.
-- Grouped catalog presentation.
-- Seat-range creation.
-- Seat activity updates.
+Backend source now includes `RoomLayoutMatrixInput`, `RoomLayoutMatrixResponse`,
+`RoomLayoutMatrixService` and matrix publication/copy support. In the inspected DTOs:
 
-Catalog ordering is not the persisted position of a seat in the new matrix.
-Catalog activity is separate from per-showtime ShowSeat status.
+- `CreateRoomLayoutRequest` defaults `{ roomId }` to an empty 6 × 6 matrix.
+- `ReplaceRoomLayoutContentRequest` accepts `expectedVersion` and `matrix`.
+- Matrix and legacy geometry representations are mutually exclusive.
+- Matrix dimensions are explicit; occupied seats use rowIndex and columnIndex.
 
-## Room layout design reference
+Do not restore geometry persistence or infer matrix positions from catalog numbering.
+The seat catalog page remains a separate management capability.
+`AdminRoomCapacityCell.vue` obtains capacity/seat counts through the published-seat-map
+query used by `useAdminRoomSeatsQuery`. Full A2.4 summary coverage still needs review.
+A2 is no longer blocked simply by absence of a matrix contract; persistence round trips,
+publication validation, conflict behavior and summaries still require verification.
 
-Implemented in reference files:
+## Admin pricing and showtimes
 
-- docs/design/reference/html-convert/admin-room-layout.html
-- docs/design/reference/html-convert/admin-room-layout.css
-- docs/design/reference/html-convert/admin-room-layout.js
+Evidence is under `src/features/pricing/admin/` and `src/features/showtimes/admin/`.
 
-The reference uses an HTML table and local JavaScript state.
-It starts with an empty 6 × 6 matrix.
-Its save and publish controls do not call APIs.
+Pricing has a routed Vue page, workflow creation, configuration editing, fare matrices,
+published lookup and draft/version previews. Mutations call create/replace/publish
+clients. Published quote lookup uses a read-only preview. Preview labels distinguish
+unpriced cells from not-applicable cells and format priced values separately.
+Audit A3 criteria individually before declaring the whole group complete, especially
+ID preservation, zero prices, cancel/publish behavior and independent COUPLE fares.
+COUPLE prices must remain per pair and may vary by ticket group, time band and format.
 
-## Vue matrix editor
+Showtime list data comes from `getShowtimesByTimeRange`; remaining filters and
+pagination operate locally on the returned day data. Creation loads active movies,
+rooms, screening versions, published pricing versions and published seat maps.
+Version labels include projection technology and image format. Compatibility filtering
+uses the room's `contentFormats`; it does not prove projection-technology compatibility.
+Selection watchers clear/revalidate dependent IDs. Pricing assignment and explicit
+opening-for-booking dialogs call Backend mutations. A full general edit form is not
+established by these operations.
 
-Implemented source:
+## Admin booking and payment boundary
 
-- src/features/rooms/admin/pages/AdminRoomLayoutPage.vue
-- src/features/rooms/admin/components/AdminSeatMatrixEditor.vue
-- src/features/rooms/admin/composables/use-admin-seat-matrix.ts
+`AdminBookingsPage.vue` and `admin-booking-queries.ts` use Admin booking list/search.
+`AdminBookingDetailPage.vue` and `admin-booking-detail.ts` read stored booking and seat
+fare data. The detail route requires ADMIN and does not recalculate historical prices.
+Backend authorization and runtime 401/403 behavior still need verification.
 
-Behavior:
+Generated Payment lookup clients are not proof of UI integration. No payment
+lookup/reconciliation flow is wired into the inspected Admin booking pages.
+Refund clients were removed in `e0abe47`; do not reintroduce refund actions without
+an approved Backend contract. Admin users/promotions remain reference routes.
 
-- Empty 6-row, 6-column initialization.
-- Row labels A through Z, then AA, AB.
-- Row headers use th with scope="row".
-- No numbered column header.
-- Screen above the table.
-- Add-row and add-column actions at matrix edges.
-- Insert and delete rows or columns.
-- Keep the matrix rectangular.
-- Preserve empty cells between seats.
-- Delete a seat without removing its cell.
-- Renumber occupied cells from 1 through n within each row.
-- Default new seats to STANDARD.
-- Support STANDARD, VIP, COUPLE and ACCESSIBLE.
-- Update seat and matrix statistics.
-- Provide field errors, keyboard focus and horizontal scrolling.
-- Warn before leaving a changed matrix.
+## Customer integration boundary
 
-Each seat occupies one table cell in the current UI.
+`CinemasPage.vue` is a real API-backed list, not the old cinema placeholder. It supports
+search, city filtering and shared cinema selection. No dedicated cinema-detail route
+was found. The standalone showtimes, account and account-bookings routes remain placeholders.
 
-Editor state exists only in memory.
-Save and publish are disabled.
-Existing Backend layouts are not loaded.
+Home and movie pages use programme queries; header search routes into the movie catalog.
+Booking start and movie detail provide showtime selection. OIDC uses `response_type: code`
+and `oidc-client-ts`; this is not evidence of a completed account/profile page.
 
-## Removed legacy editor
+`booking-queries.ts` currently combines active room catalog seats with showtime seat
+statuses. It does not load the showtime's matrix snapshot. Seat selection is local;
+`booking-seat-quote.ts` calls `quoteShowtimeSeats` and checks per-pair COUPLE units.
+The UI explicitly states selected seats have not been held. Hold/release, booking
+creation, payment initiation and payment-result flows are not completed by this quote.
+Do not mark U2 complete or treat catalog-based positions as the showtime snapshot.
 
-The application no longer uses the old room-layout:
+## Runtime OpenAPI check for A0.1
 
-- Canvas/SVG object editor.
-- Ruler and preview zoom.
-- Free-position dragging.
-- Geometry inspector and physical element forms.
-- Draft initialization through canvas dimensions.
-- Seat geometry initialization and row movement mappers.
-- Feature-specific layout queries used by that editor.
-- Global canvas page and responsive styles.
+Read-only HTTP GETs succeeded on 2026-11-06, using the inputs in `orval.config.ts`.
+The source service configuration declares the matching service names, default ports
+and `/v3/api-docs`; Movie security permits that documentation endpoint.
 
-Generated Backend clients remain because they represent existing contracts.
-Their presence does not mean the new matrix editor uses them.
+| Runtime URL | Reported OpenAPI version | Inspected schemas |
+| --- | --- | --- |
+| `http://localhost:8081/v3/api-docs` | 3.0.1 | CreateMovieScreeningVersionRequest, SaveMovieScreeningVersionRequest, MovieScreeningVersionResponse |
+| `http://localhost:8083/v3/api-docs` | 3.1.0 | ShowtimeScreeningVersionResponse, RoomLayoutMatrixInput, RoomLayoutMatrixResponse |
 
-## Backend matrix integration boundary
+All four inspected screening-version schemas expose `projectionTechnology` with
+STANDARD, IMAX, FOUR_DX and SCREEN_X, separately from `contentFormat` values 2D/3D.
+Movie create/save version schemas default to STANDARD and 2D. Movie response requires
+projectionTechnology; the inspected Inventory showtime-version schema has no required
+list. These markers agree with the inspected DTOs/enums and current generated models.
 
-The inspected Backend has not yet migrated to the table matrix model.
+This confirms the relevant schema is served locally. It does not identify the commit
+of the running binaries: no runtime build revision was established. Do not label these
+responses as exports from Backend HEAD or as a full contract/security audit. No mutation
+or product-data request was performed during this check.
 
-Current contracts include:
+## Roadmap handoff and remaining work
 
-- CreateRoomLayoutRequest:
-  roomId, canvasWidth and canvasHeight.
-- ReplaceRoomLayoutContentRequest:
-  expectedVersion, seats and elements.
-- Seat inputs:
-  existing seatId and geometry.
-- Content responses:
-  layout metadata, seat snapshots and element geometry.
+A0.1 updates the source status and confirms the projection schemas in local runtime
+OpenAPI. This does not complete A0.2 or certify any A/U implementation group.
 
-These contracts do not directly represent:
+Next is A0.2: normalize generated APIs using the existing script after confirming the
+running service provenance, reconcile affected controller/DTO contracts and update the
+API inventory. Preserve/review the user's existing generated changes before regeneration.
+The presence of projection fields in generated files alone does not prove when or how
+they were generated. `npm run api` targets all five services, not only Movie/Inventory.
 
-- Independent row and column counts.
-- Entirely empty rows or columns.
-- A new seat created by entering a number into a matrix cell.
-- Matrix-owned changes to numbering and seat type.
+Snapshot limitations observed in this audit:
 
-Do not send the frontend SeatMatrixDocument to these endpoints.
-Do not restore geometry persistence as a workaround.
+- `openapi/movie-service.metadata.md` still contains revision/export placeholders.
+- `openapi/inventory-service.metadata.md` records a 2026-10-21 export at an older revision.
+- Neither metadata file establishes provenance for the runtime responses read today.
 
-## Next integration work
+After A0.2, compare the existing A1 implementation against each criterion before
+choosing a missing subtask. Then follow `docs/ROADMAP.md` integration order. Do not
+reimplement the already-wired matrix/pricing/showtime/booking flows on the assumption
+that the October status is current. Keep R28 Notification deferred.
 
-After a Backend matrix contract is implemented and inspected:
+## Verification and manual follow-up
 
-1. Review the runtime OpenAPI and source revision.
-2. Regenerate affected API clients.
-3. Define DTO-to-editor and editor-to-request mappers.
-4. Load matrix dimensions and cells.
-5. Create drafts with the agreed defaults.
-6. Save full matrix content with revision handling.
-7. Integrate publication and validation errors.
-8. Verify empty cells and empty trailing rows/columns survive reload.
+Performed in A0.1:
 
-The matrix API fields and endpoint behavior must come from Backend source.
-No proposed transport shape is treated as an implemented contract.
+- Read Git remotes, branches/status, local revisions and recent history.
+- Read routes, feature components/queries/mappers, generated models, design guidance
+  and relevant Backend controllers/DTOs/enums/security configuration without modifying Backend.
+- Read the two local runtime OpenAPI documents and inspected the schema markers above.
+- Reviewed the documentation diff and checked existing changed-file hashes for preservation.
 
-## Other remaining work
+Not performed: browser/manual interactions, responsive/accessibility checks, business
+API mutations, Orval generation, tests, lint, type checking, build or formatting.
+No historical automated or browser result was independently established by this audit.
 
-- Admin showtime management and showtime creation integration.
-- Admin booking and user management integration.
-- Customer cinema and showtime pages.
-- Account and booking history.
-- Booking creation and payment completion.
-- Reconciliation of older architecture, roadmap and API documents.
+Manual follow-up (pending, not results):
 
-Admin showtimes, bookings, users, promotions and showtime creation
-still use reference pages.
-
-Customer cinema, showtime, account and booking history routes
-still include placeholders.
-
-R28 Notification remains deferred.
-
-## Verification
-
-No tests, lint, type checking or build were run in this documentation round.
-
-Browser verification remains pending.
-Use manual checks at 390, 768, 1024 and 1440px.
-Do not mark persistence complete while editor data remains in memory.
+1. Confirm runtime build revision and all five Orval inputs before A0.2 generation.
+2. Exercise movie create/edit with multiple language variants, ID/version preservation,
+   empty/duplicate rejection and immutable persisted definitions.
+3. Save/reload matrix drafts with empty rows/columns and COUPLE seats; verify publication,
+   copy, conflict/reload handling and unsaved-change guards.
+4. Verify pricing draft/publish/cancel, zero/unpriced/not-applicable states and different
+   COUPLE fares across ticket groups, time bands and 2D/3D.
+5. Verify showtime dependency resets, compatibility errors and stored booking fares.
+6. Check relevant screens at 390, 768, 1024 and 1440px before claiming visual completion.

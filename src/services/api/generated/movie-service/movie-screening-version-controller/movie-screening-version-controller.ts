@@ -45,7 +45,6 @@ export const listMovieScreeningVersions = (
       );
     }
   /**
- * Creates an immutable definition. An identical movie, image format, projection technology, audio language, presentation type and subtitle language combination is rejected.
  * @summary Create a screening version
  */
 export const createMovieScreeningVersion = (
