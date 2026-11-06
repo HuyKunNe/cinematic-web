@@ -101,10 +101,42 @@ Validation rejects empty lists and duplicate complete definitions, including for
 projection, audio language, presentation type and subtitle language. New movie
 versions must be active. These are observed code paths, not verified save results.
 
-A1.2/A1.3 therefore already have substantial implementation. The matrix renders the
-cross-product of the generated format and projection enums. Enum presence alone is
-not evidence of a supported-combination policy; confirm Backend constraints before
-marking the roadmap's supported-combination requirement complete.
+A1.2 already has the matrix and STANDARD × 2D default in source. A source follow-up
+after A0.2 inspected MovieScreeningVersion and MovieScreeningVersionService: the current
+constructor/service accepts the two format enums and four projection enums independently,
+with no extra combination restriction. The current matrix therefore matches that source
+policy. This does not establish room compatibility or browser verification.
+
+### A1.3 follow-up — 2026-11-06
+
+Started from FE `7b2357f` with a clean working tree. Inspected Backend HEAD `34fafae`
+read-only, including MovieScreeningVersion, MovieScreeningVersionService and MovieErrorCode.
+Backend had an uncommitted MovieScreeningVersionController change; it was not modified.
+
+Found and corrected a remaining validation mismatch: Backend's ScreeningVersionIdentity
+compares trimmed audio/subtitle languages case-insensitively, while FE previously used
+case-sensitive identity keys. The feature schema now lowercases only the comparison
+key, so definitions differing only in language casing are rejected before submission.
+The request retains the language spelling and all existing ID/expectedVersion/active fields.
+Different language configurations, formats, projections and presentation types remain
+distinct; the nonempty-list rule and nested create/update requests remain in place.
+
+Added localized messages for the existing Backend codes MOVIE_SCREENING_VERSIONS_REQUIRED,
+MOVIE_SCREENING_VERSION_ALREADY_EXISTS and MOVIE_SCREENING_VERSION_SET_INCOMPLETE.
+No endpoints, generated models, component markup, styles or dependencies changed.
+
+Verification in this follow-up was static source/diff review only; no tests, build,
+lint, type-check, formatter, browser interactions or API mutations were run.
+Manual follow-up (pending):
+
+1. In create and edit, add two otherwise identical versions with audio language
+   `English`/`english` and subtitle language `Việt`/`việt`; saving should report a duplicate.
+2. Change audio or subtitle to a genuinely different language; both versions should
+   remain valid. Repeat with different format/projection/presentation configurations.
+3. Remove all new versions and confirm empty-list rejection. In edit, confirm persisted
+   definitions remain read-only and saving keeps all IDs, expectedVersion and active states.
+4. Verify create/update send one nested screeningVersions list and no follow-up version POST.
+5. Confirm the three Backend error codes show the localized messages when returned.
 
 ## Admin room matrix and catalog
 
@@ -243,10 +275,10 @@ contract markers match source; this does not certify every DTO, permission or bu
 operation. See `docs/api/OPENAPI_GENERATION.md` and snapshot metadata for the review scope.
 User/Booking/Payment were generated from live specs; no snapshots were added for them.
 
-Next, compare the existing A1 implementation against each criterion before choosing
-a missing subtask. Projection fields/enums required by A1.1 are already present and
-were regenerated in A0.2; audit A1.2's supported combinations rather than assuming the
-checkbox editor is missing. Then follow `docs/ROADMAP.md` integration order. Do not
+The A1.3 follow-up above fixes case-insensitive duplicate validation and missing error
+messages. A1.1 generation and A1.2 matrix behavior already exist in source; their
+presence does not imply browser verification. Next, audit A1.4 dependency resets and
+compatibility against the actual room/version contract, then follow the roadmap order. Do not
 reimplement the already-wired matrix/pricing/showtime/booking flows on the assumption
 that the October status is current. Keep R28 Notification deferred.
 

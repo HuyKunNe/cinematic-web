@@ -86,12 +86,14 @@ const screeningRowsSchema = z
         report('Phiên bản lồng tiếng hoặc không phụ đề phải để trống ngôn ngữ phụ đề.')
       }
 
+      // Backend trims language fields and compares identities case-insensitively.
+      // Normalize only the comparison key; preserve the definition sent to Backend.
       const definition = JSON.stringify([
         row.contentFormat,
         row.projectionTechnology,
-        row.audioLanguage,
+        row.audioLanguage.toLowerCase(),
         row.presentationType,
-        row.subtitleLanguage,
+        row.subtitleLanguage.toLowerCase(),
       ])
 
       if (definitions.has(definition)) report('Định nghĩa phiên bản bị trùng.')
@@ -219,6 +221,12 @@ export function adminMovieScreeningErrorMessage(error: unknown): string {
     switch (error.code) {
       case 'INVALID_MOVIE_SCREENING_VERSION':
         return 'Kiểm tra định dạng, công nghệ chiếu, ngôn ngữ âm thanh và phụ đề của phiên bản chiếu.'
+      case 'MOVIE_SCREENING_VERSIONS_REQUIRED':
+        return 'Chọn ít nhất một phiên bản chiếu.'
+      case 'MOVIE_SCREENING_VERSION_ALREADY_EXISTS':
+        return 'Phiên bản chiếu đã tồn tại. Kiểm tra cấu hình và ngôn ngữ của các phiên bản.'
+      case 'MOVIE_SCREENING_VERSION_SET_INCOMPLETE':
+        return 'Danh sách phải giữ đủ các phiên bản đã lưu. Đóng và mở lại form để tải lại.'
       case 'MOVIE_SCREENING_VERSION_CONFLICT':
         return 'Phiên bản chiếu đã thay đổi. Đóng và mở lại form trước khi lưu tiếp.'
       case 'MOVIE_SCREENING_VERSION_IMMUTABLE':
