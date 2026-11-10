@@ -372,10 +372,6 @@ function submit(event: Event) {
             <DialogTitle class="admin-movie-dialog__title">
               {{ movieId ? 'Sửa phim' : 'Thêm phim' }}
             </DialogTitle>
-
-            <DialogDescription class="admin-movies__muted">
-              Thông tin phim, thể loại và các phiên bản chiếu được lưu cùng nhau.
-            </DialogDescription>
           </div>
 
           <AppButton variant="ghost" size="sm" :disabled="busy" @click="close"> Đóng </AppButton>

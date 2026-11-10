@@ -311,18 +311,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 Cụm rạp chưa có phiên bản bảng giá đã công bố để lựa chọn.
               </p>
 
-              <p v-if="dirty && selectedId === ''" class="price-notice price-space-top">
-                Bạn đang bỏ bảng giá của suất chiếu. Suất cần được gán bảng giá trước khi mở bán.
-              </p>
-
-              <p class="price-note price-space-top">
-                Chọn trực tiếp bảng giá Ngày thường, Cuối tuần hoặc Lễ/Tết phù hợp. Hệ thống kiểm
-                tra loại phòng, định dạng, giờ chiếu và hạng ghế khi lưu.
-              </p>
-              <p class="price-note">
-                Giá ghế được áp dụng theo nhóm vé mặc định của bảng giá. Giá ghế đôi là giá cho cả
-                cặp; mỗi định dạng có giá riêng, không cộng phụ thu.
-              </p>
             </template>
           </div>
 

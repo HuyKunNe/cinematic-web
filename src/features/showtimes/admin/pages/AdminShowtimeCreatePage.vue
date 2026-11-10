@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, toRef, watch } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
+import { CalendarDays, Clock3, Plus, Trash2 } from 'lucide-vue-next'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppTimePicker from '@/components/ui/AppTimePicker.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
@@ -19,9 +21,7 @@ import {
 } from '../api/admin-showtime-create'
 import { useAdminShowtimePublishedLayoutQuery } from '../api/admin-showtime-layout-query'
 import {
-  getShowtimeStartError,
   instantToLocal,
-  localToInstant,
   showtimeBreakMinutesSchema,
   showtimeDraftSchema,
   type CreatedScheduledShowtime,
@@ -29,6 +29,8 @@ import {
 } from '../schemas/admin-showtime-create.schema'
 import { showtimeErrorMessage } from '../schemas/admin-showtime.schema'
 import AdminShowtimePublishedLayout from '../components/AdminShowtimePublishedLayout.vue'
+import { useAdminShowtimeSlots } from '../composables/use-admin-showtime-slots'
+import { useAdminShowtimePricing } from '../composables/use-admin-showtime-pricing'
 
 const auth = useAuthStore()
 
@@ -104,8 +106,19 @@ const compatibleVersions = computed(() => {
 const selectedVersion = computed(() =>
   compatibleVersions.value.find((item) => item.id === form.movieScreeningVersionId),
 )
+const pricing = useAdminShowtimePricing({
+  date: () => form.date,
+  cinemaId: () => form.cinemaId,
+  versions: () => pricingVersions.data.value ?? [],
+  ready: () => pricingVersions.isSuccess.value && !pricingVersions.isFetching.value,
+  locked,
+  selectedId: toRef(form, 'pricingPolicyVersionId'),
+})
+const holiday = pricing.holiday
+const pricingDayLabel = pricing.dayLabel
+const pricingHint = pricing.hint
 const selectedPricingVersion = computed(() =>
-  (pricingVersions.data.value ?? []).find((item) => item.id === form.pricingPolicyVersionId),
+  pricing.choices.value.find((item) => item.id === form.pricingPolicyVersionId),
 )
 
 const layoutQuery = useAdminShowtimePublishedLayoutQuery(
@@ -147,44 +160,60 @@ const catalogError = computed(
 const now = useNow({
   scheduler: (update) => useIntervalFn(update, 1_000),
 })
-const startsLocal = computed({
-  get: () => (form.date && form.startTime ? `${form.date}T${form.startTime}` : ''),
-  set: (value: string) => {
-    const [date = '', time = ''] = value.split('T')
-    form.date = date
-    form.startTime = time.slice(0, 5)
-  },
-})
-const startsAt = computed(() => localToInstant(`${form.date}T${form.startTime}`))
-const timingError = computed(() =>
-  getShowtimeStartError(form.date, form.startTime, now.value.getTime()),
-)
 const breakResult = computed(() => showtimeBreakMinutesSchema.safeParse(form.breakMinutes))
 const breakError = computed(() => {
   const result = breakResult.value
   if (form.breakMinutes === '' || result.success) return ''
   return result.error.issues[0]?.message ?? 'Khoảng nghỉ chưa hợp lệ.'
 })
-const estimatedEndsAt = computed(() => {
-  const start = startsAt.value
-  const duration = selectedMovie.value?.durationMinutes
-  if (!start || !duration) return ''
-
-  const end = new Date(Date.parse(start) + duration * 60_000)
-  return Number.isFinite(end.getTime()) ? end.toISOString() : ''
+const schedule = useAdminShowtimeSlots({
+  date: () => form.date,
+  durationMinutes: () => selectedMovie.value?.durationMinutes,
+  breakMinutes: () => {
+    const result = breakResult.value
+    return result.success ? result.data : null
+  },
+  nowMilliseconds: () => now.value.getTime(),
 })
+const slots = schedule.slots
+const slotRows = schedule.rows
+const multipleSlots = schedule.multiple
+watch(
+  () => slots.value[0]?.startTime ?? '',
+  (time) => {
+    form.startTime = time
+  },
+  { flush: 'sync' },
+)
+const startsAt = computed(() => slotRows.value[0]?.startsAt ?? null)
+const timingError = computed(() => slotRows.value[0]?.error ?? '')
+const estimatedEndsAt = computed(() => slotRows.value[0]?.endsAt ?? '')
 const estimatedEnd = computed(() =>
   estimatedEndsAt.value ? instantToLocal(estimatedEndsAt.value) : '',
 )
 const estimatedReady = computed(() => {
-  const result = breakResult.value
-  if (!estimatedEndsAt.value || !result.success) return ''
-
-  const ready = new Date(Date.parse(estimatedEndsAt.value) + result.data * 60_000)
-  return Number.isFinite(ready.getTime()) ? instantToLocal(ready.toISOString()) : ''
+  const ready = slotRows.value[0]?.readyAt
+  return ready ? instantToLocal(ready) : ''
 })
 
+async function addSlot() {
+  if (locked.value) return
+  const id = schedule.add()
+  await nextTick()
+  document.getElementById(`showtime-slot-${id}`)?.focus()
+}
+
+async function removeSlot(id: string) {
+  if (locked.value || slots.value.length === 1) return
+  const index = slots.value.findIndex((slot) => slot.id === id)
+  schedule.remove(id)
+  await nextTick()
+  const next = slots.value[Math.min(index, slots.value.length - 1)]
+  if (next) document.getElementById(`showtime-slot-${next.id}`)?.focus()
+}
+
 const creationRequest = computed<CreateShowtimeRequest | null>(() => {
+  if (multipleSlots.value) return null
   const parsed = showtimeDraftSchema.safeParse(form)
   const room = selectedRoom.value
   const movie = selectedMovie.value
@@ -227,6 +256,8 @@ const canSubmit = computed(
     !locked.value &&
     !loadingOptions.value &&
     !requiresReview.value &&
+    !multipleSlots.value &&
+    schedule.complete.value &&
     creationRequest.value !== null,
 )
 
@@ -242,120 +273,121 @@ const versionEmptyMessage = computed(() => {
   return 'Không có phiên bản chiếu phù hợp với định dạng phòng hỗ trợ.'
 })
 
-const choiceFields = computed(() => [
-  {
-    key: 'cinemaId' as const,
-    label: 'Rạp',
-    required: true,
-    placeholder: 'Chọn rạp',
-    wide: true,
-    options: (cinemas.data.value ?? []).map((item) => ({
-      value: item.id,
-      label: item.name,
-    })),
-    loading: cinemas.isFetching.value,
-    success: cinemas.isSuccess.value,
-    error: cinemas.error.value,
-    disabled: cinemas.isFetching.value || cinemas.isError.value,
-    context: true,
-    contextHelp: '',
-    empty: 'Chưa có rạp đang hoạt động.',
-  },
-  {
-    key: 'movieId' as const,
-    label: 'Phim',
-    required: true,
-    placeholder: 'Chọn phim',
-    wide: true,
-    options: (movies.data.value ?? []).map((item) => ({
-      value: item.id,
-      label: item.durationMinutes ? `${item.title} — ${item.durationMinutes} phút` : item.title,
-    })),
-    loading: movies.isFetching.value,
-    success: movies.isSuccess.value,
-    error: movies.error.value,
-    disabled: movies.isFetching.value || movies.isError.value,
-    context: true,
-    contextHelp: '',
-    empty: 'Chưa có phim phù hợp trong danh mục.',
-  },
-  {
-    key: 'roomId' as const,
-    label: 'Phòng',
-    required: true,
-    placeholder: 'Chọn phòng',
-    wide: false,
-    options: selectedCinema.value
-      ? (rooms.data.value ?? []).map((item) => ({ value: item.id, label: item.name }))
-      : [],
-    loading: rooms.isFetching.value,
-    success: rooms.isSuccess.value,
-    error: rooms.error.value,
-    disabled: !selectedCinema.value || rooms.isFetching.value || rooms.isError.value,
-    context: Boolean(selectedCinema.value),
-    contextHelp: 'Chọn rạp trước.',
-    empty: 'Rạp chưa có phòng đang hoạt động.',
-  },
-  {
-    key: 'movieScreeningVersionId' as const,
-    label: 'Phiên bản chiếu',
-    required: true,
-    placeholder: 'Chọn phiên bản chiếu',
-    wide: false,
-    options: compatibleVersions.value.map((item) => ({
-      value: item.id,
-      label: screeningVersionLabel(item),
-    })),
-    loading: screeningVersions.isFetching.value,
-    success: screeningVersions.isSuccess.value,
-    error: screeningVersions.error.value,
-    disabled:
-      !selectedMovie.value ||
-      !selectedRoom.value ||
-      screeningVersions.isFetching.value ||
-      screeningVersions.isError.value,
-    context: Boolean(selectedMovie.value && selectedRoom.value),
-    contextHelp: 'Chọn phim và phòng trước.',
-    empty: versionEmptyMessage.value,
-  },
-  {
-    key: 'pricingPolicyVersionId' as const,
-    label: 'Bảng giá',
-    required: false,
-    placeholder: 'Không gán bảng giá khi tạo',
-    wide: true,
-    options: (pricingVersions.data.value ?? []).map((item) => ({
-      value: item.id,
-      label: showtimePricingVersionLabel(item),
-    })),
-    loading: pricingVersions.isFetching.value,
-    success: pricingVersions.isSuccess.value,
-    error: pricingVersions.error.value,
-    disabled:
-      !selectedCinema.value || pricingVersions.isFetching.value || pricingVersions.isError.value,
-    context: Boolean(selectedCinema.value),
-    contextHelp: 'Chọn rạp trước. Có thể lập lịch trước và gán bảng giá sau.',
-    empty: 'Rạp chưa có phiên bản bảng giá đã công bố.',
-  },
-])
+const choiceFields = computed(() =>
+  [
+    {
+      key: 'cinemaId' as const,
+      label: 'Rạp',
+      required: true,
+      placeholder: 'Chọn rạp',
+      wide: false,
+      options: (cinemas.data.value ?? []).map((item) => ({
+        value: item.id,
+        label: item.name,
+      })),
+      loading: cinemas.isFetching.value,
+      success: cinemas.isSuccess.value,
+      error: cinemas.error.value,
+      disabled: cinemas.isFetching.value || cinemas.isError.value,
+      context: true,
+      contextHelp: '',
+      empty: 'Chưa có rạp đang hoạt động.',
+    },
+    {
+      key: 'movieId' as const,
+      label: 'Phim',
+      required: true,
+      placeholder: 'Chọn phim',
+      wide: false,
+      options: (movies.data.value ?? []).map((item) => ({
+        value: item.id,
+        label: item.durationMinutes ? `${item.title} — ${item.durationMinutes} phút` : item.title,
+      })),
+      loading: movies.isFetching.value,
+      success: movies.isSuccess.value,
+      error: movies.error.value,
+      disabled: movies.isFetching.value || movies.isError.value,
+      context: true,
+      contextHelp: '',
+      empty: 'Chưa có phim phù hợp trong danh mục.',
+    },
+    {
+      key: 'roomId' as const,
+      label: 'Phòng',
+      required: true,
+      placeholder: 'Chọn phòng',
+      wide: false,
+      options: selectedCinema.value
+        ? (rooms.data.value ?? []).map((item) => ({ value: item.id, label: item.name }))
+        : [],
+      loading: rooms.isFetching.value,
+      success: rooms.isSuccess.value,
+      error: rooms.error.value,
+      disabled: !selectedCinema.value || rooms.isFetching.value || rooms.isError.value,
+      context: Boolean(selectedCinema.value),
+      contextHelp: 'Chọn rạp trước.',
+      empty: 'Rạp chưa có phòng đang hoạt động.',
+    },
+    {
+      key: 'movieScreeningVersionId' as const,
+      label: 'Phiên bản chiếu',
+      required: true,
+      placeholder: 'Chọn phiên bản chiếu',
+      wide: false,
+      options: compatibleVersions.value.map((item) => ({
+        value: item.id,
+        label: screeningVersionLabel(item),
+      })),
+      loading: screeningVersions.isFetching.value,
+      success: screeningVersions.isSuccess.value,
+      error: screeningVersions.error.value,
+      disabled:
+        !selectedMovie.value ||
+        !selectedRoom.value ||
+        screeningVersions.isFetching.value ||
+        screeningVersions.isError.value,
+      context: Boolean(selectedMovie.value && selectedRoom.value),
+      contextHelp: 'Chọn phim và phòng trước.',
+      empty: versionEmptyMessage.value,
+    },
+    {
+      key: 'pricingPolicyVersionId' as const,
+      label: 'Bảng giá',
+      required: false,
+      placeholder: 'Không gán bảng giá khi tạo',
+      wide: true,
+    options: pricing.choices.value.map((item) => ({
+        value: item.id,
+        label: showtimePricingVersionLabel(item),
+      })),
+      loading: pricingVersions.isFetching.value,
+      success: pricingVersions.isSuccess.value,
+      error: pricingVersions.error.value,
+      disabled:
+        !selectedCinema.value || pricingVersions.isFetching.value || pricingVersions.isError.value,
+      context: Boolean(selectedCinema.value),
+      contextHelp: 'Chọn rạp trước. Có thể lập lịch trước và gán bảng giá sau.',
+    empty: pricingHint.value,
+    },
+  ].sort((first, second) => {
+    const order = [
+      'cinemaId',
+      'roomId',
+      'movieId',
+      'movieScreeningVersionId',
+      'pricingPolicyVersionId',
+    ]
+    return order.indexOf(first.key) - order.indexOf(second.key)
+  }),
+)
 
 watch(
   () => form.cinemaId,
   () => {
     form.roomId = ''
-    form.pricingPolicyVersionId = ''
   },
   { flush: 'sync' },
 )
-watch([() => pricingVersions.data.value, () => pricingVersions.isFetching.value], () => {
-  if (locked.value || pricingVersions.isFetching.value || !form.pricingPolicyVersionId) {
-    return
-  }
-
-  if (!(pricingVersions.data.value ?? []).some((item) => item.id === form.pricingPolicyVersionId)) {
-    form.pricingPolicyVersionId = ''
-  }
-})
 watch(
   [() => form.movieId, () => form.roomId],
   () => {
@@ -392,7 +424,9 @@ watch(
   },
 )
 
-const dirty = computed(() => created.value === null && JSON.stringify(form) !== initialKey)
+const dirty = computed(
+  () => created.value === null && (JSON.stringify(form) !== initialKey || slots.value.length > 1 || holiday.value),
+)
 
 function preventUnload(event: BeforeUnloadEvent): void {
   if (!dirty.value && !submitting.value && !uncertainResult.value) return
@@ -501,6 +535,9 @@ async function submit(): Promise<void> {
       <div>
         <p class="admin-reference__eyebrow">Lịch chiếu</p>
         <h1 id="showtime-create-title" tabindex="-1">Tạo suất chiếu</h1>
+        <p class="showtime-create__intro">
+          Chọn phim và phòng, sau đó sắp xếp các khung giờ trong một ngày.
+        </p>
       </div>
       <RouterLink
         v-if="canManage && canViewInventory"
@@ -563,8 +600,10 @@ async function submit(): Promise<void> {
           >
             <header class="showtime-create__panel-heading">
               <div>
-                <h2 id="showtime-info-title">Thông tin suất chiếu</h2>
-                <p>Trường có dấu * là bắt buộc.</p>
+                <h2 id="showtime-info-title">
+                  <span class="showtime-create__step">01</span> Phim &amp; phòng chiếu
+                </h2>
+                <p>Thông tin dùng chung cho các khung giờ. Trường có dấu * là bắt buộc.</p>
               </div>
               <span class="showtime-create__badge">
                 {{ created ? 'Đã lên lịch' : 'Kiểm tra lịch khi lưu' }}
@@ -591,6 +630,7 @@ async function submit(): Promise<void> {
                     :required="field.required"
                     :disabled="field.disabled"
                     :aria-describedby="`${field.key}-feedback`"
+                    @change="field.key === 'pricingPolicyVersionId' && pricing.selectManually()"
                   >
                     <option value="">
                       {{ field.loading ? 'Đang tải…' : field.placeholder }}
@@ -616,6 +656,7 @@ async function submit(): Promise<void> {
                     <template v-else-if="field.success && field.options.length === 0">
                       {{ field.empty }}
                     </template>
+                    <template v-else-if="field.key === 'pricingPolicyVersionId'">{{ pricingHint }}</template>
                   </span>
                 </label>
 
@@ -627,17 +668,35 @@ async function submit(): Promise<void> {
                   {{ selectedRoom.contentFormats.join(' / ') || 'Chưa cấu hình' }}. Chỉ chọn phiên
                   bản phim đang hoạt động có định dạng phù hợp.
                 </div>
+              </fieldset>
+            </div>
+          </section>
 
+          <section
+            class="admin-reference__panel showtime-create__panel"
+            aria-labelledby="showtime-timing-title"
+          >
+            <header class="showtime-create__panel-heading">
+              <div>
+                <h2 id="showtime-timing-title">
+                  <span class="showtime-create__step">02</span> Lịch chiếu trong ngày
+                </h2>
+                <p>Tính giờ kết thúc theo thời lượng phim; phòng sẵn sàng sau khoảng nghỉ.</p>
+              </div>
+              <span class="showtime-create__badge">{{ slots.length }} khung giờ</span>
+            </header>
+            <div class="showtime-create__panel-body">
+              <fieldset class="showtime-create__fields" :disabled="locked">
+                <legend class="admin-visually-hidden">Ngày chiếu và khoảng nghỉ chung</legend>
                 <label class="admin-reference__field">
-                  <span>Bắt đầu *</span>
+                  <span><CalendarDays aria-hidden="true" /> Ngày chiếu *</span>
                   <input
-                    v-model="startsLocal"
+                    v-model="form.date"
                     class="admin-reference__input"
-                    type="datetime-local"
-                    step="60"
+                    type="date"
+                    :min="getCinemaDateKey(now.toISOString())"
                     required
-                    :aria-invalid="Boolean(timingError)"
-                    aria-describedby="showtime-time-feedback showtime-time-help"
+                    aria-describedby="showtime-time-help"
                   />
                 </label>
 
@@ -661,39 +720,96 @@ async function submit(): Promise<void> {
                     {{ breakError || 'Số phút nguyên từ 0 đến 120.' }}
                   </span>
                 </label>
-
-                <label class="admin-reference__field">
-                  <span>Kết thúc dự kiến</span>
-                  <input
-                    class="admin-reference__input"
-                    type="datetime-local"
-                    readonly
-                    :value="estimatedEnd"
-                  />
-                  <span class="showtime-create__hint">
-                    Giờ bắt đầu cộng thời lượng phim; chưa gồm khoảng nghỉ.
-                  </span>
-                </label>
-
-                <label class="admin-reference__field">
-                  <span>Phòng sẵn sàng dự kiến</span>
-                  <input
-                    class="admin-reference__input"
-                    type="datetime-local"
-                    readonly
-                    :value="estimatedReady"
-                  />
-                  <span class="showtime-create__hint">Giờ kết thúc cộng khoảng nghỉ sau suất.</span>
-                </label>
               </fieldset>
 
+              <div class="showtime-create__day-rule">
+                <div>
+                  <strong>Loại ngày áp dụng</strong>
+                  <span class="showtime-create__badge">{{ pricingDayLabel }}</span>
+                </div>
+                <label class="showtime-create__holiday">
+                  <input v-model="holiday" type="checkbox" :disabled="locked || !form.date" aria-describedby="showtime-holiday-help" />
+                  Ngày lễ/Tết
+                </label>
+                <p id="showtime-holiday-help" class="showtime-create__hint">
+                  Thứ Bảy, Chủ nhật áp dụng bảng giá cuối tuần. Chọn Ngày lễ/Tết để ưu tiên bảng giá lễ.
+                </p>
+              </div>
+
+              <div class="showtime-create__slots-heading">
+                <h3><Clock3 aria-hidden="true" /> Các khung giờ</h3>
+                <span v-if="selectedMovie?.durationMinutes" class="showtime-create__hint"
+                  >Thời lượng phim: {{ selectedMovie.durationMinutes }} phút</span
+                >
+              </div>
+              <fieldset class="showtime-create__slots" :disabled="locked">
+                <legend class="admin-visually-hidden">Giờ bắt đầu cho từng suất chiếu</legend>
+                <div
+                  v-for="(slot, index) in slots"
+                  :key="slot.id"
+                  class="showtime-create__slot"
+                  :class="{ 'has-error': Boolean(slotRows[index]?.error) && !created }"
+                >
+                  <span class="showtime-create__slot-index">{{
+                    String(index + 1).padStart(2, '0')
+                  }}</span>
+                  <label
+                    class="admin-reference__field showtime-create__slot-start"
+                    :for="`showtime-slot-${slot.id}`"
+                  >
+                    <span>Bắt đầu *</span>
+                    <AppTimePicker
+                      :id="`showtime-slot-${slot.id}`"
+                      v-model="slot.startTime"
+                      :disabled="locked"
+                      class="admin-reference__input"
+                      required
+                      :aria-label="`Giờ bắt đầu khung ${index + 1}`"
+                      :aria-invalid="Boolean(slotRows[index]?.error) && !created"
+                      :aria-describedby="`showtime-slot-error-${slot.id} showtime-time-help`"
+                    />
+                  </label>
+                  <div class="showtime-create__slot-end">
+                    <span>Kết thúc</span><strong>{{ slotRows[index]?.endLabel }}</strong>
+                  </div>
+                  <div class="showtime-create__slot-ready">
+                    <span>Phòng sẵn sàng</span><strong>{{ slotRows[index]?.readyLabel }}</strong>
+                  </div>
+                  <AppButton
+                    class="showtime-create__slot-remove"
+                    variant="ghost"
+                    size="sm"
+                    :disabled="locked || slots.length === 1"
+                    :aria-label="`Xóa khung giờ ${index + 1}${slot.startTime ? ' lúc ' + slot.startTime : ''}`"
+                    @click="removeSlot(slot.id)"
+                  >
+                    <Trash2 aria-hidden="true" />
+                  </AppButton>
+                  <p
+                    :id="`showtime-slot-error-${slot.id}`"
+                    class="showtime-create__slot-error showtime-create__error"
+                    role="status"
+                  >
+                    {{ !created ? slotRows[index]?.error : '' }}
+                  </p>
+                </div>
+              </fieldset>
+              <AppButton
+                class="showtime-create__add-slot"
+                variant="secondary"
+                :disabled="locked"
+                @click="addSlot"
+              >
+                <Plus aria-hidden="true" /> Thêm khung giờ
+              </AppButton>
               <p
-                v-if="timingError && !created"
-                id="showtime-time-feedback"
-                class="showtime-create__error"
+                v-if="multipleSlots && !created"
+                id="showtime-batch-help"
+                class="showtime-create__notice"
                 role="status"
               >
-                {{ timingError }}
+                Đã chuẩn bị {{ slots.length }} khung giờ. Lưu nhiều suất chưa khả dụng; giữ lại một
+                khung giờ để lưu ngay. Các khung giờ bổ sung chưa được lưu.
               </p>
               <p
                 v-if="selectedMovie && !selectedMovie.durationMinutes"
@@ -715,32 +831,11 @@ async function submit(): Promise<void> {
               <p v-if="catalogError" class="showtime-create__error" role="alert">
                 {{ showtimeErrorMessage(catalogError, 'Không thể tải đầy đủ lựa chọn.') }}
               </p>
-
-              <footer class="showtime-create__actions">
-                <AppButton
-                  type="button"
-                  variant="secondary"
-                  :disabled="locked || loadingOptions"
-                  :loading="refreshing"
-                  @click="reloadOptions"
-                >
-                  Tải lại lựa chọn
-                </AppButton>
-                <RouterLink
-                  class="admin-reference__link-button"
-                  :to="{ name: ROUTE_NAMES.ADMIN_SHOWTIMES }"
-                >
-                  {{ created ? 'Về danh sách' : 'Hủy' }}
-                </RouterLink>
-                <AppButton type="submit" :disabled="!canSubmit" :loading="submitting">
-                  Lưu lịch chiếu
-                </AppButton>
-              </footer>
             </div>
           </section>
         </div>
 
-        <aside aria-label="Tóm tắt lịch chiếu và giá vé">
+        <aside class="showtime-create__sidebar" aria-label="Tóm tắt lịch chiếu và giá vé">
           <section
             class="admin-reference__panel showtime-create__panel"
             aria-labelledby="showtime-summary-title"
@@ -748,7 +843,7 @@ async function submit(): Promise<void> {
             <header class="showtime-create__panel-heading">
               <div>
                 <p class="admin-reference__eyebrow">Thông tin áp dụng</p>
-                <h2 id="showtime-summary-title">Tóm tắt suất chiếu</h2>
+                <h2 id="showtime-summary-title">Kiểm tra trước khi lưu</h2>
               </div>
               <span class="showtime-create__badge">
                 {{
@@ -789,7 +884,7 @@ async function submit(): Promise<void> {
                     }}
                   </dd>
                 </div>
-                <div>
+                <div v-if="!multipleSlots">
                   <dt>Kết thúc</dt>
                   <dd>
                     {{
@@ -799,7 +894,7 @@ async function submit(): Promise<void> {
                     }}
                   </dd>
                 </div>
-                <div>
+                <div v-if="!multipleSlots">
                   <dt>Phòng sẵn sàng</dt>
                   <dd>
                     {{
@@ -810,29 +905,59 @@ async function submit(): Promise<void> {
                   </dd>
                 </div>
                 <div>
+                  <dt>Ngày chiếu</dt>
+                  <dd>{{ form.date || 'Chưa chọn' }}</dd>
+                </div>
+                <div>
+                  <dt>Loại ngày</dt>
+                  <dd>{{ pricingDayLabel }}</dd>
+                </div>
+                <div>
+                  <dt>Khung giờ đã nhập</dt>
+                  <dd>{{ slots.filter((slot) => slot.startTime).length }} / {{ slots.length }}</dd>
+                </div>
+                <div>
                   <dt>Trạng thái khi lưu</dt>
                   <dd>Đã lên lịch</dd>
                 </div>
               </dl>
-
-              <div
-                v-if="!created?.pricingPolicyVersionId && !selectedPricingVersion"
-                class="showtime-create__notice"
-              >
-                <strong>Chưa có giá vé</strong>
-                <p>
-                  Lưu lịch không tạo giá tạm và không hiểu giá chưa cấu hình là 0đ. Cần gán bảng giá
-                  đã công bố để xác định giá vé trước khi mở bán.
-                </p>
-              </div>
-
-              <div v-else class="showtime-create__notice">
-                <strong>Sẽ tạo giá ghế theo bảng giá đã chọn</strong>
-                <p>Backend xác nhận bảng giá, ngữ cảnh suất chiếu và sinh giá ghế khi lưu.</p>
-              </div>
             </div>
           </section>
+          <AdminShowtimePublishedLayout
+            :room-id="form.roomId"
+            :room-name="selectedRoom?.name ?? ''"
+            :can-read="canReadLayout"
+            :query="layoutQuery"
+            :selected-layout-id="selectedLayout?.id ?? ''"
+            :disabled="locked"
+            @reload="reloadLayout"
+          />
         </aside>
+        <footer class="showtime-create__actions">
+          <AppButton
+            type="button"
+            variant="secondary"
+            :disabled="locked || loadingOptions"
+            :loading="refreshing"
+            @click="reloadOptions"
+          >
+            Tải lại lựa chọn
+          </AppButton>
+          <RouterLink
+            class="admin-reference__link-button"
+            :to="{ name: ROUTE_NAMES.ADMIN_SHOWTIMES }"
+          >
+            {{ created ? 'Về danh sách' : 'Hủy' }}
+          </RouterLink>
+          <AppButton
+            type="submit"
+            :disabled="!canSubmit"
+            :loading="submitting"
+            :aria-describedby="multipleSlots ? 'showtime-batch-help' : undefined"
+          >
+            {{ multipleSlots ? `Lưu ${slots.length} suất chiếu` : 'Lưu lịch chiếu' }}
+          </AppButton>
+        </footer>
       </form>
     </template>
   </section>

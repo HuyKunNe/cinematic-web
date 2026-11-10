@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import AppTimePicker from '@/components/ui/AppTimePicker.vue'
 import type { ReplacePricingConfigurationRequest } from '@/services/api/generated/inventory-service/model'
 import {
   pricingContainsMinute,
@@ -247,23 +248,18 @@ function save(): void {
           </label>
           <label class="price-field">
             <span>Bắt đầu, bao gồm</span>
-            <input
+            <AppTimePicker
               v-model="row.start"
               class="price-control"
-              type="time"
-              step="60"
               :disabled="!editable"
             />
           </label>
           <label class="price-field">
             <span>Kết thúc, loại trừ</span>
-            <input
+            <AppTimePicker
               v-model="row.end"
               class="price-control"
-              type="text"
-              inputmode="text"
-              placeholder="HH:mm hoặc 24:00"
-              maxlength="5"
+              allow-end-of-day
               :disabled="!editable"
             />
           </label>

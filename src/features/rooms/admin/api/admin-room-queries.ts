@@ -7,13 +7,16 @@ import {
   getRoomById,
   updateRoom,
 } from '@/services/api/generated/inventory-service/room-controller/room-controller'
+import { replaceRoomContentFormats } from '@/services/api/generated/inventory-service/room-content-formats-controller/room-content-formats-controller'
 import type {
   CinemaResponse,
   CreateRoomRequest,
   RoomResponse,
+  ReplaceRoomContentFormatsRequest,
   UpdateRoomRequest,
 } from '@/services/api/generated/inventory-service/model'
-import { adminRoomSchema } from '../schemas/admin-room.schema'
+import { adminRoomErrorMessage, adminRoomSchema } from '../schemas/admin-room.schema'
+import { adminRoomContentFormatKeys } from './admin-room-content-formats-queries'
 
 export const adminRoomKeys = {
   cinemas: ['cinemas', 'admin', 'rooms', 'management', 'all'] as const,
@@ -143,7 +146,21 @@ type SaveRoomVariables =
       cinemaId: string
       roomId: string
       input: Pick<UpdateRoomRequest, 'name' | 'roomType'>
+      contentFormats: ReplaceRoomContentFormatsRequest
     }
+
+export class AdminRoomSaveConflictError extends Error {
+  constructor() {
+    super('Thông tin phòng đã thay đổi. Hãy tải lại thông tin trước khi lưu tiếp.')
+  }
+}
+
+export class AdminRoomPartialSaveError extends Error {
+  constructor(public readonly savedRoom: RoomResponse, public readonly originalError: unknown) {
+    super('Đã lưu thông tin phòng, nhưng chưa lưu được định dạng. ' +
+      adminRoomErrorMessage(originalError, 'Hãy thử lưu lại định dạng.'))
+  }
+}
 
 export function useSaveAdminRoomMutation() {
   const queryClient = useQueryClient()
@@ -164,10 +181,46 @@ export function useSaveAdminRoomMutation() {
         throw new Error('Không nhận được thông tin phòng hợp lệ. Hãy mở lại form.')
       }
 
-      return updateRoom(variables.roomId, {
-        ...variables.input,
-        active: current.active,
-      })
+      if (current.version !== variables.contentFormats.expectedVersion) {
+        throw new AdminRoomSaveConflictError()
+      }
+
+      const metadataChanged = current.name !== variables.input.name ||
+        current.roomType !== variables.input.roomType
+      const savedRoom = metadataChanged
+        ? await updateRoom(variables.roomId, { ...variables.input, active: current.active })
+        : current
+      const formatsChanged = [...(current.contentFormats ?? [])].sort().join('|') !==
+        [...variables.contentFormats.formats].sort().join('|')
+
+      if (!formatsChanged) return savedRoom
+
+      try {
+        if (savedRoom.id !== variables.roomId || typeof savedRoom.version !== 'number' ||
+          !Number.isSafeInteger(savedRoom.version) || savedRoom.version < 0) {
+          throw new Error('Không nhận được version hợp lệ để lưu định dạng. Hãy tải lại thông tin.')
+        }
+
+        // Updating metadata may increment the room version. Use the returned version,
+        // never the version from before the first request.
+        const formats = await replaceRoomContentFormats(variables.roomId, {
+          ...variables.contentFormats,
+          expectedVersion: savedRoom.version,
+        })
+
+        if (formats.roomId !== variables.roomId || typeof formats.version !== 'number' ||
+          !Number.isSafeInteger(formats.version) || formats.version < savedRoom.version ||
+          !Array.isArray(formats.formats) ||
+          [...formats.formats].sort().join('|') !== [...variables.contentFormats.formats].sort().join('|')) {
+          throw new Error('Chưa xác nhận được định dạng vừa lưu. Hãy tải lại thông tin.')
+        }
+
+        queryClient.setQueryData(adminRoomContentFormatKeys.detail(variables.roomId), formats)
+        return { ...savedRoom, contentFormats: formats.formats, version: formats.version }
+      } catch (error) {
+        if (metadataChanged) throw new AdminRoomPartialSaveError(savedRoom, error)
+        throw error
+      }
     },
     retry: false,
     onSuccess: (room) => {
@@ -177,7 +230,19 @@ export function useSaveAdminRoomMutation() {
 
       void queryClient.invalidateQueries({
         predicate: ({ queryKey }) =>
-          ['rooms', 'showtimes', 'home', 'booking'].includes(String(queryKey[0])),
+          ['rooms', 'room-content-formats', 'showtimes', 'home', 'booking'].includes(String(queryKey[0])),
+      })
+    },
+    onError: (error, variables) => {
+      if (variables.operation !== 'update') return
+
+      if (error instanceof AdminRoomPartialSaveError) {
+        queryClient.setQueryData(adminRoomKeys.detail(variables.roomId), error.savedRoom)
+      }
+
+      void queryClient.invalidateQueries({
+        predicate: ({ queryKey }) =>
+          ['rooms', 'room-content-formats', 'showtimes', 'home', 'booking'].includes(String(queryKey[0])),
       })
     },
   })

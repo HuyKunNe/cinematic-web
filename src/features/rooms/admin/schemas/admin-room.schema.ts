@@ -56,7 +56,7 @@ const layoutErrorMessages = new Map<string, string>([
   ],
   [
     'INVENTORY_ROOM_VERSION_CONFLICT',
-    'Thông tin phòng đã thay đổi. Đã tải lại dữ liệu mới; hãy kiểm tra và lưu lại.',
+    'Thông tin phòng đã thay đổi. Hãy tải lại dữ liệu, kiểm tra và lưu lại.',
   ],
 ])
 
@@ -127,10 +127,13 @@ export const adminRoomSchema = z.object({
   }),
 })
 
+export const adminRoomContentFormatsSchema = z
+  .array(z.nativeEnum(CreateRoomRequestContentFormatsItem))
+  .max(adminRoomContentFormatOptions.length, 'Danh sách định dạng không hợp lệ.')
+
 export const adminRoomCreateSchema = adminRoomSchema.extend({
   active: z.boolean(),
-  contentFormats: z
-    .array(z.nativeEnum(CreateRoomRequestContentFormatsItem))
+  contentFormats: adminRoomContentFormatsSchema
     .min(1, 'Chọn ít nhất một định dạng phòng hỗ trợ.'),
 })
 

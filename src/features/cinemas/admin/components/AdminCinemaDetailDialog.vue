@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { Building2 } from 'lucide-vue-next'
 import {
   DialogContent,
   DialogDescription,
@@ -133,18 +134,26 @@ function amenitiesError(error: unknown) {
       <DialogOverlay class="admin-cinema-dialog__overlay" />
 
       <DialogContent
-        class="admin-cinema-dialog"
+        class="admin-cinema-dialog admin-cinema-detail"
         @open-auto-focus="focusCloseButton"
         @close-auto-focus="restoreFocus"
       >
         <header class="admin-cinema-dialog__heading">
-          <div>
-            <DialogTitle class="admin-cinema-dialog__title">
-              {{ cinema.data.value?.name || 'Chi tiết cụm rạp' }}
-            </DialogTitle>
-            <DialogDescription class="admin-cinemas__muted">
-              Thông tin và năng lực phòng chiếu của cụm rạp.
-            </DialogDescription>
+          <div class="admin-cinema-detail__identity">
+            <span class="admin-cinema-detail__icon" aria-hidden="true"><Building2 /></span>
+            <div>
+              <p class="admin-cinema-detail__eyebrow">Chi tiết cụm rạp</p>
+              <DialogTitle class="admin-cinema-dialog__title">
+                {{ cinema.data.value?.name || 'Cụm rạp' }}
+              </DialogTitle>
+              <DialogDescription class="admin-cinemas__muted">
+                Thông tin liên hệ, phòng chiếu và tiện ích.
+              </DialogDescription>
+              <span v-if="cinema.data.value" class="admin-cinemas__status"
+                :class="{ 'is-active': cinema.data.value.active === true, 'is-paused': cinema.data.value.active === false }">
+                {{ statusLabel(cinema.data.value.active) }}
+              </span>
+            </div>
           </div>
 
           <AppButton id="admin-cinema-detail-close" variant="ghost" size="sm" @click="close">
@@ -152,6 +161,7 @@ function amenitiesError(error: unknown) {
           </AppButton>
         </header>
 
+        <div class="admin-cinema-detail__body">
         <p v-if="!canManage" class="admin-cinemas__error" role="alert">
           Tài khoản không có quyền xem thông tin quản lý cụm rạp.
         </p>
@@ -210,44 +220,25 @@ function amenitiesError(error: unknown) {
               :hidden="activeTab !== 'overview'"
               :aria-busy="cinema.isFetching.value"
             >
-              <dl class="admin-cinema-detail__grid">
-                <div>
-                  <dt>Tên cụm rạp</dt>
-                  <dd>{{ display(cinema.data.value.name) }}</dd>
-                </div>
-                <div>
-                  <dt>Trạng thái</dt>
-                  <dd>{{ statusLabel(cinema.data.value.active) }}</dd>
-                </div>
-                <div class="admin-cinema-detail__wide">
-                  <dt>Địa chỉ</dt>
-                  <dd>{{ display(cinema.data.value.address) }}</dd>
-                </div>
-                <div>
-                  <dt>Thành phố</dt>
-                  <dd>{{ display(cinema.data.value.city) }}</dd>
-                </div>
-                <div>
-                  <dt>Số điện thoại</dt>
-                  <dd>{{ display(cinema.data.value.phone) }}</dd>
-                </div>
-                <div>
-                  <dt>Email</dt>
-                  <dd>{{ display(cinema.data.value.email) }}</dd>
-                </div>
-                <div>
-                  <dt>Giờ mở cửa</dt>
-                  <dd>{{ display(cinema.data.value.openingHours) }}</dd>
-                </div>
-                <div>
-                  <dt>Múi giờ</dt>
-                  <dd>{{ display(cinema.data.value.timeZone) }}</dd>
-                </div>
-                <div class="admin-cinema-detail__wide">
-                  <dt>Hướng dẫn đường đi</dt>
-                  <dd>{{ display(cinema.data.value.directions) }}</dd>
-                </div>
-              </dl>
+              <div class="admin-cinema-detail__overview">
+                <section class="admin-cinema-detail__section" aria-labelledby="cinema-location-title">
+                  <h3 id="cinema-location-title">Địa điểm</h3>
+                  <dl class="admin-cinema-detail__grid">
+                    <div><dt>Địa chỉ</dt><dd>{{ display(cinema.data.value.address) }}</dd></div>
+                    <div><dt>Thành phố</dt><dd>{{ display(cinema.data.value.city) }}</dd></div>
+                    <div><dt>Hướng dẫn đường đi</dt><dd>{{ display(cinema.data.value.directions) }}</dd></div>
+                  </dl>
+                </section>
+                <section class="admin-cinema-detail__section" aria-labelledby="cinema-contact-title">
+                  <h3 id="cinema-contact-title">Liên hệ &amp; giờ hoạt động</h3>
+                  <dl class="admin-cinema-detail__grid">
+                    <div><dt>Số điện thoại</dt><dd>{{ display(cinema.data.value.phone) }}</dd></div>
+                    <div><dt>Email</dt><dd>{{ display(cinema.data.value.email) }}</dd></div>
+                    <div><dt>Giờ mở cửa</dt><dd>{{ display(cinema.data.value.openingHours) }}</dd></div>
+                    <div><dt>Múi giờ</dt><dd>{{ display(cinema.data.value.timeZone) }}</dd></div>
+                  </dl>
+                </section>
+              </div>
             </section>
 
             <section
@@ -382,6 +373,7 @@ function amenitiesError(error: unknown) {
             </section>
           </template>
         </template>
+        </div>
       </DialogContent>
     </DialogPortal>
   </DialogRoot>

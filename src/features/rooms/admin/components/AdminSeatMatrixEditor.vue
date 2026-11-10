@@ -1322,7 +1322,13 @@ defineExpose({
 
       <aside class="seat-matrix-editor__inspector" aria-label="Thuộc tính sơ đồ">
         <section class="seat-matrix-editor__panel">
-          <h2>{{ selectedTitle }}</h2>
+          <header class="seat-matrix-editor__selection-heading">
+            <div>
+              <p>Đang chọn</p>
+              <h2>{{ selectedTitle }}</h2>
+            </div>
+            <span>{{ selectedSeat ? 'Ghế' : 'Ô trống' }}</span>
+          </header>
 
           <div v-if="!selectedSeat" ref="draftControls" class="seat-matrix-editor__draft-controls">
             <label :for="`${prefix}-new-type`">Loại ghế</label>
@@ -1380,25 +1386,25 @@ defineExpose({
           </template>
         </section>
 
-        <section
-          v-for="group in structureGroups"
-          :key="group.title"
-          class="seat-matrix-editor__panel"
-        >
-          <h2>{{ group.title }}</h2>
-
-          <p v-if="group.description">{{ group.description }}</p>
-
-          <button
-            v-for="action in group.actions"
-            :key="action.label"
-            type="button"
-            :class="{ 'is-danger': action.danger }"
-            :disabled="disabled || Boolean(action.unavailable?.())"
-            @click="runStructureAction(action)"
-          >
-            {{ action.label }}
-          </button>
+        <section class="seat-matrix-editor__panel">
+          <h2>Cấu trúc sơ đồ</h2>
+          <p>Hàng {{ matrixRowLabel(selection.row) }} · Cột {{ selection.column + 1 }}</p>
+          <section v-for="group in structureGroups" :key="group.title" class="seat-matrix-editor__structure-group">
+            <h3>{{ group.title }}</h3>
+            <p v-if="group.description">{{ group.description }}</p>
+            <div class="seat-matrix-editor__structure-actions">
+              <button
+                v-for="action in group.actions"
+                :key="action.label"
+                type="button"
+                :class="{ 'is-danger': action.danger }"
+                :disabled="disabled || Boolean(action.unavailable?.())"
+                @click="runStructureAction(action)"
+              >
+                {{ action.label }}
+              </button>
+            </div>
+          </section>
         </section>
       </aside>
     </div>
@@ -1426,6 +1432,9 @@ defineExpose({
   --matrix-screen-spacing: 0.14em;
   --matrix-row-drop-line: var(--space-1);
   --matrix-row-drag-opacity: var(--opacity-disabled);
+  --matrix-inspector-danger-background: color-mix(
+    in srgb, var(--color-error) var(--matrix-seat-tint), var(--color-surface)
+  );
   --matrix-table-width: calc(
     var(--matrix-axis-size) + var(--matrix-cell-width) * var(--matrix-column-count)
   );
@@ -1476,12 +1485,82 @@ defineExpose({
   display: grid;
   flex: 1 1 var(--matrix-inspector-size);
   min-width: 0;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .seat-matrix-editor__inspector .seat-matrix-editor__panel {
   display: grid;
+  gap: var(--space-2);
+}
+
+.seat-matrix-editor .seat-matrix-editor__inspector p {
+  margin: 0;
+  font-size: var(--font-size-xs);
+}
+
+.seat-matrix-editor .seat-matrix-editor__inspector h2 {
+  font-size: var(--font-size-sm);
+}
+
+.seat-matrix-editor__selection-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-1);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.seat-matrix-editor__inspector .seat-matrix-editor__selection-heading h2 {
+  margin-top: var(--space-1);
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
+}
+
+.seat-matrix-editor__selection-heading > span {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.seat-matrix-editor__structure-group {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  margin-top: var(--space-1);
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+
+.seat-matrix-editor__structure-group h3 {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.seat-matrix-editor__structure-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.seat-matrix-editor__inspector .seat-matrix-editor__structure-actions button {
+  min-width: 0;
+  min-height: var(--control-height-sm);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
+  overflow-wrap: anywhere;
+}
+
+.seat-matrix-editor__structure-actions button:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.seat-matrix-editor__inspector button.is-danger {
+  background: var(--matrix-inspector-danger-background);
 }
 
 .seat-matrix-editor h2 {

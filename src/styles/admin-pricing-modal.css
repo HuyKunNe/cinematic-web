@@ -4,8 +4,11 @@
   --pm-max-height: 94dvh;
   --pm-edge: 2rem;
   --pm-radius: 1rem;
-  --pm-gap: 1.125rem;
-  --pm-card-padding: 1.125rem;
+  --pm-gap: var(--space-4);
+  --pm-card-padding: var(--space-5);
+  --pm-layout-columns: minmax(0, 2fr) minmax(0, 2fr);
+  --pm-summary-columns: repeat(3, minmax(0, 1fr));
+  --pm-context-width: var(--price-filter-max-width);
   --pm-head-padding-block: 1.125rem;
   --pm-padding-inline: 1.5rem;
   --pm-content-padding-top: 1.25rem;
@@ -22,15 +25,15 @@
   --pm-control-radius: 0.5rem;
   --pm-title-size: 1.25rem;
   --pm-section-size: 0.875rem;
-  --pm-label-size: 0.6875rem;
+  --pm-label-size: var(--price-size-body);
   --pm-body-size: 0.75rem;
-  --pm-small-size: 0.625rem;
-  --pm-tiny-size: 0.5625rem;
+  --pm-small-size: var(--price-size-note);
+  --pm-tiny-size: var(--price-size-note);
   --pm-eyebrow-tracking: 0.08em;
   --pm-step-size: 1.75rem;
   --pm-step-radius: 0.5625rem;
-  --pm-step-background: #fff0e9;
-  --pm-row-background: #fbfcfd;
+  --pm-step-background: var(--color-primary-soft);
+  --pm-row-background: var(--price-soft);
   --pm-draft-background: #fff4df;
   --pm-draft-text: #966421;
   --pm-status-radius: 62.5rem;
@@ -76,6 +79,26 @@
   flex: 1 1 0;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.pricing-setup .pricing-dialog__head > .pricing-header-actions {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: flex-end;
+  gap: var(--price-space-3);
+}
+
+.pricing-setup .pricing-version-picker {
+  display: grid;
+  gap: var(--pm-field-gap);
+  min-width: 0;
+  color: var(--price-muted);
+  font-size: var(--pm-small-size);
+}
+
+.pricing-setup .pricing-version-picker select {
+  max-width: 100%;
+  min-height: var(--pm-control-height);
 }
 
 .pricing-setup .pricing-eyebrow {
@@ -140,13 +163,96 @@
   overflow: auto;
   overscroll-behavior: contain;
   padding: var(--pm-content-padding-top) var(--pm-padding-inline) var(--pm-content-padding-bottom);
+  background: var(--price-soft);
 }
 
 .pricing-setup .pricing-columns {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: var(--pm-layout-columns);
   align-items: start;
   gap: var(--pm-gap);
+}
+
+.pricing-setup .pricing-card--scope {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+}
+
+.pricing-setup .pricing-card--times {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.pricing-setup .pricing-card--groups {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.pricing-setup.is-lookup {
+  --pm-width: var(--admin-content-width);
+}
+
+.pricing-setup.is-lookup .pricing-card--scope {
+  grid-column: 1 / -1;
+  grid-row: auto;
+}
+
+.pricing-setup .pricing-lookup-summary {
+  grid-template-columns: var(--pm-summary-columns);
+  gap: var(--price-space-4) var(--price-space-5);
+  margin: 0;
+}
+
+.pricing-setup .pricing-lookup-summary > div {
+  grid-column: auto;
+  min-width: 0;
+}
+
+.pricing-setup .pricing-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--price-space-2);
+}
+
+.pricing-setup .pricing-cinema-list {
+  display: grid;
+  gap: var(--price-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pricing-setup .pricing-summary-chips .price-chip {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: var(--pm-small-size);
+}
+
+.pricing-setup .pricing-fares-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--price-space-4);
+  padding-bottom: var(--price-space-4);
+  border-bottom: var(--price-border) solid var(--price-line);
+}
+
+.pricing-setup .pricing-fares-toolbar .pricing-card__title {
+  margin: 0;
+  padding-bottom: 0;
+  border: 0;
+}
+
+.pricing-setup .pricing-fares-toolbar .pm-context {
+  flex: 0 1 var(--pm-context-width);
+  margin: 0;
+}
+
+.pricing-setup .pricing-fares-toolbar .pm-context > label {
+  width: 100%;
 }
 
 .pricing-setup .pricing-card {
@@ -166,6 +272,8 @@
   align-items: flex-start;
   gap: var(--price-space-3);
   margin-bottom: var(--price-space-4);
+  padding-bottom: var(--price-space-3);
+  border-bottom: var(--price-border) solid var(--price-line);
 }
 
 .pricing-setup .pricing-card__title h3 {
@@ -211,7 +319,8 @@
 
 .pricing-setup .pricing-field > input,
 .pricing-setup .pricing-field > select,
-.pricing-setup .pricing-field > textarea {
+.pricing-setup .pricing-field > textarea,
+.pricing-setup .pricing-field > .app-time-picker {
   width: 100%;
   min-height: var(--pm-control-height);
   padding: var(--price-space-2) var(--price-gap-control);
@@ -228,7 +337,8 @@
   resize: vertical;
 }
 
-.pricing-setup .pricing-field > :disabled {
+.pricing-setup .pricing-field > :disabled,
+.pricing-setup .pricing-field > [data-disabled] {
   background: var(--price-soft);
   color: var(--price-muted);
 }
@@ -274,6 +384,25 @@
   align-items: center;
   gap: var(--pm-field-gap);
   font-size: var(--pm-label-size);
+}
+
+.pricing-setup .pm-checks label {
+  min-width: 0;
+  padding: var(--price-space-2);
+  border: var(--price-border) solid var(--price-line);
+  border-radius: var(--pm-control-radius);
+  background: var(--price-paper);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.pricing-setup .pm-checks label:has(input:checked) {
+  border-color: var(--price-accent);
+  background: var(--pm-step-background);
+}
+
+.pricing-setup .pm-checks:disabled label {
+  cursor: default;
 }
 
 .pricing-setup :is(.pm-checks, .pm-default, .pm-confirm) input {
@@ -349,7 +478,7 @@
   overflow-wrap: anywhere;
 }
 
-.pricing-setup .pricing-config-row > .pricing-field > :is(input, select, textarea) {
+.pricing-setup .pricing-config-row > .pricing-field > :is(input, select, textarea, .app-time-picker) {
   grid-row: 2;
   align-self: end;
   min-width: 0;
@@ -408,6 +537,10 @@
   color: var(--price-error-text);
   font-size: var(--pm-small-size);
   font-weight: var(--price-weight-normal);
+}
+
+.pricing-setup .pricing-field-error:empty {
+  min-height: 0;
 }
 
 .pricing-setup .pricing-field small.pricing-field-error {
@@ -511,6 +644,10 @@
 
 .pricing-setup .pricing-table td {
   min-width: var(--pm-cell-width);
+}
+
+.pricing-setup .pricing-table tbody tr:last-child > :is(th, td) {
+  border-bottom: 0;
 }
 
 .pricing-setup .pricing-money-input input {
@@ -633,6 +770,17 @@
   margin-inline-start: auto;
 }
 
+@variant tablet-down {
+  .pricing-setup .pricing-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pricing-setup :is(.pricing-card--scope, .pricing-card--times, .pricing-card--groups) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+
 @variant admin-reference-mobile {
   .price-dialog.pricing-setup {
     inset: 0;
@@ -648,8 +796,26 @@
   }
 
   .pricing-setup .pricing-columns,
-  .pricing-setup .pricing-form-grid {
+  .pricing-setup .pricing-form-grid,
+  .pricing-setup .pricing-lookup-summary {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pricing-setup .pricing-dialog__head {
+    flex-wrap: wrap;
+  }
+
+  .pricing-setup .pricing-dialog__head > .pricing-header-actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+  }
+
+  .pricing-setup .pricing-version-picker {
+    flex: 1 1 0;
+  }
+
+  .pricing-setup .pricing-fares-toolbar .pm-context {
+    flex-basis: 100%;
   }
 
   .pricing-setup .pricing-dialog__foot {
@@ -809,6 +975,7 @@
 }
 
 .pricing-setup .pm-fare-display > strong {
+  font-size: var(--price-size-base);
   font-weight: var(--price-weight-semibold);
 }
 

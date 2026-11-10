@@ -203,9 +203,6 @@ function statusLabel(active?: boolean) {
       <div>
         <p class="admin-cinemas__eyebrow">Cụm rạp</p>
         <h1 id="admin-cinemas-title" tabindex="-1">Quản lý cụm rạp</h1>
-        <p class="admin-cinemas__description">
-          Theo dõi các địa điểm và trạng thái hoạt động của cụm rạp.
-        </p>
       </div>
 
       <AppButton id="admin-cinema-create" :disabled="!canManage" @click="openCreate">

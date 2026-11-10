@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick } from 'vue'
+import { Building2, DoorOpen, Info, Users, Armchair } from 'lucide-vue-next'
 import {
   DialogContent,
   DialogDescription,
@@ -99,18 +100,23 @@ function statusLabel(active?: boolean) {
       <DialogOverlay class="admin-room-dialog__overlay" />
 
       <DialogContent
-        class="admin-room-dialog"
+        class="admin-room-dialog admin-room-detail"
         @open-auto-focus="focusCloseButton"
         @close-auto-focus="restoreFocus"
       >
-        <header class="admin-room-dialog__heading">
-          <div>
-            <DialogTitle class="admin-room-dialog__title">
-              {{ room.data.value?.name || roomName || 'Chi tiết phòng chiếu' }}
-            </DialogTitle>
-            <DialogDescription class="admin-rooms__muted">
-              Thông tin phòng thuộc {{ cinemaName || 'cụm rạp chưa xác định' }}.
-            </DialogDescription>
+        <header class="admin-room-dialog__heading admin-room-detail__heading">
+          <div class="admin-room-detail__identity">
+            <span class="admin-room-detail__room-icon" aria-hidden="true"><DoorOpen /></span>
+            <div class="admin-room-detail__heading-copy">
+              <p class="admin-room-detail__eyebrow">Chi tiết phòng chiếu</p>
+              <DialogTitle class="admin-room-dialog__title">
+                {{ room.data.value?.name || roomName || 'Phòng chiếu' }}
+              </DialogTitle>
+              <DialogDescription class="admin-room-detail__cinema">
+                <Building2 aria-hidden="true" />
+                {{ cinemaName || 'Cụm rạp chưa xác định' }}
+              </DialogDescription>
+            </div>
           </div>
 
           <AppButton id="admin-room-detail-close" variant="ghost" size="sm" @click="close">
@@ -138,21 +144,18 @@ function statusLabel(active?: boolean) {
         <template v-else-if="room.data.value?.id === roomId">
           <dl class="admin-room-detail__grid">
             <div>
-              <dt>Cụm rạp</dt>
-              <dd>{{ cinemaName || 'Chưa xác định' }}</dd>
-            </div>
-            <div>
-              <dt>Loại phòng theo API</dt>
+              <dt>Loại phòng</dt>
               <dd>{{ adminRoomTypeLabel(room.data.value.roomType) }}</dd>
             </div>
             <div>
-              <dt>Định dạng nội dung</dt>
-              <dd>
-                {{
-                  room.data.value.contentFormats?.length
-                    ? room.data.value.contentFormats.join(' · ')
-                    : 'Chưa cấu hình'
-                }}
+              <dt>Định dạng hỗ trợ</dt>
+              <dd class="admin-room-detail__formats">
+                <template v-if="room.data.value.contentFormats?.length">
+                  <span v-for="format in room.data.value.contentFormats" :key="format">
+                    {{ format }}
+                  </span>
+                </template>
+                <span v-else class="admin-room-detail__unconfigured">Chưa cấu hình</span>
               </dd>
             </div>
             <div>
@@ -169,13 +172,6 @@ function statusLabel(active?: boolean) {
                 </span>
               </dd>
             </div>
-            <div class="admin-room-detail__wide">
-              <dt>Công nghệ trình chiếu / âm thanh</dt>
-              <dd>
-                BE hiện chưa có trường công nghệ riêng. Không thể tách công nghệ khỏi `roomType` một
-                cách đáng tin cậy.
-              </dd>
-            </div>
           </dl>
 
           <section
@@ -185,9 +181,9 @@ function statusLabel(active?: boolean) {
           >
             <header>
               <div>
-                <h2 id="admin-room-detail-seats-title">Sức chứa và hạng ghế</h2>
+                <h2 id="admin-room-detail-seats-title">Sức chứa &amp; hạng ghế</h2>
                 <p class="admin-rooms__muted">
-                  Sức chứa tính theo số người; đơn vị ghế tính theo từng vị trí trong sơ đồ.
+                  Thống kê từ sơ đồ ghế đã xuất bản.
                 </p>
               </div>
             </header>
@@ -212,22 +208,22 @@ function statusLabel(active?: boolean) {
             <template v-else-if="seatMap.data.value">
               <dl class="admin-room-detail__totals">
                 <div>
-                  <dt>Sức chứa</dt>
-                  <dd>{{ seatMap.data.value.capacity }} chỗ</dd>
+                  <dt><Users aria-hidden="true" /> Sức chứa</dt>
+                  <dd>{{ seatMap.data.value.capacity }} <span>chỗ</span></dd>
                 </div>
                 <div>
-                  <dt>Đơn vị ghế</dt>
-                  <dd>{{ seatMap.data.value.seats.length }} đơn vị</dd>
+                  <dt><Armchair aria-hidden="true" /> Đơn vị ghế</dt>
+                  <dd>{{ seatMap.data.value.seats.length }} <span>đơn vị</span></dd>
                 </div>
               </dl>
 
               <div
-                class="admin-rooms__table-scroll"
+                class="admin-rooms__table-scroll admin-room-detail__table-scroll"
                 role="region"
                 aria-label="Sức chứa theo hạng ghế"
                 tabindex="0"
               >
-                <table class="admin-rooms__table">
+                <table class="admin-rooms__table admin-room-detail__table">
                   <caption class="admin-visually-hidden">
                     Số đơn vị ghế và sức chứa theo từng hạng ghế trong sơ đồ đã xuất bản
                   </caption>
@@ -240,7 +236,11 @@ function statusLabel(active?: boolean) {
                   </thead>
                   <tbody>
                     <tr v-for="item in seatTypeBreakdown" :key="item.type">
-                      <th scope="row">{{ item.label }}</th>
+                      <th scope="row">
+                        <span class="admin-room-detail__seat-label">
+                          <Armchair aria-hidden="true" /> {{ item.label }}
+                        </span>
+                      </th>
                       <td>{{ item.units }}</td>
                       <td>{{ item.capacity }} chỗ</td>
                     </tr>
@@ -253,9 +253,11 @@ function statusLabel(active?: boolean) {
                 </table>
               </div>
 
-              <p class="admin-rooms__muted">
-                Ghế đôi là một đơn vị ghế nhưng có sức chứa hai người. Trạng thái ghế trong kho
-                không đại diện cho tình trạng đặt chỗ của từng suất chiếu.
+              <p class="admin-room-detail__note">
+                <Info aria-hidden="true" />
+                <span>
+                  Ghế đôi: 1 đơn vị, 2 chỗ ngồi. Số liệu không thể hiện tình trạng đặt chỗ theo suất chiếu.
+                </span>
               </p>
             </template>
 

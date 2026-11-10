@@ -26,11 +26,7 @@ const query = useAdminPricingDetailQuery(
 )
 
 const matrix = computed(() => {
-  if (
-    !props.canManage ||
-    !query.isSuccess.value ||
-    query.isFetching.value
-  ) {
+  if (!props.canManage || !query.isSuccess.value || query.isFetching.value) {
     return undefined
   }
 
@@ -42,12 +38,7 @@ const matrix = computed(() => {
 })
 
 const cells = computed(
-  () =>
-    new Map(
-      (matrix.value?.cells ?? []).map(
-        (cell) => [pricingCellKey(cell), cell] as const,
-      ),
-    ),
+  () => new Map((matrix.value?.cells ?? []).map((cell) => [pricingCellKey(cell), cell] as const)),
 )
 
 const moneyFormat = new Intl.NumberFormat('vi-VN', {
@@ -77,9 +68,7 @@ function priceLabel(
 }
 
 function unitLabel(seatType: PricingMatrix['seatTypes'][number]): string {
-  const option = matrix.value?.options.seatTypes.find(
-    (item) => item.seatType === seatType,
-  )
+  const option = matrix.value?.options.seatTypes.find((item) => item.seatType === seatType)
 
   return option ? pricingLabel(option.unit) : ''
 }
@@ -94,9 +83,6 @@ function unitLabel(seatType: PricingMatrix['seatTypes'][number]): string {
   >
     <header>
       <h3>Toàn bộ bảng giá của phiên bản đang chọn</h3>
-      <p class="price-note">
-        Xem cấu hình trước khi lưu lựa chọn bảng giá cho suất chiếu.
-      </p>
     </header>
 
     <p
@@ -111,22 +97,14 @@ function unitLabel(seatType: PricingMatrix['seatTypes'][number]): string {
       <p class="price-notice price-notice--error" role="alert">
         {{ pricingErrorMessage(query.error.value) }}
       </p>
-      <button
-        class="price-button"
-        type="button"
-        @click="query.refetch()"
-      >
+      <button class="price-button" type="button" @click="query.refetch()">
         Thử tải lại bảng giá
       </button>
     </div>
 
-    <p
-      v-else-if="!matrix"
-      class="price-notice"
-      role="status"
-    >
-      Phiên bản không còn là bảng giá đã công bố hoàn chỉnh.
-      Hãy tải lại dữ liệu suất chiếu để kiểm tra lựa chọn.
+    <p v-else-if="!matrix" class="price-notice" role="status">
+      Phiên bản không còn là bảng giá đã công bố hoàn chỉnh. Hãy tải lại dữ liệu suất chiếu để kiểm
+      tra lựa chọn.
     </p>
 
     <template v-else>
@@ -139,9 +117,7 @@ function unitLabel(seatType: PricingMatrix['seatTypes'][number]): string {
         :key="pricingScopeKey(scope)"
         class="pricing-version-preview__scope"
       >
-        <h4>
-          {{ pricingLabel(scope.experienceType) }} · {{ scope.contentFormat }}
-        </h4>
+        <h4>{{ pricingLabel(scope.experienceType) }} · {{ scope.contentFormat }}</h4>
 
         <div
           v-for="band in matrix.timeBands"
@@ -153,7 +129,13 @@ function unitLabel(seatType: PricingMatrix['seatTypes'][number]): string {
         >
           <table class="price-table">
             <caption>
-              {{ band.name }} · {{ pricingMinuteLabel(band.startMinute) }}–{{
+              {{
+                band.name
+              }}
+              ·
+              {{
+                pricingMinuteLabel(band.startMinute)
+              }}–{{
                 pricingMinuteLabel(band.endMinute)
               }}
             </caption>
@@ -161,22 +143,12 @@ function unitLabel(seatType: PricingMatrix['seatTypes'][number]): string {
             <thead>
               <tr>
                 <th scope="col">Hạng ghế</th>
-                <th
-                  v-for="group in matrix.ticketGroups"
-                  :key="group.id"
-                  scope="col"
-                >
+                <th v-for="group in matrix.ticketGroups" :key="group.id" scope="col">
                   {{ group.name }}
-                  <span
-                    v-if="group.id === matrix.defaultTicketGroupId"
-                    class="price-cell-sub"
-                  >
+                  <span v-if="group.id === matrix.defaultTicketGroupId" class="price-cell-sub">
                     Nhóm mặc định
                   </span>
-                  <span
-                    v-if="group.eligibilityDescription"
-                    class="price-cell-sub"
-                  >
+                  <span v-if="group.eligibilityDescription" class="price-cell-sub">
                     {{ group.eligibilityDescription }}
                   </span>
                 </th>
@@ -191,10 +163,7 @@ function unitLabel(seatType: PricingMatrix['seatTypes'][number]): string {
                     {{ unitLabel(seatType) }}
                   </span>
                 </th>
-                <td
-                  v-for="group in matrix.ticketGroups"
-                  :key="group.id"
-                >
+                <td v-for="group in matrix.ticketGroups" :key="group.id">
                   {{ priceLabel(scope, band.id, group.id, seatType) }}
                 </td>
               </tr>
@@ -202,12 +171,6 @@ function unitLabel(seatType: PricingMatrix['seatTypes'][number]): string {
           </table>
         </div>
       </div>
-
-      <p class="price-note">
-        Giá ghế đôi tính cho cả cặp. Mỗi nhóm vé, khung giờ và định dạng
-        hiển thị giá được cấu hình riêng. Backend kiểm tra tính phù hợp
-        với suất chiếu khi lưu.
-      </p>
     </template>
   </section>
 </template>

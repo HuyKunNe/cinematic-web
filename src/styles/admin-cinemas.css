@@ -412,22 +412,105 @@
   }
 }
 
-.admin-cinemas {
-  --admin-cinema-detail-field-min-width: 16rem;
+.admin-cinema-dialog.admin-cinema-detail {
+  --admin-cinema-detail-icon-size: var(--space-12);
+
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.admin-cinema-detail .admin-cinema-dialog__heading {
+  flex: 0 0 auto;
+  align-items: flex-start;
+  padding: var(--space-5);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.admin-cinema-detail__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-cinema-detail__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: var(--admin-cinema-detail-icon-size);
+  height: var(--admin-cinema-detail-icon-size);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.admin-cinema-detail__icon svg {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+}
+
+.admin-cinema-detail__eyebrow {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.admin-cinema-detail .admin-cinemas__muted {
+  margin: var(--space-2) 0;
+}
+
+.admin-cinema-detail .admin-cinemas__status.is-paused {
+  color: var(--color-warning);
+}
+
+.admin-cinema-detail__body {
+  display: grid;
+  gap: var(--space-4);
+  min-height: 0;
+  padding: var(--space-5);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.admin-cinema-detail__overview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.admin-cinema-detail__section {
+  min-width: 0;
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+.admin-cinema-detail__section h3 {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-cinema-detail__tabs {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-1);
+  padding: var(--space-1);
   overflow-x: auto;
-  border-bottom: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
 }
 
 .admin-cinema-detail__tab {
   min-height: var(--control-height-md);
   padding: var(--space-2) var(--space-3);
   border: 0;
-  border-bottom: var(--border-width-thin) solid transparent;
+  border-radius: var(--radius-sm);
+  flex: 1 0 auto;
   background: transparent;
   color: var(--color-text-secondary);
   font: inherit;
@@ -436,9 +519,13 @@
 }
 
 .admin-cinema-detail__tab.is-active {
-  border-bottom-color: var(--color-primary);
+  background: var(--color-surface);
   color: var(--color-primary);
   font-weight: var(--font-weight-semibold);
+}
+
+.admin-cinema-detail__tab:hover:not(.is-active) {
+  background: var(--color-surface-hover);
 }
 
 .admin-cinema-detail__tab:focus-visible,
@@ -457,19 +544,20 @@
 
 .admin-cinema-detail__grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(min(100%, var(--admin-cinema-detail-field-min-width)), 1fr)
-  );
-  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
   margin: 0;
 }
 
 .admin-cinema-detail__grid > div {
   min-width: 0;
-  padding: var(--space-3);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-md);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.admin-cinema-detail__grid > div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .admin-cinema-detail__grid dt {
@@ -480,6 +568,7 @@
 .admin-cinema-detail__grid dd {
   margin: var(--space-1) 0 0;
   color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
   overflow-wrap: anywhere;
 }
 
@@ -488,11 +577,15 @@
 }
 
 .admin-cinema-detail__table {
-  min-width: var(--admin-cinema-table-min-width);
+  min-width: 0;
+}
+
+.admin-cinema-detail__table :is(th, td) {
+  padding: var(--space-3);
 }
 
 @variant mobile-layout {
-  .admin-cinema-detail__grid {
+  .admin-cinema-detail__overview {
     grid-template-columns: minmax(0, 1fr);
   }
 

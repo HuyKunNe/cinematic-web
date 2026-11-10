@@ -1,11 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import {
-  getRoomContentFormats,
-  replaceRoomContentFormats,
-} from '@/services/api/generated/inventory-service/room-content-formats-controller/room-content-formats-controller'
+import { useQuery } from '@tanstack/vue-query'
+import { getRoomContentFormats } from '@/services/api/generated/inventory-service/room-content-formats-controller/room-content-formats-controller'
 import type {
-  ReplaceRoomContentFormatsRequest,
   RoomContentFormatsResponse,
 } from '@/services/api/generated/inventory-service/model'
 import type { ApiError } from '@/services/http/api-error'
@@ -31,29 +27,5 @@ export function useAdminRoomContentFormatsQuery(
     retry: false,
     refetchOnMount: 'always',
     refetchOnWindowFocus: false,
-  })
-}
-
-type ReplaceVariables = {
-  roomId: string
-  input: ReplaceRoomContentFormatsRequest
-}
-
-export function useReplaceAdminRoomContentFormatsMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation<RoomContentFormatsResponse, ApiError, ReplaceVariables>({
-    mutationFn: ({ roomId, input }) => replaceRoomContentFormats(roomId, input),
-    retry: false,
-    onSuccess: async (response) => {
-      if (response.roomId) {
-        queryClient.setQueryData(adminRoomContentFormatKeys.detail(response.roomId), response)
-      }
-
-      await queryClient.invalidateQueries({
-        predicate: ({ queryKey }) =>
-          ['rooms', 'seats', 'showtimes', 'home', 'booking'].includes(String(queryKey[0])),
-      })
-    },
   })
 }

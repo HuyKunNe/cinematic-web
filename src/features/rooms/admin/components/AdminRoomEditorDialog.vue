@@ -18,15 +18,21 @@ import {
   type CreateRoomRequest,
   type RoomResponse,
 } from '@/services/api/generated/inventory-service/model'
-import { useAdminRoomDetailQuery, useSaveAdminRoomMutation } from '../api/admin-room-queries'
+import {
+  AdminRoomPartialSaveError,
+  AdminRoomSaveConflictError,
+  useAdminRoomDetailQuery,
+  useSaveAdminRoomMutation,
+} from '../api/admin-room-queries'
+import { useAdminRoomContentFormatsQuery } from '../api/admin-room-content-formats-queries'
 import {
   adminRoomContentFormatOptions,
+  adminRoomContentFormatsSchema,
   adminRoomCreateSchema,
   adminRoomErrorMessage,
   adminRoomSchema,
   adminRoomTypeLabel,
   adminRoomTypeOptions,
-  createAdminRoomCreateValues,
   createAdminRoomValues,
   isAdminRoomApiError,
   toAdminRoomCreateRequest,
@@ -53,6 +59,7 @@ const canManage = computed(
 )
 
 const detail = useAdminRoomDetailQuery(() => props.roomId ?? '', canManage)
+const formatsDetail = useAdminRoomContentFormatsQuery(() => props.roomId ?? '', canManage)
 const mutation = useSaveAdminRoomMutation()
 const ready = ref(props.roomId === null)
 const requestError = ref('')
@@ -63,6 +70,13 @@ type AdminRoomContentFormat = NonNullable<CreateRoomRequest['contentFormats']>[n
 const active = ref(true)
 const contentFormats = ref<AdminRoomContentFormat[]>([CreateRoomRequestContentFormatsItem['2D']])
 const contentFormatsError = ref('')
+const formatsVersion = ref<number | null>(null)
+const reloadRequired = ref(false)
+const formatOptions = computed(() => props.roomId
+  ? (formatsDetail.data.value?.supportedFormatOptions ?? []).map((value) => ({ value, label: value }))
+  : adminRoomContentFormatOptions)
+const loading = computed(() => detail.isFetching.value || formatsDetail.isFetching.value)
+const loadError = computed(() => detail.error.value ?? formatsDetail.error.value)
 const fields: AdminRoomField[] = ['name', 'roomType']
 
 const { errors, submitCount, isSubmitting, defineField, isFieldTouched, resetForm, handleSubmit } =
@@ -120,13 +134,21 @@ async function focusName() {
 }
 
 watch(
-  [detail.data, detail.isFetching, detail.isSuccess],
-  ([room, fetching, success]) => {
+  [detail.data, detail.isFetching, detail.isSuccess,
+    formatsDetail.data, formatsDetail.isFetching, formatsDetail.isSuccess],
+  ([room, fetching, success, formats, fetchingFormats, formatsSuccess]) => {
     if (
       ready.value ||
       !props.roomId ||
       fetching ||
       !success ||
+      fetchingFormats ||
+      !formatsSuccess ||
+      formats?.roomId !== props.roomId ||
+      typeof formats.version !== 'number' ||
+      !Number.isSafeInteger(formats.version) ||
+      formats.version < 0 ||
+      room?.version !== formats.version ||
       room?.id !== props.roomId ||
       room.cinemaId !== props.cinemaId ||
       typeof room.name !== 'string' ||
@@ -136,12 +158,28 @@ watch(
       return
     }
 
+    const selected = adminRoomContentFormatsSchema.safeParse(formats.formats)
+    const supported = adminRoomContentFormatsSchema.safeParse(formats.supportedFormatOptions)
+    if (!selected.success || !supported.success ||
+      selected.data.some((format) => !supported.data.includes(format))) return
+
     resetForm({ values: createAdminRoomValues(room) })
+    contentFormats.value = [...selected.data]
+    formatsVersion.value = formats.version
     ready.value = true
     void focusName()
   },
   { immediate: true },
 )
+
+async function reload() {
+  if (busy.value) return
+  ready.value = false
+  reloadRequired.value = false
+  requestError.value = ''
+  contentFormatsError.value = ''
+  await Promise.allSettled([detail.refetch(), formatsDetail.refetch()])
+}
 
 function close() {
   if (!busy.value) emit('close')
@@ -172,24 +210,36 @@ async function focusError() {
 
   const target =
     formElement.value?.querySelector<HTMLElement>('[aria-invalid="true"]') ??
-    document.getElementById('admin-room-content-formats') ??
-    document.getElementById('admin-room-request-error')
+    document.getElementById('admin-room-request-error') ??
+    document.getElementById('admin-room-content-formats')
 
   target?.focus()
 }
 
 const save = handleSubmit(async (values) => {
-  if (!ready.value || !canManage.value || mutation.isPending.value) return
+  if (!ready.value || !canManage.value || mutation.isPending.value || reloadRequired.value) return
 
   let room: RoomResponse
 
   try {
     if (props.roomId) {
+      const formats = adminRoomContentFormatsSchema.safeParse(contentFormats.value)
+      if (!formats.success || formatsVersion.value === null ||
+        contentFormats.value.some((format) => !formatOptions.value.some((option) => option.value === format))) {
+        contentFormatsError.value = 'Chọn định dạng hợp lệ hoặc tải lại thông tin phòng.'
+        await focusError()
+        return
+      }
+
       room = await mutation.mutateAsync({
         operation: 'update',
         cinemaId: props.cinemaId,
         roomId: props.roomId,
         input: toAdminRoomUpdateRequest(values),
+        contentFormats: {
+          expectedVersion: formatsVersion.value,
+          formats: [...formats.data],
+        },
       })
     } else {
       const parsed = adminRoomCreateSchema.safeParse({
@@ -213,6 +263,14 @@ const save = handleSubmit(async (values) => {
       })
     }
   } catch (error) {
+    const originalError = error instanceof AdminRoomPartialSaveError ? error.originalError : error
+    if (error instanceof AdminRoomPartialSaveError) {
+      formatsVersion.value = error.savedRoom.version ?? null
+    }
+    reloadRequired.value = error instanceof AdminRoomSaveConflictError ||
+      (props.roomId !== null && formatsVersion.value === null) ||
+      (isAdminRoomApiError(originalError) && originalError.code === 'INVENTORY_ROOM_VERSION_CONFLICT')
+
     if (isAdminRoomApiError(error)) {
       for (const item of error.fieldErrors) {
         const field = fields.find((candidate) => candidate === item.field)
@@ -221,7 +279,8 @@ const save = handleSubmit(async (values) => {
     }
 
     if (!Object.values(serverErrors.value).some(Boolean)) {
-      requestError.value = adminRoomErrorMessage(error, 'Không thể lưu phòng.')
+      requestError.value = adminRoomErrorMessage(error, 'Không thể lưu phòng.') +
+        (reloadRequired.value ? ' Tải lại thông tin để kiểm tra trước khi lưu tiếp.' : '')
     }
 
     await focusError()
@@ -287,18 +346,19 @@ function submit(event: Event) {
         </p>
 
         <div v-if="!ready" class="admin-rooms__feedback">
-          <p v-if="detail.isFetching.value" role="status">Đang tải thông tin phòng…</p>
-          <template v-else-if="detail.isError.value">
+          <p v-if="loading" role="status">Đang tải thông tin và định dạng phòng…</p>
+          <template v-else-if="loadError">
             <p class="admin-rooms__error" role="alert">
-              {{ adminRoomErrorMessage(detail.error.value) }}
+              {{ adminRoomErrorMessage(loadError) }}
             </p>
-            <AppButton variant="secondary" :disabled="!canManage" @click="detail.refetch()">
+            <AppButton variant="secondary" :disabled="!canManage" @click="reload">
               Thử lại
             </AppButton>
           </template>
-          <p v-else-if="detail.isSuccess.value" class="admin-rooms__error" role="alert">
-            Không nhận được thông tin phòng hợp lệ.
-          </p>
+          <template v-else-if="detail.isSuccess.value && formatsDetail.isSuccess.value">
+            <p class="admin-rooms__error" role="alert">Không nhận được thông tin phòng hợp lệ.</p>
+            <AppButton variant="secondary" :disabled="!canManage" @click="reload">Tải lại</AppButton>
+          </template>
         </div>
 
         <form v-if="ready" ref="formElement" class="admin-room-form" novalidate @submit="submit">
@@ -377,16 +437,16 @@ function submit(event: Event) {
               </div>
 
               <fieldset
-                v-if="!roomId"
                 id="admin-room-content-formats"
                 class="admin-room-form__formats"
                 tabindex="-1"
                 :aria-invalid="Boolean(contentFormatsError)"
+                :aria-describedby="contentFormatsError ? 'admin-room-content-formats-error' : undefined"
               >
-                <legend>Định dạng phòng hỗ trợ *</legend>
+                <legend>Định dạng phòng hỗ trợ{{ roomId ? '' : ' *' }}</legend>
 
                 <label
-                  v-for="format in adminRoomContentFormatOptions"
+                  v-for="format in formatOptions"
                   :key="format.value"
                   class="admin-room-form__format"
                 >
@@ -394,10 +454,14 @@ function submit(event: Event) {
                   <span>{{ format.label }}</span>
                 </label>
 
-                <p v-if="contentFormatsError" class="admin-rooms__error" role="alert">
+                <p v-if="!formatOptions.length" class="admin-rooms__muted">Chưa có định dạng có thể chọn.</p>
+                <p v-if="contentFormatsError" id="admin-room-content-formats-error" class="admin-rooms__error" role="alert">
                   {{ contentFormatsError }}
                 </p>
               </fieldset>
+              <p v-if="roomId" class="admin-rooms__muted">
+                Bỏ chọn tất cả để lưu phòng chưa cấu hình định dạng. Không thể bỏ định dạng đang được suất chiếu sử dụng.
+              </p>
             </fieldset>
 
             <aside class="admin-room-preview" aria-labelledby="admin-room-preview-title">
@@ -421,7 +485,7 @@ function submit(event: Event) {
                   <dt>Trạng thái</dt>
                   <dd>{{ active ? 'Đang hoạt động' : 'Tạm ngưng' }}</dd>
                 </div>
-                <div v-if="!roomId">
+                <div>
                   <dt>Định dạng</dt>
                   <dd>
                     {{ contentFormats.length ? contentFormats.join(' · ') : 'Chưa chọn định dạng' }}
@@ -449,9 +513,13 @@ function submit(event: Event) {
             {{ requestError }}
           </p>
 
+          <AppButton v-if="reloadRequired" variant="secondary" :disabled="busy || !canManage" @click="reload">
+            Tải lại thông tin
+          </AppButton>
+
           <footer class="admin-room-form__actions">
             <AppButton variant="secondary" :disabled="busy" @click="close">Hủy</AppButton>
-            <AppButton type="submit" :loading="busy" :disabled="!canManage">
+            <AppButton type="submit" :loading="busy" :disabled="!canManage || reloadRequired">
               {{ roomId ? 'Lưu thay đổi' : 'Thêm phòng' }}
             </AppButton>
           </footer>

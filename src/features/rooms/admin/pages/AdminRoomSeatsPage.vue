@@ -647,27 +647,11 @@ async function changeActivity() {
               </div>
             </header>
 
+            <div v-if="selected" class="seatmap-details__selection">
+              <strong>{{ selected.seat.seatNumber }}</strong>
+              <span>{{ typeLabel(selected.seat.seatType) }} · {{ selected.seat.capacity }} chỗ</span>
+            </div>
             <dl v-if="selected">
-              <div>
-                <dt>Mã ghế</dt>
-                <dd>{{ selected.seat.seatNumber }}</dd>
-              </div>
-              <div>
-                <dt>Hàng</dt>
-                <dd>{{ selected.seat.rowLabel }}</dd>
-              </div>
-              <div>
-                <dt>Cột hiển thị</dt>
-                <dd>{{ columnLabel(selected.column, selected.endColumn) }}</dd>
-              </div>
-              <div>
-                <dt>Loại ghế</dt>
-                <dd>{{ typeLabel(selected.seat.seatType) }}</dd>
-              </div>
-              <div>
-                <dt>Sức chứa</dt>
-                <dd>{{ selected.seat.capacity }}</dd>
-              </div>
               <div>
                 <dt>Trạng thái</dt>
                 <dd>{{ statusLabel(selected.seat.active) }}</dd>
@@ -690,24 +674,12 @@ async function changeActivity() {
             </p>
             <p v-if="activityMessage" role="status">{{ activityMessage }}</p>
 
-            <template v-if="matrix">
-              <h3 class="seatmap-details__subtitle">Thống kê</h3>
+            <details v-if="matrix" class="seatmap-details__summary">
+              <summary>Thống kê phòng</summary>
               <dl>
                 <div>
-                  <dt>Số hàng</dt>
-                  <dd>{{ matrix.rows.length }}</dd>
-                </div>
-                <div>
-                  <dt>Số cột</dt>
-                  <dd>{{ matrix.columnCount }}</dd>
-                </div>
-                <div>
-                  <dt>Tổng số ô</dt>
-                  <dd>{{ matrix.rows.length * matrix.columnCount }}</dd>
-                </div>
-                <div>
-                  <dt>Ô đã chiếm</dt>
-                  <dd>{{ matrix.occupiedCount }}</dd>
+                  <dt>Tổng ghế</dt>
+                  <dd>{{ matrix.seats.length }}</dd>
                 </div>
                 <div v-for="option in adminSeatTypeOptions" :key="option.value">
                   <dt>{{ option.label }}</dt>
@@ -720,27 +692,14 @@ async function changeActivity() {
                   <dd>{{ matrix.inactiveCount }}</dd>
                 </div>
                 <div>
-                  <dt>Ô trống</dt>
-                  <dd>{{ matrix.emptyCount }}</dd>
-                </div>
-                <div>
-                  <dt>Sức chứa theo sơ đồ (người)</dt>
+                  <dt>Sức chứa</dt>
                   <dd>{{ matrix.capacity }}</dd>
-                </div>
-                <div>
-                  <dt>Đơn vị ghế đang hoạt động</dt>
-                  <dd>{{ matrix.seats.filter((seat) => seat.active).length }}</dd>
-                </div>
-                <div>
-                  <dt>Sức chứa ghế đang hoạt động (người)</dt>
-                  <dd>{{ matrix.activeCapacity }}</dd>
                 </div>
               </dl>
               <p class="seatmap-muted">
-                Mỗi ghế trong sơ đồ là một đơn vị ghế. Ghế đôi vẫn là một đơn vị nhưng có sức chứa 2
-                người. Trạng thái hoạt động không cho biết tình trạng còn chỗ của một suất chiếu.
+                Ghế đôi có 2 chỗ ngồi. Trạng thái ghế không thể hiện tình trạng đặt chỗ theo suất chiếu.
               </p>
-            </template>
+            </details>
           </aside>
         </div>
       </template>

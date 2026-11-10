@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Info } from 'lucide-vue-next'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppTimePicker from '@/components/ui/AppTimePicker.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
 
 type Module = 'showtimes' | 'bookings' | 'users' | 'promotions' | 'showtime-form' | 'pricing'
@@ -294,6 +295,7 @@ const preview = [
           <select v-if="field.type === 'select'" class="admin-reference__input">
             <option value="">{{ field.placeholder }}</option>
           </select>
+          <AppTimePicker v-else-if="field.type === 'time'" model-value="" class="admin-reference__input" disabled />
           <input
             v-else
             class="admin-reference__input"
@@ -397,6 +399,7 @@ const preview = [
             <select v-if="field.type === 'select'" class="admin-reference__input">
               <option value="">{{ field.placeholder }}</option>
             </select>
+            <AppTimePicker v-else-if="field.type === 'time'" model-value="" class="admin-reference__input" disabled />
             <input
               v-else
               class="admin-reference__input"

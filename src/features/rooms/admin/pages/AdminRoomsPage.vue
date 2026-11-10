@@ -26,7 +26,6 @@ import {
   adminRoomTypeLabel,
   normalizeAdminRoomSearch,
 } from '../schemas/admin-room.schema'
-import AdminRoomContentFormatsDialog from '../components/AdminRoomContentFormatsDialog.vue'
 import AdminRoomDetailDialog from '../components/AdminRoomDetailDialog.vue'
 import AdminRoomCapacityCell from '../components/AdminRoomCapacityCell.vue'
 
@@ -122,7 +121,7 @@ function roomActionId(id?: string) {
 }
 
 function preventRoomMenuFocus(event: Event) {
-  if (editor.value || contentFormatsEditor.value || roomDetail.value) {
+  if (editor.value || roomDetail.value) {
     event.preventDefault()
   }
 }
@@ -189,34 +188,12 @@ type EditorState = {
 
 const editor = ref<EditorState | null>(null)
 
-const contentFormatsEditor = ref<{
-  roomId: string
-  roomName: string
-  returnFocusId: string
-} | null>(null)
-
 const roomDetail = ref<{
   roomId: string
   roomName: string
   cinemaName: string
   returnFocusId: string
 } | null>(null)
-
-function openContentFormats(room: RoomResponse) {
-  if (!canManage.value || !room.id || roomActivity.isPending.value) return
-
-  successMessage.value = ''
-  contentFormatsEditor.value = {
-    roomId: room.id,
-    roomName: room.name || 'Phòng chiếu',
-    returnFocusId: roomActionId(room.id),
-  }
-}
-
-function contentFormatsSaved() {
-  contentFormatsEditor.value = null
-  successMessage.value = 'Đã cập nhật định dạng nội dung phòng.'
-}
 
 function openSeats(room: RoomResponse) {
   const cinema = selectedCinema.value
@@ -597,13 +574,6 @@ function statusLabel(active?: boolean) {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           class="admin-room-menu__item"
-                          :disabled="!room.id || roomActivity.isPending.value"
-                          @select="openContentFormats(room)"
-                        >
-                          Định dạng nội dung
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          class="admin-room-menu__item"
                           :disabled="typeof room.active !== 'boolean'"
                           @select="changeRoomActivity(room)"
                         >
@@ -657,15 +627,6 @@ function statusLabel(active?: boolean) {
       v-bind="editor"
       @close="editor = null"
       @saved="saved"
-    />
-    <AdminRoomContentFormatsDialog
-      v-if="contentFormatsEditor"
-      :key="contentFormatsEditor.roomId"
-      :room-id="contentFormatsEditor.roomId"
-      :room-name="contentFormatsEditor.roomName"
-      :return-focus-id="contentFormatsEditor.returnFocusId"
-      @close="contentFormatsEditor = null"
-      @saved="contentFormatsSaved"
     />
     <AdminRoomDetailDialog
       v-if="roomDetail"

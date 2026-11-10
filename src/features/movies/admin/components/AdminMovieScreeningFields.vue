@@ -163,16 +163,6 @@ function remove(key: string): void {
   >
     <legend>Phiên bản chiếu</legend>
 
-    <p id="admin-movie-screening-help" class="admin-movies__muted">
-      Chọn riêng công nghệ chiếu và định dạng hình ảnh. Mỗi ô được chọn tạo một cấu hình;
-      có thể thêm nhiều cấu hình ngôn ngữ cho cùng tổ hợp.
-    </p>
-
-    <p v-if="!creating" id="admin-movie-screening-persisted-help" class="admin-movies__muted">
-      Tổ hợp đã lưu luôn được giữ trong request và không thể bỏ tại ma trận. Trạng thái hoạt động
-      được chỉnh riêng bên dưới; muốn đổi định nghĩa, hãy thêm phiên bản mới.
-    </p>
-
     <div class="movie-screening-fields__matrix-scroll">
       <table class="movie-screening-fields__matrix">
         <caption class="admin-visually-hidden">
@@ -233,18 +223,14 @@ function remove(key: string): void {
           <h3 :id="`${combination.key}-title`">
             {{ combination.projectionLabel }} · {{ combination.formatLabel }}
           </h3>
-          <p class="admin-movies__muted">
-            {{ combination.rows.length }} cấu hình ngôn ngữ
-          </p>
+          <p class="admin-movies__muted">{{ combination.rows.length }} cấu hình ngôn ngữ</p>
         </div>
 
         <AppButton
           variant="secondary"
           size="sm"
           :disabled="disabled"
-          @click="
-            addLanguageVersion(combination.projectionTechnology, combination.contentFormat)
-          "
+          @click="addLanguageVersion(combination.projectionTechnology, combination.contentFormat)"
         >
           Thêm bản ngôn ngữ
         </AppButton>
@@ -256,7 +242,9 @@ function remove(key: string): void {
         class="movie-screening-fields__language-row"
       >
         <div class="movie-screening-fields__row-heading">
-          <strong>{{ row.id ? `Đã lưu · phiên bản ${row.expectedVersion}` : 'Phiên bản mới' }}</strong>
+          <strong>{{
+            row.id ? `Đã lưu · phiên bản ${row.expectedVersion}` : 'Phiên bản mới'
+          }}</strong>
           <span v-if="creating" class="movie-screening-fields__status">Sẽ hoạt động</span>
         </div>
 
