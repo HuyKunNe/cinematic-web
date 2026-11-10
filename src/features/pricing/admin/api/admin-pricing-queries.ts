@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { getManagedCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import {
   createCinemaPricingPolicy,
+  deleteCinemaPricingPolicyDraft,
   getCinemaPricingPolicyVersion,
   listLatestCinemaPricingPolicies,
   listCinemaPricingPolicyVersions,
@@ -236,7 +237,7 @@ const labels: Record<string, string> = {
   WEEKEND: 'Cuối tuần',
   HOLIDAY: 'Lễ, Tết',
   DRAFT: 'Bản nháp',
-  PUBLISHED: 'Đã công bố',
+  PUBLISHED: 'Đang áp dụng',
   RETIRED: 'Ngừng áp dụng',
   STANDARD: 'Tiêu chuẩn',
   PREMIUM_CINEMA: 'Rạp cao cấp',
@@ -274,6 +275,14 @@ export function pricingErrorMessage(error: unknown): string {
   if (error instanceof z.ZodError) {
     return 'Dữ liệu phản hồi không đúng contract hiện tại. Hãy tải lại trước khi tiếp tục.'
   }
+
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'INVENTORY_PRICING_POLICY_VERSION_IN_USE'
+  )
+    return 'Phiên bản bảng giá đang được suất chiếu sử dụng nên không thể xóa.'
 
   if (
     typeof error === 'object' &&
@@ -600,6 +609,25 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
     onSuccess: invalidate,
   })
 
+  const deleteDraft = useMutation({
+    retry: false,
+    mutationFn: async (input: { context: PricingContext; expectedVersion: number }) => {
+      requireAccess()
+      requireContext(input.context)
+      counter.parse(input.expectedVersion)
+      await deleteCinemaPricingPolicyDraft(
+        input.context.cinemaId,
+        input.context.policyId,
+        input.context.versionId,
+        { expectedVersion: input.expectedVersion },
+      )
+    },
+    onSuccess: (_data, input) => {
+      queryClient.removeQueries({ queryKey: detailKey(input.context), exact: true })
+      invalidate()
+    },
+  })
+
   const metadata = useMutation({
     retry: false,
     mutationFn: async (input: {
@@ -756,6 +784,7 @@ export function useAdminPricingActions(enabled: MaybeRefOrGetter<boolean>) {
 
   return {
     create,
+    deleteDraft,
     metadata,
     configuration,
     matrix,

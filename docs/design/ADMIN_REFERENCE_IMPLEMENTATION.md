@@ -122,3 +122,28 @@ khả dụng trong phiên làm việc. Cần kiểm tra thủ công trước khi
 Không sửa BE, database, cấu hình MySQL; không commit, push hay tạo PR.
 
 Commit message đề xuất: `style(admin): align shared UI with cinema-admin reference`
+
+## Xóa bản nháp qua API mới
+
+- Bảng giá: nút “Xóa nháp” trong danh sách và form chỉnh sửa nháp; gọi
+  `deleteCinemaPricingPolicyDraft` với `expectedVersion` của phiên bản đang xem.
+- Sơ đồ ghế: chọn phiên bản nháp trong màn thiết kế rồi bấm “Xóa nháp”; gọi
+  `deleteRoomLayoutDraft` với `expectedVersion` hiện tại. Sau khi xóa, bỏ nội dung
+  editor và `layoutId` đã xóa trên URL; không tự tạo lại bản nháp trong phiên trang.
+- Dùng `AppConfirmDialog` dựa trên Reka AlertDialog, ưu tiên focus nút giữ nháp,
+  khóa thao tác trong khi gửi yêu cầu, không tự retry DELETE. Xóa thành công mới
+  bỏ cache chi tiết/cập nhật danh sách; lỗi giữ nguyên dữ liệu nhập và cho tải lại.
+- Chỉ hiển thị thao tác cho `DRAFT`. BE vẫn kiểm tra quyền, phiên bản và việc
+  sử dụng bởi suất chiếu. Không gọi API xóa để kiểm tra trong phiên triển khai.
+
+Kiểm tra thủ công trên môi trường được phép: hủy xác nhận; xóa nháp có thay đổi
+chưa lưu; kiểm tra danh sách/URL sau xóa; mở lại bản công bố và tạo nháp kế tiếp;
+thử 403/404/409 và mất kết nối; xác nhận không gửi DELETE lặp hoặc tạo lại nháp
+ngay sau xóa. Các bản đã xuất bản không được có nút xóa.
+
+Kiểm tra compilation sau cập nhật API: `npm.cmd run build-only` bị chặn bởi
+hai import Booking Service cũ (`booking-management/booking-management` và
+`bookingSeatResponseUnit`). `npm.cmd run type-check` báo 135 diagnostic do
+các consumer chưa đồng bộ với generated client mới (tên export và trường optional).
+Không có diagnostic ở các dòng thêm/sửa của phần xóa nháp trong lần kiểm tra này.
+Chưa xác nhận luồng xóa bằng trình duyệt hoặc gọi API thực tế; không chạy test.

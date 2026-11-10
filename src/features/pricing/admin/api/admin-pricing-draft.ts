@@ -213,6 +213,16 @@ export function useCreatePricingDraftFromPublished(enabled: MaybeRefOrGetter<boo
     }
   }
 
+  function forgetDeleted(versionId: string): void {
+    for (const [sourceId, attempt] of attempts) {
+      if (attempt.created?.id === versionId) attempts.delete(sourceId)
+    }
+    if (checkpoint.value?.created?.id === versionId) {
+      checkpoint.value = null
+      needsRecovery.value = false
+    }
+  }
+
   return {
     checkpoint: computed(() => checkpoint.value),
     needsRecovery: computed(() => needsRecovery.value),
@@ -220,5 +230,6 @@ export function useCreatePricingDraftFromPublished(enabled: MaybeRefOrGetter<boo
     start,
     resume,
     markOpened,
+    forgetDeleted,
   }
 }

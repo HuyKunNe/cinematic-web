@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { useQueryClient } from '@tanstack/vue-query'
+import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
 import {
@@ -34,6 +35,7 @@ const refreshing = ref(false)
 const openingId = ref('')
 const requestError = ref('')
 const notice = ref('')
+const deleteTarget = ref<PricingPolicy | null>(null)
 const dialogMode = ref<'create' | 'edit' | 'revise' | 'preview' | 'quote' | null>(null)
 const dialogDetail = ref<PricingDetail>()
 const dialogCinemaId = ref('')
@@ -69,7 +71,12 @@ const configurationOptions = computed(() => {
   return undefined
 })
 const busy = computed(
-  () => refreshing.value || listing.loading.value || openingId.value !== '' || drafts.pending.value,
+  () =>
+    refreshing.value ||
+    listing.loading.value ||
+    openingId.value !== '' ||
+    drafts.pending.value ||
+    actions.deleteDraft.isPending.value,
 )
 const recovery = computed(() =>
   drafts.needsRecovery.value && openingId.value === '' ? drafts.checkpoint.value : null,
@@ -290,7 +297,47 @@ async function closeDialog(): Promise<void> {
   dialogDetail.value = undefined
   await refresh()
 }
+
+async function deleteSelectedDraft(): Promise<void> {
+  const target = deleteTarget.value
+  if (!target || target.status !== 'DRAFT' || !canManage.value || busy.value) return
+  const anchor = chooseAnchor(target, cinemaId.value)
+  if (!anchor) {
+    deleteTarget.value = null
+    requestError.value = 'Chưa xác nhận được cụm rạp của bản nháp. Tải lại danh sách trước khi xóa.'
+    return
+  }
+
+  openingId.value = target.id
+  requestError.value = ''
+  notice.value = ''
+  try {
+    await actions.deleteDraft.mutateAsync({
+      context: { cinemaId: anchor, policyId: target.policyId, versionId: target.id },
+      expectedVersion: target.version,
+    })
+    drafts.forgetDeleted(target.id)
+    notice.value = `Đã xóa bản nháp phiên bản ${target.revision} của ${target.name}.`
+  } catch (cause: unknown) {
+    requestError.value = pricingErrorMessage(cause)
+  } finally {
+    deleteTarget.value = null
+    try {
+      await queryClient.invalidateQueries({ queryKey: ['pricing', 'admin'], refetchType: 'active' })
+    } catch {
+      requestError.value ||= 'Chưa tải lại được danh sách. Tải lại trước khi thao tác tiếp.'
+    }
+    openingId.value = ''
+  }
+}
+
+async function onDraftDeleted(versionId: string): Promise<void> {
+  drafts.forgetDeleted(versionId)
+  await closeDialog()
+  notice.value = 'Đã xóa bản nháp bảng giá.'
+}
 function confirmLeave(): boolean {
+  if (actions.deleteDraft.isPending.value) return false
   if (drafts.pending.value) return false
   return (
     !unknownDraftResult.value ||
@@ -301,7 +348,8 @@ function confirmLeave(): boolean {
   )
 }
 function preventUnload(event: BeforeUnloadEvent): void {
-  if (!drafts.pending.value && !unknownDraftResult.value) return
+  if (!drafts.pending.value && !unknownDraftResult.value && !actions.deleteDraft.isPending.value)
+    return
   event.preventDefault()
   event.returnValue = ''
 }
@@ -410,7 +458,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
             :disabled="openingId !== ''"
           >
             <option value="">Tất cả trạng thái</option>
-            <option value="PUBLISHED">Đã công bố</option>
+            <option value="PUBLISHED">Đã áp dụng</option>
             <option value="DRAFT">Bản nháp</option>
             <option value="RETIRED">Ngừng áp dụng</option>
           </select>
@@ -523,6 +571,16 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 <td>
                   <div class="price-actions">
                     <button
+                      v-if="policy.status === 'DRAFT'"
+                      class="price-button price-button--small"
+                      type="button"
+                      :disabled="busy || drafts.needsRecovery.value"
+                      :aria-label="`Xóa bản nháp phiên bản ${policy.revision} của ${policy.name}`"
+                      @click="deleteTarget = { ...policy }"
+                    >
+                      Xóa nháp
+                    </button>
+                    <button
                       class="price-button price-button--small"
                       type="button"
                       :disabled="openingId !== '' || drafts.needsRecovery.value"
@@ -610,8 +668,17 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
         :read-only="dialogMode === 'preview'"
         :create-draft="dialogMode === 'revise' ? createPublishedDraft : undefined"
         @draft-ready="drafts.markOpened"
+        @deleted="onDraftDeleted"
         @close="closeDialog"
       />
     </template>
+    <AppConfirmDialog
+      :open="deleteTarget !== null"
+      title="Xóa bản nháp bảng giá?"
+      :description="`Xóa phiên bản nháp ${deleteTarget?.revision} của ${deleteTarget?.name}. Thao tác này không thể hoàn tác.`"
+      :pending="actions.deleteDraft.isPending.value"
+      @cancel="deleteTarget = null"
+      @confirm="deleteSelectedDraft"
+    />
   </section>
 </template>

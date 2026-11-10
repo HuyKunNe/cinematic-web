@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
+import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { RoomLayoutResponse } from '@/services/api/generated/inventory-service/model'
@@ -8,6 +9,7 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import { useCopyAdminRoomMatrixDraftMutation } from '../api/admin-room-matrix-copy.ts'
 import { usePublishAdminRoomMatrixMutation } from '../api/admin-room-matrix-publication'
+import { useDeleteAdminRoomMatrixDraftMutation } from '../api/admin-room-matrix-deletion'
 import {
   useAdminRoomMatrixContentQuery,
   useAdminRoomMatrixLayoutsQuery,
@@ -85,6 +87,9 @@ const editorGeneration = ref(0)
 
 const opening = ref(false)
 const publishing = ref(false)
+const deleting = ref(false)
+const clearingDeletedLocation = ref(false)
+const deleteTarget = ref<RoomLayoutResponse | null>(null)
 let automaticDraftRoom = ''
 const syncingLocation = ref(false)
 const reloadRequired = ref(false)
@@ -107,6 +112,7 @@ const saveMatrix = useSaveAdminRoomMatrixMutation()
 
 const publishMatrix = usePublishAdminRoomMatrixMutation()
 const copyDraft = useCopyAdminRoomMatrixDraftMutation()
+const deleteDraft = useDeleteAdminRoomMatrixDraftMutation()
 
 const layouts = computed(() => (current.value ? (versions.data.value ?? []) : []))
 
@@ -114,6 +120,7 @@ const busy = computed(
   () =>
     opening.value ||
     publishing.value ||
+    deleting.value ||
     syncingLocation.value ||
     createDraft.isPending.value ||
     saveMatrix.isPending.value ||
@@ -201,6 +208,7 @@ function resetRoomState() {
   handledLayoutLink = ''
   automaticDraftRoom = ''
   publishing.value = false
+  deleteTarget.value = null
   pickedId.value = ''
   queryLayoutId.value = ''
   failedLayoutId.value = ''
@@ -728,6 +736,54 @@ async function saveDraft() {
   if (document) await persistDraft(document)
 }
 
+async function deleteSelectedDraft() {
+  const target = deleteTarget.value
+  if (
+    !ready.value || busy.value || reloadRequired.value || !target ||
+    target.status !== 'DRAFT' || target.id !== loadedLayout.value?.id ||
+    target.roomId !== roomId.value || typeof target.id !== 'string' ||
+    typeof target.version !== 'number'
+  ) return
+
+  const requestedRoom = roomId.value
+  const token = scope
+  deleting.value = true
+  errorMessage.value = ''
+  notice.value = ''
+  try {
+    await deleteDraft.mutateAsync({
+      roomId: requestedRoom, layoutId: target.id, expectedVersion: target.version,
+    })
+    if (token !== scope || requestedRoom !== roomId.value) return
+
+    resetRoomState()
+    // Deleting the last draft must not trigger the automatic creation watcher.
+    automaticDraftRoom = requestedRoom
+    handledLayoutLink = `${requestedRoom}:${target.id}`
+    notice.value = `Đã xóa bản nháp sơ đồ phiên bản ${target.layoutVersion}.`
+    const query = { ...route.query }
+    delete query.layoutId
+    clearingDeletedLocation.value = true
+    try {
+      await router.replace({ path: route.path, hash: route.hash, query })
+      await versions.refetch({ throwOnError: true })
+    } catch {
+      errorMessage.value = 'Đã xóa bản nháp nhưng chưa cập nhật được trang. Tải lại để xem danh sách mới.'
+    } finally {
+      clearingDeletedLocation.value = false
+    }
+  } catch (error) {
+    if (token !== scope || requestedRoom !== roomId.value) return
+    reloadRequired.value = true
+    creationBlocked.value = uncertainWrite(error)
+    errorMessage.value = adminRoomErrorMessage(error, 'Không thể xóa bản nháp sơ đồ.')
+    notice.value = 'Nội dung đang nhập được giữ nguyên. Tải lại để kiểm tra trước khi thao tác tiếp.'
+  } finally {
+    deleteTarget.value = null
+    deleting.value = false
+  }
+}
+
 async function publishDraft() {
   if (!canPublish.value || !loadedLayout.value) return
 
@@ -969,6 +1025,12 @@ onBeforeRouteLeave(confirmLeave)
 onBeforeRouteUpdate((to, from) => {
   const target = readRoomLayoutLocation(to.query.layoutId)
 
+  if (
+    clearingDeletedLocation.value && to.path === from.path && to.hash === from.hash &&
+    !target.invalid && !target.id &&
+    layoutIndependentQueryKey(to.query) === layoutIndependentQueryKey(from.query)
+  ) return true
+
   const onlySynchronizingCurrentLayout =
     to.name === from.name &&
     to.path === from.path &&
@@ -1003,6 +1065,14 @@ onBeforeRouteUpdate((to, from) => {
       </div>
 
       <div class="room-matrix-page__actions">
+        <AppButton
+          v-if="canManage && loadedLayout?.status === 'DRAFT'"
+          variant="secondary"
+          :disabled="!ready || busy || reloadRequired"
+          @click="deleteTarget = loadedLayout && { ...loadedLayout }"
+        >
+          Xóa nháp
+        </AppButton>
         <AppButton variant="secondary" :disabled="busy" @click="backToRooms">
           Quay lại phòng
         </AppButton>
@@ -1171,6 +1241,14 @@ onBeforeRouteUpdate((to, from) => {
         Đang tải thông tin phòng…
       </p>
     </template>
+    <AppConfirmDialog
+      :open="deleteTarget !== null"
+      title="Xóa bản nháp sơ đồ ghế?"
+      :description="`Xóa sơ đồ nháp phiên bản ${deleteTarget?.layoutVersion}. Các thay đổi chưa lưu cũng sẽ bị bỏ. Thao tác này không thể hoàn tác.`"
+      :pending="deleting"
+      @cancel="deleteTarget = null"
+      @confirm="deleteSelectedDraft"
+    />
   </section>
 </template>
 

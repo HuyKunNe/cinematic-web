@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { z } from 'zod'
-import { getRoomPublishedSeatMap } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
+import { getRoomPublishedSeatMap } from '@/services/api/generated/inventory-service/room-published-seat-map-controller/room-published-seat-map-controller'
 import { PublishedRoomSeatResponseSeatType } from '@/services/api/generated/inventory-service/model/publishedRoomSeatResponseSeatType'
 
 const uuid = z.string().uuid()

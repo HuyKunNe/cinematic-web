@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import {
   DialogContent,
   DialogDescription,
@@ -51,7 +52,7 @@ const props = defineProps<{
   createDraft?: () => Promise<PricingDetail>
 }>()
 
-const emit = defineEmits<{ close: []; draftReady: [versionId: string] }>()
+const emit = defineEmits<{ close: []; draftReady: [versionId: string]; deleted: [versionId: string] }>()
 
 type TimeRow = {
   key: string
@@ -91,6 +92,8 @@ const pendingRevision = ref(
 
 const busy = ref(false)
 const publishing = ref(false)
+const deleteOpen = ref(false)
+const deleted = ref(false)
 const requiresReload = ref(false)
 const showErrors = ref(false)
 const removalAccepted = ref(false)
@@ -1260,6 +1263,30 @@ async function reload(): Promise<void> {
   }
 }
 
+async function deleteDraft(): Promise<void> {
+  const target = policy.value
+  if (
+    busy.value || publishing.value || readOnly.value || !props.canManage ||
+    !target || target.status !== 'DRAFT' || pendingRevision.value || requiresReload.value
+  ) return
+
+  busy.value = true
+  error.value = ''
+  notice.value = ''
+  try {
+    await actions.deleteDraft.mutateAsync({ context: context(), expectedVersion: target.version })
+    deleted.value = true
+    emit('deleted', target.id)
+  } catch (cause: unknown) {
+    error.value = pricingErrorMessage(cause)
+    requiresReload.value = true
+    notice.value = 'Nội dung đang nhập được giữ nguyên. Tải lại để kiểm tra trước khi xóa tiếp.'
+  } finally {
+    deleteOpen.value = false
+    busy.value = false
+  }
+}
+
 async function changeVersion(event: Event): Promise<void> {
   const target = event.target
   if (!(target instanceof HTMLSelectElement) || busy.value || !readOnly.value) return
@@ -1290,6 +1317,7 @@ async function changeVersion(event: Event): Promise<void> {
 }
 
 function confirmLeave(): boolean {
+  if (deleted.value) return true
   if (busy.value) return false
   if (waitingForCreation.value) {
     return window.confirm(
@@ -1309,6 +1337,7 @@ function restoreFocus(event: Event): void {
   if (returnFocus?.isConnected) returnFocus.focus()
 }
 function preventUnload(event: BeforeUnloadEvent): void {
+  if (deleted.value) return
   if (readOnly.value || (!dirty.value && !busy.value && !waitingForCreation.value)) return
   event.preventDefault()
   event.returnValue = ''
@@ -1934,6 +1963,15 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
             <span v-if="readOnly">Phiên bản chỉ xem</span>
             <span v-else>{{ publishHint }}</span>
             <div>
+              <button
+                v-if="!readOnly && !pendingRevision && policy?.status === 'DRAFT'"
+                class="price-button"
+                type="button"
+                :disabled="busy || publishing || requiresReload || !canManage"
+                @click="deleteOpen = true"
+              >
+                Xóa nháp
+              </button>
               <button class="price-button" type="button" :disabled="busy" @click="close">
                 {{ readOnly ? 'Đóng' : 'Hủy' }}
               </button>
@@ -1986,4 +2024,12 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
       </DialogContent>
     </DialogPortal>
   </DialogRoot>
+  <AppConfirmDialog
+    :open="deleteOpen"
+    title="Xóa bản nháp bảng giá?"
+    :description="`Xóa phiên bản nháp ${policy?.revision} của ${metadata.name}. Các thay đổi chưa lưu cũng sẽ bị bỏ. Thao tác này không thể hoàn tác.`"
+    :pending="actions.deleteDraft.isPending.value"
+    @cancel="deleteOpen = false"
+    @confirm="deleteDraft"
+  />
 </template>

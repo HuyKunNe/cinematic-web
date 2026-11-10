@@ -1,6 +1,6 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { getRoomPublishedSeatMap } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
+import { getRoomPublishedSeatMap } from '@/services/api/generated/inventory-service/room-published-seat-map-controller/room-published-seat-map-controller'
 import { updateSeatActiveState } from '@/services/api/generated/inventory-service/seat-controller/seat-controller'
 import { mapAdminPublishedSeats } from '../mappers/admin-published-seat-map.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'

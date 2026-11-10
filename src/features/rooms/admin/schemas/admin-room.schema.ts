@@ -103,6 +103,10 @@ export function adminRoomErrorMessage(error: unknown, fallback = 'Không thể t
 
   const layoutMessage = error.code ? layoutErrorMessages.get(error.code) : undefined
 
+  if (error.code === 'INVENTORY_ROOM_LAYOUT_IN_USE') {
+    return 'Sơ đồ đang được suất chiếu sử dụng nên không thể xóa.'
+  }
+
   if (layoutMessage) return layoutMessage
 
   if (error.status === 404) {

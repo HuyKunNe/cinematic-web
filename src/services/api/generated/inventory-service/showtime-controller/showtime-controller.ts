@@ -9,7 +9,9 @@ import type {
   CreateShowtimeBatchRequest,
   CreateShowtimeRequest,
   GetBookableShowtimesParams,
+  GetManagedShowtimesParams,
   GetShowtimesByTimeRangeParams,
+  PageResponseShowtimeResponse,
   ShowtimeResponse,
   UpdateShowtimeRequest
 } from '../model';
@@ -98,6 +100,15 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
+  export const getManagedShowtimes = (
+    params: GetManagedShowtimesParams,
+ ) => {
+      return apiRequest<PageResponseShowtimeResponse>(
+      {url: `/api/v1/showtimes/management`, method: 'GET',
+        params
+    },
+      );
+    }
   export const getShowtimesByRoom = (
     roomId: string,
  ) => {
@@ -132,6 +143,7 @@ export type OpenShowtimeForBookingResult = NonNullable<Awaited<ReturnType<typeof
 export type CompleteShowtimeResult = NonNullable<Awaited<ReturnType<typeof completeShowtime>>>
 export type CloseShowtimeResult = NonNullable<Awaited<ReturnType<typeof closeShowtime>>>
 export type CancelShowtimeResult = NonNullable<Awaited<ReturnType<typeof cancelShowtime>>>
+export type GetManagedShowtimesResult = NonNullable<Awaited<ReturnType<typeof getManagedShowtimes>>>
 export type GetShowtimesByRoomResult = NonNullable<Awaited<ReturnType<typeof getShowtimesByRoom>>>
 export type GetShowtimesByMovieResult = NonNullable<Awaited<ReturnType<typeof getShowtimesByMovie>>>
 export type GetBookableShowtimesResult = NonNullable<Awaited<ReturnType<typeof getBookableShowtimes>>>
