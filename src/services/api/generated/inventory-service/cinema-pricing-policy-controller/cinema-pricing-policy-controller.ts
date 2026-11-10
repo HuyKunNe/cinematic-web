@@ -8,6 +8,7 @@
 import type {
   CinemaPricingPolicyVersionResponse,
   CreateCinemaPricingPolicyRequest,
+  DeleteCinemaPricingPolicyDraftParams,
   ReplacePricingPolicyDraftRequest
 } from '../model';
 
@@ -35,6 +36,18 @@ import { apiRequest } from '../../../../http/axios-instance';
       {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: replacePricingPolicyDraftRequest
+    },
+      );
+    }
+  export const deleteCinemaPricingPolicyDraft = (
+    cinemaId: string,
+    policyId: string,
+    versionId: string,
+    params: DeleteCinemaPricingPolicyDraftParams,
+ ) => {
+      return apiRequest<void>(
+      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}`, method: 'DELETE',
+        params
     },
       );
     }
@@ -68,6 +81,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     }
   export type GetCinemaPricingPolicyVersionResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyVersion>>>
 export type ReplaceCinemaPricingPolicyDraftResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyDraft>>>
+export type DeleteCinemaPricingPolicyDraftResult = NonNullable<Awaited<ReturnType<typeof deleteCinemaPricingPolicyDraft>>>
 export type ListLatestCinemaPricingPoliciesResult = NonNullable<Awaited<ReturnType<typeof listLatestCinemaPricingPolicies>>>
 export type CreateCinemaPricingPolicyResult = NonNullable<Awaited<ReturnType<typeof createCinemaPricingPolicy>>>
 export type ListCinemaPricingPolicyVersionsResult = NonNullable<Awaited<ReturnType<typeof listCinemaPricingPolicyVersions>>>

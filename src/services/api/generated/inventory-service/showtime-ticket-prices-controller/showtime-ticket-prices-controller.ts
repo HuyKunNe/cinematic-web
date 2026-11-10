@@ -13,10 +13,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * @summary Get ticket prices applicable to a showtime
- */
-export const getShowtimeTicketPrices = (
+  export const getShowtimeTicketPrices = (
     showtimeId: string,
  ) => {
       return apiRequest<ShowtimeTicketPricesResponse>(

@@ -6,4 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ApiResponseData = { [key: string]: unknown };
+export type DeleteRoomLayoutDraftParams = {
+expectedVersion: number;
+};

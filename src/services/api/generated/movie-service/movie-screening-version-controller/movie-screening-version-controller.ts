@@ -16,56 +16,44 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * @summary Activate or deactivate a screening version
- */
-export const updateMovieScreeningVersionActive = (
+  export const updateMovieScreeningVersionActive = (
     movieId: string,
     versionId: string,
     updateMovieScreeningVersionActiveRequest: UpdateMovieScreeningVersionActiveRequest,
  ) => {
-      return apiRequest<MovieScreeningVersionResponse | null>(
+      return apiRequest<MovieScreeningVersionResponse>(
       {url: `/api/v1/movies/${movieId}/screening-versions/${versionId}/active`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: updateMovieScreeningVersionActiveRequest
     },
       );
     }
-  /**
- * @summary List screening versions belonging to a movie
- */
-export const listMovieScreeningVersions = (
+  export const listMovieScreeningVersions = (
     movieId: string,
     params?: ListMovieScreeningVersionsParams,
  ) => {
-      return apiRequest<(MovieScreeningVersionResponse | null)[]>(
+      return apiRequest<MovieScreeningVersionResponse[]>(
       {url: `/api/v1/movies/${movieId}/screening-versions`, method: 'GET',
         params
     },
       );
     }
-  /**
- * @summary Create a screening version
- */
-export const createMovieScreeningVersion = (
+  export const createMovieScreeningVersion = (
     movieId: string,
     createMovieScreeningVersionRequest: CreateMovieScreeningVersionRequest,
  ) => {
-      return apiRequest<MovieScreeningVersionResponse | null>(
+      return apiRequest<MovieScreeningVersionResponse>(
       {url: `/api/v1/movies/${movieId}/screening-versions`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createMovieScreeningVersionRequest
     },
       );
     }
-  /**
- * @summary Get a screening version belonging to a movie
- */
-export const getMovieScreeningVersion = (
+  export const getMovieScreeningVersion = (
     movieId: string,
     versionId: string,
  ) => {
-      return apiRequest<MovieScreeningVersionResponse | null>(
+      return apiRequest<MovieScreeningVersionResponse>(
       {url: `/api/v1/movies/${movieId}/screening-versions/${versionId}`, method: 'GET'
     },
       );

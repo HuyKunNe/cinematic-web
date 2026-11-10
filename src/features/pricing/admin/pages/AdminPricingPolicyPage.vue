@@ -216,7 +216,10 @@ async function openPolicy(policy: PricingPolicy, edit: boolean): Promise<void> {
   try {
     let selected = policy
 
-    if (!edit) {
+    if (edit && policy.status === 'PUBLISHED') {
+      const versions = await actions.loadVersions(anchor, policy.policyId)
+      selected = versions.find((version) => version.status === 'DRAFT') ?? policy
+    } else if (!edit) {
       const versions = await actions.loadVersions(anchor, policy.policyId)
       const candidate = versions.find((version) => version.status === 'PUBLISHED') ?? versions[0]
 

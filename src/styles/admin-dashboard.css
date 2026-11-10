@@ -63,7 +63,7 @@
   border: 0;
   background: transparent;
   color: inherit;
-  color-scheme: dark;
+  color-scheme: var(--admin-control-color-scheme, dark);
   font: inherit;
   font-size: var(--admin-dashboard-link-size);
 }
@@ -537,7 +537,7 @@
   border-radius: var(--admin-dashboard-filter-radius);
   background: var(--color-background);
   color: var(--color-text-primary);
-  color-scheme: dark;
+  color-scheme: var(--admin-control-color-scheme, dark);
   font: inherit;
   font-size: var(--admin-dashboard-tiny-size);
   cursor: pointer;

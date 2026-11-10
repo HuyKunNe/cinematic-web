@@ -6,9 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Projection technology pinned when the showtime was created.
- */
 export type ShowtimeScreeningVersionResponseProjectionTechnology = typeof ShowtimeScreeningVersionResponseProjectionTechnology[keyof typeof ShowtimeScreeningVersionResponseProjectionTechnology];
 
 

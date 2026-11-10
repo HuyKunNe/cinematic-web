@@ -9,14 +9,13 @@ import type { SeatQuoteSeatType } from './seatQuoteSeatType';
 import type { SeatQuoteUnit } from './seatQuoteUnit';
 
 export interface SeatQuote {
-  showSeatId: string;
-  seatNumber: string;
-  seatType: SeatQuoteSeatType;
-  capacity: number;
-  ticketGroupId: string;
-  ticketGroupName: string;
-  eligibilityDescription: string;
-  unit: SeatQuoteUnit;
-  /** Price for one inventory seat. COUPLE uses the entire pair price. */
-  price: number;
+  showSeatId?: string;
+  seatNumber?: string;
+  seatType?: SeatQuoteSeatType;
+  capacity?: number;
+  ticketGroupId?: string;
+  ticketGroupName?: string;
+  eligibilityDescription?: string;
+  unit?: SeatQuoteUnit;
+  price?: number;
 }

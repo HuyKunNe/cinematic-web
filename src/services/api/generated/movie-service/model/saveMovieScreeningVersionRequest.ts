@@ -9,23 +9,10 @@ import type { SaveMovieScreeningVersionRequestContentFormat } from './saveMovieS
 import type { SaveMovieScreeningVersionRequestPresentationType } from './saveMovieScreeningVersionRequestPresentationType';
 import type { SaveMovieScreeningVersionRequestProjectionTechnology } from './saveMovieScreeningVersionRequestProjectionTechnology';
 
-/**
- * A complete movie-edit item. Definition fields are immutable for persisted IDs. Image format and projection technology default to 2D and STANDARD.
- */
 export interface SaveMovieScreeningVersionRequest {
-  /**
-     * Existing version ID. Omit for a new version.
-     * @nullable
-     */
-  id?: string | null;
-  /**
-     * Required for an existing version. Omit for a new version.
-     * @minimum 0
-     * @nullable
-     */
-  expectedVersion?: number | null;
+  id?: string;
+  expectedVersion?: number;
   contentFormat?: SaveMovieScreeningVersionRequestContentFormat;
-  /** Projection technology: STANDARD, IMAX, FOUR_DX or SCREEN_X. */
   projectionTechnology?: SaveMovieScreeningVersionRequestProjectionTechnology;
   /**
      * @minLength 0
@@ -34,11 +21,9 @@ export interface SaveMovieScreeningVersionRequest {
   audioLanguage: string;
   presentationType: SaveMovieScreeningVersionRequestPresentationType;
   /**
-     * Required and nonblank for SUBTITLED. Otherwise omit, send null or a blank string.
      * @minLength 0
      * @maxLength 100
-     * @nullable
      */
-  subtitleLanguage?: string | null;
+  subtitleLanguage?: string;
   active: boolean;
 }

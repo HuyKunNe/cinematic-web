@@ -8,13 +8,13 @@
 import type { SeatQuote } from './seatQuote';
 
 export interface ShowtimeGroupedSeatQuoteResponse {
-  showtimeId: string;
-  pricingPolicyVersionId: string;
-  timeBandId: string;
-  currency: string;
-  serverTime: string;
-  seatCount: number;
-  capacity: number;
-  totalAmount: number;
-  seats: SeatQuote[];
+  showtimeId?: string;
+  pricingPolicyVersionId?: string;
+  timeBandId?: string;
+  currency?: string;
+  serverTime?: string;
+  seatCount?: number;
+  capacity?: number;
+  totalAmount?: number;
+  seats?: SeatQuote[];
 }

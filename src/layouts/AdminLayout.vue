@@ -91,6 +91,7 @@ async function handleLogout() {
     <div
       class="admin-layout"
       :class="{
+        'is-admin-role': auth.isAdmin,
         'is-drawer': isDrawer,
         'is-sidebar-collapsed': !isDrawer && sidebarCollapsed,
         'is-management': route.name !== ROUTE_NAMES.ADMIN,

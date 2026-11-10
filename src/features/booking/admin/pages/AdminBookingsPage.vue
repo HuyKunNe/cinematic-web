@@ -229,7 +229,11 @@ function refresh(): void {
                 <td class="admin-bookings__amount">
                   {{ amountLabel(booking) }}
                 </td>
-                <td>{{ adminBookingStatusLabels[booking.status] }}</td>
+                <td>
+                  <span class="admin-status" :data-status="booking.status">
+                    {{ adminBookingStatusLabels[booking.status] }}
+                  </span>
+                </td>
               </tr>
             </tbody>
           </table>

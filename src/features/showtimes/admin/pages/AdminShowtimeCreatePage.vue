@@ -347,22 +347,15 @@ watch(
   },
   { flush: 'sync' },
 )
-watch(
-  [() => pricingVersions.data.value, () => pricingVersions.isFetching.value],
-  () => {
-    if (
-      locked.value ||
-      pricingVersions.isFetching.value ||
-      !form.pricingPolicyVersionId
-    ) {
-      return
-    }
+watch([() => pricingVersions.data.value, () => pricingVersions.isFetching.value], () => {
+  if (locked.value || pricingVersions.isFetching.value || !form.pricingPolicyVersionId) {
+    return
+  }
 
-    if (!(pricingVersions.data.value ?? []).some((item) => item.id === form.pricingPolicyVersionId)) {
-      form.pricingPolicyVersionId = ''
-    }
-  },
-)
+  if (!(pricingVersions.data.value ?? []).some((item) => item.id === form.pricingPolicyVersionId)) {
+    form.pricingPolicyVersionId = ''
+  }
+})
 watch(
   [() => form.movieId, () => form.roomId],
   () => {
@@ -508,9 +501,6 @@ async function submit(): Promise<void> {
       <div>
         <p class="admin-reference__eyebrow">Lịch chiếu</p>
         <h1 id="showtime-create-title" tabindex="-1">Tạo suất chiếu</h1>
-        <p class="admin-reference__description">
-          Lập lịch theo phiên bản phim, phòng, thời gian và khoảng nghỉ.
-        </p>
       </div>
       <RouterLink
         v-if="canManage && canViewInventory"
@@ -526,11 +516,6 @@ async function submit(): Promise<void> {
     </p>
 
     <template v-else>
-      <p class="showtime-create__notice">
-        Suất mới được lưu ở trạng thái “Đã lên lịch” và chưa mở bán. Có thể chọn phiên bản bảng giá
-        đã công bố ngay khi tạo hoặc gán sau trước khi mở bán vé.
-      </p>
-
       <p v-if="requestError" class="showtime-create__notice showtime-create__error" role="alert">
         {{ requestError }}
       </p>
@@ -753,16 +738,6 @@ async function submit(): Promise<void> {
               </footer>
             </div>
           </section>
-
-          <AdminShowtimePublishedLayout
-            :room-id="selectedRoom?.id ?? ''"
-            :room-name="selectedRoom?.name ?? ''"
-            :can-read="canReadLayout"
-            :query="layoutQuery"
-            :selected-layout-id="created?.roomLayoutId ?? selectedLayout?.id ?? ''"
-            :disabled="locked || loadingOptions"
-            @reload="reloadLayout"
-          />
         </div>
 
         <aside aria-label="Tóm tắt lịch chiếu và giá vé">
@@ -810,7 +785,7 @@ async function submit(): Promise<void> {
                     {{
                       selectedPricingVersion
                         ? showtimePricingVersionLabel(selectedPricingVersion)
-                        : created?.pricingPolicyVersionId ?? 'Chưa gán'
+                        : (created?.pricingPolicyVersionId ?? 'Chưa gán')
                     }}
                   </dd>
                 </div>
@@ -853,15 +828,8 @@ async function submit(): Promise<void> {
 
               <div v-else class="showtime-create__notice">
                 <strong>Sẽ tạo giá ghế theo bảng giá đã chọn</strong>
-                <p>
-                  Backend xác nhận bảng giá, ngữ cảnh suất chiếu và sinh giá ghế khi lưu.
-                </p>
+                <p>Backend xác nhận bảng giá, ngữ cảnh suất chiếu và sinh giá ghế khi lưu.</p>
               </div>
-
-              <p class="showtime-create__hint">
-                Bảng giá Lễ/Tết được chọn trực tiếp cho suất chiếu. Mỗi định dạng có giá riêng,
-                không cộng phụ thu.
-              </p>
             </div>
           </section>
         </aside>

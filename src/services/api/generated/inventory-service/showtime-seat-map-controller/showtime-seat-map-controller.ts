@@ -13,39 +13,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * Public read API.
- *
- * Positions, seat numbers and seat types come from the
- * showtime's pinned published layout.
- * Price and status come from ShowSeat.
- *
- * When matrix is non-null:
- * - matrix contains the complete row and column counts.
- * - seats contain zero-based rowIndex and columnIndex.
- * - number is the consecutive seat number within its row.
- * - seatNumber is the display label, such as A1.
- * - columnSpan is 2 for COUPLE and 1 for other seat types.
- * - each COUPLE seat appears once at its starting cell.
- * - missing cells are empty spaces, not seats.
- * - the screen is displayed above the matrix.
- * - canvas dimensions and seat geometry are null.
- * - elements is an empty array.
- *
- * When matrix is null, use the legacy canvas dimensions,
- * seat geometry and layout elements.
- *
- * Missing ShowSeat yields null showSeatId, price and status,
- * with selectable=false.
- *
- * selectable also requires the showtime to be eligible
- * for booking. HELD seats are not automatically released.
- *
- * No booking-owner information is returned.
- * Reading the map does not reserve seats.
- * @summary Get the pinned seat map of a showtime
- */
-export const getShowtimeSeatMap = (
+  export const getShowtimeSeatMap = (
     showtimeId: string,
  ) => {
       return apiRequest<ShowtimeSeatMapResponse>(

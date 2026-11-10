@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetMovieCatalogSort = typeof GetMovieCatalogSort[keyof typeof GetMovieCatalogSort];
+export type FindCatalogSort = typeof FindCatalogSort[keyof typeof FindCatalogSort];
 
 
-export const GetMovieCatalogSort = {
+export const FindCatalogSort = {
   RELEASE_DESC: 'RELEASE_DESC',
   RELEASE_ASC: 'RELEASE_ASC',
   TITLE_ASC: 'TITLE_ASC',

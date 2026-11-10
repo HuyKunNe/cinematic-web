@@ -7,15 +7,12 @@
  */
 import type { SeatQuote } from './seatQuote';
 
-/**
- * Current seat-price snapshot before booking.
- */
 export interface ShowtimeSeatQuoteResponse {
-  showtimeId: string;
-  serverTime: string;
-  currency: string;
-  seatCount: number;
-  capacity: number;
-  totalAmount: number;
-  seats: SeatQuote[];
+  showtimeId?: string;
+  serverTime?: string;
+  currency?: string;
+  seatCount?: number;
+  capacity?: number;
+  totalAmount?: number;
+  seats?: SeatQuote[];
 }

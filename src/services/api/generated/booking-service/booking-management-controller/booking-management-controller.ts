@@ -15,11 +15,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * Requires the ADMIN role. Filters are combined with AND. createdFrom is inclusive; createdTo is exclusive. Results are ordered by createdAt descending, then id descending.
- * @summary List bookings for administrators
- */
-export const listBookingsForAdmin = (
+  export const listBookingsForAdmin = (
     params?: ListBookingsForAdminParams,
  ) => {
       return apiRequest<ApiResponsePageResponseBookingResponse>(
@@ -28,11 +24,7 @@ export const listBookingsForAdmin = (
     },
       );
     }
-  /**
- * Requires the ADMIN role.
- * @summary Get booking details for administrators
- */
-export const getBookingForAdmin = (
+  export const getBookingForAdmin = (
     bookingId: string,
  ) => {
       return apiRequest<ApiResponseBookingResponse>(

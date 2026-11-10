@@ -7,6 +7,6 @@
  */
 
 export interface ShowtimeSeatMapMatrixResponse {
-  rowCount: number;
-  columnCount: number;
+  rowCount?: number;
+  columnCount?: number;
 }

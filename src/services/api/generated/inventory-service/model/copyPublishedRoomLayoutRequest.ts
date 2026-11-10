@@ -6,10 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Creates a new matrix draft from a published layout. expectedVersion refers to the source layout's version field.
- */
 export interface CopyPublishedRoomLayoutRequest {
-  /** Expected source layout version, not layoutVersion. */
   expectedVersion: number;
 }

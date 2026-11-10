@@ -21,15 +21,10 @@ export interface ShowtimeResponse {
   status?: ShowtimeResponseStatus;
   createdAt?: string;
   updatedAt?: string;
-  /** Published layout pinned when the showtime was created. */
   roomLayoutId?: string;
-  /** Screening version snapshot pinned at creation. Null for legacy showtimes. */
   screeningVersion?: ShowtimeScreeningVersionResponse;
-  /** Pinned scheduling details. Null for legacy showtimes. */
   scheduling?: ShowtimeSchedulingResponse;
   version?: number;
-  /** Policy owning the selected pricing version. Null while no pricing version is assigned. */
   pricingPolicyId?: string;
-  /** Exact pricing policy version selected for the showtime. Null while no pricing version is assigned. */
   pricingPolicyVersionId?: string;
 }

@@ -9,10 +9,9 @@ import type { SeatFareSeatType } from './seatFareSeatType';
 import type { SeatFareUnit } from './seatFareUnit';
 
 export interface SeatFare {
-  seatType: SeatFareSeatType;
-  capacity: number;
-  unit: SeatFareUnit;
-  applicable: boolean;
-  /** Price per inventory seat; COUPLE uses the entire pair price. Null when not applicable. */
-  price: number;
+  seatType?: SeatFareSeatType;
+  capacity?: number;
+  unit?: SeatFareUnit;
+  applicable?: boolean;
+  price?: number;
 }

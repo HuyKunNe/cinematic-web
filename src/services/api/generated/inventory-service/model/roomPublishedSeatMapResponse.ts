@@ -8,10 +8,7 @@
 import type { PublishedRoomMatrixResponse } from './publishedRoomMatrixResponse';
 import type { RoomLayoutResponse } from './roomLayoutResponse';
 
-/**
- * Published matrix used to display room seats in administration. Seat labels, positions and types come from the layout. Active state comes from the inventory seat.
- */
 export interface RoomPublishedSeatMapResponse {
-  layout: RoomLayoutResponse;
-  matrix: PublishedRoomMatrixResponse;
+  layout?: RoomLayoutResponse;
+  matrix?: PublishedRoomMatrixResponse;
 }

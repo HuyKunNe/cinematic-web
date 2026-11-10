@@ -21,6 +21,5 @@ export interface CinemaPricingPolicyVersionResponse {
   createdAt?: string;
   updatedAt?: string;
   publishedAt?: string;
-  /** Validated JWT subject that first published this version. */
   publishedBy?: string;
 }

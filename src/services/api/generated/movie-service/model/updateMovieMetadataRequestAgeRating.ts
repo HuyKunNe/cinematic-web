@@ -6,11 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Confirmed classification. Null clears the classification.
- * @nullable
- */
-export type UpdateMovieMetadataRequestAgeRating = typeof UpdateMovieMetadataRequestAgeRating[keyof typeof UpdateMovieMetadataRequestAgeRating] | null;
+export type UpdateMovieMetadataRequestAgeRating = typeof UpdateMovieMetadataRequestAgeRating[keyof typeof UpdateMovieMetadataRequestAgeRating];
 
 
 export const UpdateMovieMetadataRequestAgeRating = {

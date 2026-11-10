@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { Film } from 'lucide-vue-next'
+import { Film, Pencil } from 'lucide-vue-next'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
 import type {
@@ -412,7 +412,7 @@ const emptyMessage = computed(() =>
                     :aria-label="`Chỉnh sửa phim ${movie.title || ''}`"
                     @click="movie.id && openEditor(movie.id)"
                   >
-                    <span aria-hidden="true">•••</span>
+                    <Pencil aria-hidden="true" />
                   </button>
                 </td>
               </tr>
@@ -461,7 +461,7 @@ const emptyMessage = computed(() =>
               :aria-label="`Chỉnh sửa phim ${movie.title || ''}`"
               @click="movie.id && openEditor(movie.id)"
             >
-              <span aria-hidden="true">•••</span>
+              <Pencil aria-hidden="true" />
             </button>
           </article>
           <p v-if="!rows.length" class="movie-admin__empty">{{ emptyMessage }}</p>

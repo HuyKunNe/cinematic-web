@@ -6,9 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Projection technology: STANDARD, IMAX, FOUR_DX or SCREEN_X.
- */
 export type CreateMovieScreeningVersionRequestProjectionTechnology = typeof CreateMovieScreeningVersionRequestProjectionTechnology[keyof typeof CreateMovieScreeningVersionRequestProjectionTechnology];
 
 

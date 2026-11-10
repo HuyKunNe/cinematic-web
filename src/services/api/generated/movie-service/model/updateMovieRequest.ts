@@ -35,9 +35,6 @@ export interface UpdateMovieRequest {
   status: UpdateMovieRequestStatus;
   /** @minItems 1 */
   genreIds: string[];
-  /**
-     * Complete screening-version list. Include every persisted version with its id and expectedVersion, plus any new versions without an id. At least one item is required.
-     * @minItems 1
-     */
+  /** @minItems 1 */
   screeningVersions: SaveMovieScreeningVersionRequest[];
 }

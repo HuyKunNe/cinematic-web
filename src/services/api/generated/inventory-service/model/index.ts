@@ -6,7 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export * from './apiResponse';
 export * from './cellInput';
 export * from './cellInputContentFormat';
 export * from './cellInputExperienceType';
@@ -46,7 +45,8 @@ export * from './createSeatRequest';
 export * from './createSeatRequestSeatType';
 export * from './createShowtimeBatchRequest';
 export * from './createShowtimeRequest';
-export * from './errorBody';
+export * from './deleteCinemaPricingPolicyDraftParams';
+export * from './deleteRoomLayoutDraftParams';
 export * from './fareMatrixResponse';
 export * from './fareMatrixResponseDayGroup';
 export * from './fareMatrixResponseSeatTypesItem';
@@ -176,4 +176,3 @@ export * from './updateSeatRequest';
 export * from './updateSeatRequestSeatType';
 export * from './updateShowtimeRequest';
 export * from './updateShowtimeRequestStatus';
-export * from './validationError';

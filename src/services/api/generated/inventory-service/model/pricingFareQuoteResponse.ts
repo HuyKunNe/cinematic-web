@@ -14,11 +14,8 @@ export interface PricingFareQuoteResponse {
   revision?: number;
   cinemaId?: string;
   cinemaTimeZone?: string;
-  /** Screening start converted to the cinema time zone. */
   localStartsAt?: string;
   dayGroup?: PricingFareQuoteResponseDayGroup;
-  /** Number of people accommodated by one sale unit. */
   capacityPerUnit?: number;
-  /** Exact stored fare for one sale unit. For PAIR, amount is the total price of the couple seat. */
   fare?: CellResponse;
 }

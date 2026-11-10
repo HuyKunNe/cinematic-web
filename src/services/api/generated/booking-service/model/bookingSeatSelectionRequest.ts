@@ -12,6 +12,5 @@ export interface BookingSeatSelectionRequest {
      * @maxLength 20
      */
   seatNumber: string;
-  /** Requested ticket group from the assigned pricing version. Null uses the default group. */
   ticketGroupId?: string;
 }

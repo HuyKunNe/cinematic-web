@@ -7,9 +7,9 @@
  */
 
 export interface RoomLayoutGeometryResponse {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotationDegrees: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  rotationDegrees?: number;
 }

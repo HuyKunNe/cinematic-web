@@ -9,21 +9,14 @@ import type { MovieScreeningVersionResponseContentFormat } from './movieScreenin
 import type { MovieScreeningVersionResponsePresentationType } from './movieScreeningVersionResponsePresentationType';
 import type { MovieScreeningVersionResponseProjectionTechnology } from './movieScreeningVersionResponseProjectionTechnology';
 
-/**
- * @nullable
- */
-export type MovieScreeningVersionResponse = {
-  id: string;
-  movieId: string;
-  /** Content format. Wire values are 2D and 3D. */
-  contentFormat: MovieScreeningVersionResponseContentFormat;
-  /** Projection technology independent from the 2D/3D image format. */
-  projectionTechnology: MovieScreeningVersionResponseProjectionTechnology;
-  audioLanguage: string;
-  presentationType: MovieScreeningVersionResponsePresentationType;
-  /** @nullable */
-  subtitleLanguage: string | null;
-  active: boolean;
-  /** @minimum 0 */
-  version: number;
-} | null;
+export interface MovieScreeningVersionResponse {
+  id?: string;
+  movieId?: string;
+  contentFormat?: MovieScreeningVersionResponseContentFormat;
+  projectionTechnology?: MovieScreeningVersionResponseProjectionTechnology;
+  audioLanguage?: string;
+  presentationType?: MovieScreeningVersionResponsePresentationType;
+  subtitleLanguage?: string;
+  active?: boolean;
+  version?: number;
+}

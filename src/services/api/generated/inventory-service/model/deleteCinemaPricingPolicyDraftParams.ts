@@ -5,11 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ErrorBody } from './errorBody';
 
-export interface ApiResponse {
-  success?: boolean;
-  timestamp?: string;
-  data?: unknown;
-  error?: ErrorBody;
-}
+export type DeleteCinemaPricingPolicyDraftParams = {
+expectedVersion: number;
+};

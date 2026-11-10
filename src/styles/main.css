@@ -21,6 +21,7 @@
 @import './admin-showtime-create.css';
 @import './admin-pricing-policies.css';
 @import './admin-pricing-modal.css';
+@import './admin-theme.css';
 
 /* Navigation styles remain imported by their owning layouts. */
 @theme {
@@ -49,6 +50,8 @@
 @custom-variant admin-showtime-compact (@media (max-width: 72rem));
 @custom-variant admin-showtime-stack (@media (max-width: 56rem));
 @custom-variant admin-showtime-mobile (@media (max-width: 38rem));
+@custom-variant admin-shell-mobile (@media (max-width: 40.625rem));
+@custom-variant admin-shell-wide (@media (min-width: 93.75rem));
 
 /* Use each configuration card's available width for its row layout. */
 @custom-variant pricing-time-compact (@container pricing-configuration (max-width: 28rem));

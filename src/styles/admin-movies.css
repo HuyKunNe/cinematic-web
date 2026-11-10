@@ -226,7 +226,7 @@
   font-family: var(--font-family-base);
   font-size: var(--font-size-md);
   line-height: var(--line-height-base);
-  color-scheme: dark;
+  color-scheme: var(--admin-control-color-scheme, dark);
 }
 
 .admin-movie-form__textarea {

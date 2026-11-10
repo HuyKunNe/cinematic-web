@@ -9,8 +9,8 @@ import type { RoomLayoutElementPositionResponseKind } from './roomLayoutElementP
 import type { RoomLayoutGeometryResponse } from './roomLayoutGeometryResponse';
 
 export interface RoomLayoutElementPositionResponse {
-  id: string;
-  kind: RoomLayoutElementPositionResponseKind;
+  id?: string;
+  kind?: RoomLayoutElementPositionResponseKind;
   label?: string;
-  geometry: RoomLayoutGeometryResponse;
+  geometry?: RoomLayoutGeometryResponse;
 }

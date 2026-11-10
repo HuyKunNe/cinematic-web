@@ -7,11 +7,6 @@
  */
 import type { RoomLayoutMatrixInput } from './roomLayoutMatrixInput';
 
-/**
- * Creates an empty draft.
- * Omit canvas dimensions and matrix to create an empty 6x6 matrix.
- * Legacy canvas dimensions and matrix are mutually exclusive.
- */
 export interface CreateRoomLayoutRequest {
   roomId: string;
   /** @minimum 0 */

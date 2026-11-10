@@ -17,11 +17,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * Requires the ADMIN role and payment:read permission.
- * @summary Get payment details for administrators
- */
-export const getPaymentForAdmin = (
+  export const getPaymentForAdmin = (
     paymentId: string,
  ) => {
       return apiRequest<ApiResponsePaymentManagementResponse>(
@@ -39,11 +35,7 @@ export const getPaymentForAdmin = (
     },
       );
     }
-  /**
- * Requires the ADMIN role and payment:read permission. Results are ordered by paymentAttempt descending, then id descending. An empty page means no matching payment record exists.
- * @summary List payment attempts for a booking
- */
-export const listBookingPaymentsForAdmin = (
+  export const listBookingPaymentsForAdmin = (
     bookingId: string,
     params?: ListBookingPaymentsForAdminParams,
  ) => {

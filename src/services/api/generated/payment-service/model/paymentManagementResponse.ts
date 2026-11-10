@@ -8,21 +8,20 @@
 import type { PaymentManagementResponseStatus } from './paymentManagementResponseStatus';
 
 export interface PaymentManagementResponse {
-  id: string;
-  bookingId: string;
-  userId: string;
-  paymentAttempt: number;
-  /** Stored payment amount received from the booking payment request. */
-  amount: number;
-  currency: string;
-  provider: string;
-  status: PaymentManagementResponseStatus;
-  providerReference: string;
-  failureCode: string;
-  holdExpiresAt: string;
-  requestedAt: string;
-  completedAt: string;
-  version: number;
-  createdAt: string;
-  updatedAt: string;
+  id?: string;
+  bookingId?: string;
+  userId?: string;
+  paymentAttempt?: number;
+  amount?: number;
+  currency?: string;
+  provider?: string;
+  status?: PaymentManagementResponseStatus;
+  providerReference?: string;
+  failureCode?: string;
+  holdExpiresAt?: string;
+  requestedAt?: string;
+  completedAt?: string;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }

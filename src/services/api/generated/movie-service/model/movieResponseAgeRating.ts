@@ -6,10 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * @nullable
- */
-export type MovieResponseAgeRating = typeof MovieResponseAgeRating[keyof typeof MovieResponseAgeRating] | null;
+export type MovieResponseAgeRating = typeof MovieResponseAgeRating[keyof typeof MovieResponseAgeRating];
 
 
 export const MovieResponseAgeRating = {

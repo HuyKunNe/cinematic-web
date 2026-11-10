@@ -8,17 +8,14 @@
 import type { RoomLayoutResponseStatus } from './roomLayoutResponseStatus';
 
 export interface RoomLayoutResponse {
-  id: string;
-  roomId: string;
-  /** Layout revision number within the room; not the optimistic lock version */
-  layoutVersion: number;
-  status: RoomLayoutResponseStatus;
-  canvasWidth: number;
-  canvasHeight: number;
-  /** Absent while the layout is a draft */
+  id?: string;
+  roomId?: string;
+  layoutVersion?: number;
+  status?: RoomLayoutResponseStatus;
+  canvasWidth?: number;
+  canvasHeight?: number;
   publishedAt?: string;
-  /** Optimistic lock version used as expectedVersion when saving or publishing */
-  version: number;
-  createdAt: string;
-  updatedAt: string;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }

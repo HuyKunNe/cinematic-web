@@ -6,29 +6,16 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  GenreResponse,
-  GetMovieCatalogGenresParams
+  FindGenresParams,
+  GenreResponse
 } from '../model';
 
 import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * Public read API.
- *
- * Returns distinct genres attached to movies matching
- * the optional status and candidate movie ID filters.
- *
- * The result is independent of movie pagination,
- * movie sorting and the selected genre filter.
- *
- * Movie IDs are candidate filters, not proof that a movie
- * has bookable showtimes at a cinema.
- * @summary Get genres present in the matching movie catalog
- */
-export const getMovieCatalogGenres = (
-    params?: GetMovieCatalogGenresParams,
+  export const findGenres = (
+    params?: FindGenresParams,
  ) => {
       return apiRequest<GenreResponse[]>(
       {url: `/api/v1/movies/catalog/genres`, method: 'GET',
@@ -36,4 +23,4 @@ export const getMovieCatalogGenres = (
     },
       );
     }
-  export type GetMovieCatalogGenresResult = NonNullable<Awaited<ReturnType<typeof getMovieCatalogGenres>>>
+  export type FindGenresResult = NonNullable<Awaited<ReturnType<typeof findGenres>>>

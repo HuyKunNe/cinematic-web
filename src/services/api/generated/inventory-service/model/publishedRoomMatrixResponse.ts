@@ -8,7 +8,7 @@
 import type { PublishedRoomSeatResponse } from './publishedRoomSeatResponse';
 
 export interface PublishedRoomMatrixResponse {
-  rowCount: number;
-  columnCount: number;
-  seats: PublishedRoomSeatResponse[];
+  rowCount?: number;
+  columnCount?: number;
+  seats?: PublishedRoomSeatResponse[];
 }

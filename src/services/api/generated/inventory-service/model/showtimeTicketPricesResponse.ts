@@ -10,22 +10,19 @@ import type { ShowtimeTicketPricesResponseDayGroup } from './showtimeTicketPrice
 import type { ShowtimeTicketPricesResponseExperienceType } from './showtimeTicketPricesResponseExperienceType';
 import type { TicketGroupPrices } from './ticketGroupPrices';
 
-/**
- * Published ticket prices for the showtime's assigned pricing version and cinema-local screening time. Price applicability does not indicate seat availability.
- */
 export interface ShowtimeTicketPricesResponse {
-  showtimeId: string;
-  cinemaId: string;
-  pricingPolicyVersionId: string;
-  pricingPolicyRevision: number;
-  dayGroup: ShowtimeTicketPricesResponseDayGroup;
-  experienceType: ShowtimeTicketPricesResponseExperienceType;
-  contentFormat: ShowtimeTicketPricesResponseContentFormat;
-  currency: string;
-  timeZone: string;
-  localStartsAt: string;
-  timeBandId: string;
-  timeBandName: string;
-  defaultTicketGroupId: string;
-  ticketGroups: TicketGroupPrices[];
+  showtimeId?: string;
+  cinemaId?: string;
+  pricingPolicyVersionId?: string;
+  pricingPolicyRevision?: number;
+  dayGroup?: ShowtimeTicketPricesResponseDayGroup;
+  experienceType?: ShowtimeTicketPricesResponseExperienceType;
+  contentFormat?: ShowtimeTicketPricesResponseContentFormat;
+  currency?: string;
+  timeZone?: string;
+  localStartsAt?: string;
+  timeBandId?: string;
+  timeBandName?: string;
+  defaultTicketGroupId?: string;
+  ticketGroups?: TicketGroupPrices[];
 }

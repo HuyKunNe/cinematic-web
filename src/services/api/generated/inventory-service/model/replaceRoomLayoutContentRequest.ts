@@ -9,14 +9,6 @@ import type { RoomLayoutElementInput } from './roomLayoutElementInput';
 import type { RoomLayoutMatrixInput } from './roomLayoutMatrixInput';
 import type { RoomLayoutSeatInput } from './roomLayoutSeatInput';
 
-/**
- * Replaces draft content.
- * Supply matrix for matrix layouts or empty legacy drafts.
- * Legacy drafts containing seats or elements cannot be converted.
- * Supply seats and elements for legacy geometry layouts.
- * The two representations are mutually exclusive.
- * expectedVersion refers to layout.version.
- */
 export interface ReplaceRoomLayoutContentRequest {
   expectedVersion: number;
   seats?: RoomLayoutSeatInput[];

@@ -14,11 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * Resolve published fares for each selected seat. The quote does not reserve seats or verify customer eligibility for a ticket group.
- * @summary Quote selected seats using their requested ticket groups
- */
-export const quoteShowtimeSeats = (
+  export const quoteShowtimeSeats = (
     showtimeId: string,
     quoteShowtimeSeatsRequest: QuoteShowtimeSeatsRequest,
  ) => {

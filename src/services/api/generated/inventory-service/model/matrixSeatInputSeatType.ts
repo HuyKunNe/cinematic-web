@@ -6,9 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Defaults to STANDARD. COUPLE occupies two columns; all other types occupy one.
- */
 export type MatrixSeatInputSeatType = typeof MatrixSeatInputSeatType[keyof typeof MatrixSeatInputSeatType];
 
 

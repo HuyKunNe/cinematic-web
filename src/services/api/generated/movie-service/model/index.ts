@@ -6,8 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export * from './apiResponse';
-export * from './apiResponseData';
 export * from './createGenreRequest';
 export * from './createMovieRequest';
 export * from './createMovieRequestStatus';
@@ -15,14 +13,13 @@ export * from './createMovieScreeningVersionRequest';
 export * from './createMovieScreeningVersionRequestContentFormat';
 export * from './createMovieScreeningVersionRequestPresentationType';
 export * from './createMovieScreeningVersionRequestProjectionTechnology';
-export * from './errorBody';
+export * from './findCatalogParams';
+export * from './findCatalogSort';
+export * from './findCatalogStatus';
+export * from './findGenresParams';
+export * from './findGenresStatus';
+export * from './findHeroParams';
 export * from './genreResponse';
-export * from './getHeroMoviesParams';
-export * from './getMovieCatalogGenresParams';
-export * from './getMovieCatalogGenresStatus';
-export * from './getMovieCatalogParams';
-export * from './getMovieCatalogSort';
-export * from './getMovieCatalogStatus';
 export * from './listMovieScreeningVersionsParams';
 export * from './movieHeroConfigurationResponse';
 export * from './movieResponse';
@@ -45,4 +42,3 @@ export * from './updateMovieMetadataRequestAgeRating';
 export * from './updateMovieRequest';
 export * from './updateMovieRequestStatus';
 export * from './updateMovieScreeningVersionActiveRequest';
-export * from './validationError';

@@ -7,9 +7,6 @@
  */
 import type { BookingSeatSelectionRequest } from './bookingSeatSelectionRequest';
 
-/**
- * Supply exactly one of seatNumbers or seats.
- */
 export interface CreateBookingRequest {
   /**
      * @minLength 0
@@ -18,16 +15,11 @@ export interface CreateBookingRequest {
   clientRequestId: string;
   showtimeId: string;
   /**
-     * Legacy seat selection using default ticket groups. Omit when supplying seats.
      * @items.minLength 0
      * @items.maxLength 20
      */
   seatNumbers?: string[];
-  /**
-     * Expected total seat price in VND from the seat quote.
-     * @minimum 0
-     */
+  /** @minimum 0 */
   expectedTotalAmount?: number;
-  /** Seat selections with optional individual ticket groups. Omit when supplying seatNumbers. */
   seats?: BookingSeatSelectionRequest[];
 }

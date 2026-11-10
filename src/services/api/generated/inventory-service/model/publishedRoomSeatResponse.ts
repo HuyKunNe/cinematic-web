@@ -7,26 +7,15 @@
  */
 import type { PublishedRoomSeatResponseSeatType } from './publishedRoomSeatResponseSeatType';
 
-/**
- * One bound inventory seat at its starting matrix cell. A COUPLE seat appears once and occupies two columns.
- */
 export interface PublishedRoomSeatResponse {
-  seatId: string;
-  /** Zero-based row index. */
-  rowIndex: number;
-  /** Zero-based starting column index. */
-  columnIndex: number;
-  /** Consecutive seat number within the row. */
-  number: number;
-  /** Display label from the layout, such as A1. */
-  seatNumber: string;
-  /** Row label: A through Z, then AA, AB and so on. */
-  rowLabel: string;
-  seatType: PublishedRoomSeatResponseSeatType;
-  /** People accommodated by this seat. */
-  capacity: number;
-  /** Occupied columns: COUPLE=2, other types=1. */
-  columnSpan: number;
-  /** Current inventory active state. This is not showtime booking availability. */
-  active: boolean;
+  seatId?: string;
+  rowIndex?: number;
+  columnIndex?: number;
+  number?: number;
+  seatNumber?: string;
+  rowLabel?: string;
+  seatType?: PublishedRoomSeatResponseSeatType;
+  capacity?: number;
+  columnSpan?: number;
+  active?: boolean;
 }

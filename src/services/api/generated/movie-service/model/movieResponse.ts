@@ -23,10 +23,7 @@ export interface MovieResponse {
   version?: number;
   createdAt?: string;
   updatedAt?: string;
-  /** @nullable */
-  backdropUrl?: string | null;
-  /** @nullable */
+  backdropUrl?: string;
   ageRating?: MovieResponseAgeRating;
-  /** @nullable */
-  screeningVersions?: (MovieScreeningVersionResponse | null)[] | null;
+  screeningVersions?: MovieScreeningVersionResponse[];
 }

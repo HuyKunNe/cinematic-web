@@ -235,14 +235,11 @@ async function changeVersion(event: Event) {
 function openLayout() {
   if (!current.value || busy.value || layoutLink.value.invalid) return
 
-  const layoutId = matrix.value?.layout.id ?? pickedLayoutId.value
-
   void router.push({
     name: ROUTE_NAMES.ADMIN_ROOM_LAYOUT,
     params: { roomId: roomId.value },
     query: {
       ...(cinemaId.value ? { cinemaId: cinemaId.value } : {}),
-      ...(layoutId ? { layoutId } : {}),
     },
   })
 }

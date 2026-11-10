@@ -8,39 +8,27 @@
 import type { ShowtimeSeatMapSeatResponseSeatType } from './showtimeSeatMapSeatResponseSeatType';
 import type { ShowtimeSeatMapSeatResponseStatus } from './showtimeSeatMapSeatResponseStatus';
 
-/**
- * One inventory seat. COUPLE appears once and occupies two columns. Missing cells are empty spaces, not seats.
- */
 export interface ShowtimeSeatMapSeatResponse {
-  seatId: string;
+  seatId?: string;
   /** ShowSeat identifier; null when ShowSeat is missing. */
-  showSeatId: string | null;
-  seatNumber: string;
-  rowLabel: string;
-  seatType: ShowtimeSeatMapSeatResponseSeatType;
-  capacity: number;
-  /** Legacy geometry; null for matrix layouts. */
-  x: number;
-  /** Legacy geometry; null for matrix layouts. */
-  y: number;
-  /** Legacy geometry; null for matrix layouts. */
-  width: number;
-  /** Legacy geometry; null for matrix layouts. */
-  height: number;
-  /** Legacy geometry; null for matrix layouts. */
-  rotationDegrees: number;
+  showSeatId?: string | null;
+  seatNumber?: string;
+  rowLabel?: string;
+  seatType?: ShowtimeSeatMapSeatResponseSeatType;
+  capacity?: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  rotationDegrees?: number;
   /** Price from ShowSeat; null when ShowSeat is missing. */
-  price: number | null;
-  currency: string;
+  price?: number | null;
+  currency?: string;
   /** Stored ShowSeat status; null when ShowSeat is missing. */
-  status: ShowtimeSeatMapSeatResponseStatus;
-  selectable: boolean;
-  /** Zero-based matrix row; null for legacy layouts. */
-  rowIndex: number;
-  /** Zero-based starting column; null for legacy layouts. */
-  columnIndex: number;
-  /** Consecutive seat number within the row; null for legacy layouts. */
-  number: number;
-  /** Occupied columns: COUPLE=2, other types=1. Null for legacy layouts. */
-  columnSpan: number;
+  status?: ShowtimeSeatMapSeatResponseStatus;
+  selectable?: boolean;
+  rowIndex?: number;
+  columnIndex?: number;
+  number?: number;
+  columnSpan?: number;
 }

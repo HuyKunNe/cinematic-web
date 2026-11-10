@@ -10,11 +10,9 @@ import type { QuotePricingFareRequestExperienceType } from './quotePricingFareRe
 import type { QuotePricingFareRequestSeatType } from './quotePricingFareRequestSeatType';
 
 export interface QuotePricingFareRequest {
-  /** Screening start including its UTC offset. The cinema time zone determines the fare time band. */
   startsAt: string;
   experienceType: QuotePricingFareRequestExperienceType;
   contentFormat: QuotePricingFareRequestContentFormat;
-  /** Ticket group owned by this pricing version. Omit to use the version's default group. */
   ticketGroupId?: string;
   seatType: QuotePricingFareRequestSeatType;
 }

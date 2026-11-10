@@ -15,10 +15,8 @@ export interface CreateRoomRequest {
      */
   name: string;
   roomType: CreateRoomRequestRoomType;
-  /** Initial activity state. Omitted or null defaults to true. */
   active?: boolean;
   /**
-     * Supported content formats. Omitted or null defaults to an empty list. Duplicate values are rejected.
      * @minItems 0
      * @maxItems 2
      */

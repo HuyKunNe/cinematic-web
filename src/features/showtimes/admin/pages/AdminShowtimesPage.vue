@@ -404,7 +404,11 @@ async function reload() {
                   </template>
                   <span v-else class="admin-reference__muted"> Chưa có thông tin phiên bản </span>
                 </td>
-                <td>{{ showtimeStatusLabels[item.status] }}</td>
+                <td>
+                  <span class="admin-status" :data-status="item.status">
+                    {{ showtimeStatusLabels[item.status] }}
+                  </span>
+                </td>
                 <td>
                   <div v-if="item.status === 'SCHEDULED'" class="admin-showtimes__actions">
                     <AppButton

@@ -6,9 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Projection technology independent from the 2D/3D image format.
- */
 export type MovieScreeningVersionResponseProjectionTechnology = typeof MovieScreeningVersionResponseProjectionTechnology[keyof typeof MovieScreeningVersionResponseProjectionTechnology];
 
 

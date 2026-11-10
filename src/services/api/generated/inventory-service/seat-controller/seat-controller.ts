@@ -74,27 +74,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  /**
- * Requires inventory:manage.
- * Supports both legacy catalog and layout-managed seats.
- * The seat must belong to the supplied roomId.
- *
- * Sets active to the requested value.
- * Repeating the same request leaves the same active state.
- *
- * Does not require or modify seat numbers, row labels or types.
- * Does not modify layout cells or published snapshots.
- * The active state belongs to the physical seat and is shared
- * by every layout referencing the same seatId.
- *
- * Does not change existing ShowSeat statuses or bookings.
- * For newly generated show seats, the existing generation
- * rules use the inventory seat's active state.
- *
- * Reload the published room matrix after a successful update.
- * @summary Update only the inventory seat active state
- */
-export const updateSeatActiveState = (
+  export const updateSeatActiveState = (
     seatId: string,
     updateSeatActiveRequest: UpdateSeatActiveRequest,
  ) => {
@@ -105,12 +85,7 @@ export const updateSeatActiveState = (
     },
       );
     }
-  /**
- * Omit active to include both active and inactive catalog seats.
- * Layout-managed seats are read from the published room matrix API.
- * @summary List legacy catalog seats for inventory management
- */
-export const getManagedSeats = (
+  export const getManagedSeats = (
     params: GetManagedSeatsParams,
  ) => {
       return apiRequest<SeatResponse[]>(

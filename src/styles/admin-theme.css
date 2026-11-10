@@ -1,0 +1,510 @@
+/* cinema-admin is a visual reference, not a source of business data.
+   Activate only for ADMIN in AdminLayout. Body inheritance also covers Reka
+   portals without changing shared controls on customer or staff screens. */
+body:has(.admin-layout.is-admin-role) {
+  /* Additional reference primitives; the shell owns the shared palette. */
+  --admin-ui-soft: #fafbfc;
+  --admin-ui-hover: #f4f6f8;
+  --admin-ui-border-strong: #cbd3db;
+  --admin-ui-row-line: #edf0f3;
+  --admin-ui-success: #27825e;
+  --admin-ui-success-soft: #eaf7f0;
+  --admin-ui-warning: #b97824;
+  --admin-ui-warning-soft: #fff2e5;
+  --admin-ui-error: #bf4d4d;
+  --admin-ui-error-soft: #fceeee;
+  --admin-ui-info: #577cba;
+  --admin-ui-info-soft: #edf3fc;
+  --admin-ui-couple: #8468a5;
+  --admin-ui-couple-soft: #f3edfc;
+  --admin-ui-dialog-shadow: 0 1.5625rem 5.625rem #14212b33;
+
+  /* Semantic tokens, shared by pages and portal content. */
+  --color-background: var(--admin-shell-background);
+  --color-surface: var(--admin-shell-paper);
+  --color-surface-raised: var(--admin-ui-soft);
+  --color-surface-hover: var(--admin-ui-hover);
+  --color-border: var(--admin-shell-line);
+  --color-border-strong: var(--admin-ui-border-strong);
+  --color-text-primary: var(--admin-shell-ink);
+  --color-text-secondary: var(--admin-shell-muted);
+  --color-text-muted: var(--admin-shell-muted);
+  --color-primary: var(--admin-shell-accent);
+  --color-primary-soft: var(--admin-shell-accent-soft);
+  --color-primary-hover: var(--admin-shell-accent-hover);
+  --color-primary-active: var(--admin-shell-accent-hover);
+  --color-on-primary: var(--admin-shell-paper);
+  --color-secondary: var(--admin-shell-paper);
+  --color-secondary-hover: var(--admin-ui-hover);
+  --color-on-secondary: var(--admin-shell-ink);
+  --color-success: var(--admin-ui-success);
+  --color-warning: var(--admin-ui-warning);
+  --color-error: var(--admin-ui-error);
+  --color-overlay: var(--admin-shell-overlay);
+  --color-focus: var(--admin-shell-focus);
+  --admin-control-color-scheme: light;
+  --shadow-card: var(--admin-shell-shadow);
+  --shadow-raised: var(--admin-ui-dialog-shadow);
+  --shadow-focus: 0 0 0 var(--border-width-strong) var(--admin-shell-focus);
+
+  --font-family-base: Inter, 'Segoe UI', Arial, sans-serif;
+  --font-family-display: var(--font-family-base);
+  --font-size-xs: 0.625rem;
+  --font-size-sm: 0.75rem;
+  --font-size-md: 0.875rem;
+  --font-size-lg: 0.9375rem;
+  --font-size-xl: 1.1875rem;
+  --font-weight-bold: 650;
+  --line-height-heading: 1.3;
+  --radius-sm: var(--admin-shell-radius);
+  --radius-md: var(--admin-shell-radius);
+  --radius-lg: 0.75rem;
+  --control-height-sm: 2.125rem;
+  --control-height-md: 2.5rem;
+  --control-height-lg: 2.75rem;
+  --icon-size-sm: 1rem;
+  --icon-size-md: var(--admin-shell-icon-size);
+
+  /* Reference geometry and component mappings. Rebind derived tokens here:
+     aliases inherited from :root would otherwise retain the customer theme. */
+  --admin-ui-heading-size: 1.6875rem;
+  --admin-ui-heading-tracking: -0.04375rem;
+  --admin-ui-eyebrow-tracking: 0.1rem;
+  --admin-ui-section-gap: 1.5rem;
+  --admin-ui-card-gap: 1.0625rem;
+  --admin-ui-table-head-padding: 0.75rem;
+  --admin-ui-table-cell-padding: 0.875rem;
+  --admin-ui-copy-size: 0.75rem;
+  --admin-ui-note-size: 0.6875rem;
+  --admin-ui-tiny-size: 0.625rem;
+  --admin-ui-dialog-title-size: 1.125rem;
+  --admin-ui-dialog-radius: 0.875rem;
+  --admin-ui-stat-size: 1.6875rem;
+  --admin-ui-poster-width: 2.125rem;
+  --admin-ui-poster-height: 2.9375rem;
+  --admin-ui-mobile-header: 3.9375rem;
+  --admin-ui-mobile-gutter: 0.875rem;
+  --admin-ui-mobile-top: 1.125rem;
+  --admin-ui-wide-gutter: 2.875rem;
+  --admin-ui-wide-top: 1.875rem;
+  --admin-ui-pricing-width: 73.75rem;
+  --admin-ui-metric-icon-size: 1.875rem;
+
+  --admin-reference-background-soft: var(--admin-ui-soft);
+  --admin-reference-border-strong: var(--admin-ui-border-strong);
+  --admin-reference-hover: var(--admin-ui-hover);
+  --admin-reference-primary-hover: var(--admin-shell-accent-hover);
+  --admin-reference-primary-tint: var(--admin-shell-accent-soft);
+  --admin-reference-heading-size: var(--admin-ui-heading-size);
+  --admin-reference-heading-tracking: var(--admin-ui-eyebrow-tracking);
+  --admin-reference-table-tracking: normal;
+  --admin-reference-copy-size: var(--admin-ui-copy-size);
+  --admin-reference-tiny-size: var(--admin-ui-tiny-size);
+  --admin-reference-radius-sm: var(--admin-shell-radius);
+  --admin-reference-radius-md: var(--radius-lg);
+  --admin-reference-panel-shadow: var(--admin-shell-shadow);
+  --admin-reference-control-height: var(--control-height-md);
+  --admin-reference-active-border: var(--admin-ui-success-soft);
+  --admin-reference-active-background: var(--admin-ui-success-soft);
+  --admin-reference-paused-border: var(--admin-ui-warning-soft);
+  --admin-reference-paused-background: var(--admin-ui-warning-soft);
+  --admin-reference-premium-border: var(--admin-shell-accent-soft);
+  --admin-cinema-heading-size: var(--admin-ui-heading-size);
+  --admin-cinema-heading-tracking: var(--admin-ui-eyebrow-tracking);
+  --admin-cinema-active-border: var(--admin-ui-success-soft);
+  --admin-cinema-active-background: var(--admin-ui-success-soft);
+  --admin-cinema-paused-border: var(--admin-ui-warning-soft);
+  --admin-cinema-paused-background: var(--admin-ui-warning-soft);
+  --admin-cinema-list-control-radius: var(--admin-shell-radius);
+  --admin-cinema-list-panel-radius: var(--radius-lg);
+  --admin-room-heading-size: var(--admin-ui-heading-size);
+  --admin-room-stat-value-size: var(--admin-ui-stat-size);
+  --admin-room-list-control-radius: var(--admin-shell-radius);
+  --admin-room-list-panel-radius: var(--radius-lg);
+  --admin-movies-heading-size: var(--admin-ui-heading-size);
+  --admin-dashboard-heading-size: var(--admin-ui-heading-size);
+  --admin-dashboard-heading-line-height: var(--line-height-heading);
+  --admin-dashboard-eyebrow-tracking: var(--admin-ui-eyebrow-tracking);
+  --admin-dashboard-metric-size: var(--admin-ui-stat-size);
+  --admin-dashboard-panel-title-size: var(--font-size-lg);
+  --admin-dashboard-card-radius: var(--radius-lg);
+  --admin-dashboard-panel-radius: var(--radius-lg);
+  --admin-dashboard-panel-shadow: var(--admin-shell-shadow);
+  --admin-dashboard-filter-radius: var(--admin-shell-radius);
+  --admin-dashboard-gap: var(--space-5);
+  --admin-dashboard-link-size: var(--admin-ui-note-size);
+  --admin-dashboard-tiny-size: var(--admin-ui-tiny-size);
+
+  color-scheme: light;
+  font-size: var(--font-size-md);
+}
+
+/* The shell's grid column must resolve the sidebar width in this scope. */
+.admin-layout.is-admin-role {
+  --admin-shell-sidebar-size: var(--admin-sidebar-width);
+  color: var(--color-text-primary);
+}
+
+.admin-layout.is-admin-role.is-sidebar-collapsed {
+  --admin-shell-sidebar-size: var(--admin-sidebar-width-collapsed);
+}
+
+.admin-layout.is-admin-role .admin-layout__container {
+  gap: var(--admin-ui-card-gap);
+}
+
+.admin-layout.is-admin-role .admin-header {
+  --admin-shell-gutter: inherit;
+  font-size: var(--admin-ui-copy-size);
+}
+
+.admin-layout.is-admin-role .admin-header__context {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.admin-layout.is-admin-role .admin-header__context small {
+  color: var(--color-text-muted);
+  font-size: var(--admin-ui-tiny-size);
+}
+
+.admin-layout.is-admin-role .admin-header__context strong {
+  overflow: hidden;
+  font-weight: var(--font-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-layout.is-admin-role .admin-user-menu__identity-copy {
+  display: grid;
+  gap: var(--space-1);
+  text-align: left;
+}
+
+.admin-layout.is-admin-role .admin-user-menu__identity-copy small {
+  color: var(--color-text-secondary);
+  font-size: var(--admin-ui-tiny-size);
+}
+
+/* All page headings use the same scale, including the seat editor. */
+.admin-layout.is-admin-role .admin-layout__main h1 {
+  font-family: var(--font-family-base);
+  font-size: var(--admin-ui-heading-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--admin-ui-heading-tracking);
+}
+
+.admin-layout.is-admin-role :is(
+  .admin-reference, .admin-rooms, .admin-cinemas, .movie-admin, .admin-dashboard
+) {
+  gap: var(--admin-ui-section-gap);
+}
+
+/* Match the reference's understated table headers and compact rows. */
+.admin-layout.is-admin-role :is(
+  .admin-reference__table, .admin-rooms__table, .movie-admin__table, .admin-dashboard table
+) thead th {
+  padding-block: var(--admin-ui-table-head-padding);
+  background: var(--admin-ui-soft);
+  color: var(--color-text-muted);
+  font-size: var(--admin-ui-tiny-size);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.admin-layout.is-admin-role :is(
+  .admin-reference__table, .admin-rooms__table, .movie-admin__table, .admin-dashboard table
+) tbody :is(td, th) {
+  padding-block: var(--admin-ui-table-cell-padding);
+  border-color: var(--admin-ui-row-line);
+  font-size: var(--admin-ui-copy-size);
+}
+
+.admin-layout.is-admin-role :is(
+  .admin-reference__table, .admin-rooms__table, .movie-admin__table, .admin-dashboard table
+) tbody tr:hover {
+  background: var(--admin-ui-soft);
+}
+
+/* Override legacy dark native-control rendering, including teleported forms. */
+body:has(.admin-layout.is-admin-role) :is(input, select, textarea) {
+  color-scheme: light;
+  accent-color: var(--admin-shell-accent);
+}
+
+body:has(.admin-layout.is-admin-role) :is(
+  .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog,
+  .admin-cinema-menu, .admin-room-menu, .admin-reference-autocomplete,
+  .app-autocomplete__content, .app-creatable-autocomplete__content
+) {
+  color: var(--color-text-primary);
+  font-size: var(--admin-ui-copy-size);
+  --radius-sm: var(--admin-shell-radius);
+  --radius-md: var(--admin-shell-radius);
+}
+
+body:has(.admin-layout.is-admin-role) :is(
+  .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog
+) {
+  border-radius: var(--admin-ui-dialog-radius);
+  box-shadow: var(--admin-ui-dialog-shadow);
+}
+
+body:has(.admin-layout.is-admin-role) :is(
+  .admin-movie-dialog__title, .admin-cinema-dialog__title, .admin-room-dialog__title
+) {
+  font-family: var(--font-family-base);
+  font-size: var(--admin-ui-dialog-title-size);
+  line-height: var(--line-height-heading);
+}
+
+body:has(.admin-layout.is-admin-role) :is(
+  .app-button, .movie-admin__button, .admin-reference__link-button
+) {
+  border-radius: var(--admin-shell-radius);
+  font-size: var(--admin-ui-copy-size);
+  font-weight: var(--font-weight-semibold);
+}
+
+body:has(.admin-layout.is-admin-role) :is(
+  .movie-admin__button.is-primary, .admin-reference__link-button.is-primary
+) {
+  color: var(--admin-shell-paper);
+}
+
+body:has(.admin-layout.is-admin-role) .app-button:hover:not(:disabled) {
+  transform: none;
+}
+
+body:has(.admin-layout.is-admin-role) :is(input, select, textarea, button, a):focus-visible {
+  box-shadow: none;
+  outline: var(--focus-ring-width) solid var(--admin-shell-focus);
+  outline-offset: var(--border-width-strong);
+}
+
+body:has(.admin-layout.is-admin-role) :is(input, select, textarea, button):disabled {
+  cursor: not-allowed;
+}
+
+/* Page-local variables are rebound here instead of duplicating page markup. */
+.admin-layout.is-admin-role .movie-admin {
+  --movie-admin-heading-size: var(--admin-ui-heading-size);
+  --movie-admin-control-radius: var(--admin-shell-radius);
+  --movie-admin-panel-radius: var(--radius-lg);
+  --movie-admin-card-radius: var(--radius-lg);
+  --movie-admin-stat-size: var(--admin-ui-stat-size);
+  --movie-admin-poster-width: var(--admin-ui-poster-width);
+  --movie-admin-poster-height: var(--admin-ui-poster-height);
+  --movie-admin-cell-size: var(--admin-ui-copy-size);
+  --movie-admin-small-size: var(--admin-ui-tiny-size);
+  --movie-admin-heading-tracking: var(--admin-ui-eyebrow-tracking);
+  --movie-admin-table-tracking: normal;
+  --movie-admin-background-soft: var(--admin-ui-soft);
+}
+
+.admin-layout.is-admin-role .movie-admin__stats {
+  gap: var(--admin-ui-card-gap);
+}
+
+.admin-layout.is-admin-role .movie-admin__row-action {
+  color: var(--color-text-secondary);
+}
+
+.admin-layout.is-admin-role .movie-admin__row-action svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+.admin-layout.is-admin-role .admin-cinemas {
+  --admin-cinema-card-cover-background: var(--admin-shell-nav);
+}
+
+.admin-layout.is-admin-role .admin-cinema-card {
+  box-shadow: var(--admin-shell-shadow);
+}
+
+.admin-layout.is-admin-role .admin-cinema-card__stats dt {
+  grid-row: 2;
+}
+
+.admin-layout.is-admin-role .admin-cinema-card__stats dd {
+  grid-row: 1;
+}
+
+.admin-layout.is-admin-role .admin-cinema-card__city {
+  font-family: var(--admin-shell-brand-mark-font);
+  font-size: var(--font-size-2xl);
+}
+
+.admin-layout.is-admin-role :is(.admin-rooms__type, .admin-reference__chip) {
+  background: var(--admin-ui-hover);
+}
+
+.admin-layout.is-admin-role :is(.admin-rooms__status, .admin-cinemas__status) {
+  border-radius: var(--radius-sm);
+}
+
+.admin-layout.is-admin-role .movie-admin__badge.is-success {
+  background: var(--admin-ui-success-soft);
+  color: var(--admin-ui-success);
+}
+
+.admin-layout.is-admin-role .movie-admin__badge.is-warning {
+  background: var(--admin-ui-warning-soft);
+  color: var(--admin-ui-warning);
+}
+
+.admin-layout.is-admin-role .movie-admin__badge.is-error {
+  background: var(--admin-ui-error-soft);
+  color: var(--admin-ui-error);
+}
+
+.admin-layout.is-admin-role .admin-dashboard__metric {
+  position: relative;
+  align-items: flex-start;
+  box-shadow: var(--admin-shell-shadow);
+}
+
+.admin-layout.is-admin-role .admin-dashboard__metric-icon {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: var(--admin-ui-metric-icon-size);
+  background: var(--admin-shell-background);
+  color: var(--color-text-muted);
+}
+
+.admin-layout.is-admin-role .admin-dashboard__metric-copy {
+  flex: 1;
+  gap: var(--space-2);
+}
+
+.admin-layout.is-admin-role .admin-dashboard__metric-copy h2 {
+  min-height: var(--admin-ui-metric-icon-size);
+  padding-inline-end: calc(var(--admin-ui-metric-icon-size) + var(--space-2));
+  font-size: var(--admin-ui-copy-size);
+}
+
+.admin-layout.is-admin-role .movie-admin__badge {
+  border-color: transparent;
+  border-radius: var(--radius-sm);
+  background: var(--admin-ui-hover);
+}
+
+.admin-layout.is-admin-role .movie-admin__badge.is-primary {
+  background: var(--admin-shell-accent-soft);
+}
+
+.admin-layout.is-admin-role .admin-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--admin-ui-hover);
+  color: var(--color-text-secondary);
+  font-size: var(--admin-ui-tiny-size);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.admin-layout.is-admin-role .admin-status:is(
+  [data-status='OPEN_FOR_BOOKING'], [data-status='CONFIRMED']
+) {
+  background: var(--admin-ui-success-soft);
+  color: var(--admin-ui-success);
+}
+
+.admin-layout.is-admin-role .admin-status:is(
+  [data-status='SCHEDULED'], [data-status='PENDING'], [data-status='RESERVED']
+) {
+  background: var(--admin-ui-warning-soft);
+  color: var(--admin-ui-warning);
+}
+
+.admin-layout.is-admin-role .admin-status:is(
+  [data-status='CANCELLED'], [data-status='REJECTED'],
+  [data-status='EXPIRED'], [data-status='PAYMENT_FAILED']
+) {
+  background: var(--admin-ui-error-soft);
+  color: var(--admin-ui-error);
+}
+
+/* Seat types retain their domain meaning; color and selection follow reference.
+   No width, row, column or capacity calculations are changed. */
+.admin-layout.is-admin-role :is(.seatmap-cell, .seatmap-legend__dot).is-couple {
+  border-color: var(--admin-ui-couple);
+  background: var(--admin-ui-couple-soft);
+  color: var(--admin-ui-couple);
+}
+
+.admin-layout.is-admin-role :is(.seatmap-cell, .seatmap-legend__dot).is-selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.admin-layout.is-admin-role .seat-matrix-editor [data-seat-type='COUPLE'] {
+  --matrix-seat-color: var(--admin-ui-couple);
+}
+
+.admin-layout.is-admin-role .seat-matrix-editor td.is-selected {
+  outline-color: var(--color-primary);
+}
+
+/* Keep the API's versioned pricing workflow; use reference modal dimensions. */
+body:has(.admin-layout.is-admin-role) .price-dialog.pricing-setup {
+  --pm-width: var(--admin-ui-pricing-width);
+}
+
+@variant admin-compact {
+  .admin-layout.is-admin-role {
+    --admin-shell-gutter: var(--space-6);
+  }
+}
+
+@variant admin-shell-wide {
+  .admin-layout.is-admin-role {
+    --admin-shell-gutter: var(--admin-ui-wide-gutter);
+    --admin-shell-padding-top: var(--admin-ui-wide-top);
+  }
+}
+
+@variant admin-reference-mobile {
+  .admin-layout.is-admin-role .admin-header__context,
+  .admin-layout.is-admin-role .admin-user-menu__identity-copy {
+    display: none;
+  }
+}
+
+@variant admin-shell-mobile {
+  .admin-layout.is-admin-role {
+    --admin-header-height: var(--admin-ui-mobile-header);
+    --admin-shell-gutter: var(--admin-ui-mobile-gutter);
+    --admin-shell-padding-top: var(--admin-ui-mobile-top);
+    --admin-ui-heading-size: 1.5rem;
+  }
+
+  .admin-layout.is-admin-role .admin-header {
+    --admin-header-height: var(--admin-ui-mobile-header);
+  }
+
+  .admin-layout.is-admin-role :is(
+    .movie-admin__heading, .admin-dashboard__heading,
+    .admin-reference__heading, .admin-rooms__heading, .admin-cinemas__heading
+  ) {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .admin-layout.is-admin-role :is(
+    .admin-reference__table-footer, .admin-rooms__table-footer,
+    .admin-cinemas__table-footer, .movie-admin__pagination
+  ) {
+    flex-wrap: wrap;
+  }
+}

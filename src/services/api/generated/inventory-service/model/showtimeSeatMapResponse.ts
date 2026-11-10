@@ -9,22 +9,16 @@ import type { ShowtimeSeatMapElementResponse } from './showtimeSeatMapElementRes
 import type { ShowtimeSeatMapMatrixResponse } from './showtimeSeatMapMatrixResponse';
 import type { ShowtimeSeatMapSeatResponse } from './showtimeSeatMapSeatResponse';
 
-/**
- * Seat map from the showtime's pinned published layout. When matrix is non-null, use matrix dimensions and seat cell positions instead of legacy geometry.
- */
 export interface ShowtimeSeatMapResponse {
-  showtimeId: string;
-  cinemaId: string;
-  roomId: string;
-  layoutId: string;
-  layoutVersion: number;
-  serverTime: string;
-  /** Legacy canvas width; null for matrix layouts. */
-  canvasWidth: number;
-  /** Legacy canvas height; null for matrix layouts. */
-  canvasHeight: number;
-  elements: ShowtimeSeatMapElementResponse[];
-  seats: ShowtimeSeatMapSeatResponse[];
-  /** Matrix dimensions; null for legacy geometry layouts. The screen is displayed above the matrix. */
-  matrix: ShowtimeSeatMapMatrixResponse;
+  showtimeId?: string;
+  cinemaId?: string;
+  roomId?: string;
+  layoutId?: string;
+  layoutVersion?: number;
+  serverTime?: string;
+  canvasWidth?: number;
+  canvasHeight?: number;
+  elements?: ShowtimeSeatMapElementResponse[];
+  seats?: ShowtimeSeatMapSeatResponse[];
+  matrix?: ShowtimeSeatMapMatrixResponse;
 }

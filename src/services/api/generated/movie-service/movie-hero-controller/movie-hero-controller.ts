@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  GetHeroMoviesParams,
+  FindHeroParams,
   MovieHeroConfigurationResponse,
   MovieResponse,
   UpdateMovieHeroRequest
@@ -16,11 +16,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * Requires movie:manage. Omitted properties are preserved. Null removes a time bound; enabled and priority cannot be null.
- * @summary Update movie hero configuration
- */
-export const updateMovieHero = (
+  export const updateHero = (
     movieId: string,
     updateMovieHeroRequest: UpdateMovieHeroRequest,
  ) => {
@@ -31,12 +27,8 @@ export const updateMovieHero = (
     },
       );
     }
-  /**
- * Returns eligible NOW_SHOWING movies in editorial order. Default limit is configured, initially 4; maximum initially 10. movieIds is an optional candidate filter applied before limiting. An empty supplied filter returns an empty list.
- * @summary Get editorially selected movies for the hero
- */
-export const getHeroMovies = (
-    params?: GetHeroMoviesParams,
+  export const findHero = (
+    params?: FindHeroParams,
  ) => {
       return apiRequest<MovieResponse[]>(
       {url: `/api/v1/movies/hero`, method: 'GET',
@@ -44,5 +36,5 @@ export const getHeroMovies = (
     },
       );
     }
-  export type UpdateMovieHeroResult = NonNullable<Awaited<ReturnType<typeof updateMovieHero>>>
-export type GetHeroMoviesResult = NonNullable<Awaited<ReturnType<typeof getHeroMovies>>>
+  export type UpdateHeroResult = NonNullable<Awaited<ReturnType<typeof updateHero>>>
+export type FindHeroResult = NonNullable<Awaited<ReturnType<typeof findHero>>>

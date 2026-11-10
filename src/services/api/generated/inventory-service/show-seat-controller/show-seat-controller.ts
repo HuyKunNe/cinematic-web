@@ -16,20 +16,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * Requires inventory:manage.
- *
- * AVAILABLE changes to UNAVAILABLE.
- * An already UNAVAILABLE seat returns its current state.
- *
- * HELD and BOOKED seats are rejected without changing
- * reservation ownership or expiration.
- *
- * An expired HELD seat must first be released through
- * the reservation lifecycle.
- * @summary Make an unreserved show seat unavailable
- */
-export const makeShowSeatUnavailable = (
+  export const makeShowSeatUnavailable = (
     showSeatId: string,
  ) => {
       return apiRequest<ShowSeatResponse>(
@@ -48,10 +35,7 @@ export const makeShowSeatUnavailable = (
     },
       );
     }
-  /**
- * @summary Hold an available show seat
- */
-export const holdShowSeat = (
+  export const holdShowSeat = (
     showSeatId: string,
     holdShowSeatRequest: HoldShowSeatRequest,
  ) => {
@@ -73,20 +57,7 @@ export const holdShowSeat = (
     },
       );
     }
-  /**
- * Requires inventory:manage.
- *
- * UNAVAILABLE changes to AVAILABLE.
- * An already AVAILABLE seat returns its current state.
- *
- * HELD and BOOKED seats are rejected without changing
- * reservation ownership or expiration.
- *
- * This operation does not cancel a booking
- * or release a reservation.
- * @summary Make an unreserved show seat available
- */
-export const makeShowSeatAvailable = (
+  export const makeShowSeatAvailable = (
     showSeatId: string,
  ) => {
       return apiRequest<ShowSeatResponse>(

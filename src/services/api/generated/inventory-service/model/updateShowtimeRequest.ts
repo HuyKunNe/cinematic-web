@@ -10,10 +10,6 @@ import type { UpdateShowtimeRequestStatus } from './updateShowtimeRequestStatus'
 export interface UpdateShowtimeRequest {
   startsAt: string;
   endsAt: string;
-  /**
-     * Optional compatibility field. Only SCHEDULED is accepted. Use lifecycle PATCH endpoints to change status.
-     * @deprecated
-     */
   status?: UpdateShowtimeRequestStatus;
   /** @minimum 0 */
   expectedVersion: number;

@@ -102,7 +102,7 @@ const statusElement = ref<HTMLElement | null>(null)
 const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
 
 const metadata = reactive<PricingMetadata>({
-  name: '',
+  name: props.initial ? '' : 'Bảng giá mới',
   description: '',
   dayGroup: 'WEEKDAY',
   cinemaIds: [...props.initialCinemaIds],
@@ -134,6 +134,7 @@ const editable = computed(
     props.canManage &&
     !readOnly.value &&
     !busy.value &&
+    !publishing.value &&
     !requiresReload.value &&
     !waitingForCreation.value,
 )
@@ -640,12 +641,7 @@ const affectedCells = computed(
     ) ?? [],
 )
 const needsRemovalReview = computed(
-  () =>
-    removedBands.value.length +
-      removedGroups.value.length +
-      removedScopes.value.length +
-      removedSeats.value.length >
-    0,
+  () => affectedCells.value.some((cell) => cell.state !== 'UNCONFIGURED'),
 )
 const removalKey = computed(() =>
   JSON.stringify({
@@ -948,15 +944,15 @@ async function materializeRevision(): Promise<void> {
   emit('draftReady', draft.policy.id)
 }
 
-async function save(): Promise<void> {
-  if (busy.value || requiresReload.value || readOnly.value || !props.canManage) return
+async function save(): Promise<boolean> {
+  if (busy.value || requiresReload.value || readOnly.value || !props.canManage) return false
   showErrors.value = true
   error.value = ''
   notice.value = ''
 
   if (issues.value.length) {
     await focusError()
-    return
+    return false
   }
 
   if (!savedMatrix.value) {
@@ -970,14 +966,30 @@ async function save(): Promise<void> {
     } finally {
       busy.value = false
     }
-    return
+    return false
   }
 
   if (needsRemovalReview.value && !removalAccepted.value) {
-    error.value = 'Kiểm tra danh sách bị xóa và xác nhận ảnh hưởng trước khi lưu.'
-    await nextTick()
-    formElement.value?.querySelector<HTMLInputElement>('#pm-removal-confirm')?.focus()
-    return
+    const configuredCount = affectedCells.value.filter(
+      (cell) => cell.state !== 'UNCONFIGURED',
+    ).length
+    const accepted = window.confirm(
+      [
+        `Thay đổi này sẽ xóa ${configuredCount} ô giá đã lưu hoặc đã đặt Không áp dụng.`,
+        removedBands.value.length
+          ? `Khung giờ bị xóa: ${removedBands.value.map((band) => band.name).join(', ')}.`
+          : '',
+        removedGroups.value.length
+          ? `Nhóm vé bị xóa: ${removedGroups.value.map((group) => group.name).join(', ')}.`
+          : '',
+        'Bạn có muốn lưu thay đổi này?',
+      ].filter(Boolean).join('\n'),
+    )
+    if (!accepted) {
+      notice.value = 'Chưa lưu thay đổi. Cấu hình đang nhập được giữ nguyên.'
+      return false
+    }
+    removalAccepted.value = true
   }
 
   busy.value = true
@@ -1101,6 +1113,7 @@ async function save(): Promise<void> {
     showErrors.value = false
     await nextTick()
     statusElement.value?.focus()
+    return true
   } catch (cause: unknown) {
     error.value = pricingErrorMessage(cause)
     const status = pricingErrorStatus(cause)
@@ -1111,6 +1124,7 @@ async function save(): Promise<void> {
     if (committed) {
       notice.value = 'Một phần thay đổi đã được lưu. Kiểm tra thông báo trước khi tiếp tục.'
     }
+    return false
   } finally {
     busy.value = false
   }
@@ -1121,20 +1135,30 @@ const canPublish = computed(() => {
   const matrix = savedMatrix.value
   return (
     editable.value &&
-    current?.status === 'DRAFT' &&
-    matrix?.status === 'DRAFT' &&
+    current !== null &&
+    (current.status === 'DRAFT' || pendingRevision.value) &&
+    matrix !== null &&
     current.version === matrix.version &&
-    !dirty.value &&
-    matrix.requiredCellCount > 0 &&
-    matrix.coverageComplete
+    issues.value.length === 0 &&
+    entries.value.length > 0 &&
+    entries.value.every((entry) => {
+      const value = values.value[entry.key]
+      return (
+        value?.state === 'NOT_APPLICABLE' ||
+        (value?.state === 'PRICED' && parseAmount(value.amount) !== null)
+      )
+    })
   )
 })
 
 const publishHint = computed(() => {
+  if (publishing.value) return 'Đang lưu và xuất bản bảng giá…'
+  if (busy.value) return 'Đang chuẩn bị bản nháp…'
   if (requiresReload.value) return 'Tải lại bảng giá trước khi xuất bản.'
-  if (!savedMatrix.value) return 'Khởi tạo và lưu bản nháp trước khi xuất bản.'
-  if (dirty.value) return 'Lưu bản nháp trước khi xuất bản.'
-  if (!savedMatrix.value.coverageComplete) return 'Hoàn tất và lưu các ô giá trước khi xuất bản.'
+  if (!savedMatrix.value) return 'Đang chuẩn bị bản nháp; có thể thử lại nếu khởi tạo thất bại.'
+  if (issues.value.length || !canPublish.value)
+    return 'Hoàn tất cấu hình và các ô giá trước khi xuất bản.'
+  if (dirty.value) return 'Các thay đổi hợp lệ sẽ được tự lưu trước khi xuất bản.'
   return 'Xuất bản phiên bản đã lưu.'
 })
 
@@ -1149,14 +1173,27 @@ async function publishDraft(): Promise<void> {
     return
   }
 
-  const current = policy.value
-  const matrix = savedMatrix.value
-  const currentContext = context()
   let publicationStarted = false
-  busy.value = true
   publishing.value = true
 
   try {
+    if ((dirty.value || pendingRevision.value) && !(await save())) return
+    const current = policy.value
+    const matrix = savedMatrix.value
+    if (
+      requiresReload.value ||
+      !current ||
+      !matrix ||
+      current.status !== 'DRAFT' ||
+      matrix.status !== 'DRAFT' ||
+      current.version !== matrix.version ||
+      !matrix.coverageComplete ||
+      matrix.requiredCellCount === 0
+    )
+      return
+
+    const currentContext = context()
+    busy.value = true
     const validation = await actions.validation.mutateAsync(currentContext)
     if (validation.version !== current.version || validation.status !== 'DRAFT') {
       requiresReload.value = true
@@ -1279,7 +1316,21 @@ function preventUnload(event: BeforeUnloadEvent): void {
 
 onBeforeRouteLeave(confirmLeave)
 onBeforeRouteUpdate(confirmLeave)
-onMounted(() => window.addEventListener('beforeunload', preventUnload))
+onMounted(async () => {
+  window.addEventListener('beforeunload', preventUnload)
+  if (!props.canManage || readOnly.value || busy.value) return
+
+  busy.value = true
+  try {
+    if (pendingRevision.value) await materializeRevision()
+    else if (!savedMatrix.value) await prepareDraft()
+  } catch (cause: unknown) {
+    error.value = pricingErrorMessage(cause)
+    if (policy.value && pricingErrorStatus(cause) === 409) requiresReload.value = true
+  } finally {
+    busy.value = false
+  }
+})
 onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
 </script>
 
@@ -1867,51 +1918,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                   <span><i class="is-na" />Không áp dụng</span>
                   <span><i class="is-zero" />0đ là giá hợp lệ</span>
                 </div>
-
-                <div
-                  v-if="needsRemovalReview && !readOnly"
-                  class="pm-removal"
-                  role="region"
-                  aria-label="Ảnh hưởng khi lưu"
-                >
-                  <strong>Kiểm tra trước khi lưu</strong>
-                  <p>
-                    Khung giờ bị xóa:
-                    {{ removedBands.map((item) => item.name).join(', ') || 'Không có' }}.
-                  </p>
-                  <p>
-                    Nhóm vé bị xóa:
-                    {{ removedGroups.map((item) => item.name).join(', ') || 'Không có' }}.
-                  </p>
-                  <p v-if="removedScopes.length">
-                    Bỏ phạm vi:
-                    {{
-                      removedScopes
-                        .map(
-                          (item) => `${pricingLabel(item.experienceType)} · ${item.contentFormat}`,
-                        )
-                        .join(', ')
-                    }}.
-                  </p>
-                  <p v-if="removedSeats.length">
-                    Bỏ hạng ghế: {{ removedSeats.map(pricingSeatLabel).join(', ') }}.
-                  </p>
-                  <p>
-                    {{ affectedCells.length }} ô hiện có bị loại bỏ, gồm
-                    {{ affectedCells.filter((cell) => cell.state === 'PRICED').length }} ô có giá.
-                    Mỗi ô chỉ được tính một lần.
-                  </p>
-                  <label class="pm-confirm">
-                    <input
-                      id="pm-removal-confirm"
-                      v-model="removalAccepted"
-                      type="checkbox"
-                      :disabled="!editable"
-                    />
-                    Tôi đã kiểm tra các mục bị xóa và ảnh hưởng tới ô giá.
-                  </label>
-                </div>
-
                 <div v-if="showErrors && issues.length" class="pm-error-summary" role="alert">
                   <p
                     v-for="message in [...new Set(issues.map((issue) => issue.message))]"
@@ -1944,7 +1950,13 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 v-if="!readOnly"
                 class="price-button"
                 type="submit"
-                :disabled="busy || requiresReload || !canManage || (savedMatrix !== null && !dirty)"
+                :disabled="
+                  busy ||
+                  publishing ||
+                  requiresReload ||
+                  !canManage ||
+                  (savedMatrix !== null && !dirty && !pendingRevision)
+                "
               >
                 {{
                   busy && !publishing

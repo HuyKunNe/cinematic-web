@@ -11,7 +11,6 @@ export * from './apiResponsePageResponseBookingResponse';
 export * from './bookingResponse';
 export * from './bookingResponseStatus';
 export * from './bookingSeatResponse';
-export * from './bookingSeatResponseUnit';
 export * from './bookingSeatSelectionRequest';
 export * from './createBookingRequest';
 export * from './errorBody';

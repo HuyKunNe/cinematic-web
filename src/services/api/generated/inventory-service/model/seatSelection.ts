@@ -12,6 +12,5 @@ export interface SeatSelection {
      * @maxLength 20
      */
   seatNumber: string;
-  /** Ticket group owned by the assigned pricing version. Omit to use its default group. */
   ticketGroupId?: string;
 }

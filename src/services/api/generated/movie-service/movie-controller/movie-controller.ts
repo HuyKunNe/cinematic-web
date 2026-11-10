@@ -7,7 +7,7 @@
  */
 import type {
   CreateMovieRequest,
-  GetMovieCatalogParams,
+  FindCatalogParams,
   MovieResponse,
   PageResponseMovieResponse,
   UpdateMovieMetadataRequest,
@@ -45,11 +45,7 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  /**
- * Requires movie:manage. Both properties must be present. Null clears a value. Artwork fallback is handled by the frontend.
- * @summary Replace movie metadata
- */
-export const updateMovieMetadata = (
+  export const updateMetadata = (
     id: string,
     updateMovieMetadataRequest: UpdateMovieMetadataRequest,
  ) => {
@@ -78,11 +74,8 @@ export const updateMovieMetadata = (
     },
       );
     }
-  /**
- * @summary Get a paginated movie catalog
- */
-export const getMovieCatalog = (
-    params?: GetMovieCatalogParams,
+  export const findCatalog = (
+    params?: FindCatalogParams,
  ) => {
       return apiRequest<PageResponseMovieResponse>(
       {url: `/api/v1/movies/catalog`, method: 'GET',
@@ -93,7 +86,7 @@ export const getMovieCatalog = (
   export type FindMovieByIdResult = NonNullable<Awaited<ReturnType<typeof findMovieById>>>
 export type UpdateMovieResult = NonNullable<Awaited<ReturnType<typeof updateMovie>>>
 export type DeleteMovieResult = NonNullable<Awaited<ReturnType<typeof deleteMovie>>>
-export type UpdateMovieMetadataResult = NonNullable<Awaited<ReturnType<typeof updateMovieMetadata>>>
+export type UpdateMetadataResult = NonNullable<Awaited<ReturnType<typeof updateMetadata>>>
 export type FindAllMoviesResult = NonNullable<Awaited<ReturnType<typeof findAllMovies>>>
 export type CreateMovieResult = NonNullable<Awaited<ReturnType<typeof createMovie>>>
-export type GetMovieCatalogResult = NonNullable<Awaited<ReturnType<typeof getMovieCatalog>>>
+export type FindCatalogResult = NonNullable<Awaited<ReturnType<typeof findCatalog>>>

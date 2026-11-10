@@ -35,9 +35,6 @@ export interface CreateMovieRequest {
   status: CreateMovieRequestStatus;
   /** @minItems 1 */
   genreIds: string[];
-  /**
-     * At least one screening version is required.
-     * @minItems 1
-     */
+  /** @minItems 1 */
   screeningVersions: CreateMovieScreeningVersionRequest[];
 }

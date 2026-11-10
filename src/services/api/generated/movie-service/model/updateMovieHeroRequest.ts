@@ -7,21 +7,9 @@
  */
 
 export interface UpdateMovieHeroRequest {
-  /** Omit to preserve the current value. Null is invalid. */
   heroEnabled?: boolean;
-  /**
-     * Lower values appear first. Omit to preserve. Null is invalid.
-     * @minimum 0
-     */
+  /** @minimum 0 */
   heroPriority?: number;
-  /**
-     * Offset timestamp. Omit to preserve; null removes the lower bound.
-     * @nullable
-     */
-  heroStartsAt?: string | null;
-  /**
-     * Offset timestamp. Omit to preserve; null removes the upper bound.
-     * @nullable
-     */
-  heroEndsAt?: string | null;
+  heroStartsAt?: string;
+  heroEndsAt?: string;
 }

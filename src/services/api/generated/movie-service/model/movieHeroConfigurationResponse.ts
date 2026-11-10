@@ -10,8 +10,6 @@ export interface MovieHeroConfigurationResponse {
   movieId?: string;
   heroEnabled?: boolean;
   heroPriority?: number;
-  /** @nullable */
-  heroStartsAt?: string | null;
-  /** @nullable */
-  heroEndsAt?: string | null;
+  heroStartsAt?: string;
+  heroEndsAt?: string;
 }

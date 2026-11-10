@@ -22,5 +22,4 @@ export * from './paymentManagementResponse';
 export * from './paymentManagementResponseStatus';
 export * from './paymentTransactionManagementResponse';
 export * from './paymentTransactionManagementResponseStatus';
-export * from './paymentTransactionManagementResponseTransactionType';
 export * from './validationError';

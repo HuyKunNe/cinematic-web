@@ -8,27 +8,19 @@
 import type {
   CopyPublishedRoomLayoutRequest,
   CreateRoomLayoutRequest,
+  DeleteRoomLayoutDraftParams,
   GetRoomLayoutsByRoomParams,
-  GetRoomPublishedSeatMapParams,
   PublishRoomLayoutRequest,
   ReplaceRoomLayoutContentRequest,
   RoomLayoutContentResponse,
-  RoomLayoutResponse,
-  RoomPublishedSeatMapResponse
+  RoomLayoutResponse
 } from '../model';
 
 import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * Requires inventory:manage.
- * Matrix layouts expose matrix with dimensions and occupied cells.
- * Legacy layouts expose geometry in seats and elements.
- * Matrix cells are independent of booking availability.
- * @summary Get room layout content
- */
-export const getRoomLayoutContent = (
+  export const getRoomLayoutContent = (
     layoutId: string,
  ) => {
       return apiRequest<RoomLayoutContentResponse>(
@@ -36,18 +28,7 @@ export const getRoomLayoutContent = (
     },
       );
     }
-  /**
- * Requires inventory:manage.
- * Replaces content of a DRAFT layout.
- * Matrix layouts accept expectedVersion and matrix.
- * Legacy layouts accept expectedVersion, seats and elements.
- * The two representations are mutually exclusive.
- * expectedVersion refers to layout.version, not layoutVersion.
- * Saving matrix content does not create or modify catalog seats.
- * Legacy layouts cannot be converted in place.
- * @summary Replace draft room layout content
- */
-export const replaceRoomLayoutContent = (
+  export const replaceRoomLayoutContent = (
     layoutId: string,
     replaceRoomLayoutContentRequest: ReplaceRoomLayoutContentRequest,
  ) => {
@@ -58,12 +39,7 @@ export const replaceRoomLayoutContent = (
     },
       );
     }
-  /**
- * Returns all layout versions, newest first.
- * Returns an empty array when the room has no layouts.
- * @summary Get room layout metadata by room
- */
-export const getRoomLayoutsByRoom = (
+  export const getRoomLayoutsByRoom = (
     params: GetRoomLayoutsByRoomParams,
  ) => {
       return apiRequest<RoomLayoutResponse[]>(
@@ -72,18 +48,7 @@ export const getRoomLayoutsByRoom = (
     },
       );
     }
-  /**
- * Creates an empty DRAFT layout.
- * Send only roomId to create an empty 6x6 matrix.
- * An explicit matrix may specify rowCount and columnCount,
- * but its seats array must be empty.
- * Legacy canvasWidth and canvasHeight remain supported.
- * Legacy dimensions and matrix are mutually exclusive.
- * The backend assigns layoutVersion.
- * This operation does not publish or bind the layout to showtimes.
- * @summary Create room layout draft
- */
-export const createRoomLayoutDraft = (
+  export const createRoomLayoutDraft = (
     createRoomLayoutRequest: CreateRoomLayoutRequest,
  ) => {
       return apiRequest<RoomLayoutResponse>(
@@ -93,34 +58,7 @@ export const createRoomLayoutDraft = (
     },
       );
     }
-  /**
- * Requires inventory:manage.
- * expectedVersion must match the current version field.
- *
- * Matrix layouts:
- * - require at least one seat.
- * - validate dimensions, consecutive numbering and occupied cells.
- * - COUPLE occupies two adjacent columns.
- * - preserve every supplied seatId after checking its room.
- * - create an inventory seat for each unbound cell.
- * - never infer seat identity from its display number.
- * - do not require a stored SCREEN element.
- * - do not modify metadata of existing inventory seats.
- *
- * Legacy layouts:
- * - require at least one seat and one SCREEN.
- * - validate rotated geometry inside the canvas.
- * - reject seat-seat and seat-element overlaps.
- *
- * Seat binding and publication share one transaction.
- * Published layouts cannot be modified.
- * Publication does not change existing showtimes.
- *
- * The response contains layout metadata.
- * Reload layout content after publication to obtain bound seatIds.
- * @summary Publish a validated room layout
- */
-export const publishRoomLayout = (
+  export const publishRoomLayout = (
     layoutId: string,
     publishRoomLayoutRequest: PublishRoomLayoutRequest,
  ) => {
@@ -131,26 +69,7 @@ export const publishRoomLayout = (
     },
       );
     }
-  /**
- * Requires inventory:manage.
- * The source must be a PUBLISHED matrix layout.
- * expectedVersion refers to the source version field,
- * not layoutVersion.
- *
- * Creates a new DRAFT in the same room.
- * Copies matrix dimensions, positions, numbers and seat types.
- * Preserves every inventory seatId.
- * Creates new layout-cell records without creating inventory seats.
- *
- * The backend allocates the next room layoutVersion.
- * The source layout and existing showtimes remain unchanged.
- * Returns the complete content of the new draft.
- *
- * Legacy geometry layouts are not converted by this operation.
- * Repeating a successful request creates another draft.
- * @summary Create a draft from a published matrix layout
- */
-export const createRoomLayoutDraftFromPublished = (
+  export const createRoomLayoutDraftFromPublished = (
     layoutId: string,
     copyPublishedRoomLayoutRequest: CopyPublishedRoomLayoutRequest,
  ) => {
@@ -161,10 +80,7 @@ export const createRoomLayoutDraftFromPublished = (
     },
       );
     }
-  /**
- * @summary Get room layout metadata
- */
-export const getRoomLayoutById = (
+  export const getRoomLayoutById = (
     layoutId: string,
  ) => {
       return apiRequest<RoomLayoutResponse>(
@@ -172,36 +88,12 @@ export const getRoomLayoutById = (
     },
       );
     }
-  /**
- * Requires inventory:manage.
- *
- * roomId is required.
- * When layoutId is supplied, it must belong to roomId
- * and identify a PUBLISHED matrix layout.
- *
- * When layoutId is omitted, selects the PUBLISHED layout
- * with the greatest layoutVersion in the room.
- * Draft layouts do not affect this selection.
- * A legacy geometry layout is rejected rather than converted.
- *
- * Matrix dimensions preserve empty rows and columns.
- * Seat positions, numbers and types come from layout cells.
- * Active state comes from the inventory seat.
- *
- * Each COUPLE seat appears once at its starting cell
- * with columnSpan=2 and capacity=2.
- * Missing cells are empty spaces, not inventory seats.
- * Display the screen above the matrix.
- *
- * This API does not return prices or booking availability.
- * It does not change any showtime's pinned layout.
- * @summary Get a published room matrix for administration
- */
-export const getRoomPublishedSeatMap = (
-    params: GetRoomPublishedSeatMapParams,
+  export const deleteRoomLayoutDraft = (
+    layoutId: string,
+    params: DeleteRoomLayoutDraftParams,
  ) => {
-      return apiRequest<RoomPublishedSeatMapResponse>(
-      {url: `/api/v1/room-layouts/published-seat-map`, method: 'GET',
+      return apiRequest<void>(
+      {url: `/api/v1/room-layouts/${layoutId}`, method: 'DELETE',
         params
     },
       );
@@ -213,4 +105,4 @@ export type CreateRoomLayoutDraftResult = NonNullable<Awaited<ReturnType<typeof 
 export type PublishRoomLayoutResult = NonNullable<Awaited<ReturnType<typeof publishRoomLayout>>>
 export type CreateRoomLayoutDraftFromPublishedResult = NonNullable<Awaited<ReturnType<typeof createRoomLayoutDraftFromPublished>>>
 export type GetRoomLayoutByIdResult = NonNullable<Awaited<ReturnType<typeof getRoomLayoutById>>>
-export type GetRoomPublishedSeatMapResult = NonNullable<Awaited<ReturnType<typeof getRoomPublishedSeatMap>>>
+export type DeleteRoomLayoutDraftResult = NonNullable<Awaited<ReturnType<typeof deleteRoomLayoutDraft>>>

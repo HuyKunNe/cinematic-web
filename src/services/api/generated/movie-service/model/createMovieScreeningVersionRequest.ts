@@ -9,27 +9,18 @@ import type { CreateMovieScreeningVersionRequestContentFormat } from './createMo
 import type { CreateMovieScreeningVersionRequestPresentationType } from './createMovieScreeningVersionRequestPresentationType';
 import type { CreateMovieScreeningVersionRequestProjectionTechnology } from './createMovieScreeningVersionRequestProjectionTechnology';
 
-/**
- * Screening-version definition. SUBTITLED requires a nonblank subtitleLanguage. DUBBED and NO_SUBTITLES require an omitted, null or blank subtitleLanguage. Defaults to STANDARD projection in 2D.
- */
 export interface CreateMovieScreeningVersionRequest {
-  /** Image format. Wire values are 2D and 3D. */
   contentFormat?: CreateMovieScreeningVersionRequestContentFormat;
-  /** Projection technology: STANDARD, IMAX, FOUR_DX or SCREEN_X. */
   projectionTechnology?: CreateMovieScreeningVersionRequestProjectionTechnology;
   /**
-     * Audio language, trimmed before storage.
      * @minLength 0
      * @maxLength 100
      */
   audioLanguage: string;
-  /** Presentation type: SUBTITLED, DUBBED or NO_SUBTITLES. */
   presentationType: CreateMovieScreeningVersionRequestPresentationType;
   /**
-     * Required and nonblank for SUBTITLED. For DUBBED or NO_SUBTITLES, omit this property or send null or a blank string.
      * @minLength 0
      * @maxLength 100
-     * @nullable
      */
-  subtitleLanguage?: string | null;
+  subtitleLanguage?: string;
 }

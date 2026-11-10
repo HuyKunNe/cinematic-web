@@ -126,6 +126,11 @@ function requestLogout() {
       <PanelLeftClose v-else aria-hidden="true" />
     </button>
 
+    <div v-if="auth.isAdmin" class="admin-header__context">
+      <small>Không gian quản trị</small>
+      <strong>{{ route.meta.title || 'Tổng quan' }}</strong>
+    </div>
+
     <DialogRoot v-model:open="searchOpen">
       <DialogTrigger as-child>
         <button class="admin-header__search" type="button">
@@ -201,7 +206,11 @@ function requestLogout() {
           <span class="admin-user-menu__avatar" aria-hidden="true">
             {{ accountAvatarLabel }}
           </span>
-          <span class="admin-user-menu__label">{{ accountLabel }}</span>
+          <span v-if="auth.isAdmin" class="admin-user-menu__identity-copy">
+            <strong class="admin-user-menu__label">{{ username || accountLabel }}</strong>
+            <small>{{ accountLabel }}</small>
+          </span>
+          <span v-else class="admin-user-menu__label">{{ accountLabel }}</span>
         </button>
       </DropdownMenuTrigger>
 

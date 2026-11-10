@@ -9,6 +9,5 @@
 export interface ReplaceShowtimePricingRequest {
   /** @minimum 0 */
   expectedVersion: number;
-  /** Exact published pricing version. Null or omitted clears the selection while the showtime is SCHEDULED. */
   pricingPolicyVersionId?: string;
 }

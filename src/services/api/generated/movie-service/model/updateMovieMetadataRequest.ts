@@ -9,15 +9,9 @@ import type { UpdateMovieMetadataRequestAgeRating } from './updateMovieMetadataR
 
 export interface UpdateMovieMetadataRequest {
   /**
-     * Absolute HTTP/HTTPS URL. Null clears the artwork.
      * @minLength 0
      * @maxLength 500
-     * @nullable
      */
-  backdropUrl: string | null;
-  /**
-     * Confirmed classification. Null clears the classification.
-     * @nullable
-     */
+  backdropUrl: string;
   ageRating: UpdateMovieMetadataRequestAgeRating;
 }

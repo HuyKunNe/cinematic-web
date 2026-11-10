@@ -6,9 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Image format. Wire values are 2D and 3D.
- */
 export type CreateMovieScreeningVersionRequestContentFormat = typeof CreateMovieScreeningVersionRequestContentFormat[keyof typeof CreateMovieScreeningVersionRequestContentFormat];
 
 

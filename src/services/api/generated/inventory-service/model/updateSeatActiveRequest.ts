@@ -6,9 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Updates only the physical inventory seat's active state. Does not modify layout snapshots or existing show seats.
- */
 export interface UpdateSeatActiveRequest {
   roomId: string;
   active: boolean;

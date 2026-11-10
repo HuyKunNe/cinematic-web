@@ -10,6 +10,7 @@ export * from './pricing-policy-publication-controller/pricing-policy-publicatio
 export * from './room-content-formats-controller/room-content-formats-controller';
 export * from './room-controller/room-controller';
 export * from './room-layout-controller/room-layout-controller';
+export * from './room-published-seat-map-controller/room-published-seat-map-controller';
 export * from './seat-controller/seat-controller';
 export * from './show-seat-controller/show-seat-controller';
 export * from './showtime-controller/showtime-controller';

@@ -8,13 +8,12 @@
 import type { ShowtimeSeatMapElementResponseKind } from './showtimeSeatMapElementResponseKind';
 
 export interface ShowtimeSeatMapElementResponse {
-  id: string;
-  kind: ShowtimeSeatMapElementResponseKind;
-  /** Omitted when the layout element has no label. */
+  id?: string;
+  kind?: ShowtimeSeatMapElementResponseKind;
   label?: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotationDegrees: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  rotationDegrees?: number;
 }

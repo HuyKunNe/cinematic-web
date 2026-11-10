@@ -14,11 +14,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  /**
- * Return stored seat prices and their total. Availability is checked when reading; the quote does not reserve seats.
- * @summary Quote currently available seats
- */
-export const getShowtimeSeatQuote = (
+  export const getShowtimeSeatQuote = (
     showtimeId: string,
     params: GetShowtimeSeatQuoteParams,
  ) => {

@@ -6,11 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Current active state of a physical inventory seat.
- */
 export interface SeatActiveStateResponse {
-  seatId: string;
-  roomId: string;
-  active: boolean;
+  seatId?: string;
+  roomId?: string;
+  active?: boolean;
 }

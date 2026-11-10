@@ -1,4 +1,5 @@
 /* Cinema Admin reference — shared shell */
+body:has(.admin-layout.is-admin-role),
 .admin-layout,
 .admin-sidebar,
 .admin-header,

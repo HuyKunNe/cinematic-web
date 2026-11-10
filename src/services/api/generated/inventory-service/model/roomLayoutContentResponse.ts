@@ -10,15 +10,9 @@ import type { RoomLayoutMatrixResponse } from './roomLayoutMatrixResponse';
 import type { RoomLayoutResponse } from './roomLayoutResponse';
 import type { RoomLayoutSeatPositionResponse } from './roomLayoutSeatPositionResponse';
 
-/**
- * Administration content of one layout version.
- * Matrix layouts expose matrix.
- * Legacy layouts expose geometry in seats and elements.
- */
 export interface RoomLayoutContentResponse {
-  layout: RoomLayoutResponse;
-  seats: RoomLayoutSeatPositionResponse[];
-  elements: RoomLayoutElementPositionResponse[];
-  /** Present for matrix layouts; absent for legacy geometry layouts */
+  layout?: RoomLayoutResponse;
+  seats?: RoomLayoutSeatPositionResponse[];
+  elements?: RoomLayoutElementPositionResponse[];
   matrix?: RoomLayoutMatrixResponse;
 }

@@ -84,6 +84,8 @@ const editor = ref<InstanceType<typeof AdminSeatMatrixEditor> | null>(null)
 const editorGeneration = ref(0)
 
 const opening = ref(false)
+const publishing = ref(false)
+let automaticDraftRoom = ''
 const syncingLocation = ref(false)
 const reloadRequired = ref(false)
 const creationBlocked = ref(false)
@@ -111,6 +113,7 @@ const layouts = computed(() => (current.value ? (versions.data.value ?? []) : []
 const busy = computed(
   () =>
     opening.value ||
+    publishing.value ||
     syncingLocation.value ||
     createDraft.isPending.value ||
     saveMatrix.isPending.value ||
@@ -170,8 +173,7 @@ const canPublish = computed(
     !matrixConversionBlocked.value &&
     loadedLayout.value?.status === 'DRAFT' &&
     Boolean(workingDocument.value) &&
-    hasSeats.value &&
-    !dirty.value,
+    (hasSeats.value || pendingInput.value),
 )
 
 const publishHint = computed(() => {
@@ -184,11 +186,11 @@ const publishHint = computed(() => {
   }
 
   if (dirty.value) {
-    return 'Lưu bản nháp trước khi xuất bản.'
+    return 'Các thay đổi hợp lệ sẽ được tự lưu trước khi xuất bản.'
   }
 
   if (!hasSeats.value) {
-    return 'Thêm và lưu ít nhất một ghế trước khi xuất bản.'
+    return 'Thêm ít nhất một ghế trước khi xuất bản.'
   }
 
   return 'Xuất bản phiên bản đã lưu.'
@@ -197,6 +199,8 @@ const publishHint = computed(() => {
 function resetRoomState() {
   scope += 1
   handledLayoutLink = ''
+  automaticDraftRoom = ''
+  publishing.value = false
   pickedId.value = ''
   queryLayoutId.value = ''
   failedLayoutId.value = ''
@@ -665,11 +669,8 @@ async function onRefreshVersions() {
   await openVersion(targetId)
 }
 
-async function saveDraft() {
-  if (!canSave.value || !loadedLayout.value) return
-
-  const document = editor.value?.prepareSave()
-  if (!document) return
+async function persistDraft(document: AdminRoomMatrixDocument): Promise<boolean> {
+  if (!loadedLayout.value) return false
 
   workingDocument.value = document
 
@@ -684,12 +685,12 @@ async function saveDraft() {
     submittedKey = adminRoomMatrixKey(document)
   } catch (error) {
     errorMessage.value = adminRoomErrorMessage(error, 'Sơ đồ chưa hợp lệ.')
-    return
+    return false
   }
 
   if (submittedKey === baselineKey.value) {
     notice.value = 'Không có thay đổi cần lưu.'
-    return
+    return true
   }
 
   errorMessage.value = ''
@@ -703,7 +704,7 @@ async function saveDraft() {
       document,
     })
 
-    if (token !== scope || requestedRoomId !== roomId.value) return
+    if (token !== scope || requestedRoomId !== roomId.value) return false
 
     loadedLayout.value = saved.layout
     baselineKey.value = submittedKey
@@ -711,12 +712,20 @@ async function saveDraft() {
     notice.value = 'Đã lưu bản nháp.'
 
     // Giữ nguyên editor và lịch sử undo/redo sau khi lưu.
+    return true
   } catch (error) {
-    if (token !== scope || requestedRoomId !== roomId.value) return
+    if (token !== scope || requestedRoomId !== roomId.value) return false
 
     reloadRequired.value = requiresLayoutReload(error)
     errorMessage.value = adminRoomErrorMessage(error, 'Không thể lưu bản nháp.')
+    return false
   }
+}
+
+async function saveDraft() {
+  if (!canSave.value) return
+  const document = editor.value?.prepareSave()
+  if (document) await persistDraft(document)
 }
 
 async function publishDraft() {
@@ -729,10 +738,10 @@ async function publishDraft() {
   errorMessage.value = ''
   notice.value = ''
 
-  try {
-    const document = editor.value?.prepareSave()
-    if (!document) return
+  const document = editor.value?.prepareSave()
+  if (!document) return
 
+  try {
     workingDocument.value = document
 
     const input = toAdminRoomMatrixRequest(document, requestedLayout.version)
@@ -741,21 +750,22 @@ async function publishDraft() {
       errorMessage.value = 'Thêm ít nhất một ghế trước khi xuất bản.'
       return
     }
-
-    if (adminRoomMatrixKey(document) !== baselineKey.value) {
-      notice.value = 'Có thay đổi chưa lưu. Lưu bản nháp trước khi xuất bản.'
-      return
-    }
   } catch (error) {
     errorMessage.value = adminRoomErrorMessage(error, 'Sơ đồ chưa hợp lệ.')
     return
   }
 
+  publishing.value = true
   try {
+    if (!(await persistDraft(document))) return
+    if (token !== scope || requestedRoomId !== roomId.value) return
+    const savedLayout = loadedLayout.value
+    if (!savedLayout || savedLayout.status !== 'DRAFT' || reloadRequired.value) return
+
     const published = await publishMatrix.mutateAsync({
       roomId: requestedRoomId,
-      layoutId: requestedLayout.id,
-      expectedVersion: requestedLayout.version,
+      layoutId: savedLayout.id,
+      expectedVersion: savedLayout.version,
     })
 
     if (token !== scope || requestedRoomId !== roomId.value) return
@@ -787,13 +797,15 @@ async function publishDraft() {
 
     errorMessage.value =
       isAdminRoomApiError(error) && error.code === 'INVENTORY_ROOM_LAYOUT_MATRIX_EMPTY'
-        ? 'Thêm và lưu ít nhất một ghế trước khi xuất bản.'
+        ? 'Thêm ít nhất một ghế trước khi xuất bản.'
         : adminRoomErrorMessage(error, 'Không thể xuất bản sơ đồ.')
 
     if (uncertainWrite(error)) {
       notice.value =
         'Chưa xác nhận được kết quả xuất bản. ' + 'Tải lại phiên bản trước khi thử tiếp.'
     }
+  } finally {
+    publishing.value = false
   }
 }
 
@@ -908,6 +920,51 @@ watch(
   { immediate: true },
 )
 
+// Resolve an existing draft only after the authoritative list has loaded.
+// One automatic attempt per room; failed/uncertain writes require explicit recovery.
+watch(
+  [ready, busy, versions.isFetching, versions.isSuccess, () => layoutLink.value.id],
+  () => {
+    if (
+      !ready.value ||
+      busy.value ||
+      versions.isFetching.value ||
+      !versions.isSuccess.value ||
+      versions.isError.value ||
+      layoutLink.value.id ||
+      loadedLayout.value ||
+      failedLayoutId.value ||
+      creationBlocked.value ||
+      automaticDraftRoom === roomId.value
+    ) {
+      return
+    }
+
+    automaticDraftRoom = roomId.value
+    const existing = layouts.value.find((layout) => layout.status === 'DRAFT')
+    if (existing) {
+      void loadVersion(existing.id, existing)
+      return
+    }
+
+    const published = layouts.value.find((layout) => layout.status === 'PUBLISHED')
+    if (!published) {
+      void createVersion()
+      return
+    }
+
+    // Preserve the latest published content when starting the next draft.
+    void (async () => {
+      const requestedRoom = roomId.value
+      if (!(await loadVersion(published.id, published))) return
+      if (requestedRoom !== roomId.value || loadedLayout.value?.id !== published.id) return
+      if (canCopyPublished.value) await copyPublishedVersion()
+      else if (canCreate.value) await createVersion()
+    })()
+  },
+  { immediate: true },
+)
+
 onBeforeRouteLeave(confirmLeave)
 onBeforeRouteUpdate((to, from) => {
   const target = readRoomLayoutLocation(to.query.layoutId)
@@ -970,7 +1027,7 @@ onBeforeRouteUpdate((to, from) => {
 
         <AppButton
           :disabled="!canPublish"
-          :loading="publishMatrix.isPending.value"
+          :loading="publishing"
           :title="publishHint"
           @click="publishDraft"
         >

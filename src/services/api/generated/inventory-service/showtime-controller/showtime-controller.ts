@@ -49,7 +49,7 @@ import { apiRequest } from '../../../../http/axios-instance';
   export const createShowtime = (
     createShowtimeRequest: CreateShowtimeRequest,
  ) => {
-      return apiRequest<unknown>(
+      return apiRequest<ShowtimeResponse>(
       {url: `/api/v1/showtimes`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createShowtimeRequest
