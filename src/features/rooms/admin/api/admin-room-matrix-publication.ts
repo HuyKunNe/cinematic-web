@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { publishRoomLayout } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
-import type { RoomLayoutResponse } from '@/services/api/generated/inventory-service/model'
-import { validateAdminRoomLayout } from '../mappers/admin-room-matrix.mapper'
+import { validateAdminRoomLayout, type AdminRoomLayout } from '../mappers/admin-room-matrix.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomMatrixKeys } from './admin-room-matrix-queries'
 
@@ -25,11 +24,11 @@ export function usePublishAdminRoomMatrixMutation() {
         throw new Error('Thông tin phiên bản cần xuất bản không hợp lệ.')
       }
 
-      const published = await publishRoomLayout(layoutId, {
-        expectedVersion,
-      })
-
-      validateAdminRoomLayout(published, roomId, layoutId)
+      const published = validateAdminRoomLayout(
+        await publishRoomLayout(layoutId, { expectedVersion }),
+        roomId,
+        layoutId,
+      )
 
       if (
         published.status !== 'PUBLISHED' ||
@@ -47,7 +46,7 @@ export function usePublishAdminRoomMatrixMutation() {
     onSuccess: (published, variables) => {
       const layoutsKey = adminRoomMatrixKeys.layouts(variables.roomId)
 
-      queryClient.setQueryData<RoomLayoutResponse[]>(layoutsKey, (previous) => {
+      queryClient.setQueryData<AdminRoomLayout[]>(layoutsKey, (previous) => {
         const existing = previous?.find((layout) => layout.id === published.id)
         const incoming = existing && existing.version > published.version ? existing : published
 

@@ -6,16 +6,15 @@ import {
   getRoomLayoutsByRoom,
   replaceRoomLayoutContent,
 } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
-import type {
-  RoomLayoutContentResponse,
-  RoomLayoutResponse,
-} from '@/services/api/generated/inventory-service/model'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import {
   adminRoomMatrixKey,
   readAdminRoomMatrix,
   toAdminRoomMatrixRequest,
   validateAdminRoomLayout,
+  validateAdminRoomLayoutContent,
+  type AdminRoomLayout,
+  type AdminRoomLayoutContent,
   type AdminRoomMatrixDocument,
 } from '../mappers/admin-room-matrix.mapper'
 
@@ -26,7 +25,7 @@ export const adminRoomMatrixKeys = {
     ['room-matrices', 'admin', roomId, 'content', layoutId] as const,
 }
 
-function mergeLayout(previous: RoomLayoutResponse[] | undefined, incoming: RoomLayoutResponse) {
+function mergeLayout(previous: AdminRoomLayout[] | undefined, incoming: AdminRoomLayout) {
   const existing = previous?.find((item) => item.id === incoming.id)
   const layout = existing && existing.version > incoming.version ? existing : incoming
 
@@ -51,10 +50,9 @@ export function useAdminRoomMatrixLayoutsQuery(
       }
 
       const ids = new Set<string>()
+      const validatedLayouts = layouts.map((layout) => validateAdminRoomLayout(layout, requestedRoomId))
 
-      for (const layout of layouts) {
-        validateAdminRoomLayout(layout, requestedRoomId)
-
+      for (const layout of validatedLayouts) {
         if (ids.has(layout.id)) {
           throw new Error('Danh sách phiên bản layout có dữ liệu trùng.')
         }
@@ -62,7 +60,7 @@ export function useAdminRoomMatrixLayoutsQuery(
         ids.add(layout.id)
       }
 
-      return [...layouts].sort((left, right) => right.layoutVersion - left.layoutVersion)
+      return validatedLayouts.sort((left, right) => right.layoutVersion - left.layoutVersion)
     },
     staleTime: 0,
     retry: false,
@@ -82,7 +80,9 @@ export function useAdminRoomMatrixContentQuery(
         toValue(enabled) && isRoomSeatUuid(toValue(roomId)) && isRoomSeatUuid(toValue(layoutId)),
     ),
     queryFn: async ({ queryKey }) => {
-      const content = await getRoomLayoutContent(queryKey[4])
+      const content = validateAdminRoomLayoutContent(
+        await getRoomLayoutContent(queryKey[4]), queryKey[2], queryKey[4],
+      )
 
       // null means a legacy layout, not an empty matrix.
       readAdminRoomMatrix(content, queryKey[2], queryKey[4])
@@ -104,9 +104,7 @@ export function useCreateAdminRoomMatrixDraftMutation() {
       }
 
       // Backend defaults this request to an empty 6 × 6 matrix.
-      const created = await createRoomLayoutDraft({ roomId })
-
-      validateAdminRoomLayout(created, roomId)
+      const created = validateAdminRoomLayout(await createRoomLayoutDraft({ roomId }), roomId)
 
       if (created.status !== 'DRAFT') {
         throw new Error('Không thể xác nhận bản nháp vừa tạo.')
@@ -118,7 +116,7 @@ export function useCreateAdminRoomMatrixDraftMutation() {
     onSuccess: (created) => {
       const key = adminRoomMatrixKeys.layouts(created.roomId)
 
-      queryClient.setQueryData<RoomLayoutResponse[]>(key, (previous) =>
+      queryClient.setQueryData<AdminRoomLayout[]>(key, (previous) =>
         mergeLayout(previous, created),
       )
 
@@ -152,7 +150,9 @@ export function useSaveAdminRoomMatrixMutation() {
       const input = toAdminRoomMatrixRequest(document, expectedVersion)
       const submittedKey = JSON.stringify(input.matrix)
 
-      const saved = await replaceRoomLayoutContent(layoutId, input)
+      const saved = validateAdminRoomLayoutContent(
+        await replaceRoomLayoutContent(layoutId, input), roomId, layoutId,
+      )
       const savedDocument = readAdminRoomMatrix(saved, roomId, layoutId)
 
       if (
@@ -170,13 +170,13 @@ export function useSaveAdminRoomMatrixMutation() {
     onSuccess: (saved, variables) => {
       const contentKey = adminRoomMatrixKeys.content(variables.roomId, variables.layoutId)
 
-      queryClient.setQueryData<RoomLayoutContentResponse>(contentKey, (previous) =>
+      queryClient.setQueryData<AdminRoomLayoutContent>(contentKey, (previous) =>
         previous && previous.layout.version > saved.layout.version ? previous : saved,
       )
 
       const layoutsKey = adminRoomMatrixKeys.layouts(variables.roomId)
 
-      queryClient.setQueryData<RoomLayoutResponse[]>(layoutsKey, (previous) =>
+      queryClient.setQueryData<AdminRoomLayout[]>(layoutsKey, (previous) =>
         mergeLayout(previous, saved.layout),
       )
 

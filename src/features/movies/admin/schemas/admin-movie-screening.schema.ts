@@ -200,7 +200,9 @@ export function toAdminMovieUpdateRequest(
     ...base,
     screeningVersions: screeningRowsSchema.parse(rows).map((row) => ({
       ...definition(row),
-      ...(row.id !== null ? { id: row.id, expectedVersion: row.expectedVersion } : {}),
+      ...(row.id !== null && row.expectedVersion !== null
+        ? { id: row.id, expectedVersion: row.expectedVersion }
+        : {}),
       active: row.active,
     })),
   }

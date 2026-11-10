@@ -3,10 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { Film, Pencil } from 'lucide-vue-next'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
-import type {
-  GetMovieCatalogParams,
-  MovieResponse,
-} from '@/services/api/generated/movie-service/model'
+import type { FindCatalogParams, MovieResponse } from '@/services/api/generated/movie-service/model'
 import { useAdminMovieCatalogQuery, useAdminMovieGenresQuery } from '../api/admin-movie-queries'
 import {
   adminMovieErrorMessage,
@@ -32,7 +29,7 @@ const editorSession = ref(0)
 const successMessage = ref('')
 const failedPosters = ref(new Set<string>())
 
-const params = computed<GetMovieCatalogParams>(() => ({
+const params = computed<FindCatalogParams>(() => ({
   page: page.value,
   size: pageSize,
   status: isMovieStatus(statusFilter.value) ? statusFilter.value : undefined,
@@ -48,7 +45,7 @@ const totalPages = computed(() => pageInfo.value?.totalPages ?? 0)
 const summaryDefinitions: {
   label: string
   hint: string
-  status?: GetMovieCatalogParams['status']
+  status?: FindCatalogParams['status']
 }[] = [
   { label: 'Tổng số phim', hint: 'Trong danh mục' },
   { label: 'Đang chiếu', hint: 'Trạng thái đang chiếu', status: 'NOW_SHOWING' },

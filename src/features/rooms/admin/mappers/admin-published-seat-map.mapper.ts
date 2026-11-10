@@ -1,6 +1,5 @@
 import type {
   PublishedRoomSeatResponse,
-  RoomLayoutResponse,
   RoomPublishedSeatMapResponse,
 } from '@/services/api/generated/inventory-service/model'
 import {
@@ -10,10 +9,11 @@ import {
   type SeatMatrixDocument,
 } from '../composables/use-admin-seat-matrix'
 import { adminSeatCapacity, adminSeatTypeOptions } from '../schemas/admin-seat-type-options'
-import { validateAdminRoomLayout } from './admin-room-matrix.mapper'
+import { validateAdminRoomLayout, type AdminRoomLayout } from './admin-room-matrix.mapper'
 import { isRoomSeatUuid } from './admin-seat-catalog.mapper'
 
-export type AdminPublishedSeat = PublishedRoomSeatResponse & {
+// All published seat fields are checked before entering the Admin UI model.
+export type AdminPublishedSeat = Required<PublishedRoomSeatResponse> & {
   id: string
   roomId: string
 }
@@ -25,7 +25,7 @@ type PublishedCell = {
 }
 
 export interface AdminPublishedSeatMatrix {
-  layout: RoomLayoutResponse
+  layout: AdminRoomLayout
   rows: {
     label: string
     cells: PublishedCell[]
@@ -39,8 +39,11 @@ export interface AdminPublishedSeatMatrix {
   activeCapacity: number
 }
 
-function validDimension(value: number) {
-  return Number.isSafeInteger(value) && value >= 1 && value <= MATRIX_LIMITS.dimension
+function validDimension(value: unknown): value is number {
+  return (
+    typeof value === 'number' && Number.isSafeInteger(value) &&
+    value >= 1 && value <= MATRIX_LIMITS.dimension
+  )
 }
 
 function invalidMatrix(): never {
@@ -74,10 +77,11 @@ export function mapAdminPublishedSeats(
     return invalidMatrix()
   }
 
+  const { rowCount, columnCount } = matrix
   const document: SeatMatrixDocument = {
-    columns: matrix.columnCount,
-    rows: Array.from({ length: matrix.rowCount }, () =>
-      Array.from({ length: matrix.columnCount }, () => null),
+    columns: columnCount,
+    rows: Array.from({ length: rowCount }, () =>
+      Array.from({ length: columnCount }, () => null),
     ),
   }
 
@@ -90,15 +94,19 @@ export function mapAdminPublishedSeats(
       typeof item !== 'object' ||
       Array.isArray(item) ||
       !isRoomSeatUuid(item.seatId) ||
+      typeof item.rowIndex !== 'number' ||
       !Number.isSafeInteger(item.rowIndex) ||
       item.rowIndex < 0 ||
       item.rowIndex >= matrix.rowCount ||
+      typeof item.columnIndex !== 'number' ||
       !Number.isSafeInteger(item.columnIndex) ||
       item.columnIndex < 0 ||
       item.columnIndex >= matrix.columnCount ||
+      typeof item.number !== 'number' ||
       !Number.isSafeInteger(item.number) ||
       item.number < 1 ||
       typeof item.active !== 'boolean' ||
+      item.seatType === undefined ||
       !adminSeatTypeOptions.some((option) => option.value === item.seatType)
     ) {
       return invalidMatrix()
@@ -107,13 +115,15 @@ export function mapAdminPublishedSeats(
     const id = item.seatId.toLowerCase()
     const rowLabel = matrixRowLabel(item.rowIndex)
     const span = item.seatType === 'COUPLE' ? 2 : 1
+    const seatNumber = `${rowLabel}${item.number}`
+    const capacity = adminSeatCapacity(item.seatType)
 
     if (
       ids.has(id) ||
       item.rowLabel !== rowLabel ||
-      item.seatNumber !== `${rowLabel}${item.number}` ||
+      item.seatNumber !== seatNumber ||
       item.columnSpan !== span ||
-      item.capacity !== adminSeatCapacity(item.seatType)
+      item.capacity !== capacity
     ) {
       return invalidMatrix()
     }
@@ -136,6 +146,16 @@ export function mapAdminPublishedSeats(
       ...item,
       id,
       roomId,
+      seatId: item.seatId,
+      rowIndex: item.rowIndex,
+      columnIndex: item.columnIndex,
+      number: item.number,
+      rowLabel,
+      seatNumber,
+      seatType: item.seatType,
+      columnSpan: span,
+      capacity,
+      active: item.active,
     })
   }
 

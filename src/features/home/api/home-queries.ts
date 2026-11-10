@@ -9,7 +9,7 @@ import {
 } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
 import type { GetBookableShowtimesParams } from '@/services/api/generated/inventory-service/model/getBookableShowtimesParams'
 import { toHomeMovie } from '../mappers/home-movie.mapper'
-import { getHeroMovies } from '@/services/api/generated/movie-service/movie-hero-controller/movie-hero-controller'
+import { findHero } from '@/services/api/generated/movie-service/movie-hero-controller/movie-hero-controller'
 
 export interface HomeHeroScope {
   cinemaId: string
@@ -77,7 +77,7 @@ export function useHomeHeroMovies(scope: MaybeRefOrGetter<HomeHeroScope>, limit 
         return []
       }
 
-      return getHeroMovies({
+      return findHero({
         limit: requestedLimit,
         ...(cinemaId && candidates ? { movieIds: [...candidates] } : {}),
       })

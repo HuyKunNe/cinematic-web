@@ -3,9 +3,8 @@ import { useQuery } from '@tanstack/vue-query'
 import { z } from 'zod'
 import { APP_ROLES } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
-import { getBookingForAdmin } from '@/services/api/generated/booking-service/booking-management/booking-management'
+import { getBookingForAdmin } from '@/services/api/generated/booking-service/booking-management-controller/booking-management-controller'
 import { BookingResponseStatus } from '@/services/api/generated/booking-service/model/bookingResponseStatus'
-import { BookingSeatResponseUnit } from '@/services/api/generated/booking-service/model/bookingSeatResponseUnit'
 
 const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
 
@@ -39,7 +38,9 @@ const seatSchema = z.object({
   ticketGroupId: uuid.nullable(),
   ticketGroupName: nullableText,
   capacity: z.number().int().positive().nullable(),
-  unit: z.nativeEnum(BookingSeatResponseUnit).nullable(),
+  // BookingSeatResponse.getUnit() returns SEAT, PAIR or null. OpenAPI now
+  // generates this computed field as string, so validate its values here.
+  unit: z.enum(['SEAT', 'PAIR']).nullable(),
 })
 
 const responseSchema = z.object({

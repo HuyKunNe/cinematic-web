@@ -3,14 +3,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
   createMovie,
   findMovieById,
-  getMovieCatalog,
+  findCatalog,
   updateMovie,
 } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import { findAll as getGenres } from '@/services/api/generated/movie-service/genre-controller/genre-controller'
 import type {
   CreateMovieRequest,
   GenreResponse,
-  GetMovieCatalogParams,
+  FindCatalogParams,
   MovieResponse,
   PageResponseMovieResponse,
   UpdateMovieRequest,
@@ -18,13 +18,13 @@ import type {
 import type { ApiError } from '@/services/http/api-error'
 
 export const adminMovieKeys = {
-  catalog: (params: GetMovieCatalogParams) => ['movies', 'admin', 'catalog', params] as const,
+  catalog: (params: FindCatalogParams) => ['movies', 'admin', 'catalog', params] as const,
   detail: (id: string) => ['movies', 'admin', 'detail', id] as const,
   genres: ['movies', 'admin', 'genres'] as const,
 }
 
 export function useAdminMovieCatalogQuery(
-  params: MaybeRefOrGetter<GetMovieCatalogParams>,
+  params: MaybeRefOrGetter<FindCatalogParams>,
   enabled: MaybeRefOrGetter<boolean>,
 ) {
   return useQuery<
@@ -34,7 +34,7 @@ export function useAdminMovieCatalogQuery(
     ReturnType<typeof adminMovieKeys.catalog>
   >({
     queryKey: computed(() => adminMovieKeys.catalog(toValue(params))),
-    queryFn: ({ queryKey }) => getMovieCatalog(queryKey[3]),
+    queryFn: ({ queryKey }) => findCatalog(queryKey[3]),
     enabled: computed(() => toValue(enabled)),
     retry: false,
   })

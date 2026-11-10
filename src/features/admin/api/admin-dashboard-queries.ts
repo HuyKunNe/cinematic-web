@@ -6,12 +6,12 @@ import { useAuthStore } from '@/stores/auth.store'
 import {
   findMovieById,
   findAllMovies,
-  getMovieCatalog,
+  findCatalog,
 } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import { getActiveCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import { getShowtimesByTimeRange } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
 import type {
-  GetMovieCatalogParams,
+  FindCatalogParams,
   MovieResponse,
   PageResponseMovieResponse,
 } from '@/services/api/generated/movie-service/model'
@@ -21,7 +21,7 @@ import type {
 } from '@/services/api/generated/inventory-service/model'
 import type { ApiError } from '@/services/http/api-error'
 
-type MovieStatusFilter = GetMovieCatalogParams['status']
+type MovieStatusFilter = FindCatalogParams['status']
 
 export interface AdminDashboardScope {
   cinemaId: string
@@ -83,7 +83,7 @@ export function useAdminDashboardQueries(
       ReturnType<typeof adminDashboardKeys.movieCount>
     >({
       queryKey: adminDashboardKeys.movieCount(status),
-      queryFn: () => getMovieCatalog({ page: 0, size: 1, status }),
+      queryFn: () => findCatalog({ page: 0, size: 1, status }),
       select: readMovieTotal,
       enabled: canManageMovies,
       staleTime: 30_000,

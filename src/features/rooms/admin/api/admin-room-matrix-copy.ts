@@ -1,14 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { createRoomLayoutDraftFromPublished } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
-import type {
-  RoomLayoutContentResponse,
-  RoomLayoutResponse,
-} from '@/services/api/generated/inventory-service/model'
 import {
   adminRoomMatrixKey,
   readAdminRoomMatrix,
   toAdminRoomMatrixRequest,
   validateAdminRoomLayout,
+  validateAdminRoomLayoutContent,
+  type AdminRoomLayout,
+  type AdminRoomLayoutContent,
   type AdminRoomMatrixDocument,
 } from '../mappers/admin-room-matrix.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
@@ -16,7 +15,7 @@ import { adminRoomMatrixKeys } from './admin-room-matrix-queries'
 
 type CopyMatrixVariables = {
   roomId: string
-  source: RoomLayoutResponse
+  source: AdminRoomLayout
   document: AdminRoomMatrixDocument
 }
 
@@ -51,14 +50,15 @@ export function useCopyAdminRoomMatrixDraftMutation() {
       const sourceLayoutVersion = source.layoutVersion
       const sourceKey = JSON.stringify(matrix)
 
-      const copied = await createRoomLayoutDraftFromPublished(sourceId, {
+      const response = await createRoomLayoutDraftFromPublished(sourceId, {
         expectedVersion: source.version,
       })
 
-      if (!copied?.layout || !isRoomSeatUuid(copied.layout.id)) {
+      if (!response?.layout || !isRoomSeatUuid(response.layout.id)) {
         throw new Error('Chưa xác nhận được bản nháp vừa tạo. Hãy tải lại danh sách phiên bản.')
       }
 
+      const copied = validateAdminRoomLayoutContent(response, roomId, response.layout.id)
       const copiedDocument = readAdminRoomMatrix(copied, roomId, copied.layout.id)
 
       if (
@@ -81,13 +81,13 @@ export function useCopyAdminRoomMatrixDraftMutation() {
     onSuccess: ({ content }, variables) => {
       const contentKey = adminRoomMatrixKeys.content(variables.roomId, content.layout.id)
 
-      queryClient.setQueryData<RoomLayoutContentResponse>(contentKey, (previous) =>
+      queryClient.setQueryData<AdminRoomLayoutContent>(contentKey, (previous) =>
         previous && previous.layout.version > content.layout.version ? previous : content,
       )
 
       const layoutsKey = adminRoomMatrixKeys.layouts(variables.roomId)
 
-      queryClient.setQueryData<RoomLayoutResponse[]>(layoutsKey, (previous) => {
+      queryClient.setQueryData<AdminRoomLayout[]>(layoutsKey, (previous) => {
         const existing = previous?.find((layout) => layout.id === content.layout.id)
 
         const incoming =

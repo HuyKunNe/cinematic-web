@@ -3,7 +3,6 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
-import type { RoomLayoutResponse } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
@@ -26,6 +25,7 @@ import {
   adminRoomMatrixKey,
   readAdminRoomMatrix,
   toAdminRoomMatrixRequest,
+  type AdminRoomLayout,
   type AdminRoomMatrixDocument,
 } from '../mappers/admin-room-matrix.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
@@ -75,7 +75,7 @@ const cinemaId = computed(() => {
 const pickedId = ref('')
 const queryLayoutId = ref('')
 const failedLayoutId = ref('')
-const loadedLayout = ref<RoomLayoutResponse | null>(null)
+const loadedLayout = ref<AdminRoomLayout | null>(null)
 
 const initialDocument = ref<AdminRoomMatrixDocument | null>(null)
 const workingDocument = ref<AdminRoomMatrixDocument | null>(null)
@@ -89,7 +89,7 @@ const opening = ref(false)
 const publishing = ref(false)
 const deleting = ref(false)
 const clearingDeletedLocation = ref(false)
-const deleteTarget = ref<RoomLayoutResponse | null>(null)
+const deleteTarget = ref<AdminRoomLayout | null>(null)
 let automaticDraftRoom = ''
 const syncingLocation = ref(false)
 const reloadRequired = ref(false)
@@ -331,7 +331,7 @@ async function syncLoadedVersionLocation(): Promise<boolean> {
 
 async function loadVersion(
   layoutId: string,
-  minimumLayout?: RoomLayoutResponse,
+  minimumLayout?: AdminRoomLayout,
   requirePublishedMatrix = false,
 ): Promise<boolean> {
   if (!ready.value || !isRoomSeatUuid(layoutId)) return false
@@ -571,7 +571,7 @@ async function copyPublishedVersion() {
   }
 }
 
-async function refreshVersions(): Promise<RoomLayoutResponse[] | null> {
+async function refreshVersions(): Promise<AdminRoomLayout[] | null> {
   if (!ready.value || busy.value || versions.isFetching.value) {
     return null
   }

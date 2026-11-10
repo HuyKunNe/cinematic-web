@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { z } from 'zod'
-import { listBookingsForAdmin } from '@/services/api/generated/booking-service/booking-management/booking-management'
+import { listBookingsForAdmin } from '@/services/api/generated/booking-service/booking-management-controller/booking-management-controller'
 import { BookingResponseStatus } from '@/services/api/generated/booking-service/model/bookingResponseStatus'
 import type { ListBookingsForAdminParams } from '@/services/api/generated/booking-service/model/listBookingsForAdminParams'
 

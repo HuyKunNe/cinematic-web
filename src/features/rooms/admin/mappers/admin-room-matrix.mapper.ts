@@ -14,6 +14,20 @@ import { isRoomSeatUuid } from './admin-seat-catalog.mapper'
 
 export const ADMIN_ROOM_MATRIX_LIMITS = MATRIX_LIMITS
 
+// Generated transport fields are optional; Admin requires these fields after validation.
+export type AdminRoomLayout = RoomLayoutResponse &
+  Required<
+    Pick<RoomLayoutResponse,
+      'id' | 'roomId' | 'layoutVersion' | 'status' | 'version' | 'createdAt' | 'updatedAt'
+    >
+  >
+
+export type AdminRoomLayoutContent = RoomLayoutContentResponse & {
+  layout: AdminRoomLayout
+  seats: NonNullable<RoomLayoutContentResponse['seats']>
+  elements: NonNullable<RoomLayoutContentResponse['elements']>
+}
+
 export type BoundMatrixSeat = MatrixSeat & {
   seatId?: string
 }
@@ -22,40 +36,75 @@ export type AdminRoomMatrixDocument = Omit<SeatMatrixDocument, 'rows'> & {
   rows: (BoundMatrixSeat | null)[][]
 }
 
-function validDimension(value: number) {
-  return Number.isSafeInteger(value) && value >= 1 && value <= ADMIN_ROOM_MATRIX_LIMITS.dimension
+function validDimension(value: unknown): value is number {
+  return (
+    typeof value === 'number' && Number.isSafeInteger(value) &&
+    value >= 1 && value <= ADMIN_ROOM_MATRIX_LIMITS.dimension
+  )
 }
 
-function validIndex(value: number, length: number) {
-  return Number.isSafeInteger(value) && value >= 0 && value < length
+function validIndex(value: unknown, length: number): value is number {
+  return (
+    typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 && value < length
+  )
 }
 
-function validSeatType(value: unknown) {
+function validSeatType(value: unknown): value is MatrixSeat['seatType'] {
   return matrixSeatTypes.some((option) => option.value === value)
 }
 
 export function validateAdminRoomLayout(
-  layout: RoomLayoutResponse,
+  layout: RoomLayoutResponse | undefined,
   roomId: string,
   layoutId?: string,
-) {
+): AdminRoomLayout {
   if (
     !layout ||
     !isRoomSeatUuid(layout.id) ||
     layout.roomId !== roomId ||
     (layoutId !== undefined && layout.id !== layoutId) ||
+    typeof layout.layoutVersion !== 'number' ||
     !Number.isSafeInteger(layout.layoutVersion) ||
     layout.layoutVersion < 1 ||
+    typeof layout.version !== 'number' ||
     !Number.isSafeInteger(layout.version) ||
     layout.version < 0 ||
-    !['DRAFT', 'PUBLISHED'].includes(layout.status) ||
+    (layout.status !== 'DRAFT' && layout.status !== 'PUBLISHED') ||
+    typeof layout.createdAt !== 'string' ||
+    typeof layout.updatedAt !== 'string' ||
     !Number.isFinite(Date.parse(layout.createdAt)) ||
     !Number.isFinite(Date.parse(layout.updatedAt))
   ) {
     throw new Error('Thông tin phiên bản layout không hợp lệ.')
   }
 
-  return layout
+  return {
+    ...layout,
+    id: layout.id,
+    roomId: layout.roomId,
+    layoutVersion: layout.layoutVersion,
+    status: layout.status,
+    version: layout.version,
+    createdAt: layout.createdAt,
+    updatedAt: layout.updatedAt,
+  }
+}
+
+export function validateAdminRoomLayoutContent(
+  content: RoomLayoutContentResponse,
+  roomId: string,
+  layoutId?: string,
+): AdminRoomLayoutContent {
+  if (!content || !Array.isArray(content.seats) || !Array.isArray(content.elements)) {
+    throw new Error('Nội dung layout trả về không hợp lệ.')
+  }
+
+  return {
+    ...content,
+    layout: validateAdminRoomLayout(content.layout, roomId, layoutId),
+    seats: content.seats,
+    elements: content.elements,
+  }
 }
 
 export function toAdminRoomMatrixRequest(
@@ -133,7 +182,7 @@ export function readAdminRoomMatrix(
     throw new Error('Nội dung layout trả về không hợp lệ.')
   }
 
-  validateAdminRoomLayout(content.layout, roomId, layoutId)
+  const layout = validateAdminRoomLayout(content.layout, roomId, layoutId)
 
   const matrix = content.matrix
 
@@ -150,10 +199,11 @@ export function readAdminRoomMatrix(
     throw new Error('Dữ liệu sơ đồ trả về không hợp lệ.')
   }
 
+  const { rowCount, columnCount } = matrix
   const document: AdminRoomMatrixDocument = {
-    columns: matrix.columnCount,
-    rows: Array.from({ length: matrix.rowCount }, () =>
-      Array.from({ length: matrix.columnCount }, (): BoundMatrixSeat | null => null),
+    columns: columnCount,
+    rows: Array.from({ length: rowCount }, () =>
+      Array.from({ length: columnCount }, (): BoundMatrixSeat | null => null),
     ),
   }
 
@@ -162,6 +212,7 @@ export function readAdminRoomMatrix(
       !seat ||
       !validIndex(seat.rowIndex, matrix.rowCount) ||
       !validIndex(seat.columnIndex, matrix.columnCount) ||
+      typeof seat.number !== 'number' ||
       !Number.isSafeInteger(seat.number) ||
       !validSeatType(seat.seatType)
     ) {
@@ -190,7 +241,7 @@ export function readAdminRoomMatrix(
 
   // Kiểm tra sau khi đã đặt toàn bộ ghế vào document:
   // một ghế khác không được nằm trong ô thứ hai của ghế đôi.
-  toAdminRoomMatrixRequest(document, content.layout.version)
+  toAdminRoomMatrixRequest(document, layout.version)
 
   return document
 }

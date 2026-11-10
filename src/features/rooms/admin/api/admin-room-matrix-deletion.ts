@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { deleteRoomLayoutDraft } from '@/services/api/generated/inventory-service/room-layout-controller/room-layout-controller'
-import type { RoomLayoutResponse } from '@/services/api/generated/inventory-service/model'
+import type { AdminRoomLayout } from '../mappers/admin-room-matrix.mapper'
 import { isRoomSeatUuid } from '../mappers/admin-seat-catalog.mapper'
 import { adminRoomMatrixKeys } from './admin-room-matrix-queries'
 
@@ -17,7 +17,7 @@ export function useDeleteAdminRoomMatrixDraftMutation() {
     },
     onSuccess: (_data, input) => {
       const key = adminRoomMatrixKeys.layouts(input.roomId)
-      queryClient.setQueryData<RoomLayoutResponse[]>(key, (previous) =>
+      queryClient.setQueryData<AdminRoomLayout[]>(key, (previous) =>
         previous?.filter((layout) => layout.id !== input.layoutId),
       )
       queryClient.removeQueries({
