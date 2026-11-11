@@ -7,26 +7,33 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
 import { CUSTOMER_PRIMARY_NAVIGATION } from './customer-navigation'
 import CustomerBrand from './CustomerBrand.vue'
+import CustomerCitySelect from './CustomerCitySelect.vue'
 
 withDefaults(
   defineProps<{
     locationLabel?: string
     locationDescription?: string
     locationOpen?: boolean
+    cityKey?: string
+    cityOptions?: readonly { key: string; name: string }[]
+    citiesDisabled?: boolean
   }>(),
   {
     locationLabel: 'Chọn thành phố',
     locationDescription: 'Chọn thành phố và rạp',
     locationOpen: false,
+    cityKey: '',
+    cityOptions: () => [],
+    citiesDisabled: false,
   },
 )
 
 const emit = defineEmits<{
   searchRequest: []
   locationRequest: [trigger: HTMLButtonElement]
+  'city-change': [key: string]
 }>()
 
-const locationButton = ref<HTMLButtonElement | null>(null)
 const route = useRoute()
 const auth = useAuthStore()
 const navigation = CUSTOMER_PRIMARY_NAVIGATION
@@ -62,9 +69,9 @@ async function requestLocation(event: MouseEvent) {
     closeMenu(false)
     await nextTick()
 
-    if (locationButton.value) {
-      emit('locationRequest', locationButton.value)
-    }
+    const cityTrigger = document.getElementById('customer-mobile-city')
+    if (cityTrigger instanceof HTMLButtonElement) emit('locationRequest', cityTrigger)
+    else if (trigger instanceof HTMLButtonElement) emit('locationRequest', trigger)
 
     return
   }
@@ -146,22 +153,13 @@ onBeforeUnmount(() => {
         <CustomerBrand />
       </RouterLink>
 
-      <button
-        ref="locationButton"
-        class="customer-mobile-header__location"
-        type="button"
-        data-location-trigger
-        aria-haspopup="dialog"
-        aria-controls="cinema-location-dialog"
-        :aria-expanded="locationOpen"
-        :aria-label="locationDescription"
-        :title="locationDescription"
-        @click="requestLocation"
-      >
-        <MapPin aria-hidden="true" class="customer-navigation__icon" />
-        <span>{{ locationLabel }}</span>
-        <ChevronDown aria-hidden="true" class="customer-navigation__icon" />
-      </button>
+      <CustomerCitySelect
+        id="customer-mobile-city"
+        :model-value="cityKey"
+        :options="cityOptions"
+        :disabled="citiesDisabled"
+        @update:model-value="emit('city-change', $event)"
+      />
 
       <button
         class="customer-mobile-header__icon-button"

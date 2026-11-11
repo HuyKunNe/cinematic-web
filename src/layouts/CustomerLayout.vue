@@ -23,7 +23,22 @@ const locationTrigger = shallowRef<HTMLButtonElement | null>(null)
 const searchError = ref('')
 let openingSearch = false
 
-const { locationLabel, locationDescription } = useCinemaLocation()
+const {
+  locationLabel,
+  locationDescription,
+  cities,
+  location,
+  query: locationQuery,
+} = useCinemaLocation()
+function changeCity(key: string) {
+  if (
+    locationQuery.isFetching.value ||
+    locationQuery.isError.value ||
+    !cities.value.some((city) => city.key === key)
+  )
+    return
+  location.selectCity(key)
+}
 
 function openLocation(trigger: HTMLButtonElement) {
   locationTrigger.value = trigger
@@ -97,6 +112,12 @@ watch(
       :location-label="locationLabel"
       :location-description="locationDescription"
       :location-open="locationOpen"
+      :city-key="location.selectedCityKey"
+      :city-options="cities"
+      :cities-disabled="
+        locationQuery.isFetching.value || locationQuery.isError.value || !cities.length
+      "
+      @city-change="changeCity"
       @search-request="openMovieSearch"
       @location-request="openLocation"
     />
@@ -105,6 +126,12 @@ watch(
       :location-label="locationLabel"
       :location-description="locationDescription"
       :location-open="locationOpen"
+      :city-key="location.selectedCityKey"
+      :city-options="cities"
+      :cities-disabled="
+        locationQuery.isFetching.value || locationQuery.isError.value || !cities.length
+      "
+      @city-change="changeCity"
       @search-request="openMovieSearch"
       @location-request="openLocation"
     />

@@ -1,178 +1,52 @@
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useCinemaLocation } from '@/features/cinemas'
-import { useHomeCinemaProgramme, useHomeHeroMovies, type HomeHeroScope } from '../api/home-queries'
+import { computed } from 'vue'
+import { HOME_HERO_LIMIT, useHomeHeroMovies, useHomeMovies } from '../api/home-queries'
 
 export function useHomeHero() {
-  const { location, selectedCinema, query: locationQuery } = useCinemaLocation()
-
-  const cinemaId = computed(() => location.selectedCinemaId)
-  const hasCinema = computed(() => Boolean(cinemaId.value))
-
-  const programmeQuery = useHomeCinemaProgramme(() => cinemaId.value)
-
-  const now = ref(Date.now())
-  let clockTimer: number | undefined
-
-  const candidateMovieIds = computed(() => {
-    if (!hasCinema.value) return []
-
-    const ids = new Set<string>()
-
-    for (const showtime of programmeQuery.data.value ?? []) {
-      if (
-        !showtime.id ||
-        !showtime.movieId ||
-        !showtime.startsAt ||
-        showtime.cinemaId !== cinemaId.value ||
-        showtime.status !== 'OPEN_FOR_BOOKING'
-      ) {
-        continue
-      }
-
-      const startsAt = Date.parse(showtime.startsAt)
-
-      if (!Number.isFinite(startsAt) || startsAt <= now.value) {
-        continue
-      }
-
-      ids.add(showtime.movieId)
-    }
-
-    return [...ids].sort()
-  })
-
-  const scopeError = computed(
-    () => hasCinema.value && (locationQuery.isError.value || programmeQuery.isError.value),
-  )
-
-  const scopeReady = computed(
-    () =>
-      !hasCinema.value ||
-      (locationQuery.isSuccess.value &&
-        selectedCinema.value?.id === cinemaId.value &&
-        programmeQuery.isSuccess.value),
-  )
-
-  const scope = computed<HomeHeroScope>(() => ({
-    cinemaId: cinemaId.value,
-    ready: scopeReady.value,
-    movieIds: hasCinema.value ? candidateMovieIds.value : null,
-  }))
-
-  const heroQuery = useHomeHeroMovies(scope)
-
-  const needsHeroRequest = computed(
-    () => scopeReady.value && (!hasCinema.value || candidateMovieIds.value.length > 0),
-  )
-
+  // The homepage banner is an editorial discovery area, independent of room schedules.
+  // Booking continues to validate the selected cinema and showtime in its own flow.
+  const heroQuery = useHomeHeroMovies({ cinemaId: '', ready: true, movieIds: null })
+  const catalogQuery = useHomeMovies()
+  const useCatalog = computed(() => heroQuery.isSuccess.value && !heroQuery.data.value?.length)
   const error = computed(
-    () => scopeError.value || (needsHeroRequest.value && heroQuery.isError.value),
+    () => heroQuery.isError.value || (useCatalog.value && catalogQuery.isError.value),
   )
-
   const loading = computed(
     () =>
-      !error.value && (!scopeReady.value || (needsHeroRequest.value && heroQuery.isPending.value)),
+      !error.value &&
+      (heroQuery.isPending.value || (useCatalog.value && catalogQuery.isPending.value)),
   )
-
-  const errorMessage = computed(() => {
-    if (hasCinema.value && locationQuery.isError.value) {
-      return 'Không thể kiểm tra thông tin rạp đã chọn.'
-    }
-
-    if (hasCinema.value && programmeQuery.isError.value) {
-      return 'Không thể tải lịch chiếu của rạp đã chọn.'
-    }
-
-    if (needsHeroRequest.value && heroQuery.isError.value) {
-      return 'Không thể tải phim nổi bật.'
-    }
-
-    return ''
-  })
-
   const movies = computed(() => {
-    if (error.value || loading.value || !needsHeroRequest.value) {
-      return []
-    }
-
-    const result = heroQuery.data.value ?? []
-
-    if (!hasCinema.value) {
-      return result
-    }
-
-    const candidates = new Set(candidateMovieIds.value)
-
-    // Filter giữ nguyên thứ tự biên tập do Backend trả về.
-    return result.filter((movie) => candidates.has(movie.id))
+    if (error.value || loading.value) return []
+    if (!useCatalog.value) return heroQuery.data.value ?? []
+    // Prefer real artwork when available; do not create movies or change backend hero flags.
+    const artworkScore = (movie: NonNullable<typeof catalogQuery.data.value>[number]) =>
+      Number(Boolean(movie.backdropUrl)) * 2 + Number(Boolean(movie.posterUrl))
+    return (catalogQuery.data.value ?? [])
+      .filter((movie) => movie.status === 'NOW_SHOWING')
+      .slice()
+      .sort(
+        (a, b) =>
+          artworkScore(b) - artworkScore(a) ||
+          (b.releaseDate ?? '').localeCompare(a.releaseDate ?? '') ||
+          a.title.localeCompare(b.title, 'vi'),
+      )
+      .slice(0, HOME_HERO_LIMIT)
   })
-
   const retrying = computed(
-    () =>
-      heroQuery.isFetching.value ||
-      (hasCinema.value && (locationQuery.isFetching.value || programmeQuery.isFetching.value)),
+    () => heroQuery.isFetching.value || (useCatalog.value && catalogQuery.isFetching.value),
   )
-
-  function updateClock() {
-    now.value = Date.now()
-  }
-
   async function retry() {
     if (retrying.value) return
-
-    const requestedCinemaId = cinemaId.value
-
-    if (requestedCinemaId && locationQuery.isError.value) {
-      const result = await locationQuery.refetch()
-
-      await nextTick()
-
-      if (result.isError || cinemaId.value !== requestedCinemaId) {
-        return
-      }
-    }
-
-    if (requestedCinemaId && programmeQuery.isError.value) {
-      const result = await programmeQuery.refetch()
-
-      if (result.isError || cinemaId.value !== requestedCinemaId) {
-        return
-      }
-    }
-
-    if (cinemaId.value !== requestedCinemaId) {
-      return
-    }
-
-    updateClock()
-    await nextTick()
-
-    // Query có thể đã tự chạy khi scope trở lại trạng thái ready.
-    if (needsHeroRequest.value && !heroQuery.isFetching.value) {
-      await heroQuery.refetch()
-    }
+    if (useCatalog.value) await catalogQuery.refetch()
+    else await heroQuery.refetch()
   }
-
-  onMounted(() => {
-    updateClock()
-
-    clockTimer = window.setInterval(updateClock, 30_000)
-    document.addEventListener('visibilitychange', updateClock)
-  })
-
-  onBeforeUnmount(() => {
-    if (clockTimer !== undefined) {
-      window.clearInterval(clockTimer)
-    }
-
-    document.removeEventListener('visibilitychange', updateClock)
-  })
-
   return {
     movies,
     loading,
     error,
-    errorMessage,
+    errorMessage: computed(() =>
+      error.value ? 'Không thể tải phim nổi bật. Vui lòng thử lại.' : '',
+    ),
     retrying,
     retry,
   }

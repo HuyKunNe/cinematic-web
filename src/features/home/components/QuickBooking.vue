@@ -26,7 +26,7 @@ import { getCinemaDateKey, formatCinemaTime, getCinemaDayRange } from '@/utils/c
 import { useHomeShowtimes, useHomeBookableShowtimes } from '../api/home-queries'
 import type { ShowtimeResponse } from '@/services/api/generated/inventory-service/model/showtimeResponse'
 import type { RoomResponseRoomType } from '@/services/api/generated/inventory-service/model/roomResponseRoomType'
-import { CalendarDays, ChevronDown, Clapperboard, Clock3, MapPin } from 'lucide-vue-next'
+import { CalendarDays, ChevronDown, Clapperboard, Clock3, MapPin, Ticket } from 'lucide-vue-next'
 import { useCinemaLocation, useCinemaLocationDialog, useCinemaRoomsQuery } from '@/features/cinemas'
 
 const props = defineProps<{
@@ -54,6 +54,7 @@ const {
   selectedCity,
   selectedCinema,
   locationDescription,
+  selectCinemaById,
 } = useCinemaLocation()
 
 const cinemas = computed(() => {
@@ -154,6 +155,7 @@ function toAvailableShowtimes(showtimes: ShowtimeResponse[]) {
           roomId: showtime.roomId,
           startsAtMs,
           roomName: showtime.roomName,
+          screeningVersion: showtime.screeningVersion,
         },
       ]
     })
@@ -200,7 +202,6 @@ const times = computed(() =>
 
 const canChooseMovie = computed(
   () =>
-    hasCinema.value &&
     !cinemasQuery.isFetching.value &&
     !cinemasQuery.isError.value &&
     !props.moviesLoading &&
@@ -227,66 +228,72 @@ const canContinue = computed(
     times.value.some((showtime) => showtime.id === selection.showtime),
 )
 
-const fields = computed(() => [
-  {
-    key: 'cinema' as const,
-    label: 'Địa điểm',
-    mobileLabel: 'Địa điểm',
-    icon: MapPin,
-    placeholder: 'Chọn thành phố và rạp',
-    disabled: checking.value,
-    options: [],
-  },
-  {
-    key: 'movie' as const,
-    label: 'Chọn phim',
-    mobileLabel: 'Phim',
-    icon: Clapperboard,
-    placeholder: !hasCinema.value
-      ? 'Chọn rạp trước'
-      : props.moviesLoading
-        ? 'Đang tải phim…'
-        : 'Chọn phim',
-    disabled: checking.value || !canChooseMovie.value,
-    options: props.movies.map((movie) => ({
-      value: movie.id,
-      label: movie.title,
-    })),
-  },
-  {
-    key: 'date' as const,
-    label: 'Chọn ngày',
-    mobileLabel: 'Ngày',
-    icon: CalendarDays,
-    placeholder:
-      !hasCinema.value || !hasMovie.value
-        ? 'Chọn rạp và phim trước'
-        : showtimesQuery.isFetching.value
-          ? 'Đang tải lịch chiếu…'
-          : 'Chọn ngày',
-    disabled: checking.value || !canChooseDate.value,
-    options: dates.value.map((date) => ({
-      value: date,
-      label: labelDate(date),
-    })),
-  },
-  {
-    key: 'showtime' as const,
-    label: 'Chọn suất',
-    mobileLabel: 'Suất chiếu',
-    icon: Clock3,
-    placeholder: !selection.date
-      ? 'Chọn ngày trước'
-      : bookableQuery.isFetching.value
-        ? 'Đang tải suất chiếu…'
-        : 'Chọn suất',
-    disabled: checking.value || !canChooseShowtime.value,
-    options: times.value.map((showtime) => ({
-      value: showtime.id,
-      label: labelShowtime(showtime),
-    })),
-  },
-])
+const fields = computed(() =>
+  [
+    {
+      key: 'cinema' as const,
+      label: 'Rạp chiếu',
+      mobileLabel: 'Rạp',
+      icon: MapPin,
+      placeholder: 'Chọn rạp của bạn',
+      disabled:
+        checking.value ||
+        cinemasQuery.isFetching.value ||
+        cinemasQuery.isError.value ||
+        !cinemas.value.length,
+      options: cinemas.value.map((cinema) => ({ value: cinema.id, label: cinema.name })),
+    },
+    {
+      key: 'movie' as const,
+      label: 'Chọn phim',
+      mobileLabel: 'Phim',
+      icon: Clapperboard,
+      placeholder: props.moviesLoading ? 'Đang tải phim…' : 'Chọn phim',
+      disabled: checking.value || !canChooseMovie.value,
+      options: props.movies.map((movie) => ({
+        value: movie.id,
+        label: movie.title,
+      })),
+    },
+    {
+      key: 'date' as const,
+      label: 'Chọn ngày',
+      mobileLabel: 'Ngày',
+      icon: CalendarDays,
+      placeholder:
+        !hasCinema.value || !hasMovie.value
+          ? 'Chọn rạp và phim trước'
+          : showtimesQuery.isFetching.value
+            ? 'Đang tải lịch chiếu…'
+            : 'Chọn ngày',
+      disabled: checking.value || !canChooseDate.value,
+      options: dates.value.map((date) => ({
+        value: date,
+        label: labelDate(date),
+      })),
+    },
+    {
+      key: 'showtime' as const,
+      label: 'Chọn suất',
+      mobileLabel: 'Suất chiếu',
+      icon: Clock3,
+      placeholder: !selection.date
+        ? 'Chọn ngày trước'
+        : bookableQuery.isFetching.value
+          ? 'Đang tải suất chiếu…'
+          : 'Chọn suất',
+      disabled: checking.value || !canChooseShowtime.value,
+      options: times.value.map((showtime) => ({
+        value: showtime.id,
+        label: labelShowtime(showtime),
+      })),
+    },
+  ].sort(
+    (a, b) =>
+      ['movie', 'cinema', 'date', 'showtime'].indexOf(a.key) -
+      ['movie', 'cinema', 'date', 'showtime'].indexOf(b.key),
+  ),
+)
 
 const errorMessage = computed(() => {
   if (navigationError.value) return navigationError.value
@@ -308,6 +315,8 @@ const errorMessage = computed(() => {
 
 const helperMessage = computed(() => {
   if (checking.value) return 'Đang kiểm tra lại suất chiếu…'
+  if (!hasCinema.value && !cinemasQuery.isPending.value)
+    return 'Chọn rạp chiếu để xem ngày và suất đang mở bán.'
 
   if (cinemasQuery.isPending.value) {
     return 'Đang tải danh sách rạp…'
@@ -420,7 +429,15 @@ function labelShowtime(showtime: (typeof available.value)[number]) {
       ? 'Đang tải loại phòng…'
       : 'Chưa có loại phòng'
 
-  return [labelTime(showtime.startsAt), roomTypeLabel].filter(Boolean).join(' · ')
+  return [
+    labelTime(showtime.startsAt),
+    showtime.screeningVersion?.contentFormat,
+    roomTypeLabel,
+    showtime.roomName,
+    showtime.screeningVersion?.audioLanguage,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 }
 
 function labelDate(date: string) {
@@ -433,7 +450,7 @@ function labelDate(date: string) {
   }).format(new Date(`${date}T12:00:00+07:00`))
 }
 
-type BookingDropdown = 'movie' | 'date' | 'showtime'
+type BookingDropdown = 'cinema' | 'movie' | 'date' | 'showtime'
 
 const openField = ref<BookingDropdown | null>(null)
 const pendingField = ref<BookingDropdown | null>(null)
@@ -442,6 +459,8 @@ function dropdownReady(field: BookingDropdown) {
   if (checking.value || locationDialogOpen.value) return false
 
   if (field === 'movie') return canChooseMovie.value
+  if (field === 'cinema')
+    return !cinemasQuery.isFetching.value && !cinemasQuery.isError.value && cinemas.value.length > 0
   if (field === 'date') return canChooseDate.value
   return canChooseShowtime.value
 }
@@ -465,7 +484,12 @@ watch(
 )
 
 function handleDropdownOpen(fieldKey: string, open: boolean) {
-  if (fieldKey !== 'movie' && fieldKey !== 'date' && fieldKey !== 'showtime') {
+  if (
+    fieldKey !== 'cinema' &&
+    fieldKey !== 'movie' &&
+    fieldKey !== 'date' &&
+    fieldKey !== 'showtime'
+  ) {
     return
   }
 
@@ -488,6 +512,15 @@ function handleDropdownCloseFocus(event: Event) {
 function handleSelectChange(fieldKey: string, value: unknown) {
   if (typeof value !== 'string') return
 
+  if (fieldKey === 'cinema') {
+    const cinema = cinemas.value.find((item) => item.id === value)
+    if (!cinema || checking.value || cinemasQuery.isFetching.value || cinemasQuery.isError.value)
+      return
+    if (selectCinemaById(cinema.id, cinema.cityKey))
+      requestDropdown(selection.movie ? 'date' : 'movie')
+    return
+  }
+
   if (fieldKey === 'movie') {
     if (!canChooseMovie.value || !props.movies.some((movie) => movie.id === value)) {
       return
@@ -496,7 +529,7 @@ function handleSelectChange(fieldKey: string, value: unknown) {
     selection.movie = value
     navigationError.value = ''
     emit('movie-change', value)
-    requestDropdown('date')
+    requestDropdown(hasCinema.value ? 'date' : 'cinema')
     return
   }
 
@@ -526,7 +559,7 @@ watch(
 
     // Home chọn lại phim theo rạp mới.
     // Trang /booking giữ phim được quản lý bằng URL.
-    if (props.selectedMovieId === undefined) {
+    if (props.selectedMovieId === undefined && previousCinemaId) {
       selection.movie = ''
     }
 
@@ -733,7 +766,11 @@ onBeforeUnmount(() => {
     class="home-container home-booking"
     aria-labelledby="quick-booking-title"
   >
-    <h2 id="quick-booking-title">Đặt vé nhanh</h2>
+    <h2 id="quick-booking-title">
+      <Ticket aria-hidden="true" /><span
+        >Đặt vé nhanh<small>{{ selectedCity?.name || 'Chọn một cuộc hẹn' }}</small></span
+      >
+    </h2>
     <template v-for="(field, index) in fields" :key="field.key">
       <div class="home-booking__step">
         <label :for="`home-${field.key}`">
@@ -754,36 +791,7 @@ onBeforeUnmount(() => {
           <span class="home-booking__mobile-label">
             {{ field.mobileLabel }}
           </span>
-          <button
-            v-if="field.key === 'cinema'"
-            :id="`home-${field.key}`"
-            class="home-booking__location"
-            type="button"
-            data-location-trigger
-            aria-haspopup="dialog"
-            aria-controls="cinema-location-dialog"
-            :aria-expanded="locationDialogOpen"
-            :aria-label="locationDescription"
-            aria-describedby="quick-booking-feedback"
-            :title="locationDescription"
-            :disabled="field.disabled"
-            @click="openBookingLocation"
-          >
-            <span class="home-booking__location-copy">
-              <span class="home-booking__location-name">
-                {{ selectedCinema?.name ?? 'Chọn thành phố và rạp' }}
-              </span>
-
-              <span v-if="selectedCity" class="home-booking__location-city">
-                {{ selectedCity.name }}
-              </span>
-            </span>
-
-            <ChevronDown aria-hidden="true" />
-          </button>
-
           <SelectRoot
-            v-else
             :model-value="selection[field.key]"
             :open="openField === field.key"
             :disabled="field.disabled"
@@ -840,6 +848,24 @@ onBeforeUnmount(() => {
     >
       {{ checking ? 'Đang kiểm tra…' : 'Tiếp tục →' }}
     </button>
-
+    <div class="lumiere-quick-feedback">
+      <p
+        id="quick-booking-feedback"
+        :class="errorMessage ? 'booking-error' : 'booking-note'"
+        role="status"
+      >
+        {{ feedbackMessage }}
+      </p>
+      <button v-if="canRetry" type="button" @click="retryLoading">Tải lại</button
+      ><button
+        v-if="canChangeCinema"
+        type="button"
+        data-location-trigger
+        :aria-label="locationDescription"
+        @click="openBookingLocation"
+      >
+        Đổi địa điểm
+      </button>
+    </div>
   </section>
 </template>

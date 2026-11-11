@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppDateStrip from '@/components/ui/AppDateStrip.vue'
 import AppEmptyState from '@/components/ui/AppEmptyState.vue'
 import AppErrorState from '@/components/ui/AppErrorState.vue'
-import { useCinemaLocationDialog } from '@/features/cinemas'
+import { useCinemaLocation, useCinemaLocationDialog } from '@/features/cinemas'
 import { formatCinemaTime } from '@/utils/cinema-time'
 import { useMovieShowtimes } from '../composables/use-movie-showtimes'
 
@@ -30,6 +32,17 @@ const {
 } = useMovieShowtimes(() => props.movieId)
 
 const { isOpen: locationOpen, open } = useCinemaLocationDialog()
+const { cinemas, selectCinemaById } = useCinemaLocation()
+const cinemaOptions = computed(() =>
+  cinemas.value.filter((cinema) => cinema.cityKey === selectedCity.value?.key),
+)
+function changeCinema(event: Event) {
+  if (checkingId.value || locationQuery.isFetching.value || locationQuery.isError.value) return
+  const cinema = cinemaOptions.value.find(
+    (item) => item.id === (event.target as HTMLSelectElement).value,
+  )
+  if (cinema) selectCinemaById(cinema.id, cinema.cityKey)
+}
 
 function openLocation(event: MouseEvent) {
   if (checkingId.value) return
@@ -60,11 +73,26 @@ function retryRooms() {
       <h2 id="movie-showtimes-title">Chọn rạp và suất chiếu</h2>
     </div>
 
+    <AppDateStrip v-model="selectedDate" :start-date="today" :disabled="!!checkingId" />
     <div class="movie-showtimes__controls">
       <div class="movie-showtimes__location">
-        <span class="movie-showtimes__label">Địa điểm</span>
+        <span class="movie-showtimes__label">Rạp chiếu</span>
 
+        <select
+          v-if="selectedCity"
+          class="lumiere-movie-cinema"
+          :value="selectedCinema?.id ?? ''"
+          aria-label="Chọn rạp chiếu"
+          :disabled="!!checkingId || locationQuery.isFetching.value || locationQuery.isError.value"
+          @change="changeCinema"
+        >
+          <option value="">Chọn rạp của bạn</option>
+          <option v-for="cinema in cinemaOptions" :key="cinema.id" :value="cinema.id">
+            {{ cinema.name }}
+          </option>
+        </select>
         <AppButton
+          v-else
           variant="ghost"
           data-location-trigger
           aria-haspopup="dialog"

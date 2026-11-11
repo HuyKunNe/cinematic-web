@@ -251,6 +251,7 @@ onBeforeUnmount(() => {
 <template>
   <section
     class="home-hero"
+    aria-roledescription="trình chiếu phim"
     :aria-labelledby="heroTitleId"
     :aria-busy="loading || retrying || pending || isTransitioning"
     @pointerenter="handlePointerEnter"
@@ -402,6 +403,27 @@ onBeforeUnmount(() => {
       />
     </div>
 
+    <span v-if="shown && movies.length" class="home-hero__index" aria-hidden="true"
+      ><strong>{{ String(Math.max(0, activeIndex) + 1).padStart(2, '0') }}</strong> /
+      {{ String(movies.length).padStart(2, '0') }}</span
+    >
+
     <span v-if="pending" class="home-sr-only" role="status"> Đang tải ảnh phim </span>
   </section>
 </template>
+
+<style scoped>
+.home-hero__index {
+  position: absolute;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  z-index: var(--home-hero-controls-layer);
+  color: var(--lumiere-hero-muted);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+.home-hero__index strong {
+  color: var(--lumiere-hero-text);
+  font-size: var(--font-size-xl);
+}
+</style>

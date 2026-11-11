@@ -13,6 +13,7 @@ const loadMoviesPage = () => import('../features/movies/pages/MoviesPage.vue')
 const loadMovieDetailPage = () => import('../features/movies/pages/MovieDetailPage.vue')
 const loadAdminMoviesPage = () => import('../features/movies/admin/pages/AdminMoviesPage.vue')
 const loadBookingStartPage = () => import('../features/booking/pages/BookingStartPage.vue')
+const loadShowtimesPage = () => import('../features/home/pages/ShowtimesPage.vue')
 const loadBookingPage = () => import('../features/booking/pages/BookingPage.vue')
 const loadMyBookingsPage = () => import('../features/booking/pages/MyBookingsPage.vue')
 const loadAccountPage = () => import('../features/account/pages/AccountPage.vue')
@@ -65,7 +66,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.SHOWTIMES,
     name: ROUTE_NAMES.SHOWTIMES,
-    component: loadBookingStartPage,
+    component: loadShowtimesPage,
     meta: { layout: 'customer', title: 'Lịch chiếu' },
   },
   {

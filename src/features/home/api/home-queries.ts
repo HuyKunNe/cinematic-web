@@ -43,7 +43,9 @@ export function useHomeMovies() {
   })
 }
 
-export function useHomeHeroMovies(scope: MaybeRefOrGetter<HomeHeroScope>, limit = 6) {
+export const HOME_HERO_LIMIT = 5
+
+export function useHomeHeroMovies(scope: MaybeRefOrGetter<HomeHeroScope>, limit = HOME_HERO_LIMIT) {
   const request = computed(() => toValue(scope))
 
   const movieIds = computed<string[] | null>(() => {
@@ -87,7 +89,8 @@ export function useHomeHeroMovies(scope: MaybeRefOrGetter<HomeHeroScope>, limit 
       response
         .map(toHomeMovie)
         .filter((movie) => movie !== null)
-        .filter((movie) => movie.status === 'NOW_SHOWING'),
+        .filter((movie) => movie.status === 'NOW_SHOWING')
+        .slice(0, limit),
   })
 }
 

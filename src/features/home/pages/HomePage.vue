@@ -39,17 +39,12 @@ function dismissLocationNotice() {
 <template>
   <div class="home-page">
     <HeroBanner
-      :key="`hero-${scopeKey}`"
       :movies="heroMovies"
       :loading="heroLoading"
       :error="heroError"
       :error-message="heroErrorMessage"
       :retrying="heroRetrying"
-      :empty-message="
-        location.selectedCinemaId
-          ? 'Rạp đã chọn hiện chưa có phim nổi bật phù hợp.'
-          : 'Phim nổi bật sẽ được cập nhật.'
-      "
+      empty-message="Phim nổi bật sẽ được cập nhật."
       @retry="retryHero"
     />
 

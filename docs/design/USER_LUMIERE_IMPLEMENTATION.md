@@ -8,18 +8,18 @@ Không sửa các file reference.
 
 ## Các trang và route
 
-| Reference | USER FE | Triển khai / giới hạn |
-| --- | --- | --- |
-| Header, footer | `CustomerLayout`, header desktop/mobile, footer | Nhận diện Lumière, nền kem, nav, thanh thông tin, footer dùng chung trên các trang USER. Giữ chọn địa điểm, tìm phim, menu mobile và điều hướng bàn phím. |
-| Home | `/` | Hero từ API; đặt vé nhanh hiện có; hai tab Đang chiếu/Sắp chiếu với grid 4/3/2 cột; thẻ rạp thật và liên kết Vé của tôi. |
-| Movies | `/movies` | Áp dụng typography, bộ lọc, poster và CTA theo palette Lumière. Giữ tìm kiếm/lọc/sắp xếp/tải thêm hiện có. |
-| Movie detail | `/movies/:movieId` | Hero thông tin nền sage, poster, metadata, synopsis, trailer và lịch chiếu hiện có. Không thêm đạo diễn/diễn viên nếu API không cung cấp. |
-| Schedule | `/showtimes`, `/booking` | Dùng lại `BookingStartPage` và dữ liệu/lựa chọn suất hiện có, thay placeholder lịch chiếu. Heading riêng cho lịch chiếu. |
-| Cinemas | `/cinemas` | Card ảnh minh họa chung, địa chỉ/tên/thành phố từ API, bộ lọc và chọn rạp giữ nguyên. Không lấy ảnh/địa chỉ rạp demo làm dữ liệu thật. |
-| Seats / checkout | `/booking/:showtimeId` | Palette và panel/summary theo reference, tiến trình 3 bước đang hỗ trợ, giữ ghế qua booking API và theo dõi kết quả. |
-| Account | `/account` | Nav hồ sơ/vé, thông tin sẵn có từ phiên OIDC và đăng xuất thật. Không có form hồ sơ giả hoặc cập nhật local. |
-| Tickets / order | `/account/bookings?bookingId=…` | Đơn của chính tài khoản, chi tiết giá/ghế đã lưu, trạng thái, hạn giữ ghế và xác nhận hủy RESERVED còn hạn. |
-| Offers | `/promotions` | Heading và empty state theo reference. Chưa có Promotions API nên không hiển thị mã/giá ưu đãi giả. |
+| Reference        | USER FE                                         | Triển khai / giới hạn                                                                                                                                                                |
+| ---------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Header, footer   | `CustomerLayout`, header desktop/mobile, footer | Nhận diện Lumière, nền kem, nav, thanh thông tin, footer dùng chung trên các trang USER. Giữ chọn địa điểm, tìm phim, menu mobile và điều hướng bàn phím.                            |
+| Home             | `/`                                             | Hero từ API; đặt vé nhanh hiện có; hai tab Đang chiếu/Sắp chiếu với grid 4/3/2 cột; thẻ rạp thật và liên kết Vé của tôi.                                                             |
+| Movies           | `/movies`                                       | Áp dụng typography, bộ lọc, poster và CTA theo palette Lumière. Giữ tìm kiếm/lọc/sắp xếp/tải thêm hiện có.                                                                           |
+| Movie detail     | `/movies/:movieId`                              | Hero thông tin nền sage, poster, metadata, synopsis, trailer và lịch chiếu hiện có. Không thêm đạo diễn/diễn viên nếu API không cung cấp.                                            |
+| Schedule         | `/showtimes`, `/booking`                        | `/showtimes` dùng `ShowtimesPage`: tab Theo phim/Theo rạp, ngày, định dạng và nhóm suất theo reference. `/booking` tiếp tục dùng QuickBooking; kiểm tra lại suất trước khi sang ghế. |
+| Cinemas          | `/cinemas`                                      | Card ảnh minh họa chung, địa chỉ/tên/thành phố từ API, bộ lọc và chọn rạp giữ nguyên. Không lấy ảnh/địa chỉ rạp demo làm dữ liệu thật.                                               |
+| Seats / checkout | `/booking/:showtimeId`                          | Palette và panel/summary theo reference, tiến trình 3 bước đang hỗ trợ, giữ ghế qua booking API và theo dõi kết quả.                                                                 |
+| Account          | `/account`                                      | Nav hồ sơ/vé, thông tin sẵn có từ phiên OIDC và đăng xuất thật. Không có form hồ sơ giả hoặc cập nhật local.                                                                         |
+| Tickets / order  | `/account/bookings?bookingId=…`                 | Đơn của chính tài khoản, chi tiết giá/ghế đã lưu, trạng thái, hạn giữ ghế và xác nhận hủy RESERVED còn hạn.                                                                          |
+| Offers           | `/promotions`                                   | Heading và empty state theo reference. Chưa có Promotions API nên không hiển thị mã/giá ưu đãi giả.                                                                                  |
 
 ## File và mục đích
 
@@ -50,6 +50,35 @@ Không sửa các file reference.
 - `src/router/index.ts`, `customer-navigation.ts`: nối route/điều hướng USER.
 
 ## Khác biệt có chủ đích
+
+### Hero khi chưa cấu hình phim nổi bật
+
+Hero là vùng khám phá chung, không bị giới hạn bởi suất đang mở bán ở rạp đang chọn.
+Ưu tiên API hero và giữ thứ tự biên tập. Nếu API này trả mảng rỗng, dùng tối đa
+5 phim NOW_SHOWING từ API danh mục thật, ưu tiên phim có ảnh. Không bật hero flag
+hoặc cập nhật dữ liệu BE. Nếu thiếu/hỏng ảnh, dùng SVG dự phòng thuộc dự án.
+Giữ tự chuyển 5 giây, tạm dừng hover/focus/tab ẩn và tôn trọng giảm chuyển động.
+
+### Cập nhật chọn địa điểm và lịch chiếu
+
+- `CustomerCitySelect.vue` dùng Reka Select ở header desktop/mobile. Đổi thành phố
+  sử dụng `location.selectCity` hiện có và xóa lựa chọn rạp cũ theo store.
+- QuickBooking chọn phim trước, chọn rạp trực tiếp trong danh sách theo thành phố,
+  rồi ngày/suất; vẫn giữ chọn suất và bước kiểm tra trước khi tiếp tục. Khác demo
+  chỉ có ba ô, sản phẩm giữ ô suất để không bỏ thao tác hiện có.
+- `ShowtimesPage.vue` và `customer-schedule.ts` đọc public bookable API đã có:
+  bắt buộc cinemaId/from/to, movieId tùy chọn. Theo phim nhóm theo rạp của thành phố;
+  Theo rạp nhóm theo phim. Không tạo endpoint hoặc dữ liệu lịch mẫu.
+- `AppDateStrip.vue` dùng chung cho lịch chiếu và lịch tại chi tiết phim. Có bảy
+  ngày hiển thị nhanh, vẫn giữ input ngày để chọn ngày khác, không gán giới hạn BE.
+- `MovieShowtimes.vue` chọn rạp trực tiếp khi đã chọn thành phố; hộp thoại cũ vẫn
+  làm phương án chọn địa điểm khi chưa có thành phố và khôi phục focus.
+- Chỉ hiển thị trạng thái mở bán thật. Không giả nhãn Gần hết/Hết chỗ vì response
+  bookable hiện không có số ghế còn lại.
+
+Kiểm tra thủ công: đổi thành phố trên desktop/mobile; kiểm tra rạp cũ được bỏ,
+QuickBooking lọc đúng danh sách rạp và tự chuyển trường; thử Theo phim/Theo rạp,
+đổi ngày/định dạng, rạp không có suất/lỗi mạng, bấm suất để xác nhận trước chọn ghế.
 
 - Reference là demo localStorage, cho đặt không đăng nhập và thanh toán mô phỏng.
   Sản phẩm giữ OIDC, booking thuộc CurrentUser, không dùng tài khoản/mật khẩu demo.

@@ -23,7 +23,7 @@ export function heroArtworkCandidates(movie: HomeMovie): string[] {
     return candidate ? [candidate] : []
   })
 
-  return [...new Set(candidates)]
+  return [...new Set([...candidates, '/customer/movie-placeholder.svg'])]
 }
 
 export function formatReleaseDate(value: string | null): string {
