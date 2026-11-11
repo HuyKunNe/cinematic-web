@@ -6,16 +6,16 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  FindGenresParams,
-  GenreResponse
+  GenreResponse,
+  GetMovieCatalogGenresParams
 } from '../model';
 
 import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const findGenres = (
-    params?: FindGenresParams,
+  export const getMovieCatalogGenres = (
+    params?: GetMovieCatalogGenresParams,
  ) => {
       return apiRequest<GenreResponse[]>(
       {url: `/api/v1/movies/catalog/genres`, method: 'GET',
@@ -23,4 +23,4 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type FindGenresResult = NonNullable<Awaited<ReturnType<typeof findGenres>>>
+  export type GetMovieCatalogGenresResult = NonNullable<Awaited<ReturnType<typeof getMovieCatalogGenres>>>

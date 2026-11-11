@@ -9,6 +9,7 @@ import {
 import { getActiveRooms } from '@/services/api/generated/inventory-service/room-controller/room-controller'
 import { createShowtime } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
 import { RoomResponseContentFormatsItem } from '@/services/api/generated/inventory-service/model/roomResponseContentFormatsItem'
+import { RoomResponseRoomType } from '@/services/api/generated/inventory-service/model/roomResponseRoomType'
 import type { CreateShowtimeRequest } from '@/services/api/generated/inventory-service/model/createShowtimeRequest'
 import { CinemaPricingPolicyVersionResponseDayGroup } from '@/services/api/generated/inventory-service/model/cinemaPricingPolicyVersionResponseDayGroup'
 import { CinemaPricingPolicyVersionResponseStatus } from '@/services/api/generated/inventory-service/model/cinemaPricingPolicyVersionResponseStatus'
@@ -38,6 +39,7 @@ const roomSchema = z.object({
   name: z.string().trim().min(1),
   active: z.boolean(),
   contentFormats: z.array(z.nativeEnum(RoomResponseContentFormatsItem)),
+  roomType: z.nativeEnum(RoomResponseRoomType),
 })
 
 const movieSchema = z.object({

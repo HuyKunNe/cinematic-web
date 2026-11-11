@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f5f7">
+  <title>Toast messages — Lumière Cinema</title>
+  <link rel="stylesheet" href="toast-preview.css">
+</head>
+<body>
+  <main class="toast-stack" aria-label="Mẫu thông báo toast">
+    <article class="toast toast--success" data-toast="success">
+      <span class="toast__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-9"/></svg>
+      </span>
+      <div class="toast__content">
+        <h2 class="toast__title">Thành công</h2>
+        <p class="toast__message">Bảng giá đã được lưu thành công.</p>
+      </div>
+      <button class="toast__close" type="button" aria-label="Đóng thông báo Thành công">×</button>
+      <span class="toast__timer" aria-hidden="true"></span>
+    </article>
+
+    <article class="toast toast--error" data-toast="error">
+      <span class="toast__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="m8 8 8 8m0-8-8 8"/></svg>
+      </span>
+      <div class="toast__content">
+        <h2 class="toast__title">Lỗi</h2>
+        <p class="toast__message">Không thể lưu bảng giá. Vui lòng thử lại.</p>
+      </div>
+      <button class="toast__close" type="button" aria-label="Đóng thông báo Lỗi">×</button>
+    </article>
+
+    <article class="toast toast--warning" data-toast="warning">
+      <span class="toast__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 7v6m0 4h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      </span>
+      <div class="toast__content">
+        <h2 class="toast__title">Cảnh báo</h2>
+        <p class="toast__message">Một số mức giá bắt buộc chưa được nhập.</p>
+      </div>
+      <button class="toast__close" type="button" aria-label="Đóng thông báo Cảnh báo">×</button>
+    </article>
+
+    <article class="toast toast--info" data-toast="info">
+      <span class="toast__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>
+      </span>
+      <div class="toast__content">
+        <h2 class="toast__title">Thông tin</h2>
+        <p class="toast__message">Đây là dữ liệu minh họa, chưa gọi backend.</p>
+      </div>
+      <button class="toast__close" type="button" aria-label="Đóng thông báo Thông tin">×</button>
+    </article>
+  </main>
+
+  <script>
+    document.querySelectorAll('.toast__close').forEach((button) => {
+      button.addEventListener('click', () => button.closest('.toast')?.remove());
+    });
+
+    const successToast = document.querySelector('[data-toast="success"]');
+    if (successToast) {
+      window.setTimeout(() => successToast.remove(), 10000);
+    }
+  </script>
+</body>
+</html>

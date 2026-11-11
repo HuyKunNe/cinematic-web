@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  FindHeroParams,
+  GetHeroMoviesParams,
   MovieHeroConfigurationResponse,
   MovieResponse,
   UpdateMovieHeroRequest
@@ -16,7 +16,7 @@ import { apiRequest } from '../../../../http/axios-instance';
 
 
 
-  export const updateHero = (
+  export const updateMovieHero = (
     movieId: string,
     updateMovieHeroRequest: UpdateMovieHeroRequest,
  ) => {
@@ -27,8 +27,8 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export const findHero = (
-    params?: FindHeroParams,
+  export const getHeroMovies = (
+    params?: GetHeroMoviesParams,
  ) => {
       return apiRequest<MovieResponse[]>(
       {url: `/api/v1/movies/hero`, method: 'GET',
@@ -36,5 +36,5 @@ import { apiRequest } from '../../../../http/axios-instance';
     },
       );
     }
-  export type UpdateHeroResult = NonNullable<Awaited<ReturnType<typeof updateHero>>>
-export type FindHeroResult = NonNullable<Awaited<ReturnType<typeof findHero>>>
+  export type UpdateMovieHeroResult = NonNullable<Awaited<ReturnType<typeof updateMovieHero>>>
+export type GetHeroMoviesResult = NonNullable<Awaited<ReturnType<typeof getHeroMovies>>>

@@ -116,10 +116,13 @@ const pricing = useAdminShowtimePricing({
 })
 const holiday = pricing.holiday
 const pricingDayLabel = pricing.dayLabel
-const pricingHint = pricing.hint
-const selectedPricingVersion = computed(() =>
-  pricing.choices.value.find((item) => item.id === form.pricingPolicyVersionId),
-)
+const pricingHint = computed(() => pricingVersions.isError.value
+  ? showtimeErrorMessage(pricingVersions.error.value, 'Không thể xác định bảng giá tự động. Hãy tải lại lựa chọn.')
+  : pricing.hint.value)
+const selectedPricingVersion = computed(() => {
+  const assigned = pricing.assignedVersion.value
+  return assigned?.id === form.pricingPolicyVersionId ? assigned : undefined
+})
 
 const layoutQuery = useAdminShowtimePublishedLayoutQuery(
   () => form.roomId,
@@ -232,7 +235,7 @@ const creationRequest = computed<CreateShowtimeRequest | null>(() => {
     !end ||
     !layoutReady.value ||
     !pricingVersions.isSuccess.value ||
-    (parsed.success && parsed.data.pricingPolicyVersionId !== '' && !pricingVersion) ||
+    !pricingVersion ||
     timingError.value
   ) {
     return null
@@ -246,7 +249,7 @@ const creationRequest = computed<CreateShowtimeRequest | null>(() => {
     endsAt: end,
     breakMinutes: parsed.data.breakMinutes,
     ...(selectedLayout.value ? { roomLayoutId: selectedLayout.value.id } : {}),
-    ...(pricingVersion ? { pricingPolicyVersionId: pricingVersion.id } : {}),
+    pricingPolicyVersionId: pricingVersion.id,
   }
 })
 
@@ -350,32 +353,12 @@ const choiceFields = computed(() =>
       contextHelp: 'Chọn phim và phòng trước.',
       empty: versionEmptyMessage.value,
     },
-    {
-      key: 'pricingPolicyVersionId' as const,
-      label: 'Bảng giá',
-      required: false,
-      placeholder: 'Không gán bảng giá khi tạo',
-      wide: true,
-    options: pricing.choices.value.map((item) => ({
-        value: item.id,
-        label: showtimePricingVersionLabel(item),
-      })),
-      loading: pricingVersions.isFetching.value,
-      success: pricingVersions.isSuccess.value,
-      error: pricingVersions.error.value,
-      disabled:
-        !selectedCinema.value || pricingVersions.isFetching.value || pricingVersions.isError.value,
-      context: Boolean(selectedCinema.value),
-      contextHelp: 'Chọn rạp trước. Có thể lập lịch trước và gán bảng giá sau.',
-    empty: pricingHint.value,
-    },
   ].sort((first, second) => {
     const order = [
       'cinemaId',
       'roomId',
       'movieId',
       'movieScreeningVersionId',
-      'pricingPolicyVersionId',
     ]
     return order.indexOf(first.key) - order.indexOf(second.key)
   }),
@@ -630,7 +613,6 @@ async function submit(): Promise<void> {
                     :required="field.required"
                     :disabled="field.disabled"
                     :aria-describedby="`${field.key}-feedback`"
-                    @change="field.key === 'pricingPolicyVersionId' && pricing.selectManually()"
                   >
                     <option value="">
                       {{ field.loading ? 'Đang tải…' : field.placeholder }}
@@ -656,7 +638,6 @@ async function submit(): Promise<void> {
                     <template v-else-if="field.success && field.options.length === 0">
                       {{ field.empty }}
                     </template>
-                    <template v-else-if="field.key === 'pricingPolicyVersionId'">{{ pricingHint }}</template>
                   </span>
                 </label>
 
@@ -732,7 +713,11 @@ async function submit(): Promise<void> {
                   Ngày lễ/Tết
                 </label>
                 <p id="showtime-holiday-help" class="showtime-create__hint">
-                  Thứ Bảy, Chủ nhật áp dụng bảng giá cuối tuần. Chọn Ngày lễ/Tết để ưu tiên bảng giá lễ.
+                  Thứ Sáu, Thứ Bảy, Chủ nhật áp dụng bảng giá cuối tuần; Thứ Hai–Thứ Năm áp dụng bảng giá ngày thường. Ngày lễ/Tết được ưu tiên khi đánh dấu.
+                </p>
+                <p class="showtime-create__hint" role="status">
+                  <strong v-if="selectedPricingVersion">Bảng giá tự động: {{ showtimePricingVersionLabel(selectedPricingVersion) }}. </strong>
+                  {{ pricingHint }}
                 </p>
               </div>
 
@@ -847,9 +832,9 @@ async function submit(): Promise<void> {
               </div>
               <span class="showtime-create__badge">
                 {{
-                  created?.pricingPolicyVersionId || selectedPricingVersion
-                    ? 'Đã chọn bảng giá'
-                    : 'Chưa gán bảng giá'
+                  created?.pricingPolicyVersionId
+                    ? 'Đã gán bảng giá'
+                    : selectedPricingVersion ? 'Tự động gán bảng giá' : 'Chưa xác định bảng giá'
                 }}
               </span>
             </header>
@@ -875,7 +860,7 @@ async function submit(): Promise<void> {
                   </dd>
                 </div>
                 <div>
-                  <dt>Bảng giá</dt>
+                  <dt>Bảng giá tự gán</dt>
                   <dd>
                     {{
                       selectedPricingVersion

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import {
   findMovieById,
   findAllMovies,
-  findCatalog,
+  getMovieCatalog,
 } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import { getActiveCinemas } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
 import { getShowtimesByTimeRange } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
@@ -83,7 +83,7 @@ export function useAdminDashboardQueries(
       ReturnType<typeof adminDashboardKeys.movieCount>
     >({
       queryKey: adminDashboardKeys.movieCount(status),
-      queryFn: () => findCatalog({ page: 0, size: 1, status }),
+      queryFn: () => getMovieCatalog({ page: 0, size: 1, status }),
       select: readMovieTotal,
       enabled: canManageMovies,
       staleTime: 30_000,

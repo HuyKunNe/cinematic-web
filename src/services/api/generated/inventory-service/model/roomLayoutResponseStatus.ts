@@ -12,4 +12,5 @@ export type RoomLayoutResponseStatus = typeof RoomLayoutResponseStatus[keyof typ
 export const RoomLayoutResponseStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED',
+  RETIRED: 'RETIRED',
 } as const;

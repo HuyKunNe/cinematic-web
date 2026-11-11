@@ -6,10 +6,256 @@
   --showtime-slot-columns: var(--space-7) repeat(3, minmax(0, 1fr)) auto;
   --showtime-slot-index-size: var(--space-7);
   --showtime-step-size: var(--space-7);
+  --showtime-batch-time-columns: repeat(3, minmax(0, 1fr)) auto;
 }
 
 [data-reference='admin-showtime-form'] .showtime-create__heading {
   align-items: flex-end;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+[data-reference='admin-showtime-form'].showtime-batch {
+  --showtime-common-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  --showtime-common-icon-size: var(--space-4);
+  --showtime-compact-padding: var(--space-4);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__common {
+  display: grid;
+  grid-template-columns: var(--showtime-common-columns);
+  align-items: stretch;
+}
+
+[data-reference='admin-showtime-form'] :is(.showtime-batch__selection, .showtime-batch__schedule) {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__schedule {
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__field-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__field-label svg {
+  width: var(--showtime-common-icon-size);
+  height: var(--showtime-common-icon-size);
+  color: var(--color-text-secondary);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__holiday-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__holiday-card input {
+  margin-top: var(--space-1);
+  accent-color: var(--color-primary);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__holiday-card span {
+  display: grid;
+  gap: var(--space-1);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__holiday-card strong {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__holiday-card small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__schedule:has(input:checked) {
+  border-color: var(--color-primary);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__holiday-card:has(input:disabled) {
+  cursor: default;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__common > :is(p, button) {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__common .showtime-batch__date-add {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: var(--showtime-common-columns);
+  align-items: center;
+}
+
+[data-reference='admin-showtime-form'].showtime-batch :is(.showtime-create__panel-heading, .showtime-create__panel-body) {
+  padding: var(--showtime-compact-padding);
+}
+
+[data-reference='admin-showtime-form'].showtime-batch .showtime-create__panel-body {
+  gap: var(--space-3);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room h3 small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__summary {
+  flex: 1;
+  align-self: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__date-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__days {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__days li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__days li > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-options legend {
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-options label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-options label:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-options input {
+  accent-color: var(--color-primary);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-options small {
+  color: var(--color-text-secondary);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room h3 {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__times {
+  display: grid;
+  gap: var(--space-3);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__times > div {
+  display: grid;
+  grid-template-columns: var(--showtime-batch-time-columns);
+  align-items: end;
+  gap: var(--space-3);
+  min-width: 0;
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__time-result {
+  display: grid;
+  align-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__time-result strong {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__errors {
+  margin: 0;
+  padding-inline-start: var(--space-4);
+  color: var(--color-error);
 }
 
 [data-reference='admin-showtime-form'] .showtime-create__intro {
@@ -403,9 +649,23 @@
 }
 
 @variant admin-showtime-mobile {
+  [data-reference='admin-showtime-form'].showtime-batch {
+    --showtime-common-columns: minmax(0, 1fr);
+  }
+
   [data-reference='admin-showtime-form'] {
     --showtime-field-columns: minmax(0, 1fr);
     --showtime-slot-columns: minmax(0, 1fr) auto;
+    --showtime-batch-time-columns: minmax(0, 1fr) auto;
+  }
+
+  [data-reference='admin-showtime-form'] .showtime-batch__time-result {
+    grid-column: 1 / -1;
+  }
+
+  [data-reference='admin-showtime-form'] .showtime-batch__remove-time {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   [data-reference='admin-showtime-form'] .showtime-create__slot-index {

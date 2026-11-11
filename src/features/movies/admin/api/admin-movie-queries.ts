@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import {
   createMovie,
   findMovieById,
-  findCatalog,
+  getMovieCatalog,
   updateMovie,
 } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import { findAll as getGenres } from '@/services/api/generated/movie-service/genre-controller/genre-controller'
@@ -34,7 +34,7 @@ export function useAdminMovieCatalogQuery(
     ReturnType<typeof adminMovieKeys.catalog>
   >({
     queryKey: computed(() => adminMovieKeys.catalog(toValue(params))),
-    queryFn: ({ queryKey }) => findCatalog(queryKey[3]),
+    queryFn: ({ queryKey }) => getMovieCatalog(queryKey[3]),
     enabled: computed(() => toValue(enabled)),
     retry: false,
   })

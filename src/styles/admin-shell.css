@@ -118,6 +118,19 @@ body:has(.admin-layout.is-admin-role),
   background: var(--admin-shell-paper);
 }
 
+.admin-layout.is-admin-role .admin-layout__content {
+  overflow: visible;
+}
+
+.admin-layout.is-admin-role .admin-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  box-sizing: border-box;
+  height: var(--admin-header-height);
+  flex-shrink: 0;
+}
+
 .admin-header__menu-button {
   background: transparent;
   border-color: transparent;

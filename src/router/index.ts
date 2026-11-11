@@ -23,7 +23,7 @@ const loadAdminRoomLayoutPage = () =>
 const loadAdminShowtimesPage = () =>
   import('../features/showtimes/admin/pages/AdminShowtimesPage.vue')
 const loadAdminShowtimeCreatePage = () =>
-  import('../features/showtimes/admin/pages/AdminShowtimeCreatePage.vue')
+  import('../features/showtimes/admin/pages/AdminShowtimeBatchCreatePage.vue')
 const loadAdminPricingPolicyPage = () =>
   import('../features/pricing/admin/pages/AdminPricingPolicyPage.vue')
 
