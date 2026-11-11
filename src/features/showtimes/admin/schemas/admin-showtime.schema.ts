@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { MovieResponseStatus } from '@/services/api/generated/movie-service/model/movieResponseStatus'
 import { ShowtimeResponseStatus } from '@/services/api/generated/inventory-service/model/showtimeResponseStatus'
 import { ShowtimeScreeningVersionResponseContentFormat } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponseContentFormat'
 import { ShowtimeScreeningVersionResponsePresentationType } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponsePresentationType'
@@ -101,6 +102,8 @@ export const adminShowtimeMoviesSchema = z.array(
   z.object({
     id: z.string().uuid(),
     title: z.string().trim().min(1),
+    durationMinutes: z.number().int().positive().nullish(),
+    status: z.nativeEnum(MovieResponseStatus).nullish(),
   }),
 )
 

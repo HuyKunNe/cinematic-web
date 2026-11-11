@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
-import { onBeforeRouteLeave, RouterLink } from 'vue-router'
+import { onBeforeRouteLeave, RouterLink, useRoute } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppTimePicker from '@/components/ui/AppTimePicker.vue'
 import AppToast from '@/components/ui/AppToast.vue'
-import { CalendarDays, Film, MapPin } from 'lucide-vue-next'
+import AdminShowtimeMovieSelect from '../components/AdminShowtimeMovieSelect.vue'
+import { CalendarDays, MapPin, Plus, CircleCheck } from 'lucide-vue-next'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
+import { getCinemaDayRange } from '@/utils/cinema-time'
 import { instantToLocal } from '../schemas/admin-showtime-create.schema'
 import { screeningVersionLabel, showtimeCreationErrorMessage } from '../api/admin-showtime-create'
 import { useAdminShowtimeBatch } from '../composables/use-admin-showtime-batch'
@@ -34,6 +36,14 @@ const {
   uncertain,
   checking,
 } = batch
+const route = useRoute()
+if (typeof route.query.date === 'string' && getCinemaDayRange(route.query.date)) {
+  dateInput.value = route.query.date
+}
+const listLocation = computed(() => ({
+  name: ROUTE_NAMES.ADMIN_SHOWTIMES,
+  query: getCinemaDayRange(dateInput.value) ? { date: dateInput.value } : {},
+}))
 const { cinemas, movies, rooms, screeningVersions } = options
 const contextError = batch.roomContexts.error
 const catalogError = computed(
@@ -41,6 +51,28 @@ const catalogError = computed(
 )
 const loading = computed(() => Object.values(options).some((query) => query.isFetching.value))
 const invalidCount = computed(() => preview.value.filter((row) => row.errors.length).length)
+const errorsOnly = ref(false)
+const visiblePreview = computed(() =>
+  errorsOnly.value && !createdCount.value
+    ? preview.value.filter((row) => row.errors.length)
+    : preview.value,
+)
+watch([invalidCount, createdCount], ([count, created]) => {
+  if (!count || created) errorsOnly.value = false
+})
+function editSlot(key: string) {
+  const target = document.getElementById(`batch-slot-${key}`)
+  if (!target) return
+  target.focus({ preventScroll: true })
+  target.scrollIntoView({
+    block: 'center',
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+  })
+}
+function editFirstInvalid() {
+  const first = preview.value.find((row) => row.errors.length)
+  if (first) editSlot(first.key)
+}
 const sending = batch.sending
 const toastOpen = ref(false)
 const toastMessage = ref('')
@@ -157,7 +189,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
         <p class="admin-reference__eyebrow">Lịch chiếu</p>
         <h1 id="showtime-batch-title">Tạo đợt suất chiếu</h1>
       </div>
-      <RouterLink class="admin-reference__link-button" :to="{ name: ROUTE_NAMES.ADMIN_SHOWTIMES }"
+      <RouterLink class="admin-reference__link-button" :to="listLocation"
         >Danh sách suất chiếu</RouterLink
       >
     </header>
@@ -187,25 +219,12 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
           <div class="showtime-create__panel-body showtime-batch__common">
             <fieldset class="showtime-batch__selection" :disabled="locked">
               <legend class="admin-visually-hidden">Phim và rạp</legend>
-              <label class="admin-reference__field"
-                ><span class="showtime-batch__field-label"
-                  ><Film aria-hidden="true" /> Phim <span aria-hidden="true">*</span></span
-                ><select
-                  v-model="movieId"
-                  class="admin-reference__input"
-                  required
-                  :disabled="movies.isFetching.value || movies.isError.value"
-                >
-                  <option value="">Chọn phim chiếu</option>
-                  <option
-                    v-for="movie in movies.data.value ?? []"
-                    :key="movie.id"
-                    :value="movie.id"
-                  >
-                    {{ movie.title }} · {{ movie.durationMinutes ?? '—' }} phút
-                  </option>
-                </select></label
-              >
+              <AdminShowtimeMovieSelect
+                v-model="movieId"
+                :options="movies.data.value ?? []"
+                :disabled="locked || movies.isError.value"
+                :loading="movies.isFetching.value"
+              />
               <label class="admin-reference__field"
                 ><span class="showtime-batch__field-label"
                   ><MapPin aria-hidden="true" /> Rạp <span aria-hidden="true">*</span></span
@@ -269,10 +288,20 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                   type="checkbox"
                   :checked="selectedRooms.some((item) => item.roomId === room.id)"
                   @change="batch.toggleRoom(room.id)"
-                />{{ room.name }}
-                <small>{{ room.roomType }} · {{ room.contentFormats.join('/') }}</small></label
+                /><span class="showtime-batch__room-choice"
+                  ><strong>{{ room.name }}</strong>
+                  <small>{{ room.roomType }} · {{ room.contentFormats.join('/') }}</small></span
+                ></label
               >
             </fieldset>
+            <div v-if="!cinemaId || !selectedRooms.length" class="showtime-batch__empty">
+              <MapPin aria-hidden="true" />
+              <span>{{
+                !cinemaId
+                  ? 'Chọn rạp ở mục 1 để xem các phòng.'
+                  : 'Chọn phòng để thiết lập phiên bản và khung giờ.'
+              }}</span>
+            </div>
             <p
               v-if="cinemaId && rooms.isSuccess.value && !rooms.data.value?.length"
               class="showtime-create__hint"
@@ -296,7 +325,10 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                   >Bỏ phòng</AppButton
                 >
               </header>
-              <fieldset class="showtime-create__fields" :disabled="locked">
+              <fieldset
+                class="showtime-create__fields showtime-batch__room-settings"
+                :disabled="locked"
+              >
                 <legend class="admin-visually-hidden">Cấu hình phòng</legend>
                 <label class="admin-reference__field"
                   ><span>Phiên bản chiếu *</span
@@ -337,7 +369,14 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                 Không có phiên bản phù hợp với định dạng và công nghệ phòng.
               </p>
               <div class="showtime-batch__times">
-                <div v-for="(slot, index) in plan.times" :key="slot.id">
+                <div
+                  v-for="(slot, index) in plan.times"
+                  :id="`batch-slot-${dateInput}:${plan.roomId}:${slot.id}`"
+                  :key="slot.id"
+                  role="group"
+                  tabindex="-1"
+                  :aria-label="`Khung giờ ${index + 1} của ${roomName(plan.roomId)}`"
+                >
                   <label class="admin-reference__field"
                     ><span>Giờ bắt đầu {{ index + 1 }}</span
                     ><AppTimePicker
@@ -364,8 +403,13 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                   >
                 </div>
               </div>
-              <AppButton variant="secondary" size="sm" :disabled="locked" @click="addTime(plan)"
-                >Thêm khung giờ</AppButton
+              <AppButton
+                class="showtime-batch__add-time"
+                variant="secondary"
+                size="sm"
+                :disabled="locked"
+                @click="addTime(plan)"
+                ><Plus aria-hidden="true" /> Thêm khung giờ</AppButton
               >
             </article>
             <AppButton v-if="contextError" variant="secondary" :disabled="locked" @click="recheck"
@@ -387,6 +431,23 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
             >
           </header>
           <div class="showtime-create__panel-body">
+            <div v-if="preview.length" class="showtime-batch__preview-tools">
+              <label class="showtime-batch__error-filter"
+                ><input
+                  v-model="errorsOnly"
+                  type="checkbox"
+                  :disabled="!invalidCount || !!createdCount"
+                />
+                Chỉ xem suất cần sửa ({{ createdCount ? 0 : invalidCount }})</label
+              >
+              <AppButton
+                v-if="invalidCount && !locked"
+                variant="ghost"
+                size="sm"
+                @click="editFirstInvalid"
+                >Đến lỗi đầu tiên</AppButton
+              >
+            </div>
             <p
               v-if="
                 canReadLayout &&
@@ -407,30 +468,50 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               aria-label="Danh sách suất sẽ tạo"
               tabindex="0"
             >
-              <table class="showtime-create__prices">
+              <table class="showtime-create__prices showtime-batch__preview-table">
                 <thead>
                   <tr>
                     <th scope="col">Ngày / phòng</th>
                     <th scope="col">Bắt đầu</th>
-                    <th scope="col">Kết thúc / sẵn sàng</th>
+                    <th scope="col">Kết thúc</th>
+                    <th scope="col">Phòng sẵn sàng</th>
                     <th scope="col">Kết quả kiểm tra</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="row in preview" :key="row.key">
-                    <th scope="row">{{ row.date }}<br />Phòng: {{ row.roomName }}</th>
-                    <td>{{ row.time || '—' }}</td>
+                  <tr
+                    v-for="row in visiblePreview"
+                    :key="row.key"
+                    :data-invalid="!createdCount && row.errors.length > 0"
+                  >
+                    <th scope="row">
+                      <strong>{{ row.roomName }}</strong
+                      ><small>{{ row.date }}</small>
+                    </th>
+                    <td class="showtime-batch__preview-start">{{ row.time || '—' }}</td>
                     <td>
-                      {{ instantToLocal(row.endsAt).replace('T', ' ') || '—' }}<br />{{
-                        instantToLocal(row.readyAt).replace('T', ' ') || '—'
-                      }}
+                      {{ instantToLocal(row.endsAt).replace('T', ' ') || '—' }}
                     </td>
+                    <td>{{ instantToLocal(row.readyAt).replace('T', ' ') || '—' }}</td>
                     <td>
-                      <span v-if="createdCount">Đã tạo</span>
+                      <span v-if="createdCount" class="showtime-batch__status"
+                        ><CircleCheck aria-hidden="true" /> Đã tạo</span
+                      >
                       <ul v-else-if="row.errors.length" class="showtime-batch__errors">
                         <li v-for="message in row.errors" :key="message">{{ message }}</li>
                       </ul>
-                      <span v-else>Đủ thông tin</span>
+                      <span v-else class="showtime-batch__status"
+                        ><CircleCheck aria-hidden="true" /> Đủ thông tin</span
+                      >
+                      <AppButton
+                        v-if="!createdCount && row.errors.length"
+                        variant="ghost"
+                        size="sm"
+                        :disabled="locked"
+                        :aria-label="`Đến khung giờ ${row.time || 'chưa nhập'} của ${row.roomName}`"
+                        @click="editSlot(row.key)"
+                        >Sửa khung giờ</AppButton
+                      >
                     </td>
                   </tr>
                 </tbody>
@@ -442,14 +523,14 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
           </div>
         </section>
         <footer class="showtime-create__actions">
-          <span class="showtime-batch__summary"
+          <span class="showtime-batch__summary" role="status" aria-live="polite"
             >{{ selectedRooms.length }} phòng · {{ preview.length }} suất
             <span v-if="invalidCount && !createdCount">· {{ invalidCount }} suất cần sửa</span
             ><span v-if="createdCount"> · Đã tạo</span
             ><span v-else-if="uncertain"> · Chưa xác nhận kết quả</span></span
           >
           <AppButton
-            v-if="!uncertain"
+            v-if="!uncertain && !createdCount"
             variant="secondary"
             :disabled="locked || !cinemaId || !movieId"
             @click="recheck"
@@ -465,6 +546,13 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
             :loading="checking"
             >Tạo {{ preview.length }} suất chiếu</AppButton
           >
+          <RouterLink
+            v-if="createdCount"
+            class="admin-reference__link-button is-primary"
+            :to="listLocation"
+          >
+            Xem lịch vừa tạo
+          </RouterLink>
         </footer>
       </form>
     </template>

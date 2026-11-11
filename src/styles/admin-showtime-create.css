@@ -187,6 +187,114 @@
   cursor: pointer;
 }
 
+[data-reference='admin-showtime-form'] .showtime-batch__room-choice {
+  display: grid;
+  gap: var(--space-1);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-choice strong {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-options label:hover {
+  border-color: var(--color-primary);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-options:disabled label {
+  cursor: default;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: var(--border-width-thin) dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+[data-reference='admin-showtime-form'] :is(.showtime-batch__empty, .showtime-batch__add-time, .showtime-batch__status) svg {
+  width: var(--showtime-common-icon-size);
+  height: var(--showtime-common-icon-size);
+  flex-shrink: 0;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__room-settings {
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__add-time {
+  justify-self: start;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-success);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__preview-table tbody th {
+  background: transparent;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__preview-table tbody th :is(strong, small) {
+  display: block;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__preview-table tbody th small {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-regular);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__preview-table :is(td, th) {
+  font-variant-numeric: tabular-nums;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__preview-start {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__preview-table tr[data-invalid='true'] > th {
+  border-inline-start: var(--space-1) solid var(--color-error);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__preview-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__error-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__error-filter input {
+  accent-color: var(--color-primary);
+}
+
+[data-reference='admin-showtime-form'] .showtime-batch__times > div:focus {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+  border-radius: var(--radius-sm);
+}
+
 [data-reference='admin-showtime-form'] .showtime-batch__room-options label:has(input:checked) {
   border-color: var(--color-primary);
   background: var(--color-primary-soft);

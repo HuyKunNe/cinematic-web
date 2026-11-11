@@ -2,6 +2,8 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import AppToast from '@/components/ui/AppToast.vue'
+import { useShowtimeFeedback } from '../composables/use-showtime-feedback'
 import {
   DialogContent,
   DialogDescription,
@@ -10,11 +12,7 @@ import {
   DialogRoot,
   DialogTitle,
 } from 'reka-ui'
-import {
-  formatCinemaDateKey,
-  formatCinemaTime,
-  getCinemaDateKey,
-} from '@/utils/cinema-time'
+import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import {
   showtimeOpeningErrorMessage,
   useAdminShowtimeOpening,
@@ -44,6 +42,7 @@ const opening = ref(false)
 const requiresReload = ref(false)
 const error = ref('')
 const notice = ref('')
+const feedback = useShowtimeFeedback(error, notice)
 const feedbackElement = ref<HTMLElement | null>(null)
 
 const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -153,7 +152,9 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
         @close-auto-focus="restoreFocus"
       >
         <header class="price-dialog-head">
-          <DialogTitle>Mở bán suất chiếu</DialogTitle>
+          <DialogTitle as-child
+            ><h2 ref="feedbackElement" tabindex="-1">Mở bán suất chiếu</h2></DialogTitle
+          >
           <button
             class="price-button price-button--icon price-button--ghost"
             type="button"
@@ -171,15 +172,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
 
         <div class="price-dialog-form">
           <div class="price-dialog-body" :aria-busy="loading || opening">
-            <div ref="feedbackElement" tabindex="-1">
-              <p v-if="error" class="price-notice price-notice--error" role="alert">
-                {{ error }}
-              </p>
-              <p v-if="notice" class="price-notice price-notice--success" role="status">
-                {{ notice }}
-              </p>
-            </div>
-
             <p v-if="!canManage" class="price-notice price-notice--error" role="alert">
               Bạn không có quyền quản lý suất chiếu.
             </p>
@@ -188,37 +180,29 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               Đang tải thông tin suất chiếu…
             </p>
 
-            <p
-              v-if="requiresReload && detail && !loading"
-              class="price-notice"
-              role="status"
-            >
-              Cần tải lại để kiểm tra kết quả và thông tin hiện tại.
-              Yêu cầu mở bán không được tự gửi lại.
+            <p v-if="requiresReload && detail && !loading" class="price-notice" role="status">
+              Cần tải lại để kiểm tra kết quả và thông tin hiện tại. Yêu cầu mở bán không được tự
+              gửi lại.
             </p>
 
             <template v-if="detail">
               <div class="price-explain">
-                <p class="price-note"><strong>{{ movieTitle }}</strong></p>
                 <p class="price-note">
-                  {{ detail.cinemaName }} · {{ detail.roomName }}
+                  <strong>{{ movieTitle }}</strong>
                 </p>
+                <p class="price-note">{{ detail.cinemaName }} · {{ detail.roomName }}</p>
                 <p class="price-note">
                   {{ dateTime(detail.startsAt) }} – {{ dateTime(detail.endsAt) }}
                 </p>
                 <p v-if="detail.screeningVersion" class="price-note">
                   {{
-                    showtimeProjectionTechnologyLabels[
-                      detail.screeningVersion.projectionTechnology
-                    ]
+                    showtimeProjectionTechnologyLabels[detail.screeningVersion.projectionTechnology]
                   }}
                   · {{ detail.screeningVersion.contentFormat }} ·
                   {{ showtimePresentationLabels[detail.screeningVersion.presentationType] }}
                   · Âm thanh {{ detail.screeningVersion.audioLanguage }}
                 </p>
-                <p class="price-note">
-                  Trạng thái: {{ showtimeStatusLabels[detail.status] }}
-                </p>
+                <p class="price-note">Trạng thái: {{ showtimeStatusLabels[detail.status] }}</p>
                 <p class="price-note">
                   Bảng giá:
                   {{ detail.pricingPolicyVersionId ? 'Đã gán bảng giá' : 'Chưa gán bảng giá' }}
@@ -231,23 +215,14 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               >
                 Suất hiện đang mở bán.
               </p>
-              <p
-                v-else-if="detail.status !== 'SCHEDULED'"
-                class="price-notice price-space-top"
-              >
+              <p v-else-if="detail.status !== 'SCHEDULED'" class="price-notice price-space-top">
                 Trạng thái hiện tại không cho phép mở bán.
               </p>
               <template v-else>
-                <p
-                  v-if="!detail.pricingPolicyVersionId"
-                  class="price-notice price-space-top"
-                >
+                <p v-if="!detail.pricingPolicyVersionId" class="price-notice price-space-top">
                   Cần gán bảng giá đã công bố trước khi mở bán.
                 </p>
-                <p
-                  v-if="!detail.screeningVersion"
-                  class="price-notice price-space-top"
-                >
+                <p v-if="!detail.screeningVersion" class="price-notice price-space-top">
                   Suất chưa có phiên bản chiếu hợp lệ để áp dụng giá.
                 </p>
                 <p v-if="!futureStart" class="price-notice price-space-top">
@@ -256,23 +231,18 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               </template>
 
               <p class="price-note price-space-top">
-                Khi mở bán, hệ thống kiểm tra phòng, cụm rạp, bảng giá và dữ liệu ghế,
-                đồng thời cập nhật giá ghế theo bảng giá đang gán.
+                Khi mở bán, hệ thống kiểm tra phòng, cụm rạp, bảng giá và dữ liệu ghế, đồng thời cập
+                nhật giá ghế theo bảng giá đang gán.
               </p>
               <p class="price-note">
-                Bảng giá Lễ/Tết được giữ theo lựa chọn đã gán cho suất.
-                Mỗi định dạng có giá riêng, không cộng phụ thu.
+                Bảng giá Lễ/Tết được giữ theo lựa chọn đã gán cho suất. Mỗi định dạng có giá riêng,
+                không cộng phụ thu.
               </p>
             </template>
           </div>
 
           <footer class="price-dialog-foot">
-            <button
-              class="price-button"
-              type="button"
-              :disabled="opening"
-              @click="close"
-            >
+            <button class="price-button" type="button" :disabled="opening" @click="close">
               Đóng
             </button>
             <button
@@ -295,6 +265,11 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
         </div>
       </DialogContent>
     </DialogPortal>
+    <AppToast
+      v-model:open="feedback.open.value"
+      :message="feedback.message.value"
+      :variant="feedback.variant.value"
+    />
   </DialogRoot>
 </template>
 

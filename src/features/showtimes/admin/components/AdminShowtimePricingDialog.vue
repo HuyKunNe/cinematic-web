@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import AppToast from '@/components/ui/AppToast.vue'
+import { useShowtimeFeedback } from '../composables/use-showtime-feedback'
 import {
   DialogContent,
   DialogDescription,
@@ -42,6 +44,7 @@ const saving = ref(false)
 const requiresReload = ref(false)
 const error = ref('')
 const notice = ref('')
+const feedback = useShowtimeFeedback(error, notice)
 
 const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
 
@@ -211,14 +214,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               Đang tải suất chiếu và các phiên bản bảng giá…
             </p>
 
-            <p v-if="error" class="price-notice price-notice--error" role="alert">
-              {{ error }}
-            </p>
-
-            <p v-if="notice" class="price-notice price-notice--success" role="status">
-              {{ notice }}
-            </p>
-
             <p v-if="requiresReload && data && !loading" class="price-notice" role="status">
               Cần tải lại dữ liệu trước khi lưu tiếp. Lựa chọn đang nhập chưa được tự gửi lại.
             </p>
@@ -310,7 +305,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
               >
                 Cụm rạp chưa có phiên bản bảng giá đã công bố để lựa chọn.
               </p>
-
             </template>
           </div>
 
@@ -333,6 +327,11 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
         </form>
       </DialogContent>
     </DialogPortal>
+    <AppToast
+      v-model:open="feedback.open.value"
+      :message="feedback.message.value"
+      :variant="feedback.variant.value"
+    />
   </DialogRoot>
 </template>
 

@@ -14,6 +14,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import { useAdminShowtimeMoviesQuery, useAdminShowtimesQuery } from '../api/admin-showtime-queries'
 import AdminShowtimePricingDialog from '../components/AdminShowtimePricingDialog.vue'
 import AdminShowtimeOpenDialog from '../components/AdminShowtimeOpenDialog.vue'
+import AdminShowtimeMovieSelect from '../components/AdminShowtimeMovieSelect.vue'
 import {
   showtimeErrorMessage,
   showtimePresentationLabels,
@@ -52,7 +53,7 @@ const linkedDate =
     : today()
 
 const date = ref(linkedDate)
-const search = ref('')
+const movieFilterId = ref('')
 const cinemaId = ref('')
 const roomId = ref('')
 const status = ref('')
@@ -94,13 +95,9 @@ const roomOptions = computed(() =>
 )
 
 const filteredRows = computed(() => {
-  const keyword = search.value.trim().toLocaleLowerCase('vi')
-
   return rows.value.filter(
     (item) =>
-      (!keyword ||
-        movieTitle(item.movieId).toLocaleLowerCase('vi').includes(keyword) ||
-        item.movieId.toLocaleLowerCase('vi').includes(keyword)) &&
+      (!movieFilterId.value || item.movieId === movieFilterId.value) &&
       (!cinemaId.value || item.cinemaId === cinemaId.value) &&
       (!roomId.value || item.roomId === roomId.value) &&
       (!status.value || item.status === status.value),
@@ -117,7 +114,7 @@ const pageRows = computed(() =>
   filteredRows.value.slice(firstIndex.value, firstIndex.value + PAGE_SIZE),
 )
 
-watch([date, search, cinemaId, roomId, status], () => {
+watch([date, movieFilterId, cinemaId, roomId, status], () => {
   page.value = 1
 })
 
@@ -192,7 +189,7 @@ async function reload() {
       <RouterLink
         v-if="canManage"
         class="admin-reference__link-button is-primary"
-        :to="{ name: ROUTE_NAMES.ADMIN_SHOWTIME_CREATE }"
+        :to="{ name: ROUTE_NAMES.ADMIN_SHOWTIME_CREATE, query: validDate ? { date } : {} }"
       >
         <span aria-hidden="true">＋</span>
         Tạo suất chiếu
@@ -254,16 +251,14 @@ async function reload() {
       </p>
 
       <section class="admin-reference__filters" aria-label="Lọc suất chiếu">
-        <label class="admin-reference__field">
-          <span>Tìm phim</span>
-          <input
-            v-model="search"
-            class="admin-reference__input"
-            type="search"
-            placeholder="Nhập tên hoặc mã phim"
-          />
-        </label>
-
+        <AdminShowtimeMovieSelect
+          v-model="movieFilterId"
+          id="showtime-movie-filter"
+          :options="movies.data.value ?? []"
+          :required="false"
+          allow-all
+          :loading="movies.isFetching.value"
+        />
         <label class="admin-reference__field">
           <span>Rạp</span>
           <select v-model="cinemaId" class="admin-reference__input">
