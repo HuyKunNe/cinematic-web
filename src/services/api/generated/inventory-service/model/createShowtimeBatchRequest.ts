@@ -10,7 +10,7 @@ import type { CreateShowtimeRequest } from './createShowtimeRequest';
 export interface CreateShowtimeBatchRequest {
   clientRequestId: string;
   /**
-     * @minItems 0
+     * @minItems 1
      * @maxItems 50
      */
   showtimes: CreateShowtimeRequest[];
