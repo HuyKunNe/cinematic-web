@@ -32,6 +32,15 @@ Dùng generated client có sẵn, kiểm tra response ở feature và query key 
 
 ## Gửi tạo đơn và phục hồi
 
+Từ sơ đồ, bấm “Tiếp tục · Kiểm tra đơn” để mở hộp thoại kiểm tra phim, rạp,
+phòng, suất, ghế và giá từng vé. Hộp thoại dùng báo giá API, chưa gửi mutation.
+“Quay lại chọn ghế” hoặc đóng hộp thoại giữ nguyên lựa chọn; chỉ “Xác nhận đặt vé”
+mới tạo yêu cầu. Khi ghế hoặc giá thay đổi trong lúc xem lại, đóng hộp thoại và
+yêu cầu kiểm tra lại; khi đang làm mới dữ liệu, tạm khóa xác nhận.
+Response tạo đơn được lưu vào cache detail theo user; chuyển đến chi tiết đơn
+để theo dõi trạng thái PENDING/RESERVED. Nếu điều hướng không thành công,
+giữ liên kết tới đúng đơn vừa tạo và không cho gửi thêm một yêu cầu mới.
+
 Lưu request đang gửi trong sessionStorage theo subject/suất chiếu. Khóa chọn ghế khi chờ kết quả; khi lỗi mạng, 5xx hoặc response không xác nhận được, giữ nguyên clientRequestId và payload để retry. Không tự tạo mã mới. Khi reload cùng tab, người dùng có thể gửi lại cùng yêu cầu. Lỗi validation xác định cho phép chọn lại ghế.
 
 SessionStorage chỉ giúp phục hồi trong cùng tab; nếu mất bộ nhớ phiên, cần kiểm tra Vé của tôi trước khi đặt lại. Trang danh sách đọc booking từ BE, không coi lựa chọn local là ghế đã giữ.

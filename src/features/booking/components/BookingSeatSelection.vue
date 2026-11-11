@@ -14,6 +14,7 @@ import {
 } from '../api/booking-seat-quote'
 import { bookingSeatStatusLabels, formatBookingMoney } from '../mappers/booking-seat.mapper'
 import type { BookingSeat, SelectedBookingSeat } from '../models/booking-seat.model'
+import type { BookingReview } from '../models/booking-review.model'
 
 const props = defineProps<{
   context: BookingContext
@@ -93,9 +94,9 @@ const quote = computed(() =>
     ? quoteQuery.data.value
     : undefined,
 )
-const ticketConditions = computed(() => [...new Set(
-  (quote.value?.seats ?? []).map((seat) => seat.eligibilityDescription).filter(Boolean),
-)])
+const ticketConditions = computed(() => [
+  ...new Set((quote.value?.seats ?? []).map((seat) => seat.eligibilityDescription).filter(Boolean)),
+])
 const totalLabel = computed(() => {
   if (quote.value) return formatBookingMoney(quote.value.totalMinor)
   if (!chosenSeats.value.length) return formatBookingMoney(0)
@@ -104,13 +105,37 @@ const totalLabel = computed(() => {
 })
 
 const posterFailed = ref(false)
-const poster = computed(() => posterFailed.value || !props.context.movie.posterUrl
-  ? '/customer/movie-placeholder.svg' : props.context.movie.posterUrl)
+const poster = computed(() =>
+  posterFailed.value || !props.context.movie.posterUrl
+    ? '/customer/movie-placeholder.svg'
+    : props.context.movie.posterUrl,
+)
 const showDate = computed(() => {
   const date = props.context.showtime.startsAt
   return date ? formatCinemaDateKey(getCinemaDateKey(date)) : ''
 })
-const showTime = computed(() => props.context.showtime.startsAt ? formatCinemaTime(props.context.showtime.startsAt) : '')
+const showTime = computed(() =>
+  props.context.showtime.startsAt ? formatCinemaTime(props.context.showtime.startsAt) : '',
+)
+const review = computed<BookingReview | undefined>(() => {
+  if (!quote.value) return undefined
+  return {
+    movieTitle: props.context.movie.title || 'Phim chưa có tên',
+    cinemaName: props.context.cinema.name || '',
+    roomName: props.context.room.name || '',
+    showtimeLabel: `${showTime.value} · ${showDate.value}`,
+    totalMinor: quote.value.totalMinor,
+    seats: quote.value.seats.map((seat) => ({
+      seatNumber: seat.seatNumber,
+      typeLabel:
+        chosenSeats.value.find((item) => item.seatNumber === seat.seatNumber)?.typeLabel || '',
+      ticketGroupName: seat.ticketGroupName,
+      capacity: seat.capacity,
+      priceMinor: seat.priceMinor,
+      unit: seat.unit,
+    })),
+  }
+})
 const priceLines = computed(() => {
   const groups = new Map<string, { label: string; count: number; amount: number }>()
   for (const seat of quote.value?.seats ?? []) {
@@ -176,7 +201,12 @@ watch(
         <p>Chọn vị trí yêu thích và kiểm tra báo giá cho từng vé.</p>
       </header>
       <div class="booking-panel__heading lumiere-seat-booking__toolbar">
-        <span>{{ context.room.name }}<template v-if="context.showtime.screeningVersion?.contentFormat"> · {{ context.showtime.screeningVersion.contentFormat }}</template></span>
+        <span
+          >{{ context.room.name
+          }}<template v-if="context.showtime.screeningVersion?.contentFormat">
+            · {{ context.showtime.screeningVersion.contentFormat }}</template
+          ></span
+        >
         <AppButton
           variant="ghost"
           size="sm"
@@ -214,7 +244,9 @@ watch(
           @select="toggleSeat"
         />
         <template v-else>
-          <p class="booking-note">Sơ đồ cũ hiển thị theo hàng, không thể hiện vị trí thực trong phòng.</p>
+          <p class="booking-note">
+            Sơ đồ cũ hiển thị theo hàng, không thể hiện vị trí thực trong phòng.
+          </p>
           <div v-for="row in rows" :key="row.label" class="booking-seat-row">
             <h3>Hàng {{ row.label }}</h3>
 
@@ -258,25 +290,47 @@ watch(
     </section>
 
     <aside class="booking-panel booking-summary" aria-labelledby="booking-summary-title">
-      <h2 id="booking-summary-title" class="lumiere-seat-booking__summary-title">CUỘC HẸN CỦA BẠN</h2>
+      <h2 id="booking-summary-title" class="lumiere-seat-booking__summary-title">
+        CUỘC HẸN CỦA BẠN
+      </h2>
       <div class="lumiere-seat-booking__film">
-        <img :src="poster" :alt="context.movie.title || 'Poster phim'" @error="posterFailed = true" />
+        <img
+          :src="poster"
+          :alt="context.movie.title || 'Poster phim'"
+          @error="posterFailed = true"
+        />
         <div>
-          <span v-if="context.movie.ageRating" class="lumiere-seat-booking__age">{{ context.movie.ageRating }}</span>
+          <span v-if="context.movie.ageRating" class="lumiere-seat-booking__age">{{
+            context.movie.ageRating
+          }}</span>
           <h3>{{ context.movie.title }}</h3>
           <p v-if="context.movie.durationMinutes">{{ context.movie.durationMinutes }} phút</p>
-          <p v-if="context.showtime.screeningVersion?.contentFormat">{{ context.showtime.screeningVersion.contentFormat }}<template v-if="context.showtime.screeningVersion.audioLanguage"> · {{ context.showtime.screeningVersion.audioLanguage }}</template></p>
+          <p v-if="context.showtime.screeningVersion?.contentFormat">
+            {{ context.showtime.screeningVersion.contentFormat
+            }}<template v-if="context.showtime.screeningVersion.audioLanguage">
+              · {{ context.showtime.screeningVersion.audioLanguage }}</template
+            >
+          </p>
         </div>
       </div>
       <div class="lumiere-seat-booking__location">
         <strong>{{ context.cinema.name }}</strong>
         <p>{{ context.room.name }}</p>
-        <p><strong>{{ showTime }}</strong> · {{ showDate }}</p>
+        <p>
+          <strong>{{ showTime }}</strong> · {{ showDate }}
+        </p>
       </div>
       <div class="lumiere-seat-booking__recap" aria-live="polite">
         <span>Ghế đã chọn</span>
-        <strong>{{ chosenSeats.length ? chosenSeats.map((seat) => seat.seatNumber).join(', ') : 'Chưa chọn ghế' }}</strong>
-        <small v-if="chosenSeats.length">{{ chosenSeats.length }} đơn vị ghế · {{ chosenSeats.reduce((sum, seat) => sum + seat.capacity, 0) }} khách</small>
+        <strong>{{
+          chosenSeats.length
+            ? chosenSeats.map((seat) => seat.seatNumber).join(', ')
+            : 'Chưa chọn ghế'
+        }}</strong>
+        <small v-if="chosenSeats.length"
+          >{{ chosenSeats.length }} đơn vị ghế ·
+          {{ chosenSeats.reduce((sum, seat) => sum + seat.capacity, 0) }} khách</small
+        >
       </div>
       <dl class="booking-summary__totals">
         <div v-for="line in priceLines" :key="line.key">
@@ -288,35 +342,36 @@ watch(
           <dd>{{ totalLabel }}</dd>
         </div>
       </dl>
-        <p v-if="chosenSeats.length && !ready" class="booking-note" role="status">
-          Đang chờ danh sách ghế hợp lệ để báo giá.
+      <p v-if="chosenSeats.length && !ready" class="booking-note" role="status">
+        Đang chờ danh sách ghế hợp lệ để báo giá.
+      </p>
+      <p v-else-if="quoteQuery.isFetching.value" class="booking-note" role="status">
+        Đang xác nhận giá vé…
+      </p>
+      <div v-else-if="quoteQuery.isError.value">
+        <p class="booking-error" role="alert">
+          {{ bookingSeatQuoteErrorMessage(quoteQuery.error.value) }}
         </p>
-        <p v-else-if="quoteQuery.isFetching.value" class="booking-note" role="status">
-          Đang xác nhận giá vé…
-        </p>
-        <div v-else-if="quoteQuery.isError.value">
-          <p class="booking-error" role="alert">
-            {{ bookingSeatQuoteErrorMessage(quoteQuery.error.value) }}
-          </p>
-          <AppButton variant="ghost" size="sm" @click="query.refetch()">
-            Làm mới ghế và báo giá
-          </AppButton>
-        </div>
-
-        <AppButton
-          variant="ghost"
-          size="sm"
-          :disabled="checkoutLocked"
-          @click="
-            () => {
-              selection = []
-              selectionNotice = ''
-            }
-          "
-        >
-          Bỏ chọn tất cả
+        <AppButton variant="ghost" size="sm" @click="query.refetch()">
+          Làm mới ghế và báo giá
         </AppButton>
+      </div>
+
+      <AppButton
+        variant="ghost"
+        size="sm"
+        :disabled="checkoutLocked"
+        @click="
+          () => {
+            selection = []
+            selectionNotice = ''
+          }
+        "
+      >
+        Bỏ chọn tất cả
+      </AppButton>
       <BookingCheckout
+        :review="review"
         :showtime-id="showtimeId"
         :seat-numbers="chosenSeats.map((seat) => seat.seatNumber)"
         :total-amount="quote?.totalAmount"
@@ -324,7 +379,9 @@ watch(
         @locked="checkoutLocked = $event"
         @rejected="query.refetch()"
       />
-      <p class="lumiere-seat-booking__summary-note">Ghế chỉ được giữ sau khi yêu cầu đặt vé được xác nhận.</p>
+      <p class="lumiere-seat-booking__summary-note">
+        Ghế chỉ được giữ sau khi yêu cầu đặt vé được xác nhận.
+      </p>
     </aside>
   </div>
 </template>

@@ -9,8 +9,11 @@ import AppLink from '@/components/ui/AppLink.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { submitCustomerBooking, customerBookingError } from '../api/customer-bookings'
+import BookingReviewDialog from './BookingReviewDialog.vue'
+import type { BookingReview } from '../models/booking-review.model'
 
 const props = defineProps<{
+  review?: BookingReview
   showtimeId: string
   seatNumbers: string[]
   totalAmount?: number
@@ -39,7 +42,34 @@ const checkpoint = computed(() => {
 })
 const sending = ref(false)
 const resolved = ref(false)
+const resolvedBookingId = ref('')
 const error = ref('')
+const reviewing = ref(false)
+const reviewed = ref<BookingReview | null>(null)
+const fingerprint = (value: BookingReview | null | undefined) => JSON.stringify(value)
+function continueBooking() {
+  if (checkpoint.value) {
+    void submit()
+    return
+  }
+  if (props.disabled || !props.review || sending.value || resolved.value) return
+  error.value = ''
+  reviewed.value = props.review
+  reviewing.value = true
+}
+function invalidateReview() {
+  if (!reviewing.value) return
+  reviewing.value = false
+  reviewed.value = null
+  error.value = 'Ghế hoặc báo giá đã thay đổi. Vui lòng kiểm tra lại đơn trước khi xác nhận.'
+}
+watch(
+  () => props.review,
+  (current) => {
+    if (current && fingerprint(current) !== fingerprint(reviewed.value)) invalidateReview()
+  },
+)
+watch(() => props.seatNumbers.slice().sort().join('|'), invalidateReview)
 const blocked = computed(() => sending.value || !!checkpoint.value || resolved.value)
 onBeforeRouteLeave(() => !sending.value || resolved.value)
 onBeforeRouteUpdate(() => !sending.value || resolved.value)
@@ -49,6 +79,12 @@ async function submit() {
     return
   if (!checkpoint.value) {
     if (props.disabled || !props.seatNumbers.length || props.totalAmount === undefined) return
+    if (
+      !reviewing.value ||
+      !props.review ||
+      fingerprint(props.review) !== fingerprint(reviewed.value)
+    )
+      return
     const request = requestSchema.parse({
       clientRequestId: crypto.randomUUID(),
       showtimeId: props.showtimeId,
@@ -59,15 +95,22 @@ async function submit() {
   }
   const request = checkpoint.value
   if (!request) return
+  reviewing.value = false
   sending.value = true
   error.value = ''
   try {
     const booking = await submitCustomerBooking(request, owner)
     if (!auth.isAuthenticated || auth.subject !== owner) return
     resolved.value = true
+    resolvedBookingId.value = booking.id
     stored.value = ''
+    queries.setQueryData(['customer-bookings', owner, 'detail', booking.id], booking)
     await queries.invalidateQueries({ queryKey: ['customer-bookings', owner], refetchType: 'none' })
-    await router.push({ name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: booking.id } })
+    const failure = await router.push({
+      name: ROUTE_NAMES.ACCOUNT_BOOKINGS,
+      query: { bookingId: booking.id },
+    })
+    if (failure) error.value = 'Đơn đã được tiếp nhận. Mở chi tiết đơn để theo dõi kết quả giữ ghế.'
   } catch (cause) {
     if (resolved.value) error.value = 'Đơn đã tạo. Mở Vé của tôi để xem kết quả.'
     else {
@@ -97,10 +140,23 @@ async function submit() {
       v-if="!resolved"
       :loading="sending"
       :disabled="sending || (!checkpoint && disabled)"
-      @click="submit"
-      >{{ checkpoint ? 'Gửi lại cùng yêu cầu' : 'Xác nhận đặt vé' }}</AppButton
+      @click="continueBooking"
+      >{{ checkpoint ? 'Gửi lại cùng yêu cầu' : 'Tiếp tục · Kiểm tra đơn' }}</AppButton
     >
     <AppLink :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }">Vé của tôi</AppLink>
+    <AppLink
+      v-if="resolvedBookingId"
+      :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: resolvedBookingId } }"
+    >
+      Theo dõi đơn vừa tạo
+    </AppLink>
+    <BookingReviewDialog
+      :open="reviewing"
+      :review="reviewed"
+      :disabled="disabled || sending"
+      @close="reviewing = false"
+      @confirm="submit"
+    />
   </div>
 </template>
 
