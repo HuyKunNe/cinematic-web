@@ -4,6 +4,8 @@ export interface BookingSeat {
   id: string
   seatNumber: string
   rowLabel: string
+  seatType: 'STANDARD' | 'VIP' | 'COUPLE' | 'ACCESSIBLE'
+  position: { row: number; column: number; span: number } | null
   typeLabel: string
   capacity: number
   priceMinor: number | null
@@ -14,4 +16,9 @@ export interface BookingSeat {
 export interface SelectedBookingSeat {
   id: string
   priceMinor: number
+}
+
+export interface BookingSeatMap {
+  seats: BookingSeat[]
+  matrix: { rowCount: number; columnCount: number } | null
 }

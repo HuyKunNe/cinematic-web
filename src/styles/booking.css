@@ -77,7 +77,6 @@
   }
 }
 .booking-page {
-
   min-width: 0;
   padding-block: var(--space-8);
 
@@ -173,6 +172,15 @@
 
 .booking-seat-row {
   margin-top: var(--space-6);
+}
+
+.booking-seats--matrix {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.booking-summary__seat-info {
+  display: grid;
+  gap: var(--space-1);
 }
 
 .booking-seat-row h3 {

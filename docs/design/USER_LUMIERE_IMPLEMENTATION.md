@@ -84,8 +84,10 @@ QuickBooking lọc đúng danh sách rạp và tự chuyển trường; thử Th
   Sản phẩm giữ OIDC, booking thuộc CurrentUser, không dùng tài khoản/mật khẩu demo.
 - Chưa có API checkout/payment cho USER, QR, bắp nước, membership hoặc promotions:
   không dựng thao tác không có hành vi, không giả lập thành công, điểm hay mã ưu đãi.
-- API ghế hiện đang dùng có rowLabel/seatNumber, chưa cung cấp tọa độ sơ đồ:
-  vẫn hiển thị theo hàng và ghi rõ không phải vị trí thực trong phòng.
+- Danh sách ghế đọc từ `GET /api/v1/showtimes/{showtimeId}/seat-map`, theo snapshot
+  gắn với suất chiếu; không ghép danh sách ghế vật lý cũ của phòng. API có thông tin
+  vị trí; UI matrix giữ đúng hàng/cột, ô trống và ghế đôi chiếm hai ô như Admin.
+  Sơ đồ legacy không có matrix vẫn hiển thị danh sách theo hàng với chú thích rõ ràng.
 - Thời hạn giữ ghế do booking.expiresAt quyết định; không gán 10 phút hoặc giới hạn
   khách từ demo. Báo giá và trạng thái do API thật quyết định.
 - Lịch sử đơn hiện thiếu metadata phim/rạp trong response; dùng mã đơn/suất thay vì
@@ -93,6 +95,17 @@ QuickBooking lọc đúng danh sách rạp và tự chuyển trường; thử Th
 - Duy trì bottom navigation mobile hiện có; không thêm route membership/support giả.
 
 ## Kiểm tra
+
+Trang chọn ghế đối chiếu trực tiếp `lumiere-cinema/index.html#/booking/seats`:
+sơ đồ nền sage, màn hình cong, hàng ghế đánh số, màu VIP/ghế đôi và trạng thái;
+chú giải bên dưới cùng giá theo loại ghế có trong phòng. Giữ toàn bộ khoảng trống
+theo matrix và co vừa chiều rộng, không thêm lối đi giả hay cuộn ngang.
+Giá theo loại ghế nằm trên sơ đồ; bỏ danh sách “Vé của bạn”.
+“Cuộc hẹn của bạn” ở cột phải trên desktop và bên
+dưới trên mobile. Poster, thông tin phim/rạp/suất và báo giá lấy từ API hiện có.
+Khác reference: giữ tiến trình đặt vé hiện tại; không thêm bước bắp nước/thanh toán,
+đếm ngược giữ chỗ hay giới hạn 8 khách từ demo. Nhóm vé/điều kiện hiển thị theo
+báo giá, chưa bổ sung bộ chọn đối tượng vé. Sơ đồ legacy chưa có matrix vẫn dùng danh sách hàng.
 
 Đã parse/compile cú pháp SFC Vue, parse TypeScript/CSS, kiểm tra import cục bộ và
 `git diff --check`. Chạy `npm run dev -- --host 127.0.0.1`; Vite phục vụ CSS Lumière,

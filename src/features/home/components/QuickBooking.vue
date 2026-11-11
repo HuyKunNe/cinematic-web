@@ -429,13 +429,7 @@ function labelShowtime(showtime: (typeof available.value)[number]) {
       ? 'Đang tải loại phòng…'
       : 'Chưa có loại phòng'
 
-  return [
-    labelTime(showtime.startsAt),
-    showtime.screeningVersion?.contentFormat,
-    roomTypeLabel,
-    showtime.roomName,
-    showtime.screeningVersion?.audioLanguage,
-  ]
+  return [labelTime(showtime.startsAt), showtime.screeningVersion?.contentFormat, roomTypeLabel]
     .filter(Boolean)
     .join(' · ')
 }

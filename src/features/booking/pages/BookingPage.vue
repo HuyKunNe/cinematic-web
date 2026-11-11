@@ -5,7 +5,6 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppLink from '@/components/ui/AppLink.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
-import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import { isBookingUuid, useBookingContextQuery } from '../api/booking-queries'
 import BookingSeatSelection from '../components/BookingSeatSelection.vue'
 import BookingProgress from '../components/BookingProgress.vue'
@@ -21,13 +20,6 @@ const showtimeId = computed(() => {
 
 const query = useBookingContextQuery(showtimeId)
 const context = computed(() => query.data.value)
-
-const showtimeLabel = computed(() => {
-  const startsAt = context.value?.showtime.startsAt
-  if (!startsAt) return ''
-
-  return `${formatCinemaDateKey(getCinemaDateKey(startsAt))} · ${formatCinemaTime(startsAt)}`
-})
 
 const bookable = computed(() => {
   const data = context.value
@@ -89,7 +81,7 @@ onBeforeUnmount(() => {
         <span aria-current="page">Chọn ghế</span>
       </nav>
 
-      <h1 class="booking-start__title booking-page__title">Chọn ghế</h1>
+      <h1 v-if="!context" class="booking-start__title booking-page__title">Chọn ghế</h1>
       <BookingProgress current="seats" />
 
       <p v-if="!showtimeId" class="booking-error" role="alert">
@@ -112,33 +104,6 @@ onBeforeUnmount(() => {
       </div>
 
       <template v-else-if="context">
-        <section class="booking-panel booking-context" aria-labelledby="booking-movie-title">
-          <h2 id="booking-movie-title">
-            {{ context.movie.title || 'Chưa có tên phim' }}
-          </h2>
-
-          <dl class="booking-context__details">
-            <div>
-              <dt>Rạp</dt>
-              <dd>{{ context.cinema.name || context.showtime.cinemaName }}</dd>
-            </div>
-            <div>
-              <dt>Phòng</dt>
-              <dd>{{ context.room.name || context.showtime.roomName }}</dd>
-            </div>
-            <div>
-              <dt>Suất chiếu</dt>
-              <dd>{{ showtimeLabel }}</dd>
-            </div>
-          </dl>
-
-          <p v-if="context.cinema.address" class="booking-note">
-            {{ context.cinema.address }}
-          </p>
-
-          <AppLink :to="changeShowtimeRoute"> Chọn suất chiếu khác </AppLink>
-        </section>
-
         <div v-if="query.isError.value" class="booking-panel">
           <p class="booking-error" role="alert">
             Không thể cập nhật thông tin suất chiếu. Tạm dừng chọn ghế.
@@ -155,6 +120,8 @@ onBeforeUnmount(() => {
         <BookingSeatSelection
           v-else
           :key="selectionKey"
+          :context="context"
+          :change-showtime-to="changeShowtimeRoute"
           :showtime-id="showtimeId"
           :room-id="context.showtime.roomId!"
           :disabled="query.isError.value || query.isFetching.value"

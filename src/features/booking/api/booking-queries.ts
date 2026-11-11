@@ -3,18 +3,17 @@ import { useQuery } from '@tanstack/vue-query'
 import { getShowtimeById } from '@/services/api/generated/inventory-service/showtime-controller/showtime-controller'
 import { getRoomById } from '@/services/api/generated/inventory-service/room-controller/room-controller'
 import { getCinemaById } from '@/services/api/generated/inventory-service/cinema-controller/cinema-controller'
-import { getActiveSeats } from '@/services/api/generated/inventory-service/seat-controller/seat-controller'
-import { getShowSeatsByShowtime } from '@/services/api/generated/inventory-service/show-seat-controller/show-seat-controller'
+import { getShowtimeSeatMap } from '@/services/api/generated/inventory-service/showtime-seat-map-controller/showtime-seat-map-controller'
 import { findMovieById } from '@/services/api/generated/movie-service/movie-controller/movie-controller'
 import type { ShowtimeResponse } from '@/services/api/generated/inventory-service/model/showtimeResponse'
 import type { RoomResponse } from '@/services/api/generated/inventory-service/model/roomResponse'
 import type { CinemaResponse } from '@/services/api/generated/inventory-service/model/cinemaResponse'
 import type { MovieResponse } from '@/services/api/generated/movie-service/model/movieResponse'
 import type { ApiError } from '@/services/http/api-error'
-import type { BookingSeat } from '../models/booking-seat.model'
-import { mapBookingSeats } from '../mappers/booking-seat.mapper'
+import type { BookingSeatMap } from '../models/booking-seat.model'
+import { mapBookingSeatMap } from '../mappers/booking-seat.mapper'
 
-interface BookingContext {
+export interface BookingContext {
   showtime: ShowtimeResponse
   room: RoomResponse
   cinema: CinemaResponse
@@ -88,9 +87,9 @@ export function useBookingSeatsQuery(
   roomId: MaybeRefOrGetter<string>,
 ) {
   return useQuery<
-    BookingSeat[],
+    BookingSeatMap,
     ApiError,
-    BookingSeat[],
+    BookingSeatMap,
     ReturnType<typeof bookingQueryKeys.seats>
   >({
     queryKey: computed(() => bookingQueryKeys.seats(toValue(showtimeId), toValue(roomId))),
@@ -99,15 +98,8 @@ export function useBookingSeatsQuery(
       const currentShowtimeId = queryKey[2]
       const currentRoomId = queryKey[3]
 
-      const [physicalSeats, showSeats] = await Promise.all([
-        getActiveSeats({ roomId: currentRoomId }),
-        getShowSeatsByShowtime({
-          showtimeId: currentShowtimeId,
-          availableOnly: false,
-        }),
-      ])
-
-      return mapBookingSeats(physicalSeats, showSeats, currentRoomId, currentShowtimeId)
+      const snapshot = await getShowtimeSeatMap(currentShowtimeId)
+      return mapBookingSeatMap(snapshot, currentRoomId, currentShowtimeId)
     },
     staleTime: 0,
     retry: false,

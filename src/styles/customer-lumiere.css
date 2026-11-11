@@ -673,6 +673,148 @@ body:has(.customer-layout),
   background: var(--lumiere-sage);
   border-color: var(--lumiere-line);
 }
+
+/* Seat selection follows the Lumière booking/seats composition. */
+.customer-layout .lumiere-seat-booking {
+  --lumiere-booking-summary-width: 20.9375rem;
+  --lumiere-booking-gap: 2.1875rem;
+  --lumiere-booking-poster-width: 4.75rem;
+  --lumiere-booking-title-size: 1.9375rem;
+  --lumiere-booking-total-size: 1.4375rem;
+  --lumiere-booking-heading-tracking: 0.14em;
+  grid-template-columns: minmax(0, 1fr) var(--lumiere-booking-summary-width);
+  gap: var(--lumiere-booking-gap);
+}
+.lumiere-seat-booking__main {
+  min-width: 0;
+}
+.lumiere-seat-booking__heading {
+  margin-bottom: var(--space-6);
+}
+.lumiere-seat-booking__heading h1 {
+  margin: 0;
+  font-size: var(--lumiere-booking-title-size);
+  line-height: var(--line-height-heading);
+}
+.lumiere-seat-booking__heading > p:last-child {
+  margin-block: var(--space-3) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.lumiere-seat-booking__toolbar {
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+.customer-layout .lumiere-seat-booking .booking-summary {
+  padding: var(--space-6);
+  top: calc(var(--header-height) + var(--space-5));
+  border-radius: var(--radius-md);
+}
+.lumiere-seat-booking .booking-panel .lumiere-seat-booking__summary-title {
+  padding-bottom: var(--space-4);
+  margin: 0 0 var(--space-5);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--lumiere-booking-heading-tracking);
+  color: var(--color-text-secondary);
+}
+.lumiere-seat-booking__film {
+  display: flex;
+  align-items: start;
+  gap: var(--space-4);
+}
+.lumiere-seat-booking__film > img {
+  width: var(--lumiere-booking-poster-width);
+  aspect-ratio: var(--lumiere-poster-ratio);
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+.lumiere-seat-booking__film > div {
+  min-width: 0;
+}
+.lumiere-seat-booking__film h3 {
+  margin: var(--space-2) 0;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-heading);
+}
+.lumiere-seat-booking__film p {
+  margin: var(--space-1) 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+.lumiere-seat-booking__age {
+  display: inline-flex;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+.lumiere-seat-booking__location,
+.lumiere-seat-booking__recap {
+  padding-block: var(--space-4);
+  border-bottom: var(--border-width-thin) dashed var(--color-border);
+  font-size: var(--font-size-sm);
+}
+.lumiere-seat-booking__location p {
+  margin: var(--space-1) 0;
+  color: var(--color-text-secondary);
+}
+.lumiere-seat-booking__location p strong {
+  color: var(--color-text-primary);
+}
+.lumiere-seat-booking__recap {
+  display: grid;
+  gap: var(--space-1);
+  overflow-wrap: anywhere;
+}
+.lumiere-seat-booking__recap > span,
+.lumiere-seat-booking__recap small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+.lumiere-seat-booking .booking-summary__totals {
+  padding-top: 0;
+  border-top: 0;
+  font-size: var(--font-size-xs);
+}
+.lumiere-seat-booking__total {
+  align-items: center;
+  padding-top: var(--space-4);
+  margin-top: var(--space-3);
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+.lumiere-seat-booking__total dd {
+  font-size: var(--lumiere-booking-total-size);
+  color: var(--color-primary-hover);
+}
+.lumiere-seat-booking .booking-checkout > .app-button {
+  width: 100%;
+}
+.lumiere-seat-booking__summary-note {
+  margin-top: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+@variant lumiere-tablet {
+  .customer-layout .lumiere-seat-booking {
+    --lumiere-booking-summary-width: 17.1875rem;
+    --lumiere-booking-gap: var(--space-5);
+  }
+  .customer-layout .lumiere-seat-booking .booking-summary {
+    padding: var(--space-4);
+  }
+}
+@variant lumiere-mobile {
+  .customer-layout .lumiere-seat-booking {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .customer-layout .lumiere-seat-booking .booking-summary {
+    position: static;
+  }
+}
 .customer-layout .customer-bookings__badge {
   background: var(--lumiere-white);
 }

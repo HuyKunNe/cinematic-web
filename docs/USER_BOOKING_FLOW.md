@@ -10,6 +10,16 @@
 
 ## Hợp đồng đã đối chiếu
 
+Ghế được đọc qua generated client `getShowtimeSeatMap` từ
+`GET /api/v1/showtimes/{showtimeId}/seat-map`. Kiểm tra đúng room/showtime,
+mã ghế không trùng và dữ liệu hợp lệ trước khi hiển thị. Chỉ cho chọn ghế có
+`selectable: true`, trạng thái AVAILABLE, showSeatId và giá VND hợp lệ.
+Giữ nguyên API báo giá và tạo booking; lựa chọn chưa phải là giữ ghế.
+Suất thiếu snapshot hiển thị lỗi, không lấy sơ đồ hiện tại của phòng để thay thế.
+
+Đăng ký tài khoản còn phụ thuộc User Service: source hiện chưa có endpoint/trang
+đăng ký công khai. Không dựng form gửi mật khẩu trực tiếp từ Vue hoặc giả lập tạo tài khoản.
+
 Đọc source cục bộ `cinema-system` (không sửa BE):
 
 - `BookingController`: POST/GET `/api/v1/bookings`, GET `/{bookingId}`, POST `/{bookingId}/cancel`.
