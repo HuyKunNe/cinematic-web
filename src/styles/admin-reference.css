@@ -488,6 +488,11 @@
   grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
 }
 
+.admin-reference.is-showtimes .admin-reference__filters {
+  --showtime-list-filter-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
+  grid-template-columns: var(--showtime-list-filter-columns);
+}
+
 .admin-reference.is-users .admin-reference__filters {
   grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
 }

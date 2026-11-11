@@ -10,6 +10,7 @@ import {
   getCinemaDayRange,
 } from '@/utils/cinema-time'
 import { computed, ref, watch } from 'vue'
+import { useNow } from '@vueuse/core'
 import { RouterLink, useRoute } from 'vue-router'
 import { useAdminShowtimeMoviesQuery, useAdminShowtimesQuery } from '../api/admin-showtime-queries'
 import AdminShowtimePricingDialog from '../components/AdminShowtimePricingDialog.vue'
@@ -28,6 +29,26 @@ const PAGE_SIZE = 20
 const DAY_MILLISECONDS = 24 * 60 * 60 * 1000
 
 const auth = useAuthStore()
+const now = useNow()
+
+function actionHint(item: AdminShowtime): string {
+  switch (item.status) {
+    case 'SCHEDULED':
+      if (Date.parse(item.startsAt) <= now.value.getTime())
+        return 'Đã qua giờ bắt đầu. Tải lại để kiểm tra trạng thái hiện tại.'
+      if (!item.screeningVersion)
+        return 'Thiếu phiên bản chiếu. Kiểm tra thông tin trước khi mở bán.'
+      return 'Kiểm tra bảng giá và điều kiện trước khi xác nhận mở bán.'
+    case 'OPEN_FOR_BOOKING':
+      return 'Suất đã mở bán.'
+    case 'CLOSED':
+      return 'Suất đã đóng bán.'
+    case 'CANCELLED':
+      return 'Suất đã hủy.'
+    case 'COMPLETED':
+      return 'Suất đã hoàn tất.'
+  }
+}
 
 const canManage = computed(
   () => auth.isAuthenticated && auth.isAdmin && auth.hasPermission(APP_PERMISSIONS.SHOWTIME_MANAGE),
@@ -94,15 +115,65 @@ const roomOptions = computed(() =>
   ).sort((left, right) => left.label.localeCompare(right.label, 'vi')),
 )
 
-const filteredRows = computed(() => {
+const scopedRows = computed(() => {
   return rows.value.filter(
     (item) =>
       (!movieFilterId.value || item.movieId === movieFilterId.value) &&
       (!cinemaId.value || item.cinemaId === cinemaId.value) &&
-      (!roomId.value || item.roomId === roomId.value) &&
-      (!status.value || item.status === status.value),
+      (!roomId.value || item.roomId === roomId.value),
   )
 })
+const filteredRows = computed(() =>
+  scopedRows.value.filter((item) => !status.value || item.status === status.value),
+)
+const statusSummaries = computed(() => [
+  { value: '', label: 'Tất cả', count: scopedRows.value.length },
+  ...showtimeStatusOptions.map((option) => ({
+    ...option,
+    count: scopedRows.value.filter((item) => item.status === option.value).length,
+  })),
+])
+
+const activeFilters = computed(() =>
+  [
+    {
+      value: movieFilterId.value,
+      label: `Phim: ${movieTitle(movieFilterId.value)}`,
+      clear: () => {
+        movieFilterId.value = ''
+      },
+    },
+    {
+      value: cinemaId.value,
+      label: `Rạp: ${cinemaOptions.value.find((item) => item.value === cinemaId.value)?.label ?? cinemaId.value}`,
+      clear: () => {
+        cinemaId.value = ''
+      },
+    },
+    {
+      value: roomId.value,
+      label: `Phòng: ${roomOptions.value.find((item) => item.value === roomId.value)?.label ?? roomId.value}`,
+      clear: () => {
+        roomId.value = ''
+      },
+    },
+    {
+      value: status.value,
+      label: `Trạng thái: ${showtimeStatusOptions.find((item) => item.value === status.value)?.label ?? status.value}`,
+      clear: () => {
+        status.value = ''
+      },
+    },
+  ].filter((item) => item.value),
+)
+
+function clearFilters() {
+  movieFilterId.value = ''
+  cinemaId.value = ''
+  roomId.value = ''
+  status.value = ''
+  page.value = 1
+}
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / PAGE_SIZE)))
 
@@ -278,26 +349,57 @@ async function reload() {
             </option>
           </select>
         </label>
-
-        <label class="admin-reference__field">
-          <span>Trạng thái</span>
-          <select v-model="status" class="admin-reference__input">
-            <option value="">Tất cả trạng thái</option>
-            <option
-              v-for="option in showtimeStatusOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-        </label>
       </section>
+
+      <div
+        class="admin-showtimes__statuses"
+        role="group"
+        aria-label="Lọc theo trạng thái suất chiếu"
+        :aria-busy="showtimes.isFetching.value"
+      >
+        <button
+          v-for="summary in statusSummaries"
+          :key="summary.value"
+          type="button"
+          class="admin-showtimes__status-filter"
+          :aria-pressed="status === summary.value"
+          :disabled="!validDate || showtimes.isFetching.value"
+          @click="status = summary.value"
+        >
+          <span>{{ summary.label }}</span
+          ><strong>{{
+            showtimes.isFetching.value || (showtimes.isError.value && !rows.length)
+              ? '—'
+              : summary.count
+          }}</strong>
+        </button>
+      </div>
 
       <p v-if="showtimes.isError.value" class="admin-showtimes__error" role="alert">
         {{ showtimeErrorMessage(showtimes.error.value) }}
         <template v-if="rows.length"> Đang hiển thị dữ liệu từ lần tải trước. </template>
       </p>
+
+      <div
+        v-if="activeFilters.length"
+        class="admin-showtimes__filter-summary"
+        aria-label="Bộ lọc đang áp dụng"
+      >
+        <span class="admin-reference__muted" role="status"
+          >{{ filteredRows.length }} / {{ rows.length }} suất</span
+        >
+        <button
+          v-for="filter in activeFilters"
+          :key="filter.label"
+          type="button"
+          class="admin-showtimes__filter-chip"
+          :aria-label="`Bỏ bộ lọc ${filter.label}`"
+          @click="filter.clear"
+        >
+          {{ filter.label }} <span aria-hidden="true">×</span>
+        </button>
+        <AppButton variant="ghost" size="sm" @click="clearFilters">Xóa bộ lọc</AppButton>
+      </div>
 
       <p v-if="movies.isError.value" class="admin-reference__muted" role="status">
         Chưa cập nhật được tên phim. Phim chưa có tên được hiển thị bằng mã.
@@ -370,6 +472,20 @@ async function reload() {
                   <div v-if="item.scheduling" class="admin-reference__muted">
                     Nghỉ {{ item.scheduling.breakMinutes }} phút
                   </div>
+                  <div v-if="item.scheduling" class="admin-showtimes__ready-time">
+                    Phòng sẵn sàng
+                    <time :datetime="item.scheduling.readyAt">{{
+                      formatCinemaTime(item.scheduling.readyAt)
+                    }}</time>
+                    <span
+                      v-if="
+                        getCinemaDateKey(item.scheduling.readyAt) !==
+                        getCinemaDateKey(item.startsAt)
+                      "
+                    >
+                      · {{ formatCinemaDateKey(getCinemaDateKey(item.scheduling.readyAt)) }}</span
+                    >
+                  </div>
                 </th>
                 <td>{{ movieTitle(item.movieId) }}</td>
                 <td>
@@ -420,12 +536,15 @@ async function reload() {
                       type="button"
                       :disabled="refreshing"
                       :aria-label="`Mở bán ${movieTitle(item.movieId)} lúc ${formatCinemaTime(item.startsAt)}`"
+                      :aria-describedby="`showtime-action-hint-${item.id}`"
                       @click="openBooking(item)"
                     >
                       Mở bán
                     </AppButton>
                   </div>
-                  <span v-else class="admin-reference__muted">—</span>
+                  <p :id="`showtime-action-hint-${item.id}`" class="admin-showtimes__action-hint">
+                    {{ actionHint(item) }}
+                  </p>
                 </td>
               </tr>
 
@@ -438,8 +557,23 @@ async function reload() {
                         ? 'Đang tải lịch chiếu…'
                         : showtimes.isError.value
                           ? 'Chưa thể tải lịch chiếu. Chọn “Tải lại” để thử lại.'
-                          : 'Không có suất chiếu phù hợp.'
+                          : rows.length
+                            ? 'Không có suất chiếu khớp bộ lọc đang chọn.'
+                            : 'Chưa có suất chiếu trong ngày này.'
                   }}
+                  <div
+                    v-if="
+                      validDate &&
+                      !showtimes.isFetching.value &&
+                      !showtimes.isError.value &&
+                      rows.length &&
+                      activeFilters.length
+                    "
+                  >
+                    <AppButton variant="ghost" size="sm" @click="clearFilters"
+                      >Xóa bộ lọc để xem tất cả suất trong ngày</AppButton
+                    >
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -502,6 +636,88 @@ async function reload() {
 </template>
 
 <style scoped>
+[data-reference='admin-showtimes']
+  :is(.admin-showtimes__action-hint, .admin-showtimes__ready-time) {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
+}
+
+[data-reference='admin-showtimes'] .admin-showtimes__ready-time time {
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-reference='admin-showtimes'] .admin-showtimes__statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+[data-reference='admin-showtimes'] .admin-showtimes__status-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+[data-reference='admin-showtimes'] .admin-showtimes__status-filter strong {
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-reference='admin-showtimes']
+  .admin-showtimes__status-filter:is(:hover, [aria-pressed='true']) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+[data-reference='admin-showtimes'] .admin-showtimes__status-filter[aria-pressed='true'] {
+  background: var(--admin-reference-active-background);
+  font-weight: var(--font-weight-semibold);
+}
+
+[data-reference='admin-showtimes'] .admin-showtimes__status-filter:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+
+[data-reference='admin-showtimes'] .admin-showtimes__filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+[data-reference='admin-showtimes'] .admin-showtimes__filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  overflow-wrap: anywhere;
+  text-align: left;
+  cursor: pointer;
+}
+
+[data-reference='admin-showtimes'] .admin-showtimes__filter-chip:hover {
+  border-color: var(--color-primary);
+}
+
 [data-reference='admin-showtimes'] .admin-showtimes__actions {
   display: flex;
   flex-wrap: wrap;

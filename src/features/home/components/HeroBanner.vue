@@ -335,7 +335,7 @@ onBeforeUnmount(() => {
           </template>
 
           <template v-else>
-            <span class="home-badge">CINEMATIC</span>
+            <span class="home-badge">LUMIÈRE CINEMA</span>
 
             <h1 :id="heroTitleId">{{ placeholderTitle }}</h1>
 
@@ -362,7 +362,7 @@ onBeforeUnmount(() => {
 
         <div v-if="shown" class="home-hero__copy" aria-hidden="true">
           <strong>{{ shown.title }}</strong>
-          <span>CINEMATIC</span>
+          <span>EVERY FRAME. A NEW WORLD.</span>
         </div>
       </div>
     </Transition>

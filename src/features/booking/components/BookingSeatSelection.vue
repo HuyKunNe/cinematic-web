@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import BookingCheckout from './BookingCheckout.vue'
 import { useBookingSeatsQuery } from '../api/booking-queries'
 import {
   bookingQuoteSeatKey,
@@ -24,6 +25,7 @@ const query = useBookingSeatsQuery(
 
 const selection = ref<SelectedBookingSeat[]>([])
 const selectionNotice = ref('')
+const checkoutLocked = ref(false)
 
 const seats = computed(() => query.data.value ?? [])
 
@@ -40,7 +42,12 @@ const rows = computed(() => {
 })
 
 const ready = computed(
-  () => !props.disabled && query.isSuccess.value && !query.isFetching.value && !query.isError.value,
+  () =>
+    !props.disabled &&
+    !checkoutLocked.value &&
+    query.isSuccess.value &&
+    !query.isFetching.value &&
+    !query.isError.value,
 )
 
 const chosenSeats = computed(() =>
@@ -105,7 +112,7 @@ function toggleSeat(seat: BookingSeat) {
 watch(
   () => query.data.value,
   (updatedSeats) => {
-    if (!updatedSeats) return
+    if (!updatedSeats || checkoutLocked.value) return
 
     const remaining = selection.value.filter((selected) =>
       updatedSeats.some(
@@ -132,19 +139,12 @@ watch(
           variant="ghost"
           size="sm"
           :loading="query.isFetching.value"
+          :disabled="checkoutLocked"
           @click="query.refetch()"
         >
           Làm mới
         </AppButton>
       </div>
-
-      <p class="booking-note">
-        Danh sách này không thể hiện vị trí thực tế trong phòng chiếu. Ghế bạn chọn chưa được giữ.
-      </p>
-
-      <p v-if="query.isError.value" class="booking-error" role="alert">
-        Không thể tải hoặc cập nhật ghế. Vui lòng nhấn Làm mới để thử lại.
-      </p>
 
       <p v-if="selectionNotice" class="booking-notice" role="status">
         {{ selectionNotice }}
@@ -197,10 +197,7 @@ watch(
 
     <aside class="booking-panel booking-summary" aria-labelledby="booking-summary-title">
       <h2 id="booking-summary-title">Lựa chọn của bạn</h2>
-
-      <p v-if="!chosenSeats.length" class="booking-note">Chọn ghế còn trống để xem tạm tính.</p>
-
-      <template v-else>
+      <template>
         <ul class="booking-summary__seats">
           <li v-for="seat in chosenSeats" :key="seat.id">
             <span>{{ seat.seatNumber }} · {{ seat.typeLabel }}</span>
@@ -241,6 +238,7 @@ watch(
         <AppButton
           variant="ghost"
           size="sm"
+          :disabled="checkoutLocked"
           @click="
             () => {
               selection = []
@@ -252,10 +250,14 @@ watch(
         </AppButton>
       </template>
 
-      <p class="booking-note">
-        Báo giá áp dụng nhóm vé mặc định của bảng giá đang gán cho suất chiếu. Ghế đôi tính giá cho
-        cả cặp. Ghế đã chọn chưa được giữ.
-      </p>
+      <BookingCheckout
+        :showtime-id="showtimeId"
+        :seat-numbers="chosenSeats.map((seat) => seat.seatNumber)"
+        :total-amount="quote?.totalAmount"
+        :disabled="!ready || !quote || quoteQuery.isFetching.value"
+        @locked="checkoutLocked = $event"
+        @rejected="query.refetch()"
+      />
     </aside>
   </div>
 </template>

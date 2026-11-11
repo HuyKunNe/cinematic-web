@@ -6,6 +6,7 @@ import AppLink from '@/components/ui/AppLink.vue'
 import { useCinemaLocation } from '@/features/cinemas'
 import { QuickBooking, useHomeProgramme } from '@/features/home'
 import { ROUTE_NAMES } from '@/router/route-constants'
+import BookingProgress from '../components/BookingProgress.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -97,6 +98,7 @@ async function updateSelectedMovie(movieId: string) {
 <template>
   <div class="booking-start-page">
     <AppContainer width="narrow">
+      <BookingProgress v-if="route.name !== ROUTE_NAMES.SHOWTIMES" current="showtime" />
       <div class="booking-start__intro">
         <nav class="booking-start__breadcrumb" aria-label="Đường dẫn trang">
           <AppLink :to="{ name: ROUTE_NAMES.HOME }" variant="muted"> Trang chủ </AppLink>
@@ -105,7 +107,10 @@ async function updateSelectedMovie(movieId: string) {
           <span aria-current="page">Đặt vé</span>
         </nav>
 
-        <h1 class="booking-start__title">Đặt vé</h1>
+        <p class="lumiere-eyebrow">DÀNH THỜI GIAN CHO ĐIỀU BẠN THÍCH</p>
+        <h1 class="booking-start__title">
+          {{ route.name === ROUTE_NAMES.SHOWTIMES ? 'Hôm nay, xem gì?' : 'Chọn một cuộc hẹn' }}
+        </h1>
 
         <p class="booking-start__description">
           {{

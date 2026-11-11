@@ -1,0 +1,757 @@
+@reference './main.css';
+
+/* Lumière reference tokens. Activated only while the customer layout is mounted. */
+body:has(.customer-layout),
+.customer-layout {
+  --lumiere-paper: #faf9f6;
+  --lumiere-white: #fff;
+  --lumiere-ink: #202b2c;
+  --lumiere-muted: #6f7574;
+  --lumiere-line: #e6e5df;
+  --lumiere-orange: #ed573d;
+  --lumiere-orange-dark: #c33d26;
+  --lumiere-orange-soft: #f9e3db;
+  --lumiere-sage: #e9ede5;
+  --lumiere-dark: #182e31;
+  --lumiere-hero-text: #f6f1df;
+  --lumiere-hero-muted: #c2ceca;
+  --lumiere-success: #30715d;
+  --lumiere-warning: #91651a;
+  --lumiere-error: #b63e38;
+  --lumiere-focus: #248379;
+  --lumiere-shadow: 0 0.75rem 2.5rem #18302c0b;
+  --lumiere-container: 77.5rem;
+  --lumiere-header-height: 6.125rem;
+  --lumiere-section-space: 3.75rem;
+  --lumiere-page-space: 3.625rem;
+  --lumiere-columns: repeat(4, minmax(0, 1fr));
+  --lumiere-footer-columns: 1.5fr repeat(3, minmax(0, 1fr));
+  --lumiere-brand-mark-width: 2.25rem;
+  --lumiere-brand-mark-height: 2.5rem;
+  --lumiere-brand-size: 1.875rem;
+  --lumiere-brand-tracking: -0.1rem;
+  --lumiere-brand-caption-size: 0.4375rem;
+  --lumiere-brand-caption-tracking: 0.25rem;
+  --lumiere-brand-dot-size: 0.3125rem;
+  --lumiere-brand-dot: #ffdb98;
+  --lumiere-heading-size: clamp(2rem, 3.3vw, 3.0625rem);
+  --lumiere-hero-title: 4rem;
+  --lumiere-hero-height: 29.375rem;
+  --lumiere-copy-width: 36.875rem;
+  --lumiere-card-radius: 0.5rem;
+  --lumiere-button-radius: 0.375rem;
+  --lumiere-button-height: 3rem;
+  --lumiere-poster-ratio: 600 / 820;
+  --lumiere-caption-size: 0.625rem;
+  --lumiere-account-columns: 14.375rem minmax(0, 1fr);
+  --lumiere-visual-height: 14rem;
+  --lumiere-hero-overlay: linear-gradient(90deg, #102930 6%, #102930e0 28%, #10293000 75%);
+  --lumiere-nav-size: 0.8125rem;
+  --color-background: var(--lumiere-paper);
+  --color-surface: var(--lumiere-white);
+  --color-surface-raised: var(--lumiere-sage);
+  --color-surface-hover: var(--lumiere-sage);
+  --color-border: var(--lumiere-line);
+  --color-border-strong: var(--lumiere-line);
+  --color-text-primary: var(--lumiere-ink);
+  --color-text-secondary: var(--lumiere-muted);
+  --color-text-muted: var(--lumiere-muted);
+  --color-primary: var(--lumiere-orange);
+  --color-primary-hover: var(--lumiere-orange-dark);
+  --color-primary-active: var(--lumiere-orange-dark);
+  --color-primary-soft: var(--lumiere-orange-soft);
+  --color-on-primary: var(--lumiere-white);
+  --color-secondary: var(--lumiere-dark);
+  --color-secondary-hover: var(--lumiere-ink);
+  --color-on-secondary: var(--lumiere-white);
+  --color-success: var(--lumiere-success);
+  --color-warning: var(--lumiere-warning);
+  --color-error: var(--lumiere-error);
+  --color-focus: var(--lumiere-focus);
+  --font-family-base: Arial, 'Helvetica Neue', sans-serif;
+  --font-family-display: var(--font-family-base);
+  --container-width: var(--lumiere-container);
+  --page-gutter: var(--space-12);
+  --header-height: var(--lumiere-header-height);
+  --radius-sm: var(--lumiere-button-radius);
+  --radius-md: var(--lumiere-card-radius);
+  --radius-lg: var(--space-3);
+  --shadow-card: var(--lumiere-shadow);
+  --surface-gradient-primary: var(--lumiere-orange);
+  --surface-gradient-panel: var(--lumiere-white);
+  --surface-gradient-placeholder: var(--lumiere-sage);
+  --home-page-background: var(--lumiere-paper);
+  --home-footer-background: var(--lumiere-paper);
+  --home-footer-muted: var(--lumiere-muted);
+  --home-border-soft: var(--lumiere-line);
+  --home-surface-translucent: var(--lumiere-white);
+  --home-background-deep: var(--lumiere-dark);
+  --home-control-icon: var(--lumiere-orange-soft);
+  --home-age-text: var(--lumiere-white);
+  --home-age-border: var(--lumiere-orange);
+  --home-meta-border: var(--lumiere-line);
+  --home-card-overlay: transparent;
+  --home-membership-background: var(--lumiere-sage);
+  --home-promotion-background: var(--lumiere-sage);
+  --home-promo-text: var(--lumiere-ink);
+  --home-promo-border: var(--lumiere-line);
+  --movies-page-background: var(--lumiere-paper);
+  --movies-card-background: var(--lumiere-paper);
+  --movies-page-gutter: var(--page-gutter);
+  --movies-grid-columns: var(--lumiere-columns);
+  --movies-heading-size: var(--lumiere-heading-size);
+  --poster-aspect-ratio: var(--lumiere-poster-ratio);
+  --detail-title-size: var(--lumiere-heading-size);
+  --detail-poster-width: 16rem;
+  --schedule-scroll-offset: calc(var(--header-height) + var(--space-4));
+  color-scheme: light;
+  background: var(--lumiere-paper);
+  color: var(--lumiere-ink);
+  font-family: var(--font-family-base);
+}
+
+.customer-layout .lumiere-topline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--page-gutter);
+  background: var(--lumiere-sage);
+  color: var(--color-text-secondary);
+  font-size: var(--lumiere-caption-size);
+  letter-spacing: var(--letter-spacing-wide);
+}
+.customer-layout {
+  padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+}
+.customer-layout .customer-layout__main {
+  padding-bottom: 0;
+}
+.customer-layout .customer-header {
+  background: var(--lumiere-paper);
+}
+.customer-layout .customer-header__inner {
+  flex-wrap: nowrap;
+  gap: var(--space-6);
+}
+.customer-layout .customer-header__nav {
+  margin-left: auto;
+  gap: var(--space-6);
+  flex-wrap: nowrap;
+}
+.customer-layout .customer-header__link {
+  font-size: var(--lumiere-nav-size);
+  font-weight: var(--font-weight-semibold);
+}
+.customer-layout .customer-header__actions {
+  gap: var(--space-3);
+  flex-wrap: nowrap;
+}
+.customer-layout .customer-header__booking {
+  display: none;
+}
+.customer-layout .customer-header__location {
+  border: 0;
+  padding-inline: var(--space-1);
+}
+.customer-layout .cinematic-wordmark {
+  text-decoration: none;
+  color: var(--lumiere-ink);
+}
+.lumiere-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--lumiere-ink);
+  line-height: 1;
+}
+.lumiere-brand__symbol {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--lumiere-brand-mark-width);
+  height: var(--lumiere-brand-mark-height);
+  border-radius: var(--radius-sm);
+  background: var(--lumiere-orange);
+  color: var(--lumiere-white);
+  font-family: Georgia, serif;
+  font-size: var(--lumiere-brand-size);
+  font-weight: var(--font-weight-bold);
+}
+.lumiere-brand__symbol > span {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: var(--lumiere-brand-dot-size);
+  height: var(--lumiere-brand-dot-size);
+  border-radius: var(--radius-pill);
+  background: var(--lumiere-brand-dot);
+}
+.lumiere-brand__name {
+  font-size: var(--lumiere-brand-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--lumiere-brand-tracking);
+  text-transform: none;
+}
+.lumiere-brand__name small {
+  display: block;
+  margin-top: var(--space-2);
+  text-align: center;
+  font-size: var(--lumiere-brand-caption-size);
+  letter-spacing: var(--lumiere-brand-caption-tracking);
+}
+.customer-layout .home-footer {
+  margin-top: var(--lumiere-section-space);
+  padding-block: var(--space-12) var(--space-6);
+  border-top: var(--border-width-thin) solid var(--color-border);
+  background: var(--lumiere-sage);
+}
+.customer-layout .home-footer__grid {
+  grid-template-columns: var(--lumiere-footer-columns);
+  gap: var(--space-8);
+}
+.customer-layout .home-footer h2 {
+  font-size: var(--font-size-sm);
+}
+.customer-layout .home-footer p,
+.customer-layout .home-footer small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-relaxed);
+}
+.customer-layout .home-footer__bottom {
+  margin-top: var(--space-8);
+  border-top: var(--border-width-thin) solid var(--color-border);
+}
+
+/* Home: dark cinema hero, cream catalogue, four-column poster grid. */
+.customer-layout .home-hero {
+  --color-text-primary: var(--lumiere-hero-text);
+  --color-text-secondary: var(--lumiere-hero-muted);
+  --home-hero-height: var(--lumiere-hero-height);
+  --home-title-size: var(--lumiere-hero-title);
+  --home-hero-title-width: var(--lumiere-copy-width);
+  color: var(--lumiere-hero-text);
+}
+.customer-layout .home-hero__shade {
+  background: var(--lumiere-hero-overlay);
+}
+.customer-layout .home-hero__content {
+  align-content: center;
+}
+.customer-layout .home-hero h1 {
+  font-size: var(--lumiere-hero-title);
+  letter-spacing: var(--letter-spacing-tight);
+}
+.customer-layout .home-hero .home-badge {
+  background: transparent;
+  color: var(--lumiere-hero-muted);
+  border: 0;
+  padding: 0;
+}
+.customer-layout .home-hero__tagline {
+  color: var(--lumiere-hero-muted);
+}
+.customer-layout .home-hero__copy strong {
+  display: none;
+}
+.customer-layout .home-hero__copy span {
+  color: var(--lumiere-hero-muted);
+  writing-mode: vertical-rl;
+}
+.customer-layout .home-booking {
+  margin-top: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  border-top: 0;
+  background: var(--lumiere-white);
+}
+.customer-layout .home-booking__control {
+  background: var(--lumiere-white);
+  border-color: var(--lumiere-line);
+}
+.customer-layout .home-button {
+  border-radius: var(--lumiere-button-radius);
+  min-height: var(--lumiere-button-height);
+}
+.customer-layout .home-button--primary {
+  background: var(--lumiere-orange);
+  color: var(--lumiere-white);
+}
+.customer-layout .home-button--primary:hover {
+  background: var(--lumiere-orange-dark);
+}
+.customer-layout .lumiere-programme {
+  padding-block: var(--lumiere-section-space) var(--space-8);
+}
+.lumiere-programme__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-7);
+}
+.lumiere-programme__heading > a {
+  color: var(--lumiere-ink);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+.lumiere-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+.lumiere-tabs button {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--lumiere-muted);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+.lumiere-tabs button[data-state='active'] {
+  color: var(--lumiere-ink);
+}
+.lumiere-tabs button span {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--lumiere-sage);
+  font-size: var(--font-size-xs);
+}
+.lumiere-tabs button[data-state='active'] span {
+  background: var(--lumiere-orange-soft);
+  color: var(--lumiere-orange-dark);
+}
+.lumiere-movie-grid {
+  display: grid;
+  grid-template-columns: var(--lumiere-columns);
+  gap: var(--space-8) var(--space-6);
+}
+.customer-layout .home-movie-card {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.customer-layout .home-movie-card__poster {
+  aspect-ratio: var(--lumiere-poster-ratio);
+  border-radius: var(--lumiere-card-radius);
+}
+.customer-layout .home-movie-card__poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.customer-layout .home-movie-card h3 {
+  color: var(--lumiere-ink);
+  font-size: var(--font-size-lg);
+}
+.customer-layout .home-movie-card__cta {
+  min-height: var(--control-height-sm);
+  background: transparent;
+  color: var(--lumiere-orange-dark);
+  justify-content: flex-start;
+  padding-inline: 0;
+}
+.customer-layout .home-movie-card__cta:hover {
+  background: transparent;
+  color: var(--lumiere-orange-dark);
+}
+.customer-layout .home-movie-card__badge {
+  color: var(--lumiere-white);
+  background: var(--lumiere-dark);
+  font-size: var(--lumiere-caption-size);
+}
+.customer-layout .home-age-mark {
+  background: var(--lumiere-orange-dark);
+  color: var(--lumiere-white);
+}
+.customer-layout .home-membership {
+  background: var(--lumiere-sage);
+  border-block: var(--border-width-thin) solid var(--lumiere-line);
+}
+.customer-layout .home-section__heading h2 {
+  color: var(--lumiere-ink);
+}
+.lumiere-empty {
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  border-radius: var(--radius-lg);
+  background: var(--lumiere-sage);
+  color: var(--lumiere-muted);
+}
+.lumiere-empty > svg {
+  width: var(--space-10);
+  height: var(--space-10);
+  margin: 0 auto var(--space-5);
+}
+.lumiere-empty h2 {
+  color: var(--lumiere-ink);
+}
+.lumiere-eyebrow {
+  margin: 0 0 var(--space-3);
+  color: var(--lumiere-muted);
+  font-size: var(--lumiere-caption-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+}
+.lumiere-discovery {
+  padding-block: var(--space-8) var(--lumiere-section-space);
+}
+.lumiere-cinema-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-7);
+}
+.lumiere-cinema-card {
+  overflow: hidden;
+  border: var(--border-width-thin) solid var(--lumiere-line);
+  border-radius: var(--radius-lg);
+  background: var(--lumiere-white);
+}
+.lumiere-cinema-card__art {
+  height: var(--lumiere-visual-height);
+  overflow: hidden;
+  background: var(--lumiere-sage);
+}
+.lumiere-cinema-card__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lumiere-cinema-card > div:last-child {
+  padding: var(--space-6);
+}
+.lumiere-cinema-card h3 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+}
+.lumiere-cinema-card p:not(.lumiere-eyebrow) {
+  display: flex;
+  gap: var(--space-2);
+  color: var(--lumiere-muted);
+  font-size: var(--font-size-sm);
+}
+.lumiere-cinema-card svg {
+  flex-shrink: 0;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+.lumiere-cinema-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--lumiere-orange-dark);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+.lumiere-invitation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-8);
+  border: var(--border-width-thin) solid var(--lumiere-line);
+  border-radius: var(--radius-lg);
+  background: var(--lumiere-sage);
+}
+.lumiere-invitation > svg {
+  width: var(--space-12);
+  height: var(--space-12);
+  color: var(--lumiere-orange);
+}
+.lumiere-invitation h2 {
+  font-size: var(--font-size-2xl);
+}
+.lumiere-invitation p:not(.lumiere-eyebrow) {
+  color: var(--lumiere-muted);
+  font-size: var(--font-size-sm);
+}
+.lumiere-invitation > a {
+  color: var(--lumiere-orange-dark);
+  font-weight: var(--font-weight-bold);
+}
+.lumiere-account-heading {
+  margin-bottom: var(--space-8);
+}
+.lumiere-account-heading h1 {
+  font-size: var(--lumiere-heading-size);
+  letter-spacing: var(--letter-spacing-tight);
+}
+.lumiere-account-heading p:not(.lumiere-eyebrow) {
+  color: var(--lumiere-muted);
+}
+.lumiere-account-layout {
+  display: grid;
+  grid-template-columns: var(--lumiere-account-columns);
+  gap: var(--space-8);
+  align-items: start;
+}
+.lumiere-account-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+.lumiere-account-layout .lumiere-account-nav {
+  flex-direction: column;
+}
+.lumiere-account-nav a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  color: var(--lumiere-muted);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+}
+.lumiere-account-nav a.router-link-exact-active {
+  background: var(--lumiere-orange-soft);
+  color: var(--lumiere-orange-dark);
+  font-weight: var(--font-weight-semibold);
+}
+.lumiere-account-nav svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+.customer-profile__facts {
+  display: grid;
+  gap: var(--space-5);
+  margin-block: var(--space-6);
+}
+.customer-profile__facts dt {
+  color: var(--lumiere-muted);
+  font-size: var(--font-size-xs);
+}
+.customer-profile__facts dd {
+  margin: var(--space-2) 0 0;
+  overflow-wrap: anywhere;
+}
+.lumiere-booking-progress {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-8);
+  list-style: none;
+  margin: 0 0 var(--space-8);
+  padding: var(--space-4) 0;
+  border-bottom: var(--border-width-thin) solid var(--lumiere-line);
+}
+.lumiere-booking-progress li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--lumiere-muted);
+  font-size: var(--font-size-xs);
+}
+.lumiere-booking-progress li > span {
+  display: grid;
+  place-items: center;
+  width: var(--space-7);
+  height: var(--space-7);
+  border: var(--border-width-thin) solid var(--lumiere-line);
+  border-radius: var(--radius-pill);
+  background: var(--lumiere-white);
+}
+.lumiere-booking-progress li[data-active='true'] {
+  color: var(--lumiere-orange-dark);
+}
+.lumiere-booking-progress li[data-active='true'] > span {
+  background: var(--lumiere-orange);
+  border-color: var(--lumiere-orange);
+  color: var(--lumiere-white);
+}
+.lumiere-booking-progress strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Existing real data and controls keep their behavior under the reference palette. */
+.customer-layout
+  :is(
+    .movies-intro h1,
+    .customer-cinemas__intro h1,
+    .booking-start__title,
+    .movie-detail__info h1
+  ) {
+  font-size: var(--lumiere-heading-size);
+  letter-spacing: var(--letter-spacing-tight);
+}
+.customer-layout :is(.movies-intro, .customer-cinemas__intro, .booking-start__intro) {
+  padding-top: var(--space-6);
+}
+.customer-layout .movies-browser {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.customer-layout .movies-grid {
+  grid-template-columns: var(--lumiere-columns);
+  gap: var(--space-8) var(--space-6);
+}
+.customer-layout .movies-status-button {
+  border: 0;
+  border-bottom: var(--border-width-strong) solid transparent;
+  border-radius: 0;
+  background: transparent;
+}
+.customer-layout .movies-status-button.is-active {
+  border-bottom-color: var(--lumiere-orange);
+  color: var(--lumiere-orange-dark);
+  background: transparent;
+}
+.customer-layout .movies-card {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+.customer-layout .movies-card__cta {
+  background: transparent;
+  color: var(--lumiere-orange-dark);
+  border-top: var(--border-width-thin) solid var(--lumiere-line);
+}
+.customer-layout .movie-detail__overview {
+  padding: var(--space-8);
+  background: var(--lumiere-sage);
+  border-radius: var(--radius-lg);
+}
+.customer-layout .movie-detail__poster {
+  box-shadow: var(--shadow-card);
+}
+.customer-layout .customer-cinemas__browser {
+  border: 0;
+  background: transparent;
+  padding-inline: 0;
+}
+.customer-layout .customer-cinemas__card {
+  padding: var(--space-6);
+  border: var(--border-width-thin) solid var(--lumiere-line);
+  background: var(--lumiere-white);
+  box-shadow: var(--shadow-card);
+}
+.customer-layout .customer-cinemas__card.is-selected {
+  border-color: var(--lumiere-orange);
+}
+.customer-cinemas__visual {
+  height: var(--lumiere-visual-height);
+  margin-bottom: var(--space-5);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--lumiere-sage);
+}
+.customer-cinemas__visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.customer-layout .booking-panel {
+  background: var(--lumiere-white);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg);
+}
+.customer-layout .booking-summary {
+  align-self: start;
+  position: sticky;
+  top: var(--space-6);
+}
+.customer-layout .booking-seat--selected {
+  color: var(--lumiere-white);
+  background: var(--lumiere-orange);
+  border-color: var(--lumiere-orange);
+}
+.customer-layout .booking-context {
+  background: var(--lumiere-sage);
+  border-color: var(--lumiere-line);
+}
+.customer-layout .customer-bookings__badge {
+  background: var(--lumiere-white);
+}
+.customer-layout .customer-bookings__list {
+  grid-template-columns: minmax(0, 1fr);
+}
+.customer-layout :is(a, button, input, select, [tabindex]):focus-visible {
+  outline: var(--focus-ring-width) solid var(--lumiere-focus);
+  outline-offset: var(--space-1);
+}
+
+@variant lumiere-tablet {
+  body:has(.customer-layout),
+  .customer-layout {
+    --lumiere-columns: repeat(3, minmax(0, 1fr));
+    --page-gutter: var(--space-6);
+    --lumiere-footer-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@variant md {
+  .customer-layout {
+    padding-bottom: 0;
+  }
+}
+@variant lumiere-mobile {
+  body:has(.customer-layout),
+  .customer-layout {
+    --lumiere-columns: repeat(2, minmax(0, 1fr));
+    --page-gutter: var(--space-5);
+    --lumiere-brand-mark-width: 1.875rem;
+    --lumiere-brand-mark-height: 2.1875rem;
+    --lumiere-brand-size: 1.625rem;
+    --lumiere-hero-title: 3.5rem;
+    --lumiere-section-space: var(--space-10);
+  }
+  .customer-layout .lumiere-topline {
+    display: none;
+  }
+  .customer-layout .lumiere-movie-grid,
+  .customer-layout .movies-grid {
+    gap: var(--space-6) var(--space-4);
+  }
+  .customer-layout .movie-detail__overview {
+    padding: var(--space-4);
+  }
+  .customer-layout .booking-summary {
+    position: static;
+  }
+  .customer-layout .home-footer__grid {
+    gap: var(--space-6);
+  }
+  .customer-layout .home-footer__brand {
+    grid-column: 1 / -1;
+  }
+  .lumiere-cinema-grid,
+  .lumiere-account-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lumiere-account-layout .lumiere-account-nav {
+    flex-direction: row;
+  }
+  .lumiere-tabs {
+    gap: var(--space-4);
+  }
+  .lumiere-booking-progress {
+    justify-content: flex-start;
+    gap: var(--space-3);
+  }
+  .lumiere-tabs button {
+    font-size: var(--font-size-xl);
+  }
+}
+@variant max-customer-narrow {
+  .customer-layout {
+    --lumiere-brand-size: 1.4rem;
+    --lumiere-brand-mark-width: var(--space-6);
+    --lumiere-brand-mark-height: var(--space-8);
+  }
+  .customer-layout [data-lumiere-search] {
+    display: none;
+  }
+}

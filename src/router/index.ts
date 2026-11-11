@@ -14,6 +14,9 @@ const loadMovieDetailPage = () => import('../features/movies/pages/MovieDetailPa
 const loadAdminMoviesPage = () => import('../features/movies/admin/pages/AdminMoviesPage.vue')
 const loadBookingStartPage = () => import('../features/booking/pages/BookingStartPage.vue')
 const loadBookingPage = () => import('../features/booking/pages/BookingPage.vue')
+const loadMyBookingsPage = () => import('../features/booking/pages/MyBookingsPage.vue')
+const loadAccountPage = () => import('../features/account/pages/AccountPage.vue')
+const loadOffersPage = () => import('../features/home/pages/OffersPage.vue')
 const loadAdminCinemasPage = () => import('../features/cinemas/admin/pages/AdminCinemasPage.vue')
 const loadAdminRoomsPage = () => import('../features/rooms/admin/pages/AdminRoomsPage.vue')
 const loadAdminReferencePage = () => import('../features/admin/pages/AdminReferencePage.vue')
@@ -62,21 +65,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.SHOWTIMES,
     name: ROUTE_NAMES.SHOWTIMES,
-    component: loadPlaceholder,
-    props: {
-      title: 'Lịch chiếu',
-      description: 'Lịch chiếu sẽ lấy từ Inventory Service.',
-    },
+    component: loadBookingStartPage,
     meta: { layout: 'customer', title: 'Lịch chiếu' },
   },
   {
     path: ROUTE_PATHS.PROMOTIONS,
     name: ROUTE_NAMES.PROMOTIONS,
-    component: loadPlaceholder,
-    props: {
-      title: 'Ưu đãi',
-      description: 'Backend hiện chưa có Promotions API. Trang này chưa hiển thị dữ liệu ưu đãi.',
-    },
+    component: loadOffersPage,
     meta: { layout: 'customer', title: 'Ưu đãi' },
   },
   {
@@ -105,11 +100,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ACCOUNT,
     name: ROUTE_NAMES.ACCOUNT,
-    component: loadPlaceholder,
-    props: {
-      title: 'Tài khoản',
-      description: 'Thông tin tài khoản sẽ lấy từ User Service.',
-    },
+    component: loadAccountPage,
     meta: {
       layout: 'customer',
       title: 'Tài khoản',
@@ -119,11 +110,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.ACCOUNT_BOOKINGS,
     name: ROUTE_NAMES.ACCOUNT_BOOKINGS,
-    component: loadPlaceholder,
-    props: {
-      title: 'Vé của tôi',
-      description: 'Danh sách booking thuộc người dùng hiện tại.',
-    },
+    component: loadMyBookingsPage,
     meta: {
       layout: 'customer',
       title: 'Vé của tôi',

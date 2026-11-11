@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
+import AppToast from '@/components/ui/AppToast.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { RoomResponse } from '@/services/api/generated/inventory-service/model'
@@ -12,7 +13,7 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from 'reka-ui'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   useAdminRoomCatalogQuery,
@@ -44,6 +45,39 @@ const page = ref(1)
 const pageSize = 10
 const successMessage = ref('')
 const activityError = ref('')
+const toastOpen = ref(false)
+const toastMessage = ref('')
+const toastVariant = ref<'success' | 'error'>('success')
+watch([successMessage, activityError], async ([success, error], _, onCleanup) => {
+  let stale = false
+  onCleanup(() => {
+    stale = true
+  })
+  toastOpen.value = false
+  if (!success && !error) return
+  toastMessage.value = error || success
+  toastVariant.value = error ? 'error' : 'success'
+  await nextTick()
+  if (!stale) toastOpen.value = true
+})
+const activeFilters = computed(() =>
+  [
+    {
+      value: search.value.trim(),
+      label: `Tìm: ${search.value.trim()}`,
+      clear: () => {
+        search.value = ''
+      },
+    },
+    {
+      value: activeFilter.value !== 'all',
+      label: activeFilter.value === 'active' ? 'Đang hoạt động' : 'Tạm ngưng',
+      clear: () => {
+        activeFilter.value = 'all'
+      },
+    },
+  ].filter((item) => item.value),
+)
 
 const cinemas = useAdminRoomCinemaQuery(canManage)
 const cinemaOptions = computed(() =>
@@ -211,6 +245,7 @@ function openEditor(roomId: string | null = null) {
   if (!canManage.value || !cinema || roomActivity.isPending.value) return
   if (!roomId && cinema.active !== true) return
 
+  activityError.value = ''
   successMessage.value = ''
   editor.value = {
     cinemaId: cinema.value,
@@ -264,6 +299,7 @@ async function changeRoomActivity(room: RoomResponse) {
 }
 
 function saved(room: RoomResponse) {
+  activityError.value = ''
   const creating = !editor.value?.roomId
   editor.value = null
 
@@ -319,10 +355,6 @@ function statusLabel(active?: boolean) {
       </AppButton>
     </header>
 
-    <p v-if="successMessage" class="admin-rooms__success" role="status">
-      {{ successMessage }}
-    </p>
-
     <p v-if="!canManage" class="admin-rooms__error" role="alert">
       Tài khoản không có quyền quản lý phòng.
     </p>
@@ -367,9 +399,6 @@ function statusLabel(active?: boolean) {
           Thử lại
         </AppButton>
       </div>
-      <p v-if="activityError" class="admin-rooms__error" role="alert">
-        {{ activityError }}
-      </p>
       <section class="admin-rooms__filters" aria-label="Tìm và lọc phòng">
         <label class="admin-rooms__field">
           <span>Tìm phòng</span>
@@ -414,8 +443,31 @@ function statusLabel(active?: boolean) {
           </select>
         </label>
 
-        <AppButton variant="secondary" @click="resetFilters">Đặt lại</AppButton>
+        <AppButton variant="secondary" :disabled="!activeFilters.length" @click="resetFilters"
+          >Đặt lại</AppButton
+        >
       </section>
+
+      <div
+        v-if="selectedCinema && activeFilters.length"
+        class="admin-rooms__active-filters"
+        aria-label="Bộ lọc phòng đang áp dụng"
+      >
+        <span role="status"
+          >{{ filtered.length }} / {{ rooms.data.value?.length ?? 0 }} phòng tại
+          {{ selectedCinema.label }}</span
+        >
+        <button
+          v-for="filter in activeFilters"
+          :key="filter.label"
+          type="button"
+          class="admin-rooms__filter-chip"
+          :aria-label="`Bỏ bộ lọc ${filter.label}`"
+          @click="filter.clear"
+        >
+          {{ filter.label }} <span aria-hidden="true">×</span>
+        </button>
+      </div>
 
       <div v-if="cinemas.isError.value" class="admin-rooms__feedback">
         <p class="admin-rooms__error" role="alert">
@@ -585,7 +637,21 @@ function statusLabel(active?: boolean) {
                 </td>
               </tr>
               <tr v-if="!rows.length">
-                <td colspan="6" class="admin-rooms__empty">{{ emptyMessage }}</td>
+                <td colspan="6" class="admin-rooms__empty">
+                  {{ emptyMessage }}
+                  <div
+                    v-if="
+                      hasData &&
+                      activeFilters.length &&
+                      !rooms.isFetching.value &&
+                      rooms.isSuccess.value
+                    "
+                  >
+                    <AppButton variant="ghost" size="sm" @click="resetFilters"
+                      >Xóa bộ lọc để xem tất cả phòng trong cụm rạp</AppButton
+                    >
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -637,5 +703,39 @@ function statusLabel(active?: boolean) {
       :return-focus-id="roomDetail.returnFocusId"
       @close="roomDetail = null"
     />
+    <AppToast v-model:open="toastOpen" :message="toastMessage" :variant="toastVariant" />
   </section>
 </template>
+
+<style scoped>
+.admin-rooms__active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.admin-rooms__filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.admin-rooms__filter-chip:hover {
+  border-color: var(--color-primary);
+}
+.admin-rooms__filter-chip:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+</style>

@@ -35,6 +35,8 @@
 
 /* Preserve the existing inclusive media-query boundaries. */
 @custom-variant mobile-layout (@media (max-width: 47.999rem));
+@custom-variant lumiere-mobile (@media (max-width: 47.5rem));
+@custom-variant lumiere-tablet (@media (max-width: 60rem));
 @custom-variant tablet-layout (@media (min-width: 48rem) and (max-width: 63.999rem));
 @custom-variant tablet-down (@media (max-width: 63.999rem));
 @custom-variant home-compact (@media (max-width: 73.75rem));

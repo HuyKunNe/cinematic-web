@@ -6,6 +6,7 @@ import { ChevronDown, MapPin, Menu, Search, UserRound, X } from 'lucide-vue-next
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
 import { CUSTOMER_PRIMARY_NAVIGATION } from './customer-navigation'
+import CustomerBrand from './CustomerBrand.vue'
 
 withDefaults(
   defineProps<{
@@ -140,9 +141,9 @@ onBeforeUnmount(() => {
       <RouterLink
         :to="{ name: ROUTE_NAMES.HOME }"
         class="cinematic-wordmark"
-        aria-label="Cinematic — Trang chủ"
+        aria-label="Lumière Cinema — Trang chủ"
       >
-        CINEMATIC
+        <CustomerBrand />
       </RouterLink>
 
       <button
@@ -166,6 +167,7 @@ onBeforeUnmount(() => {
         class="customer-mobile-header__icon-button"
         type="button"
         aria-label="Tìm kiếm"
+        data-lumiere-search
         @click="requestSearch"
       >
         <Search aria-hidden="true" class="customer-navigation__icon" />
@@ -200,12 +202,12 @@ onBeforeUnmount(() => {
         class="customer-mobile-drawer__panel"
         role="dialog"
         aria-modal="true"
-        aria-label="Menu điều hướng Cinematic"
+        aria-label="Menu điều hướng Lumière Cinema"
         tabindex="-1"
         @keydown="onDrawerKeydown"
       >
         <div class="customer-mobile-drawer__heading">
-          <span class="cinematic-wordmark">CINEMATIC</span>
+          <span class="cinematic-wordmark"><CustomerBrand /></span>
 
           <button
             ref="closeButton"

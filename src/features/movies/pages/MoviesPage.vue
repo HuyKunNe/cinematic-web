@@ -188,7 +188,7 @@ function retry() {
       <AppContainer>
         <p class="movies-intro__eyebrow">Khám phá điện ảnh</p>
         <h1 id="movies-page-title">PHIM</h1>
-        <p class="movies-intro__copy">Chọn bộ phim yêu thích và trải nghiệm tại CINEMATIC</p>
+        <p class="movies-intro__copy">Một bộ phim hay có thể bắt đầu một ngày thật khác.</p>
       </AppContainer>
     </section>
 

@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
 import { CUSTOMER_PRIMARY_NAVIGATION } from './customer-navigation'
+import CustomerBrand from './CustomerBrand.vue'
 
 withDefaults(
   defineProps<{
@@ -43,9 +44,9 @@ function isActive(routeName: string) {
       <RouterLink
         :to="{ name: ROUTE_NAMES.HOME }"
         class="cinematic-wordmark"
-        aria-label="Cinematic — Trang chủ"
+        aria-label="Lumière Cinema — Trang chủ"
       >
-        CINEMATIC
+        <CustomerBrand />
       </RouterLink>
 
       <nav class="customer-header__nav" aria-label="Điều hướng chính">

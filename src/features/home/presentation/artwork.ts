@@ -1,13 +1,7 @@
 import type { HomeMovie } from '../models/home-movie'
 
 // Project-owned visual fallbacks, selected deterministically by movie ID.
-const fallbackImages = [
-  '/home/space.jpg',
-  '/home/cinema.jpg',
-  '/home/city.jpg',
-  '/home/night.jpg',
-  '/home/island.jpg',
-] as const
+const fallbackImages = ['/customer/movie-placeholder.svg'] as const
 
 export function fallbackArtwork(movieId: string): string {
   let hash = 0

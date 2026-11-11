@@ -87,7 +87,7 @@ function retry() {
         </nav>
 
         <p class="customer-cinemas__eyebrow">Trải nghiệm điện ảnh</p>
-        <h1>Hệ thống rạp CINEMATIC</h1>
+        <h1>Một không gian, ngàn câu chuyện</h1>
         <p class="customer-cinemas__description">
           Tìm rạp phù hợp và chọn địa điểm cho buổi xem phim của bạn.
         </p>
@@ -188,6 +188,7 @@ function retry() {
                   'is-selected': selectedCinema?.id === cinema.id,
                 }"
               >
+                <div class="customer-cinemas__visual"><img src="/customer/cinema-placeholder.svg" alt="Không gian điện ảnh minh họa" loading="lazy" /></div>
                 <div class="customer-cinemas__card-heading">
                   <p class="customer-cinemas__city">
                     {{ cinema.city }}

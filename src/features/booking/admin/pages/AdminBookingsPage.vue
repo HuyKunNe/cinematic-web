@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import { RouterLink } from 'vue-router'
+import { ROUTE_NAMES } from '@/router/route-constants'
 import { APP_ROLES } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
-import {
-  formatCinemaDateKey,
-  formatCinemaTime,
-  getCinemaDateKey,
-} from '@/utils/cinema-time'
+import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import {
   adminBookingErrorMessage,
   adminBookingStatusLabels,
@@ -18,9 +16,7 @@ import {
 
 const auth = useAuthStore()
 
-const canView = computed(
-  () => auth.isAuthenticated && auth.hasRole(APP_ROLES.ADMIN),
-)
+const canView = computed(() => auth.isAuthenticated && auth.hasRole(APP_ROLES.ADMIN))
 
 const status = ref<AdminBookingStatusFilter>('')
 const page = ref(0)
@@ -33,19 +29,10 @@ watch(
   { flush: 'sync' },
 )
 
-const query = useAdminBookingsQuery(
-  canView,
-  () => auth.subject ?? '',
-  status,
-  page,
-)
+const query = useAdminBookingsQuery(canView, () => auth.subject ?? '', status, page)
 
 const result = computed(() =>
-  canView.value &&
-  query.isSuccess.value &&
-  !query.isFetching.value
-    ? query.data.value
-    : undefined,
+  canView.value && query.isSuccess.value && !query.isFetching.value ? query.data.value : undefined,
 )
 
 const rows = computed(() => result.value?.content ?? [])
@@ -103,46 +90,42 @@ function refresh(): void {
       <div>
         <p class="admin-reference__eyebrow">Giao dịch</p>
         <h1 id="admin-bookings-title" tabindex="-1">Đơn đặt vé</h1>
-        <p class="admin-reference__description">
-          Tra cứu đơn đặt vé theo trạng thái.
-        </p>
+        <p class="admin-reference__description">Tra cứu đơn đặt vé theo trạng thái.</p>
       </div>
     </header>
 
-    <p
-      v-if="!canView"
-      class="admin-reference__note admin-bookings__error"
-      role="alert"
-    >
+    <p v-if="!canView" class="admin-reference__note admin-bookings__error" role="alert">
       Chỉ quản trị viên ADMIN được truy cập danh sách đơn.
     </p>
 
     <template v-else>
-      <div
-        class="admin-reference__filters admin-bookings__filters"
-        aria-label="Lọc danh sách đơn"
-      >
+      <div class="admin-reference__filters admin-bookings__filters" aria-label="Lọc danh sách đơn">
         <label class="admin-reference__field">
           <span>Trạng thái đơn</span>
           <select v-model="status" class="admin-reference__input">
             <option value="">Tất cả trạng thái</option>
-            <option
-              v-for="[value, label] in statusOptions"
-              :key="value"
-              :value="value"
-            >
+            <option v-for="[value, label] in statusOptions" :key="value" :value="value">
               {{ label }}
             </option>
           </select>
         </label>
 
-        <AppButton
-          variant="secondary"
-          :disabled="query.isFetching.value"
-          @click="refresh"
-        >
+        <AppButton variant="secondary" :disabled="query.isFetching.value" @click="refresh">
           Tải lại
         </AppButton>
+        <AppButton variant="ghost" :disabled="!status" @click="status = ''">Xóa bộ lọc</AppButton>
+      </div>
+
+      <div v-if="status" class="admin-bookings__active-filter">
+        <span>Đang lọc: {{ adminBookingStatusLabels[status] }}</span>
+        <button
+          type="button"
+          class="admin-bookings__clear-filter"
+          :aria-label="`Bỏ lọc ${adminBookingStatusLabels[status]}`"
+          @click="status = ''"
+        >
+          ×
+        </button>
       </div>
 
       <p
@@ -200,13 +183,35 @@ function refresh(): void {
 
               <tr v-else-if="rows.length === 0">
                 <td colspan="6" class="admin-reference__empty">
-                  Không có đơn trong trang và bộ lọc đang chọn.
+                  {{
+                    status
+                      ? 'Không có đơn phù hợp với trạng thái đã chọn.'
+                      : page > 0
+                        ? 'Trang này không còn đơn đặt vé.'
+                        : 'Chưa có đơn đặt vé.'
+                  }}
+                  <div v-if="status">
+                    <AppButton variant="ghost" size="sm" @click="status = ''"
+                      >Xem tất cả trạng thái</AppButton
+                    >
+                  </div>
+                  <div v-else-if="page > 0">
+                    <AppButton variant="ghost" size="sm" @click="page = 0">Về trang đầu</AppButton>
+                  </div>
                 </td>
               </tr>
 
               <tr v-for="booking in rows" :key="booking.id">
                 <td>
-                  <span class="admin-bookings__id">{{ booking.id }}</span>
+                  <RouterLink
+                    class="admin-bookings__id admin-bookings__detail-link"
+                    :to="{
+                      name: ROUTE_NAMES.ADMIN_BOOKING_DETAIL,
+                      params: { bookingId: booking.id },
+                    }"
+                    :aria-label="`Xem chi tiết đơn ${booking.id}`"
+                    >{{ booking.id }}</RouterLink
+                  >
                   <small class="admin-bookings__meta">
                     {{ createdAtLabel(booking.createdAt) }}
                   </small>
@@ -222,8 +227,7 @@ function refresh(): void {
                     {{ seatsLabel(booking) }}
                   </span>
                   <small class="admin-bookings__meta">
-                    {{ booking.seatCount ?? '—' }} đơn vị ghế ·
-                    {{ booking.capacity ?? '—' }} chỗ
+                    {{ booking.seatCount ?? '—' }} đơn vị ghế · {{ booking.capacity ?? '—' }} chỗ
                   </small>
                 </td>
                 <td class="admin-bookings__amount">
@@ -240,7 +244,7 @@ function refresh(): void {
         </div>
 
         <footer class="admin-reference__table-footer">
-          <span>{{ rangeLabel }}</span>
+          <span role="status" aria-live="polite">{{ rangeLabel }}</span>
           <nav class="admin-reference__pagination" aria-label="Phân trang đơn">
             <button
               type="button"
@@ -252,9 +256,7 @@ function refresh(): void {
             </button>
             <span>
               {{ page + 1 }}
-              <template v-if="result">
-                / {{ Math.max(1, result.page.totalPages) }}
-              </template>
+              <template v-if="result"> / {{ Math.max(1, result.page.totalPages) }} </template>
             </span>
             <button
               type="button"
@@ -272,6 +274,40 @@ function refresh(): void {
 </template>
 
 <style scoped>
+.admin-bookings__active-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.admin-bookings__clear-filter {
+  display: grid;
+  place-items: center;
+  width: var(--space-7);
+  height: var(--space-7);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+}
+.admin-bookings__detail-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+  font-weight: var(--font-weight-medium);
+}
+.admin-bookings__detail-link:hover {
+  color: var(--color-primary-hover);
+}
 .admin-reference.is-bookings .admin-bookings__filters {
   display: flex;
   flex-wrap: wrap;
@@ -313,8 +349,7 @@ function refresh(): void {
   align-items: center;
 }
 
-[data-reference='admin-bookings']
-  :is(select, button, [tabindex]):focus-visible {
+[data-reference='admin-bookings'] :is(select, button, a, [tabindex]):focus-visible {
   outline: var(--focus-ring-width) solid var(--color-focus);
   outline-offset: var(--space-1);
 }

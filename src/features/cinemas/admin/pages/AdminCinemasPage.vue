@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
+import AppToast from '@/components/ui/AppToast.vue'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAdminRoomSummaryQuery } from '@/features/rooms/admin/api/admin-room-queries'
 import { adminRoomErrorMessage } from '@/features/rooms/admin/schemas/admin-room.schema'
 import type { CinemaResponse } from '@/services/api/generated/inventory-service/model'
 import { useAuthStore } from '@/stores/auth.store'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminCinemaCatalogQuery } from '../api/admin-cinema-queries'
 import AdminCinemaDetailDialog from '../components/AdminCinemaDetailDialog.vue'
@@ -35,6 +36,38 @@ const activeFilter = ref('all')
 const page = ref(1)
 const pageSize = 10
 const successMessage = ref('')
+const toastOpen = ref(false)
+watch(successMessage, async (message) => {
+  toastOpen.value = false
+  if (!message) return
+  await nextTick()
+  toastOpen.value = true
+})
+const activeFilters = computed(() =>
+  [
+    {
+      value: search.value.trim(),
+      label: `Tìm: ${search.value.trim()}`,
+      clear: () => {
+        search.value = ''
+      },
+    },
+    {
+      value: city.value,
+      label: `Khu vực: ${city.value}`,
+      clear: () => {
+        city.value = ''
+      },
+    },
+    {
+      value: activeFilter.value !== 'all',
+      label: activeFilter.value === 'active' ? 'Đang hoạt động' : 'Tạm ngưng',
+      clear: () => {
+        activeFilter.value = 'all'
+      },
+    },
+  ].filter((item) => item.value),
+)
 const router = useRouter()
 
 const editor = ref<{
@@ -211,10 +244,6 @@ function statusLabel(active?: boolean) {
       </AppButton>
     </header>
 
-    <p v-if="successMessage" class="admin-cinemas__success" role="status">
-      {{ successMessage }}
-    </p>
-
     <p v-if="!canManage" class="admin-cinemas__error" role="alert">
       Tài khoản không có quyền quản lý cụm rạp.
     </p>
@@ -255,8 +284,30 @@ function statusLabel(active?: boolean) {
           </select>
         </label>
 
-        <AppButton variant="secondary" @click="resetFilters">Đặt lại</AppButton>
+        <AppButton variant="secondary" :disabled="!activeFilters.length" @click="resetFilters"
+          >Đặt lại</AppButton
+        >
       </section>
+
+      <div
+        v-if="activeFilters.length"
+        class="admin-cinemas__active-filters"
+        aria-label="Bộ lọc cụm rạp đang áp dụng"
+      >
+        <span role="status"
+          >{{ filtered.length }} / {{ catalog.data.value?.length ?? 0 }} cụm rạp</span
+        >
+        <button
+          v-for="filter in activeFilters"
+          :key="filter.label"
+          type="button"
+          class="admin-cinemas__filter-chip"
+          :aria-label="`Bỏ bộ lọc ${filter.label}`"
+          @click="filter.clear"
+        >
+          {{ filter.label }} <span aria-hidden="true">×</span>
+        </button>
+      </div>
 
       <section
         class="admin-cinemas__panel"
@@ -391,7 +442,7 @@ function statusLabel(active?: boolean) {
           </article>
         </div>
 
-        <p v-else class="admin-cinemas__empty" role="status">
+        <div v-else class="admin-cinemas__empty" role="status">
           {{
             catalog.isPending.value
               ? 'Đang tải danh sách…'
@@ -401,7 +452,12 @@ function statusLabel(active?: boolean) {
                   ? 'Không có cụm rạp phù hợp với bộ lọc.'
                   : 'Chưa có cụm rạp.'
           }}
-        </p>
+          <div v-if="activeFilters.length && catalog.isSuccess.value && !catalog.isFetching.value">
+            <AppButton variant="ghost" size="sm" @click="resetFilters"
+              >Xóa bộ lọc để xem tất cả cụm rạp</AppButton
+            >
+          </div>
+        </div>
 
         <footer v-if="catalog.data.value" class="admin-cinemas__table-footer">
           <span
@@ -451,5 +507,39 @@ function statusLabel(active?: boolean) {
       :return-focus-id="detailDialog.returnFocusId"
       @close="detailDialog = null"
     />
+    <AppToast v-model:open="toastOpen" :message="successMessage" variant="success" />
   </section>
 </template>
+
+<style scoped>
+.admin-cinemas__active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.admin-cinemas__filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.admin-cinemas__filter-chip:hover {
+  border-color: var(--color-primary);
+}
+.admin-cinemas__filter-chip:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+</style>

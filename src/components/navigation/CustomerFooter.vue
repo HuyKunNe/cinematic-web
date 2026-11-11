@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ROUTE_NAMES } from '@/router/route-constants'
+import CustomerBrand from './CustomerBrand.vue'
 </script>
 
 <template>
@@ -7,12 +8,9 @@ import { ROUTE_NAMES } from '@/router/route-constants'
     <div class="home-container home-footer__grid">
       <div class="home-footer__brand">
         <RouterLink :to="{ name: ROUTE_NAMES.HOME }" class="cinematic-wordmark"
-          >CINEMATIC</RouterLink
-        >
-        <p>Điện ảnh kết nối cảm xúc</p>
-        <div class="home-footer__socials" aria-hidden="true">
-          <span>f</span><span>◎</span><span>▶</span><span>♪</span>
-        </div>
+          ><CustomerBrand
+        /></RouterLink>
+        <p>Mỗi thước phim, một thế giới.<br />Mỗi cuộc hẹn, một điều đáng nhớ.</p>
       </div>
       <div>
         <h2>Khám phá</h2>
@@ -22,25 +20,19 @@ import { ROUTE_NAMES } from '@/router/route-constants'
         ><RouterLink :to="{ name: ROUTE_NAMES.PROMOTIONS }">Ưu đãi</RouterLink>
       </div>
       <div>
-        <h2>Hỗ trợ</h2>
-        <span>Câu hỏi thường gặp</span><span>Hướng dẫn đặt vé</span><span>Chính sách bảo mật</span
-        ><span>Điều khoản sử dụng</span>
+        <h2>Cuộc hẹn của bạn</h2>
+        <RouterLink :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }">Vé &amp; giao dịch</RouterLink>
+        <RouterLink :to="{ name: ROUTE_NAMES.BOOKING_START }">Chọn suất chiếu</RouterLink>
+        <RouterLink :to="{ name: ROUTE_NAMES.ACCOUNT }">Tài khoản</RouterLink>
       </div>
       <div>
-        <h2>Về CINEMATIC</h2>
-        <span>Giới thiệu</span><span>Tuyển dụng</span><span>Liên hệ</span><span>Tin tức</span>
-      </div>
-      <div class="home-footer__app">
-        <h2>Ứng dụng di động</h2>
-        <p>Đặt vé nhanh hơn trên ứng dụng CINEMATIC</p>
-        <div class="home-footer__stores" aria-label="Ứng dụng sắp ra mắt">
-          <span> App Store</span><span>▶ Google Play</span>
-        </div>
-        <small>Sắp cập nhật</small>
+        <h2>Thông tin đặt vé</h2>
+        <p>Chọn phim, suất chiếu và ghế phù hợp. Theo dõi trạng thái đơn trong Vé của tôi.</p>
+        <small>Thời gian hiển thị theo giờ Việt Nam (UTC+7).</small>
       </div>
     </div>
     <div class="home-container home-footer__bottom">
-      <span>© {{ new Date().getFullYear() }} CINEMATIC. Tất cả quyền được bảo lưu.</span>
+      <span>© {{ new Date().getFullYear() }} Lumière Cinema. Made for movie moments.</span>
     </div>
   </footer>
 </template>

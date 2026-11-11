@@ -1,0 +1,126 @@
+.customer-bookings {
+  --customer-booking-card-width: 20rem;
+  --customer-booking-dialog-width: 30rem;
+}
+.customer-bookings > .app-container,
+.customer-bookings__list {
+  display: grid;
+  gap: var(--space-5);
+}
+.customer-bookings__heading,
+.customer-bookings__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.customer-bookings__actions {
+  justify-content: flex-start;
+}
+.customer-bookings__grid,
+.customer-bookings__list {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, var(--customer-booking-card-width)), 1fr)
+  );
+  gap: var(--space-5);
+}
+.customer-bookings__id {
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-sm);
+}
+.customer-bookings__status h2 {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-base);
+}
+.customer-bookings__badge {
+  display: inline-flex;
+  justify-self: start;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width-thin) solid currentColor;
+  border-radius: var(--radius-sm);
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+.customer-bookings__badge[data-status='CONFIRMED'] {
+  color: var(--color-success);
+}
+.customer-bookings__badge:is([data-status='REJECTED'], [data-status='PAYMENT_FAILED']) {
+  color: var(--color-error);
+}
+.customer-bookings__badge:is([data-status='CANCELLED'], [data-status='EXPIRED']) {
+  color: var(--color-text-secondary);
+}
+.customer-bookings__facts {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+}
+.customer-bookings__facts dt,
+.customer-bookings__seats small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+.customer-bookings__facts dd {
+  margin: var(--space-1) 0 0;
+  overflow-wrap: anywhere;
+}
+.customer-bookings__seats {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.customer-bookings__seats li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+.customer-bookings__seats small {
+  display: block;
+  margin-top: var(--space-1);
+}
+.customer-bookings__link {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  text-underline-offset: var(--space-1);
+}
+.customer-bookings__link:hover {
+  color: var(--color-primary-hover);
+}
+.customer-bookings :is(a, button):focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+.customer-bookings__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--color-overlay);
+}
+.customer-bookings__confirm {
+  --customer-booking-dialog-width: 30rem;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: calc(var(--z-modal) + 1);
+  width: min(var(--customer-booking-dialog-width), calc(100vw - var(--space-8)));
+  max-height: calc(100dvh - var(--space-8));
+  overflow-y: auto;
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-raised);
+}

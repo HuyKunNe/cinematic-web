@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
-import CustomerFooter from '@/components/navigation/CustomerFooter.vue'
 import { useCinemaLocation } from '@/features/cinemas'
 import HeroBanner from '../components/HeroBanner.vue'
 import QuickBooking from '../components/QuickBooking.vue'
-import NowShowingSection from '../components/NowShowingSection.vue'
-import UpcomingMoviesSection from '../components/UpcomingMoviesSection.vue'
-import PromotionSection from '../components/PromotionSection.vue'
-import MembershipSection from '../components/MembershipSection.vue'
+import HomeProgramme from '../components/HomeProgramme.vue'
+import HomeCinemaDiscovery from '../components/HomeCinemaDiscovery.vue'
 import { useHomeProgramme } from '../composables/use-home-programme'
 import { useHomeHero } from '../composables/use-home-hero'
 
@@ -71,22 +68,14 @@ function dismissLocationNotice() {
       @dismiss-location-notice="dismissLocationNotice"
     />
 
-    <NowShowingSection
-      :key="`showing-${scopeKey}`"
-      :movies="nowShowing"
+    <HomeProgramme
+      :key="scopeKey"
+      :now-showing="nowShowing"
+      :upcoming="upcoming"
       :loading="loading"
       :error="error"
     />
 
-    <UpcomingMoviesSection
-      :key="`upcoming-${scopeKey}`"
-      :movies="upcoming"
-      :loading="loading"
-      :error="error"
-    />
-
-    <PromotionSection />
-    <MembershipSection />
-    <CustomerFooter />
+    <HomeCinemaDiscovery />
   </div>
 </template>

@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import CustomerHeader from '@/components/navigation/CustomerHeader.vue'
 import CustomerMobileHeader from '@/components/navigation/CustomerMobileHeader.vue'
 import MobileBottomNav from '@/components/navigation/MobileBottomNav.vue'
+import CustomerFooter from '@/components/navigation/CustomerFooter.vue'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import {
   CinemaLocationDialog,
@@ -12,6 +13,7 @@ import {
 } from '@/features/cinemas'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import '@/styles/customer-navigation.css'
+import '@/styles/customer-lumiere.css'
 
 const route = useRoute()
 const router = useRouter()
@@ -88,6 +90,9 @@ watch(
 
 <template>
   <div class="customer-layout">
+    <div class="lumiere-topline">
+      <span>ĐIỆN ẢNH BẮT ĐẦU TỪ MỘT CUỘC HẸN</span><span>Giờ Việt Nam · UTC+7</span>
+    </div>
     <CustomerHeader
       :location-label="locationLabel"
       :location-description="locationDescription"
@@ -114,6 +119,7 @@ watch(
       <RouterView />
     </main>
 
+    <CustomerFooter />
     <MobileBottomNav />
 
     <CinemaLocationDialog v-model:open="locationOpen" :return-focus-to="locationTrigger" />

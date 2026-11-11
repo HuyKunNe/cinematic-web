@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import AppToast from '@/components/ui/AppToast.vue'
 import { Film, Pencil } from 'lucide-vue-next'
 import { APP_PERMISSIONS } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
@@ -27,6 +28,13 @@ const editorOpen = ref(false)
 const editorMovieId = ref<string | null>(null)
 const editorSession = ref(0)
 const successMessage = ref('')
+const toastOpen = ref(false)
+watch(successMessage, async (message) => {
+  toastOpen.value = false
+  if (!message) return
+  await nextTick()
+  toastOpen.value = true
+})
 const failedPosters = ref(new Set<string>())
 
 const params = computed<FindCatalogParams>(() => ({
@@ -70,6 +78,15 @@ const genreOptions = computed(() =>
   (genresQuery.data.value ?? []).flatMap((genre) =>
     genre.id && genre.name ? [{ value: genre.id, label: genre.name }] : [],
   ),
+)
+const hasFilters = computed(() => statusFilter.value !== 'all' || genreFilter.value !== 'all')
+const activeStatusLabel = computed(
+  () =>
+    statusOptions.find((item) => item.value === statusFilter.value)?.label ?? statusFilter.value,
+)
+const activeGenreLabel = computed(
+  () =>
+    genreOptions.value.find((item) => item.value === genreFilter.value)?.label ?? genreFilter.value,
 )
 
 const countFormatter = new Intl.NumberFormat('vi-VN')
@@ -205,7 +222,9 @@ const emptyMessage = computed(() =>
     ? 'Đang tải danh sách phim…'
     : catalog.isError.value
       ? 'Chưa tải được danh sách phim.'
-      : 'Không có phim phù hợp với bộ lọc.',
+      : hasFilters.value
+        ? 'Không có phim phù hợp với bộ lọc.'
+        : 'Chưa có phim trong danh mục.',
 )
 </script>
 
@@ -239,9 +258,6 @@ const emptyMessage = computed(() =>
       </div>
     </header>
 
-    <p v-if="successMessage" class="movie-admin__success" role="status">
-      {{ successMessage }}
-    </p>
     <p v-if="!canManage" class="movie-admin__error" role="alert">
       Tài khoản không có quyền quản lý phim.
     </p>
@@ -306,8 +322,41 @@ const emptyMessage = computed(() =>
             <option>Tất cả phân loại</option>
           </select>
         </label>
-        <button class="movie-admin__button" type="button" @click="resetFilters">Đặt lại</button>
+        <button
+          class="movie-admin__button"
+          type="button"
+          :disabled="!hasFilters"
+          @click="resetFilters"
+        >
+          Đặt lại
+        </button>
       </section>
+
+      <div
+        v-if="hasFilters"
+        class="movie-admin__active-filters"
+        aria-label="Bộ lọc phim đang áp dụng"
+      >
+        <span>Đang lọc:</span>
+        <button
+          v-if="statusFilter !== 'all'"
+          class="movie-admin__button"
+          type="button"
+          :aria-label="`Bỏ lọc trạng thái ${activeStatusLabel}`"
+          @click="statusFilter = 'all'"
+        >
+          {{ activeStatusLabel }} <span aria-hidden="true">×</span>
+        </button>
+        <button
+          v-if="genreFilter !== 'all'"
+          class="movie-admin__button"
+          type="button"
+          :aria-label="`Bỏ lọc thể loại ${activeGenreLabel}`"
+          @click="genreFilter = 'all'"
+        >
+          {{ activeGenreLabel }} <span aria-hidden="true">×</span>
+        </button>
+      </div>
 
       <div v-if="genresQuery.isError.value" class="movie-admin__feedback" role="alert">
         <p>{{ adminMovieErrorMessage(genresQuery.error.value, 'Không thể tải thể loại.') }}</p>
@@ -414,7 +463,14 @@ const emptyMessage = computed(() =>
                 </td>
               </tr>
               <tr v-if="!rows.length">
-                <td colspan="6" class="movie-admin__empty">{{ emptyMessage }}</td>
+                <td colspan="6" class="movie-admin__empty">
+                  {{ emptyMessage }}
+                  <div v-if="hasFilters && catalog.isSuccess.value && !catalog.isFetching.value">
+                    <button class="movie-admin__text-button" type="button" @click="resetFilters">
+                      Xóa bộ lọc để xem danh mục phim
+                    </button>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -461,7 +517,14 @@ const emptyMessage = computed(() =>
               <Pencil aria-hidden="true" />
             </button>
           </article>
-          <p v-if="!rows.length" class="movie-admin__empty">{{ emptyMessage }}</p>
+          <div v-if="!rows.length" class="movie-admin__empty">
+            {{ emptyMessage }}
+            <div v-if="hasFilters && catalog.isSuccess.value && !catalog.isFetching.value">
+              <button class="movie-admin__text-button" type="button" @click="resetFilters">
+                Xóa bộ lọc để xem danh mục phim
+              </button>
+            </div>
+          </div>
         </div>
 
         <footer v-if="catalog.data.value" class="movie-admin__pagination">
@@ -510,5 +573,23 @@ const emptyMessage = computed(() =>
       @saved="onSaved"
     />
     <AdminGenreManagerDialog v-if="genreManagerOpen" @close="genreManagerOpen = false" />
+    <AppToast v-model:open="toastOpen" :message="successMessage" variant="success" />
   </section>
 </template>
+
+<style scoped>
+.movie-admin__active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.movie-admin__active-filters .movie-admin__button {
+  gap: var(--space-2);
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+</style>

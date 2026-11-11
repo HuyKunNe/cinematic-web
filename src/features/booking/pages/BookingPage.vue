@@ -8,6 +8,7 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import { isBookingUuid, useBookingContextQuery } from '../api/booking-queries'
 import BookingSeatSelection from '../components/BookingSeatSelection.vue'
+import BookingProgress from '../components/BookingProgress.vue'
 
 const route = useRoute()
 const now = ref(Date.now())
@@ -89,6 +90,7 @@ onBeforeUnmount(() => {
       </nav>
 
       <h1 class="booking-start__title booking-page__title">Chọn ghế</h1>
+      <BookingProgress current="seats" />
 
       <p v-if="!showtimeId" class="booking-error" role="alert">
         Mã suất chiếu trong đường dẫn không hợp lệ.

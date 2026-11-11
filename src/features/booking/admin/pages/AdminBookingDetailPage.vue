@@ -51,26 +51,19 @@ const facts = computed(() => {
 
   return [
     { label: 'Mã đơn', value: current.id },
-    { label: 'Trạng thái', value: adminBookingDetailStatusLabels[current.status] },
     { label: 'Mã người đặt', value: current.userId },
     { label: 'Mã suất chiếu', value: current.showtimeId },
-    {
-      label: 'Tổng tiền',
-      value: moneyLabel(current.totalAmount, current.currency),
-    },
-    {
-      label: 'Số đơn vị ghế',
-      value: String(current.seatCount ?? 'Chưa xác định'),
-    },
-    {
-      label: 'Sức chứa',
-      value: current.capacity === null ? 'Chưa xác định' : `${current.capacity} chỗ`,
-    },
-    { label: 'Ngày tạo', value: dateTimeLabel(current.createdAt) },
-    { label: 'Cập nhật lần cuối', value: dateTimeLabel(current.updatedAt) },
-    { label: 'Hạn giữ ghế', value: dateTimeLabel(current.expiresAt) },
-    { label: 'Đã xác nhận lúc', value: dateTimeLabel(current.confirmedAt) },
-    { label: 'Đã hủy lúc', value: dateTimeLabel(current.cancelledAt) },
+  ]
+})
+const milestones = computed(() => {
+  const current = booking.value
+  if (!current) return []
+  return [
+    { label: 'Tạo đơn', value: current.createdAt },
+    { label: 'Cập nhật lần cuối', value: current.updatedAt },
+    { label: 'Hạn giữ ghế', value: current.expiresAt },
+    { label: 'Xác nhận đơn', value: current.confirmedAt },
+    { label: 'Hủy đơn', value: current.cancelledAt },
   ]
 })
 
@@ -150,18 +143,58 @@ function reload(): void {
     </p>
 
     <template v-else-if="booking">
-      <section class="admin-reference__panel" aria-labelledby="admin-booking-summary-title">
-        <header class="admin-reference__list-heading">
-          <h2 id="admin-booking-summary-title">Thông tin đơn</h2>
-        </header>
+      <div class="admin-booking-detail__summary" aria-label="Tổng quan đơn đặt vé">
+        <div>
+          <span>Trạng thái đơn</span
+          ><span class="admin-status" :data-status="booking.status">{{
+            adminBookingDetailStatusLabels[booking.status]
+          }}</span>
+        </div>
+        <div>
+          <span>Tổng tiền đã lưu</span
+          ><strong>{{ moneyLabel(booking.totalAmount, booking.currency) }}</strong>
+        </div>
+        <div>
+          <span>Ghế và sức chứa</span
+          ><strong
+            >{{ booking.seatCount ?? '—' }} đơn vị ghế · {{ booking.capacity ?? '—' }} chỗ</strong
+          >
+        </div>
+      </div>
+      <div class="admin-booking-detail__overview">
+        <section class="admin-reference__panel" aria-labelledby="admin-booking-summary-title">
+          <header class="admin-reference__list-heading">
+            <h2 id="admin-booking-summary-title">Thông tin đơn</h2>
+          </header>
 
-        <dl class="admin-booking-detail__facts">
-          <div v-for="fact in facts" :key="fact.label">
-            <dt>{{ fact.label }}</dt>
-            <dd>{{ fact.value }}</dd>
-          </div>
-        </dl>
-      </section>
+          <dl class="admin-booking-detail__facts">
+            <div v-for="fact in facts" :key="fact.label">
+              <dt>{{ fact.label }}</dt>
+              <dd>{{ fact.value }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="admin-reference__panel" aria-labelledby="admin-booking-time-title">
+          <header class="admin-reference__list-heading">
+            <div>
+              <h2 id="admin-booking-time-title">Các mốc thời gian</h2>
+              <p>Giờ Việt Nam · Thông tin từ đơn đặt vé</p>
+            </div>
+          </header>
+          <dl class="admin-booking-detail__milestones">
+            <div v-for="milestone in milestones" :key="milestone.label">
+              <dt>{{ milestone.label }}</dt>
+              <dd>
+                <time v-if="milestone.value" :datetime="milestone.value">{{
+                  dateTimeLabel(milestone.value)
+                }}</time
+                ><span v-else>—</span>
+              </dd>
+            </div>
+          </dl>
+        </section>
+      </div>
 
       <p v-if="booking.rejectionReason" class="admin-reference__note">
         Lý do từ chối: {{ booking.rejectionReason }}
@@ -223,6 +256,69 @@ function reload(): void {
 </template>
 
 <style scoped>
+.admin-booking-detail {
+  --booking-detail-summary-columns: repeat(
+    auto-fit,
+    minmax(min(100%, var(--admin-reference-preview-width)), 1fr)
+  );
+}
+.admin-booking-detail__summary {
+  display: grid;
+  grid-template-columns: var(--booking-detail-summary-columns);
+  gap: var(--space-4);
+}
+.admin-booking-detail__summary > div {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.admin-booking-detail__summary > div > span:first-child {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+.admin-booking-detail__summary strong {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+.admin-booking-detail__overview {
+  display: grid;
+  grid-template-columns: var(--booking-detail-summary-columns);
+  gap: var(--space-4);
+  min-width: 0;
+}
+.admin-booking-detail__overview .admin-booking-detail__facts {
+  grid-template-columns: minmax(0, 1fr);
+}
+.admin-booking-detail__milestones {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0 var(--space-5) var(--space-5);
+}
+.admin-booking-detail__milestones > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+.admin-booking-detail__milestones dt {
+  color: var(--color-text-secondary);
+}
+.admin-booking-detail__milestones dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
 .admin-booking-detail__actions {
   display: flex;
   flex-wrap: wrap;
