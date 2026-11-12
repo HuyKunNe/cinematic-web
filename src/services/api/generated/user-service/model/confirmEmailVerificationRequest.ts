@@ -8,13 +8,13 @@
 
 export interface ConfirmEmailVerificationRequest {
   /**
-   * @minLength 43
-   * @maxLength 43
-   */
-  token: string
+     * @minLength 43
+     * @maxLength 43
+     */
+  token: string;
   /**
-   * @minLength 12
-   * @maxLength 72
-   */
-  password: string
+     * @minLength 12
+     * @maxLength 72
+     */
+  password: string;
 }

@@ -96,6 +96,20 @@ QuickBooking lọc đúng danh sách rạp và tự chuyển trường; thử Th
 
 ## Kiểm tra
 
+### Header USER — 2026-11-12
+
+Đối chiếu header Lumière với source hiện tại: desktop chia ba vùng logo/nav/thao tác,
+sticky bên dưới thanh thông tin; thành phố, tìm phim và tài khoản nằm trong cùng hàng.
+Chưa đăng nhập có hai liên kết Đăng nhập/Đăng ký, đăng nhập giữ returnTo qua OIDC.
+Mobile tách hàng logo/tìm/menu khỏi hàng thành phố/rạp. Menu dùng Reka Dialog,
+hiển thị rõ đăng nhập/đăng ký hoặc tài khoản, giữ toàn bộ route và thao tác đặt vé.
+Rời route/đổi sang desktop đóng menu; thao tác tìm phim và chọn rạp vẫn dùng handler layout.
+Không thay API, xác thực, route hoặc giao diện Admin. R28 vẫn ngoài phạm vi.
+Computer Use không kết nối được native pipe, nên chưa có xác nhận trực quan desktop/mobile.
+Kiểm tra thủ công: 320/390/768/1024/1440px; header sticky và không tràn ngang;
+menu Tab/Shift+Tab/Escape, focus trở về nút mở; tìm phim/chọn rạp; đăng nhập/đăng ký;
+đổi route/resize khi menu mở; trạng thái active Phim khi ở chi tiết phim.
+
 Trang chọn ghế đối chiếu trực tiếp `lumiere-cinema/index.html#/booking/seats`:
 sơ đồ nền sage, màn hình cong, hàng ghế đánh số, màu VIP/ghế đôi và trạng thái;
 chú giải bên dưới cùng giá theo loại ghế có trong phòng. Giữ toàn bộ khoảng trống

@@ -37,6 +37,14 @@ function createRequestId(): string | null {
   return globalThis.crypto?.randomUUID?.() ?? null
 }
 
+// Registration and email confirmation are public, including their invalid-token 401 responses.
+function isPublicRegistrationRequest(config: AxiosRequestConfig): boolean {
+  return config.method?.toLowerCase() === 'post' && [
+    '/api/v1/auth/registrations',
+    '/api/v1/auth/email-verifications/confirm',
+  ].includes(config.url?.split('?')[0] ?? '')
+}
+
 apiClient.interceptors.request.use(async (config) => {
   const headers = AxiosHeaders.from(config.headers)
   const requestId = createRequestId()
@@ -45,7 +53,7 @@ apiClient.interceptors.request.use(async (config) => {
     headers.set('X-Request-Id', requestId)
   }
 
-  const accessToken = await getApiAuthSession().getAccessToken()
+  const accessToken = isPublicRegistrationRequest(config) ? null : await getApiAuthSession().getAccessToken()
 
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`)
@@ -65,7 +73,7 @@ apiClient.interceptors.response.use(
     const config = error.config
     const isUnauthorized = error.response?.status === 401
 
-    if (isUnauthorized && config && !config._retriedAfterRefresh) {
+    if (isUnauthorized && config && !isPublicRegistrationRequest(config) && !config._retriedAfterRefresh) {
       config._retriedAfterRefresh = true
 
       let refreshed = false

@@ -1,0 +1,179 @@
+@reference './main.css';
+
+.registration-auth { --registration-card-width: 34rem; padding-block: var(--space-12); }
+.registration-auth__card { display: grid; gap: var(--space-5); width: min(100%, var(--registration-card-width)); box-sizing: border-box; margin-inline: auto; padding: var(--space-8); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-card); }
+.registration-auth__card h1 { margin: 0; font-size: var(--font-size-2xl); line-height: var(--line-height-heading); }
+.registration-auth__card h2 { margin: 0; font-size: var(--font-size-lg); }
+.registration-auth__intro, .registration-auth__hint, .registration-auth__sign-in p { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.registration-auth__intro { margin: 0 0 var(--space-5); }
+.registration-auth fieldset { display: grid; min-width: 0; gap: var(--space-4); margin: 0; padding: 0; border: 0; }
+.registration-auth__field { display: grid; gap: var(--space-2); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+.registration-auth__field input { box-sizing: border-box; width: 100%; min-width: 0; min-height: var(--control-height-md); padding: var(--space-3); border: var(--border-width-thin) solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-primary); font: inherit; }
+.registration-auth__field input:focus-visible { outline: var(--focus-ring-width) solid var(--color-focus); outline-offset: var(--space-1); }
+.registration-auth__field input[aria-invalid='true'] { border-color: var(--color-error); }
+.registration-auth__names { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.registration-auth__error { margin: 0; color: var(--color-error); font-size: var(--font-size-sm); overflow-wrap: anywhere; }
+.registration-auth__required, .registration-auth__hint { font-weight: var(--font-weight-normal); }
+.registration-auth__success { padding: var(--space-5); border: var(--border-width-thin) solid var(--color-success); border-radius: var(--radius-md); background: var(--color-surface-raised); }
+.registration-auth__success p { font-size: var(--font-size-sm); }
+.registration-auth__sign-in { border-top: var(--border-width-thin) solid var(--color-border); padding-top: var(--space-5); }
+.registration-auth__sign-in .app-button { width: 100%; }
+@variant lumiere-mobile {
+  .registration-auth__card { padding: var(--space-5); }
+  .registration-auth__names { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Lumière-inspired shared layout for login and registration. */
+.auth-layout {
+  --auth-layout-story-height: 40rem;
+  --auth-layout-orbit-size: clamp(11rem, 22vw, 16rem);
+  padding-block: var(--space-12) var(--space-16);
+}
+
+.auth-layout__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.auth-layout__story {
+  position: relative;
+  display: flex;
+  min-height: var(--auth-layout-story-height);
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: var(--space-12);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 78% 68%, color-mix(in srgb, var(--color-primary) 14%, transparent), transparent 42%),
+    linear-gradient(145deg, var(--color-surface-raised), var(--color-background));
+  color: var(--color-text-primary);
+}
+
+.auth-layout__eyebrow,
+.auth-layout__tagline {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.auth-layout__copy {
+  position: relative;
+  z-index: var(--z-base);
+  margin-block: auto;
+}
+
+.auth-layout__copy h2 {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-display);
+  line-height: var(--line-height-tight);
+}
+
+.auth-layout__copy h2 em {
+  color: var(--color-primary);
+  font-style: normal;
+}
+
+.auth-layout__copy p {
+  max-width: 34rem;
+  margin: var(--space-5) 0 0;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.auth-layout__orbit {
+  position: absolute;
+  right: var(--space-8);
+  bottom: var(--space-15);
+  display: grid;
+  width: var(--auth-layout-orbit-size);
+  aspect-ratio: 1;
+  place-items: center;
+  border: var(--border-width-thin) solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+  border-radius: var(--radius-pill);
+  transform: rotate(-15deg);
+}
+
+.auth-layout__orbit::before,
+.auth-layout__orbit::after {
+  position: absolute;
+  inset: var(--space-4);
+  border: var(--border-width-thin) solid color-mix(in srgb, var(--color-primary) 16%, transparent);
+  border-radius: var(--radius-pill);
+  content: '';
+}
+
+.auth-layout__orbit::after {
+  inset: var(--space-8);
+}
+
+.auth-layout__orbit span {
+  color: var(--color-primary);
+  font-size: var(--font-size-display);
+}
+
+.auth-layout__tagline {
+  position: relative;
+  z-index: var(--z-base);
+  margin-top: auto;
+}
+
+.auth-layout__content {
+  min-width: 0;
+}
+
+.auth-layout__content .registration-auth__card,
+.auth-layout__content .login-page__card {
+  width: min(100%, var(--container-width-narrow));
+  box-sizing: border-box;
+  margin-inline: auto;
+  padding: var(--space-8);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+@variant lumiere-tablet {
+  .auth-layout__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .auth-layout__story {
+    min-height: auto;
+    gap: var(--space-8);
+    padding: var(--space-8);
+  }
+
+  .auth-layout__copy {
+    margin-block: var(--space-8);
+  }
+
+  .auth-layout__orbit {
+    right: var(--space-8);
+    bottom: var(--space-8);
+  }
+}
+
+@variant lumiere-mobile {
+  .auth-layout {
+    padding-block: var(--space-6);
+  }
+
+  .auth-layout__story {
+    display: none;
+  }
+
+  .auth-layout__content .registration-auth__card,
+  .auth-layout__content .login-page__card {
+    padding: var(--space-5);
+  }
+}

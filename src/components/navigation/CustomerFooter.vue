@@ -24,6 +24,7 @@ import CustomerBrand from './CustomerBrand.vue'
         <RouterLink :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }">Vé &amp; giao dịch</RouterLink>
         <RouterLink :to="{ name: ROUTE_NAMES.BOOKING_START }">Chọn suất chiếu</RouterLink>
         <RouterLink :to="{ name: ROUTE_NAMES.ACCOUNT }">Tài khoản</RouterLink>
+        <RouterLink :to="{ name: ROUTE_NAMES.REGISTER }">Đăng ký tài khoản</RouterLink>
       </div>
       <div>
         <h2>Thông tin đặt vé</h2>

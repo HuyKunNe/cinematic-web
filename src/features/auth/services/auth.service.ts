@@ -59,6 +59,8 @@ export function safeReturnTo(value: unknown): string {
       ROUTE_PATHS.LOGIN,
       ROUTE_PATHS.AUTH_REQUIRED,
       ROUTE_PATHS.AUTH_CALLBACK,
+      ROUTE_PATHS.REGISTER,
+      ROUTE_PATHS.VERIFY_EMAIL,
     ])
 
     // Không quay lại trang bắt đầu đăng nhập hoặc callback.

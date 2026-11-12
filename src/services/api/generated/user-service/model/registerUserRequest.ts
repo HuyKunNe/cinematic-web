@@ -8,23 +8,23 @@
 
 export interface RegisterUserRequest {
   /**
-   * @minLength 0
-   * @maxLength 320
-   */
-  email: string
+     * @minLength 0
+     * @maxLength 320
+     */
+  email: string;
   /**
-   * @minLength 0
-   * @maxLength 100
-   */
-  firstName?: string
+     * @minLength 0
+     * @maxLength 100
+     */
+  firstName?: string;
   /**
-   * @minLength 0
-   * @maxLength 100
-   */
-  lastName?: string
+     * @minLength 0
+     * @maxLength 100
+     */
+  lastName?: string;
   /**
-   * @minLength 0
-   * @maxLength 32
-   */
-  phoneNumber?: string
+     * @minLength 0
+     * @maxLength 32
+     */
+  phoneNumber?: string;
 }

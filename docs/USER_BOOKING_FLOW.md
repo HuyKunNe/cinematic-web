@@ -17,8 +17,9 @@ mã ghế không trùng và dữ liệu hợp lệ trước khi hiển thị. Ch
 Giữ nguyên API báo giá và tạo booking; lựa chọn chưa phải là giữ ghế.
 Suất thiếu snapshot hiển thị lỗi, không lấy sơ đồ hiện tại của phòng để thay thế.
 
-Đăng ký tài khoản còn phụ thuộc User Service: source hiện chưa có endpoint/trang
-đăng ký công khai. Không dựng form gửi mật khẩu trực tiếp từ Vue hoặc giả lập tạo tài khoản.
+Đăng ký và xác minh email đã nối User Service tại `/register` và `/verify-email`;
+xem `USER_REGISTRATION_FLOW.md`. Đăng ký không gửi mật khẩu; mật khẩu chỉ gửi
+cùng token ở bước xác minh. Đăng nhập vẫn chuyển qua User Service bằng OIDC + PKCE.
 
 Đọc source cục bộ `cinema-system` (không sửa BE):
 

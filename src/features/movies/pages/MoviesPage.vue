@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowDown } from 'lucide-vue-next'
+import AppPagination from '@/components/ui/AppPagination.vue'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppEmptyState from '@/components/ui/AppEmptyState.vue'
 import AppErrorState from '@/components/ui/AppErrorState.vue'
@@ -40,7 +40,7 @@ const searchInput = ref<HTMLInputElement | null>(null)
 const searchText = ref('')
 const selectedGenre = ref('')
 const selectedSort = ref<MovieSort>('release-desc')
-const shownLimit = ref(PAGE_SIZE)
+const page = ref(1)
 
 const collator = new Intl.Collator('vi', {
   sensitivity: 'base',
@@ -127,9 +127,9 @@ const filteredMovies = computed(() => {
   })
 })
 
-const visibleMovies = computed(() => filteredMovies.value.slice(0, shownLimit.value))
-
-const hasMore = computed(() => visibleMovies.value.length < filteredMovies.value.length)
+const pageCount = computed(() => Math.max(1, Math.ceil(filteredMovies.value.length / PAGE_SIZE)))
+const visibleMovies = computed(() => filteredMovies.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE))
+watch(pageCount, (count) => { page.value = Math.min(page.value, count) })
 
 const statusDescription = computed(() =>
   selectedStatus.value === 'NOW_SHOWING' ? 'đang chiếu' : 'sắp chiếu',
@@ -152,7 +152,7 @@ const emptyDescription = computed(() => {
 })
 
 watch([selectedStatus, selectedGenre, selectedSort, searchTerm, scopeKey], () => {
-  shownLimit.value = PAGE_SIZE
+  page.value = 1
 })
 
 watch([scopeKey, selectedStatus], () => {
@@ -169,12 +169,6 @@ watch(genreOptions, (genres) => {
 function clearSearch() {
   searchText.value = ''
   searchInput.value?.focus()
-}
-
-function loadMore() {
-  if (isFetching.value || !hasMore.value) return
-
-  shownLimit.value += PAGE_SIZE
 }
 
 function retry() {
@@ -289,7 +283,7 @@ function retry() {
           </span>
 
           <span v-if="filteredMovies.length" class="movies-results__shown">
-            Đang hiển thị {{ visibleMovies.length }} / {{ filteredMovies.length }} phim.
+            Đang hiển thị {{ (page - 1) * PAGE_SIZE + 1 }}–{{ Math.min(page * PAGE_SIZE, filteredMovies.length) }} / {{ filteredMovies.length }} phim.
           </span>
         </p>
 
@@ -332,17 +326,13 @@ function retry() {
               <CatalogMovieCard v-for="movie in visibleMovies" :key="movie.id" :movie="movie" />
             </div>
 
-            <button
-              v-if="hasMore"
-              class="movies-load-more"
-              type="button"
-              aria-controls="movies-catalog-grid"
+            <AppPagination
+              v-model:page="page"
+              :total="filteredMovies.length"
+              :page-size="PAGE_SIZE"
               :disabled="isFetching"
-              @click="loadMore"
-            >
-              Xem thêm phim
-              <ArrowDown aria-hidden="true" />
-            </button>
+              controls="movies-catalog-grid"
+            />
           </template>
         </template>
       </section>

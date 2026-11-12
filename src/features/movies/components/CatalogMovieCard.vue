@@ -1,126 +1,39 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { Clapperboard, Play } from 'lucide-vue-next'
+import { computed } from 'vue'
+import CustomerMovieCard from '@/components/movies/CustomerMovieCard.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
-import type { CatalogMovie } from '../models/movie.model'
 import { formatAgeRating } from '@/utils/movie-age-rating'
+import type { CatalogMovie } from '../models/movie.model'
 
 const props = defineProps<{ movie: CatalogMovie }>()
 const ageRating = computed(() => formatAgeRating(props.movie.ageRating))
-const imageFailed = ref(false)
-
-watch(
-  () => [props.movie.id, props.movie.posterUrl],
-  () => {
-    imageFailed.value = false
-  },
-)
-
-const statusLabel = computed(() =>
-  props.movie.status === 'NOW_SHOWING' ? 'ĐANG CHIẾU' : 'SẮP CHIẾU',
-)
-
-const genreLabel = computed(
-  () => props.movie.genres.map((genre) => genre.name).join(' · ') || 'Thể loại chưa cập nhật',
-)
-
-const releaseDateLabel = computed(() => {
-  if (!props.movie.releaseDate) return ''
-
-  const [year, month, day] = props.movie.releaseDate.split('-')
-  return year && month && day ? `${day}.${month}.${year}` : props.movie.releaseDate
+const detailLocation = computed(() => ({ name: ROUTE_NAMES.MOVIE_DETAIL, params: { movieId: props.movie.id } }))
+const metadata = computed(() => [
+  props.movie.genres.map((genre) => genre.name).join(' · ') || 'Thể loại chưa cập nhật',
+  props.movie.durationMinutes ? `${props.movie.durationMinutes} phút` : '',
+].filter(Boolean).join(' · '))
+const caption = computed(() => {
+  const date = props.movie.releaseDate
+  if (!date) return props.movie.status === 'NOW_SHOWING' ? 'Đang chiếu' : 'Sắp chiếu'
+  const [year, month, day] = date.split('-')
+  const label = year && month && day ? `${day}/${month}` : date
+  return `${props.movie.status === 'UPCOMING' ? 'Dự kiến' : 'Khởi chiếu'} ${label}`
 })
-
-const detailLocation = computed(() => ({
-  name: ROUTE_NAMES.MOVIE_DETAIL,
-  params: { movieId: props.movie.id },
-}))
-
-const actionLabel = computed(() =>
-  props.movie.status === 'NOW_SHOWING' ? 'Đặt vé' : 'Xem chi tiết',
-)
 </script>
 
 <template>
-  <article class="movies-card">
-    <RouterLink
-      class="movies-card__detail-link"
-      :to="detailLocation"
-      :aria-label="`Xem chi tiết phim ${movie.title}`"
-    />
-    <div class="movies-card__poster">
-      <img
-        v-if="movie.posterUrl && !imageFailed"
-        :src="movie.posterUrl"
-        :alt="`Poster ${movie.title}`"
-        loading="lazy"
-        @error="imageFailed = true"
-      />
-
-      <div
-        v-else
-        class="movies-card__placeholder"
-        role="img"
-        :aria-label="`Chưa có poster cho ${movie.title}`"
-      >
-        <Clapperboard aria-hidden="true" />
-        <span>Chưa có poster</span>
-      </div>
-
-      <span class="movies-card__status">{{ statusLabel }}</span>
-
-      <span
-        class="movies-card__age"
-        role="img"
-        :aria-label="ageRating.description"
-        :title="ageRating.description"
-      >
-        {{ ageRating.label }}
-      </span>
-
-      <a
-        v-if="movie.trailerUrl"
-        class="movies-card__play"
-        :href="movie.trailerUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        :aria-label="`Xem trailer ${movie.title} (mở tab mới)`"
-        title="Xem trailer"
-      >
-        <Play aria-hidden="true" />
-      </a>
-
-      <button
-        v-else
-        class="movies-card__play"
-        type="button"
-        disabled
-        :aria-label="`Trailer ${movie.title} chưa được cập nhật`"
-        title="Trailer chưa được cập nhật"
-      >
-        <Play aria-hidden="true" />
-      </button>
-    </div>
-
-    <h2 class="movies-card__title" :title="movie.title">
-      {{ movie.title }}
-    </h2>
-
-    <p class="movies-card__genres" :title="genreLabel">
-      {{ genreLabel }}
-    </p>
-
-    <div class="movies-card__meta">
-      <span v-if="movie.durationMinutes"> {{ movie.durationMinutes }} phút </span>
-      <span v-if="releaseDateLabel">{{ releaseDateLabel }}</span>
-    </div>
-    
-    <RouterLink
-      class="movies-card__cta"
-      :to="detailLocation"
-      :aria-label="`${actionLabel}: ${movie.title}`"
-    >
-      {{ actionLabel }}
-    </RouterLink>
-  </article>
+  <CustomerMovieCard
+    :title="movie.title"
+    :poster-url="movie.posterUrl"
+    :trailer-url="movie.trailerUrl"
+    :detail-to="detailLocation"
+    :action-to="detailLocation"
+    :metadata="metadata"
+    :caption="caption"
+    :age-label="ageRating.label"
+    :age-description="ageRating.description"
+    :age-code="movie.ageRating"
+    :bookable="movie.status === 'NOW_SHOWING'"
+    heading="h2"
+  />
 </template>

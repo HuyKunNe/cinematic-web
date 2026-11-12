@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { beginSignIn } from '../services/auth.service'
+import AppLink from '@/components/ui/AppLink.vue'
+import AuthPageLayout from '../components/AuthPageLayout.vue'
+import { ROUTE_NAMES } from '@/router/route-constants'
 
 const route = useRoute()
 const loading = ref(false)
@@ -23,28 +26,37 @@ async function handleSignIn() {
 </script>
 
 <template>
-  <section class="login-page">
-    <div class="login-page__card">
-      <p class="login-page__eyebrow">Tài khoản Cinematic</p>
-      <h1>Chưa thể đăng nhập</h1>
+  <AuthPageLayout>
+    <section class="login-page">
+      <div class="login-page__card">
+        <p class="login-page__eyebrow">Tài khoản Cinematic</p>
+        <h1>Chào bạn trở lại</h1>
+        <p class="login-page__description">
+          Đăng nhập để quản lý vé và tiếp tục đặt chỗ.
+        </p>
 
-      <p class="login-page__description">Vui lòng thử lại để tiếp tục đến trang bạn đang mở.</p>
+        <p v-if="errorMessage" class="login-page__error" role="alert">
+          {{ errorMessage }}
+        </p>
 
-      <p v-if="errorMessage" class="login-page__error" role="alert">
-        {{ errorMessage }}
-      </p>
+        <button
+          class="login-page__submit"
+          type="button"
+          :disabled="loading"
+          :aria-busy="loading"
+          @click="handleSignIn"
+        >
+          {{ loading ? 'Đang chuyển tới đăng nhập…' : 'Tiếp tục đăng nhập' }}
+        </button>
 
-      <button
-        class="login-page__submit"
-        type="button"
-        :disabled="loading"
-        :aria-busy="loading"
-        @click="handleSignIn"
-      >
-        {{ loading ? 'Đang chuyển tới đăng nhập…' : 'Thử lại đăng nhập' }}
-      </button>
-    </div>
-  </section>
+        <div class="login-page__links">
+          <AppLink :to="{ name: ROUTE_NAMES.REGISTER }">
+            Chưa có tài khoản? Đăng ký
+          </AppLink>
+        </div>
+      </div>
+    </section>
+  </AuthPageLayout>
 </template>
 
 <style scoped>
@@ -107,5 +119,25 @@ async function handleSignIn() {
 .login-page__submit:disabled {
   cursor: wait;
   opacity: 0.7;
+}
+.login-page__links {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
+.login-page__links :deep(a) {
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+}
+
+.login-page__card {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.login-page__card h1,
+.login-page__description {
+  margin: 0;
 }
 </style>

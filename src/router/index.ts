@@ -3,6 +3,7 @@ import { ADMIN_ROLES, APP_PERMISSIONS, APP_ROLES } from '../config/authorization
 import { authorizationGuard } from './guards'
 import { ROUTE_NAMES, ROUTE_PATHS } from './route-constants'
 import type { RouteRecordRaw } from 'vue-router'
+import { captureInitialEmailVerificationToken, captureEmailVerificationFragment } from '../features/auth'
 
 const loadPlaceholder = () => import('../components/feedback/PlaceholderPage.vue')
 const loadAdminDashboardPage = () => import('../features/admin/pages/AdminDashboardPage.vue')
@@ -117,6 +118,18 @@ const routes: RouteRecordRaw[] = [
       title: 'Vé của tôi',
       requiresAuth: true,
     },
+  },
+  {
+    path: ROUTE_PATHS.REGISTER,
+    name: ROUTE_NAMES.REGISTER,
+    component: () => import('../features/auth/pages/RegisterPage.vue'),
+    meta: { layout: 'customer', title: 'Đăng ký tài khoản' },
+  },
+  {
+    path: ROUTE_PATHS.VERIFY_EMAIL,
+    name: ROUTE_NAMES.VERIFY_EMAIL,
+    component: () => import('../features/auth/pages/VerifyEmailPage.vue'),
+    meta: { layout: 'customer', title: 'Xác minh email' },
   },
   {
     path: ROUTE_PATHS.LOGIN,
@@ -318,6 +331,8 @@ const routes: RouteRecordRaw[] = [
   },
 ]
 
+captureInitialEmailVerificationToken()
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
@@ -326,6 +341,12 @@ const router = createRouter({
   },
 })
 
+router.beforeEach((to) => {
+  if (to.name === ROUTE_NAMES.VERIFY_EMAIL && to.hash) {
+    captureEmailVerificationFragment(to.hash)
+    return { path: to.path, query: to.query, hash: '', replace: true }
+  }
+})
 router.beforeEach(authorizationGuard)
 
 export default router
