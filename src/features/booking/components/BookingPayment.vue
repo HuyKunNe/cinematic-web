@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
+import { CreditCard, Wallet } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { CustomerBooking } from '../api/customer-bookings'
+import type { PaymentCheckoutResponseStatus } from '@/services/api/generated/payment-service/model/paymentCheckoutResponseStatus'
 import {
   checkoutLink,
   customerPaymentLabels,
   useCustomerPaymentQuery,
 } from '../api/customer-payment'
 
-const props = defineProps<{ booking: CustomerBooking; disabled: boolean }>()
-const emit = defineEmits<{ refresh: [] }>()
+const props = defineProps<{ booking: CustomerBooking; disabled: boolean; resultOnly?: boolean }>()
+const emit = defineEmits<{
+  refresh: []
+  paymentStatus: [status: PaymentCheckoutResponseStatus | undefined]
+}>()
 const auth = useAuthStore()
 const route = useRoute()
 const agreed = ref(false)
@@ -30,9 +35,16 @@ const payment = computed(() =>
   props.booking.userId === auth.subject ? query.data.value : undefined,
 )
 const validLink = computed(() => checkoutLink(payment.value?.checkoutUri))
+watch(
+  () => payment.value?.status,
+  (status) => emit('paymentStatus', status),
+  { immediate: true },
+)
 const canPay = computed(
   () =>
-    agreed.value && auth.isAuthenticated &&
+    !props.resultOnly &&
+    agreed.value &&
+    auth.isAuthenticated &&
     !props.disabled &&
     !query.isError.value &&
     !query.isFetching.value &&
@@ -48,7 +60,9 @@ const message = computed(() => {
   if (payment.value?.status === 'RECONCILIATION_REQUIRED')
     return 'Chưa xác định được kết quả. Không thanh toán lại hoặc tạo đơn mới; hãy kiểm tra trạng thái đơn.'
   if (payment.value?.status === 'SUCCEEDED' && props.booking.status !== 'CONFIRMED')
-    return 'Thanh toán đã thành công. Đang chờ hệ thống xác nhận đơn đặt vé; chưa phát hành vé tại bước này.'
+    return props.booking.status === 'RESERVED' || props.booking.status === 'PENDING'
+      ? 'Thanh toán đã thành công. Đang chờ hệ thống xác nhận đơn đặt vé; chưa phát hành vé tại bước này.'
+      : 'Đã ghi nhận thanh toán nhưng đơn chưa được xác nhận. Vui lòng liên hệ rạp để kiểm tra.'
   if (['CANCELLED', 'EXPIRED', 'REJECTED'].includes(props.booking.status))
     return 'Đơn này không còn nhận thanh toán.'
   if (props.booking.status === 'CONFIRMED')
@@ -76,7 +90,8 @@ function pay() {
 
 <template>
   <section class="booking-payment" aria-labelledby="booking-payment-title">
-    <h3 id="booking-payment-title">Thanh toán</h3>
+    <h3 id="booking-payment-title" :class="{ 'sr-only': resultOnly }">{{ resultOnly ? 'Trạng thái thanh toán' : 'Phương thức thanh toán' }}</h3>
+    <div v-if="booking.paymentProvider && !resultOnly" class="booking-payment__provider"><Wallet v-if="booking.paymentProvider === 'MOMO'" aria-hidden="true" /><CreditCard v-else aria-hidden="true" /><div><strong>{{ booking.paymentProvider === 'MOMO' ? 'Ví MoMo' : 'VNPAY' }}</strong><small>Phương thức đã chọn khi xác nhận đặt vé</small></div></div>
     <p
       v-if="query.isPending.value && booking.status === 'RESERVED'"
       class="booking-note"
@@ -91,7 +106,7 @@ function pay() {
     <p v-if="query.isError.value" class="booking-error" role="alert">
       Chưa thể kiểm tra thanh toán. Vui lòng thử lại; không tạo thêm một đơn để thanh toán lại.
     </p>
-    <label v-if="booking.status === 'RESERVED'" class="booking-payment__consent">
+    <label v-if="booking.status === 'RESERVED' && !resultOnly" class="booking-payment__consent">
       <input v-model="agreed" type="checkbox" :disabled="disabled" />
       <span
         >Tôi đã kiểm tra phim, suất chiếu, ghế, điều kiện độ tuổi và tổng tiền trước khi thanh
@@ -100,7 +115,12 @@ function pay() {
     </label>
     <div class="booking-payment__actions">
       <AppButton
-        v-if="validLink && payment?.status === 'PENDING_PROVIDER' && booking.status === 'RESERVED'"
+        v-if="
+          !resultOnly &&
+          validLink &&
+          payment?.status === 'PENDING_PROVIDER' &&
+          booking.status === 'RESERVED'
+        "
         :disabled="!canPay"
         @click="pay"
         >Tiếp tục thanh toán →</AppButton
@@ -120,7 +140,7 @@ function pay() {
         >Xem kết quả đơn</RouterLink
       >
       <RouterLink
-        v-if="booking.status === 'RESERVED'"
+        v-if="booking.status === 'RESERVED' && route.name !== ROUTE_NAMES.BOOKING_CHECKOUT"
         :to="{ name: ROUTE_NAMES.BOOKING_CHECKOUT, params: { bookingId: booking.id } }"
         class="customer-bookings__link"
         >Thông tin thanh toán</RouterLink
@@ -130,6 +150,10 @@ function pay() {
 </template>
 
 <style scoped>
+.booking-payment__provider { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border: var(--border-width-thin) solid var(--color-primary); border-radius: var(--radius-sm); background: var(--color-surface-hover); }
+.booking-payment__provider svg { width: var(--icon-size-lg); height: var(--icon-size-lg); flex-shrink: 0; color: var(--color-primary); }
+.booking-payment__provider strong { font-size: var(--font-size-sm); }
+.booking-payment__provider small { display: block; color: var(--color-text-secondary); font-size: var(--font-size-xs); }
 .booking-payment {
   display: grid;
   gap: var(--space-3);

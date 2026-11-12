@@ -1,5 +1,65 @@
 # Luồng đặt vé USER
 
+## Đối chiếu riêng ba màn hình Lumière — 2026-11-12
+
+| FE | Reference | Cấu trúc đã điều chỉnh |
+| --- | --- | --- |
+| `/booking/checkout/:bookingId` | `#/booking/checkout` | Tiến trình; tiêu đề Bước 03 trong cột trái; danh sách vé/giá; khối phương thức và xác nhận thanh toán. Cột phải có poster/phim, rạp/phòng/suất, ghế/capacity, tiền vé/tổng và đồng hồ giữ ghế. |
+| `/booking/result/:bookingId` | `#/result/{code}` | Không có thanh tiến trình; nội dung kết quả căn giữa; bỏ panel bao quanh thông báo chưa thành công; thẻ vé cho CONFIRMED; Xem vé/In/điều hướng. |
+| `/booking/ticket/:bookingId` | `#/ticket/{code}` | Tiêu đề trang riêng “Cuộc hẹn đã sẵn sàng”; thẻ vé; hai cột thông tin suất/vé và thanh toán phía dưới; hàng hành động cuối. |
+
+BookingJourneySummary và BookingSavedSeats là component trình bày, dùng dữ liệu
+thật và query context hiện có. Không thay contract hoặc logic giữ ghế/thanh toán.
+CSS in áp dụng cho thẻ vé trên cả result và ticket đã CONFIRMED, ẩn header/footer,
+tiêu đề trang, các panel chi tiết và nút. Mobile xếp chi tiết một cột, summary chia
+nhóm thông tin theo mẫu. Không ép các bookingId người dùng nêu sang trạng thái thành công.
+
+Còn khác reference do dữ liệu: chưa có snapshot người nhận, đồ ăn/ưu đãi, QR hay
+used status. Không hiển thị giá đồ ăn/giảm giá bằng 0 để giả là API có hỗ trợ;
+không dựng form không lưu hoặc QR mô phỏng. Phương thức của đơn đã tạo chỉ đọc,
+không cho đổi nhà cung cấp khi API checkout không có mutation tương ứng.
+
+Kiểm tra đã chạy: cú pháp Vue/CSS và git diff --check. Computer Use đã thử khởi
+tạo nhưng native pipe unavailable; chưa mở/quan sát được ba route trong trình
+duyệt. Không chạy test/lint/typecheck/build hay giao dịch. Cần kiểm tra thủ công
+ba route bằng đơn thật ở desktop/mobile, lỗi metadata, PENDING/RESERVED/terminal,
+CONFIRMED, các liên kết và print preview từ cả result lẫn ticket.
+
+## Tách hành trình thanh toán và xem vé theo Lumière — 2026-11-12
+
+- `/booking/checkout/:bookingId` và `/booking/result/:bookingId` dùng BookingOrderPage,
+  không dùng giao diện quản lý đơn MyBookingsPage nữa. Checkout có nội dung kiểm
+  tra bên trái và tổng tiền/giữ ghế bên phải; result có thông báo căn giữa và
+  hành động theo trạng thái. Booking đến trạng thái cuối chuyển checkout sang result.
+- `/booking/ticket/:bookingId` là trang thông tin vé đã xác nhận. Truy cập đơn
+  chưa CONFIRMED chuyển về result sau khi đọc thành công. URL/query không xác nhận vé.
+- Result CONFIRMED có thẻ vé và nút Xem vé. Danh sách và chi tiết đơn CONFIRMED
+  cũng có liên kết tới trang vé. Thẻ theo reference có poster, tên phim, rạp/phòng,
+  ngày giờ, ghế, capacity, mã đơn và tổng tiền; dùng placeholder/thử lại nếu metadata lỗi.
+- Trang vé có In thông tin vé qua trình duyệt, CSS in riêng. Chưa có QR hoặc
+  trạng thái sử dụng từ API, nên không tạo QR/barcode/nhãn sử dụng hay coi mã đơn
+  là mã kiểm soát vào rạp. Thông tin phim/rạp hiện tại được ghi rõ khác snapshot giá.
+- Đối chiếu DTO/controller/service BE mới: CreateBookingRequest/BookingResponse
+  hỗ trợ paymentProvider VNPAY/MOMO. Chọn phương thức trong xác nhận trước khi tạo
+  booking vì API checkout chỉ đọc, không đổi phương thức của đơn đã tạo. Gửi và
+  đối chiếu provider với response; lưu vào request retry. Request cũ không provider
+  vẫn giữ nguyên, không đổi fingerprint của yêu cầu đang chờ.
+- Result chỉ kiểm tra payment, không có checkbox/nút trả tiền ngay trong phần
+  kết quả. RECONCILIATION_REQUIRED không có hành động trả lại; SUCCEEDED vẫn chờ
+  booking CONFIRMED. Chi tiết quản lý đơn cũ giữ nguyên chức năng hủy.
+- Desktop có sidebar tổng tiền sticky; mobile xếp một cột. Không thêm giới hạn 8 khách.
+
+Giới hạn so với demo: chưa có đồ ăn, mã ưu đãi, contact snapshot, guest lookup,
+QR/used status. Không dựng các form/mutation giả. Thanh toán chuyển tới URI do
+BE cung cấp; cấu hình return của provider cần trỏ về route FE đúng bookingId,
+FE không tin các query báo thành công. Chưa xác minh return thực tế của provider.
+
+Kiểm tra thủ công: chọn phương thức → xác nhận booking → checkout → provider →
+result → Xem vé → in; mở vé từ danh sách/chi tiết; PENDING/RESERVED, SUCCEEDED
+chờ CONFIRMED, reconciliation/failure/expiry, sửa URL, đổi tài khoản, ảnh lỗi,
+metadata lỗi, reload và retry cùng request; desktop/mobile/print preview.
+Chưa chạy các thao tác runtime trên; chỉ kiểm tra cú pháp/static.
+
 ## Giao diện danh sách vé theo reference — 2026-11-12
 
 Trang `/account/bookings` đối chiếu `ticketsPage`/`orderCard` trong Lumière:

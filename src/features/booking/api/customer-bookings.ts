@@ -10,6 +10,7 @@ import {
 } from '@/services/api/generated/booking-service/booking-controller/booking-controller'
 import type { CreateBookingRequest } from '@/services/api/generated/booking-service/model/createBookingRequest'
 import { BookingResponseStatus } from '@/services/api/generated/booking-service/model/bookingResponseStatus'
+import { BookingResponsePaymentProvider } from '@/services/api/generated/booking-service/model/bookingResponsePaymentProvider'
 
 const uuid = z.string().uuid()
 export const customerBookingId = z
@@ -30,6 +31,7 @@ const bookingSchema = z.object({
   showtimeId: uuid,
   clientRequestId: z.string(),
   status: z.nativeEnum(BookingResponseStatus),
+  paymentProvider: z.nativeEnum(BookingResponsePaymentProvider).nullish(),
   totalAmount: money,
   currency: z
     .string()
@@ -114,6 +116,8 @@ export async function submitCustomerBooking(request: CreateBookingRequest, owner
   if (
     booking.showtimeId !== request.showtimeId ||
     booking.clientRequestId !== request.clientRequestId ||
+    (request.paymentProvider !== undefined &&
+      booking.paymentProvider !== request.paymentProvider) ||
     !booking.seats ||
     booking.seats.length !== requested.size ||
     booking.seats.some((seat) => {

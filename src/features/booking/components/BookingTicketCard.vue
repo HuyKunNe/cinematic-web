@@ -78,8 +78,12 @@ const amount = computed(() =>
       <RouterLink
         class="customer-bookings__order-link"
         :data-confirmed="booking.status === 'CONFIRMED'"
-        :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: booking.id } }"
-        >Chi tiết đơn →</RouterLink
+        :to="
+          booking.status === 'CONFIRMED'
+            ? { name: ROUTE_NAMES.BOOKING_TICKET, params: { bookingId: booking.id } }
+            : { name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: booking.id } }
+        "
+        >{{ booking.status === 'CONFIRMED' ? 'Xem vé →' : 'Chi tiết đơn →' }}</RouterLink
       >
     </div>
   </article>

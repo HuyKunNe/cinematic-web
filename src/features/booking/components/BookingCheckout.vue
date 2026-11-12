@@ -4,6 +4,7 @@ import { useSessionStorage } from '@vueuse/core'
 import { useQueryClient } from '@tanstack/vue-query'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { z } from 'zod'
+import { CreateBookingRequestPaymentProvider } from '@/services/api/generated/booking-service/model/createBookingRequestPaymentProvider'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppLink from '@/components/ui/AppLink.vue'
 import { useAuthStore } from '@/stores/auth.store'
@@ -30,6 +31,7 @@ const queries = useQueryClient()
 const storageKey = `cinematic:booking-request:${owner}:${props.showtimeId}`
 // Save only the idempotent request so refresh/network retries cannot create another order.
 const requestBaseSchema = z.object({
+  paymentProvider: z.nativeEnum(CreateBookingRequestPaymentProvider).optional(),
   clientRequestId: z.string().uuid(),
   showtimeId: z.literal(props.showtimeId),
   expectedTotalAmount: z.number().finite().nonnegative(),
@@ -68,6 +70,7 @@ const error = ref('')
 const reviewing = ref(false)
 const checking = ref(false)
 const reviewed = ref<BookingReview | null>(null)
+const paymentProvider = ref<CreateBookingRequestPaymentProvider>()
 const fingerprint = (value: BookingReview | null | undefined) => JSON.stringify(value)
 async function continueBooking() {
   if (checkpoint.value) {
@@ -122,7 +125,13 @@ async function submit() {
   if (sending.value || resolved.value || !owner || !auth.isAuthenticated || auth.subject !== owner)
     return
   if (!checkpoint.value) {
-    if (props.disabled || !props.seatNumbers.length || props.totalAmount === undefined) return
+    if (
+      props.disabled ||
+      !props.seatNumbers.length ||
+      props.totalAmount === undefined ||
+      !paymentProvider.value
+    )
+      return
     if (
       !reviewing.value ||
       !props.review ||
@@ -139,6 +148,7 @@ async function submit() {
         }))
         .sort((a, b) => a.seatNumber.localeCompare(b.seatNumber)),
       expectedTotalAmount: props.totalAmount,
+      paymentProvider: paymentProvider.value,
     })
     stored.value = JSON.stringify(request)
   }
@@ -204,6 +214,8 @@ defineExpose({ continueBooking })
       :open="reviewing"
       :review="reviewed"
       :disabled="disabled || sending"
+      :payment-provider="paymentProvider"
+      @update:payment-provider="paymentProvider = $event"
       @close="reviewing = false"
       @confirm="submit"
     />

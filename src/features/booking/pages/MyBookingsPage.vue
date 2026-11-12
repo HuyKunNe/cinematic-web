@@ -403,6 +403,12 @@ async function cancel() {
             </section>
           </div>
           <div class="customer-bookings__result-actions">
+            <RouterLink
+              v-if="booking.status === 'CONFIRMED'"
+              class="customer-bookings__link"
+              :to="{ name: ROUTE_NAMES.BOOKING_TICKET, params: { bookingId: booking.id } }"
+              >Xem vé →</RouterLink
+            >
             <RouterLink class="customer-bookings__link" :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }"
               >Vé &amp; giao dịch</RouterLink
             >

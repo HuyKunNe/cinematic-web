@@ -9,9 +9,10 @@ export const ROUTE_NAMES = {
   BOOKING: 'booking',
   BOOKING_CHECKOUT: 'booking-checkout',
   BOOKING_RESULT: 'booking-result',
+  BOOKING_TICKET: 'booking-ticket',
   ACCOUNT: 'account',
   ACCOUNT_BOOKINGS: 'account-bookings',
-  
+
   LOGIN: 'login',
   REGISTER: 'register',
   VERIFY_EMAIL: 'verify-email',
@@ -46,6 +47,7 @@ export const ROUTE_PATHS = {
   BOOKING: '/booking/:showtimeId',
   BOOKING_CHECKOUT: '/booking/checkout/:bookingId',
   BOOKING_RESULT: '/booking/result/:bookingId',
+  BOOKING_TICKET: '/booking/ticket/:bookingId',
   BOOKING_START: '/booking',
   ACCOUNT: '/account',
   ACCOUNT_BOOKINGS: '/account/bookings',

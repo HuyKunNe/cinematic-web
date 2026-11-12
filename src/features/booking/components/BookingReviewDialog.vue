@@ -11,9 +11,19 @@ import {
 import AppButton from '@/components/ui/AppButton.vue'
 import { formatBookingMoney } from '../mappers/booking-seat.mapper'
 import type { BookingReview } from '../models/booking-review.model'
+import { CreateBookingRequestPaymentProvider } from '@/services/api/generated/booking-service/model/createBookingRequestPaymentProvider'
 
-defineProps<{ open: boolean; review: BookingReview | null; disabled: boolean }>()
-const emit = defineEmits<{ close: []; confirm: [] }>()
+defineProps<{
+  open: boolean
+  review: BookingReview | null
+  disabled: boolean
+  paymentProvider?: CreateBookingRequestPaymentProvider
+}>()
+const emit = defineEmits<{
+  close: []
+  confirm: []
+  'update:paymentProvider': [value: CreateBookingRequestPaymentProvider]
+}>()
 </script>
 
 <template>
@@ -45,12 +55,32 @@ const emit = defineEmits<{ close: []; confirm: [] }>()
           </div>
         </template>
 
+        <fieldset class="booking-review__providers" :disabled="disabled">
+          <legend>Phương thức thanh toán</legend>
+          <label
+            v-for="provider in CreateBookingRequestPaymentProvider"
+            :key="provider"
+            :data-selected="paymentProvider === provider"
+          >
+            <input
+              type="radio"
+              name="booking-payment-provider"
+              :value="provider"
+              :checked="paymentProvider === provider"
+              @change="emit('update:paymentProvider', provider)"
+            />
+            <span
+              >{{ provider === 'MOMO' ? 'Ví MoMo' : 'VNPAY'
+              }}<small>Tiếp tục tại cổng thanh toán sau khi giữ ghế</small></span
+            >
+          </label>
+        </fieldset>
         <p v-if="disabled" class="booking-note" role="status">Đang kiểm tra lại ghế và báo giá…</p>
         <div class="booking-review__actions">
           <DialogClose as-child>
             <AppButton variant="secondary">Quay lại chọn ghế</AppButton>
           </DialogClose>
-          <AppButton :disabled="disabled || !review" @click="emit('confirm')"
+          <AppButton :disabled="disabled || !review || !paymentProvider" @click="emit('confirm')"
             >Xác nhận đặt vé</AppButton
           >
         </div>
@@ -60,6 +90,43 @@ const emit = defineEmits<{ close: []; confirm: [] }>()
 </template>
 
 <style scoped>
+.booking-review__providers {
+  display: grid;
+  gap: var(--space-3);
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.booking-review__providers legend {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-3);
+}
+.booking-review__providers label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.booking-review__providers label[data-selected='true'] {
+  border-color: var(--color-primary);
+  background: var(--color-surface-hover);
+}
+.booking-review__providers small {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+.booking-review__providers input {
+  accent-color: var(--color-primary);
+}
+.booking-review__providers input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
 .booking-review__overlay {
   position: fixed;
   inset: 0;

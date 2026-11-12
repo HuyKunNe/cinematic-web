@@ -1,5 +1,19 @@
 # Current Status
 
+## USER checkout/result/ticket UI — 2026-11-12
+
+Checkout and result now use a dedicated BookingOrderPage following Lumière
+checkout/result structure instead of the account order-management view. A new
+authenticated `/booking/ticket/:bookingId` displays confirmed booking information
+in the reference ticket layout, with browser printing and links from confirmed
+orders. No fabricated QR or ticket-usage data is issued. Unconfirmed ticket
+routes go to result after a successful booking read; final checkout states also
+go to result. Payment result remains distinct from booking confirmation.
+Generated/source VNPAY/MOMO provider selection is captured before creating an
+order, preserved during retry and shown on checkout. No eight-customer demo cap.
+Tests, lint, typecheck, build, browser/payment/print runtime checks were not run.
+See USER_BOOKING_FLOW.md for contract limitations and manual checks.
+
 ## USER payment checkout integration — 2026-11-12
 
 Current source/generated now include the authenticated owner checkout read API.
