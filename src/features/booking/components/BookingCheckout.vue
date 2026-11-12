@@ -29,12 +29,30 @@ const router = useRouter()
 const queries = useQueryClient()
 const storageKey = `cinematic:booking-request:${owner}:${props.showtimeId}`
 // Save only the idempotent request so refresh/network retries cannot create another order.
-const requestSchema = z.object({
+const requestBaseSchema = z.object({
   clientRequestId: z.string().uuid(),
   showtimeId: z.literal(props.showtimeId),
-  seatNumbers: z.array(z.string().min(1).max(20)).min(1).max(100),
   expectedTotalAmount: z.number().finite().nonnegative(),
 })
+// Keep legacy pending requests unchanged; new orders retain the quoted ticket groups.
+const requestSchema = z.union([
+  requestBaseSchema.extend({
+    seats: z
+      .array(
+        z.object({
+          seatNumber: z.string().min(1).max(20),
+          ticketGroupId: z.string().uuid(),
+        }),
+      )
+      .min(1)
+      .max(100),
+    seatNumbers: z.undefined(),
+  }),
+  requestBaseSchema.extend({
+    seatNumbers: z.array(z.string().min(1).max(20)).min(1).max(100),
+    seats: z.undefined(),
+  }),
+])
 const stored = useSessionStorage(storageKey, '')
 const checkpoint = computed(() => {
   try {
@@ -114,7 +132,12 @@ async function submit() {
     const request = requestSchema.parse({
       clientRequestId: crypto.randomUUID(),
       showtimeId: props.showtimeId,
-      seatNumbers: [...props.seatNumbers].sort(),
+      seats: props.review.seats
+        .map((seat) => ({
+          seatNumber: seat.seatNumber,
+          ticketGroupId: seat.ticketGroupId,
+        }))
+        .sort((a, b) => a.seatNumber.localeCompare(b.seatNumber)),
       expectedTotalAmount: props.totalAmount,
     })
     stored.value = JSON.stringify(request)
@@ -133,8 +156,8 @@ async function submit() {
     queries.setQueryData(['customer-bookings', owner, 'detail', booking.id], booking)
     await queries.invalidateQueries({ queryKey: ['customer-bookings', owner], refetchType: 'none' })
     const failure = await router.push({
-      name: ROUTE_NAMES.ACCOUNT_BOOKINGS,
-      query: { bookingId: booking.id },
+      name: ROUTE_NAMES.BOOKING_CHECKOUT,
+      params: { bookingId: booking.id },
     })
     if (failure) error.value = 'Đơn đã được tiếp nhận. Mở chi tiết đơn để theo dõi kết quả giữ ghế.'
   } catch (cause) {
@@ -154,6 +177,7 @@ async function submit() {
     sending.value = false
   }
 }
+defineExpose({ continueBooking })
 </script>
 
 <template>

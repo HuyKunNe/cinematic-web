@@ -7,6 +7,7 @@ export interface BookingReview {
   seats: {
     seatNumber: string
     typeLabel: string
+    ticketGroupId: string
     ticketGroupName: string
     capacity: number
     priceMinor: number

@@ -3,7 +3,10 @@ import { ADMIN_ROLES, APP_PERMISSIONS, APP_ROLES } from '../config/authorization
 import { authorizationGuard } from './guards'
 import { ROUTE_NAMES, ROUTE_PATHS } from './route-constants'
 import type { RouteRecordRaw } from 'vue-router'
-import { captureInitialEmailVerificationToken, captureEmailVerificationFragment } from '../features/auth'
+import {
+  captureInitialEmailVerificationToken,
+  captureEmailVerificationFragment,
+} from '../features/auth'
 
 const loadPlaceholder = () => import('../components/feedback/PlaceholderPage.vue')
 const loadAdminDashboardPage = () => import('../features/admin/pages/AdminDashboardPage.vue')
@@ -98,6 +101,18 @@ const routes: RouteRecordRaw[] = [
       title: 'Chọn ghế',
       requiresAuth: true,
     },
+  },
+  {
+    path: ROUTE_PATHS.BOOKING_CHECKOUT,
+    name: ROUTE_NAMES.BOOKING_CHECKOUT,
+    component: loadMyBookingsPage,
+    meta: { layout: 'customer', title: 'Kiểm tra và thanh toán', requiresAuth: true },
+  },
+  {
+    path: ROUTE_PATHS.BOOKING_RESULT,
+    name: ROUTE_NAMES.BOOKING_RESULT,
+    component: loadMyBookingsPage,
+    meta: { layout: 'customer', title: 'Kết quả đặt vé', requiresAuth: true },
   },
   {
     path: ROUTE_PATHS.ACCOUNT,

@@ -34,6 +34,7 @@ const query = useBookingSeatsQuery(
 const selection = ref<SelectedBookingSeat[]>([])
 const selectionNotice = ref('')
 const checkoutLocked = ref(false)
+const checkout = ref<InstanceType<typeof BookingCheckout> | null>(null)
 
 const seats = computed(() => query.data.value?.seats ?? [])
 
@@ -179,6 +180,7 @@ const review = computed<BookingReview | undefined>(() => {
       seatNumber: seat.seatNumber,
       typeLabel:
         chosenSeats.value.find((item) => item.seatNumber === seat.seatNumber)?.typeLabel || '',
+      ticketGroupId: seat.ticketGroupId,
       ticketGroupName: seat.ticketGroupName,
       capacity: seat.capacity,
       priceMinor: seat.priceMinor,
@@ -412,6 +414,7 @@ watch(
       </dl>
 
       <BookingCheckout
+        ref="checkout"
         :selection-error="selectionError"
         :review="review"
         :prepare-review="prepareReview"
@@ -428,5 +431,29 @@ watch(
         Ghế chỉ được giữ sau khi yêu cầu đặt vé được xác nhận.
       </p>
     </aside>
+    <div class="booking-mobile-recap" aria-label="Tóm tắt lựa chọn">
+      <div>
+        <strong>{{ context.movie.title }}</strong>
+        <span>{{ context.cinema.name }} · {{ showTime }} · {{ showDate }}</span>
+        <span>Ghế: {{ chosenSeats.map((seat) => seat.seatNumber).join(', ') || 'Chưa chọn' }}</span>
+      </div>
+      <div>
+        <strong>{{ totalLabel }}</strong>
+        <AppButton size="sm" :disabled="!ready || !chosenSeats.length || !!selectionError || estimatedTotalMinor === null" :loading="preparingReview" @click="checkout?.continueBooking()">Tiếp tục</AppButton>
+      </div>
+    </div>
   </div>
 </template>
+
+<style scoped>
+@reference '../../../styles/main.css';
+.booking-mobile-recap { display: none; }
+@variant lumiere-mobile {
+  .lumiere-seat-booking { --booking-mobile-recap-space: 10rem; padding-bottom: var(--booking-mobile-recap-space); }
+  .booking-mobile-recap { position: fixed; inset-inline: 0; bottom: 0; z-index: calc(var(--z-header) - 1); display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom)); background: var(--color-surface); border-top: var(--border-width-thin) solid var(--color-border); box-shadow: var(--shadow-raised); }
+  .booking-mobile-recap > div { min-width: 0; display: grid; gap: var(--space-1); }
+  .booking-mobile-recap > div:last-child { flex-shrink: 0; text-align: right; }
+  .booking-mobile-recap strong { font-size: var(--font-size-sm); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .booking-mobile-recap span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+}
+</style>

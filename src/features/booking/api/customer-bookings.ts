@@ -54,6 +54,8 @@ const bookingSchema = z.object({
         showtimeId: uuid,
         seatNumber: z.string().min(1),
         seatType: z.string().nullish(),
+        requestedTicketGroupId: uuid.nullish(),
+        ticketGroupId: uuid.nullish(),
         price: money,
         ticketGroupName: z.string().nullish(),
         capacity: z.number().int().positive().nullish(),
@@ -102,9 +104,25 @@ function readBooking(response: unknown, owner: string, id?: string) {
 }
 export async function submitCustomerBooking(request: CreateBookingRequest, owner: string) {
   const booking = readBooking(await createBooking(request), owner)
+  const requested = new Map<string, string | undefined>(
+    request.seats?.map(
+      (seat) => [seat.seatNumber.trim().toUpperCase(), seat.ticketGroupId] as const,
+    ) ??
+      request.seatNumbers?.map((number) => [number.trim().toUpperCase(), undefined] as const) ??
+      [],
+  )
   if (
     booking.showtimeId !== request.showtimeId ||
-    booking.clientRequestId !== request.clientRequestId
+    booking.clientRequestId !== request.clientRequestId ||
+    !booking.seats ||
+    booking.seats.length !== requested.size ||
+    booking.seats.some((seat) => {
+      const number = seat.seatNumber.trim().toUpperCase()
+      const groupId = requested.get(number)
+      return (
+        !requested.has(number) || (groupId !== undefined && seat.requestedTicketGroupId !== groupId)
+      )
+    })
   )
     throw new Error('Booking request mismatch')
   return booking

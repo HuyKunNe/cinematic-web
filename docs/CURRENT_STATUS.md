@@ -1,5 +1,22 @@
 # Current Status
 
+## USER payment checkout integration — 2026-11-12
+
+Current source/generated now include the authenticated owner checkout read API.
+FE wires it through a booking feature query and payment panel, with dedicated
+`/booking/checkout/:bookingId` and `/booking/result/:bookingId` routes sharing the
+existing order view. Old detail links remain supported. Pending payment preparation,
+provider handoff, success awaiting booking confirmation, failures/expiry/reconciliation,
+retry and deadline gates are handled without simulating payment or issuing QR codes.
+The seat page adds a mobile recap with the same checkout action instance.
+
+No demo limit of eight customers is imposed. Quote allows up to 100 seat units;
+Booking service's configurable maximum (default 10 units) remains authoritative.
+Food, discounts, guest lookup and ticket/QR issuance still lack inspected contracts;
+the full reference journey is not complete. See USER_BOOKING_FLOW.md for gaps and checks.
+Verification is syntax/diff only; no tests, build, typecheck, browser or payment transaction.
+The older statement below that no customer checkout endpoint exists is superseded.
+
 ## USER booking result follow-up — 2026-11-12
 
 The booking-detail source now includes a non-polling showtime/movie/room/cinema
@@ -90,23 +107,23 @@ was not accessed. Reconciliation of those documents is outside this A0.1 change.
 by generated clients. It does not mean the operation was exercised against Backend.
 Browser/manual interaction and automated checks were not run for any row in this audit.
 
-| Area | Code present | API wired in source | Browser/manual | Automated checks |
-| --- | --- | --- | --- | --- |
-| Admin dashboard | Yes | Movie, cinema and schedule reads; not proof of complete reporting | Not run | Not run |
-| Admin movies and genres | Yes | Reads and mutations, including nested screening versions | Not run | Not run |
-| Admin cinemas, rooms and room formats | Yes | Management queries and mutations | Not run | Not run |
-| Admin room seat catalog | Yes | Published seat-map reads and catalog seat activity changes | Not run | Not run |
-| Admin room matrix | Yes | Load, create draft, save, publish and copy published layout | Not run | Not run |
-| Admin pricing | Yes | List/detail, draft/configuration/fares, publish, lookup and previews | Not run | Not run |
-| Admin showtimes | Yes | Day-range list, creation, pricing assignment and opening for booking | Not run | Not run |
-| Admin bookings | Yes | Admin search/list and read-only detail | Not run | Not run |
-| Admin payment operations | Generated lookup clients exist | No payment lookup/reconciliation UI wired in inspected booking pages | Not run | Not run |
-| Admin users and promotions | Reference pages | No management integration in those routes | Not run | Not run |
-| Customer home, movie catalog/detail | Yes | Movie/programme reads and header search | Not run | Not run |
-| Customer cinemas | List page and cinema selection | Location/programme reads; no dedicated cinema-detail route | Not run | Not run |
-| Customer booking start and seat selection | Yes | Context, seat/status reads and server quote; selection remains local | Not run | Not run |
-| Customer login/callback | Yes | OIDC authorization code flow with PKCE | Not run | Not run |
-| Customer standalone showtimes, account and booking history | Placeholders | No completed page integration | Not run | Not run |
+| Area                                                       | Code present                   | API wired in source                                                  | Browser/manual | Automated checks |
+| ---------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------- | -------------- | ---------------- |
+| Admin dashboard                                            | Yes                            | Movie, cinema and schedule reads; not proof of complete reporting    | Not run        | Not run          |
+| Admin movies and genres                                    | Yes                            | Reads and mutations, including nested screening versions             | Not run        | Not run          |
+| Admin cinemas, rooms and room formats                      | Yes                            | Management queries and mutations                                     | Not run        | Not run          |
+| Admin room seat catalog                                    | Yes                            | Published seat-map reads and catalog seat activity changes           | Not run        | Not run          |
+| Admin room matrix                                          | Yes                            | Load, create draft, save, publish and copy published layout          | Not run        | Not run          |
+| Admin pricing                                              | Yes                            | List/detail, draft/configuration/fares, publish, lookup and previews | Not run        | Not run          |
+| Admin showtimes                                            | Yes                            | Day-range list, creation, pricing assignment and opening for booking | Not run        | Not run          |
+| Admin bookings                                             | Yes                            | Admin search/list and read-only detail                               | Not run        | Not run          |
+| Admin payment operations                                   | Generated lookup clients exist | No payment lookup/reconciliation UI wired in inspected booking pages | Not run        | Not run          |
+| Admin users and promotions                                 | Reference pages                | No management integration in those routes                            | Not run        | Not run          |
+| Customer home, movie catalog/detail                        | Yes                            | Movie/programme reads and header search                              | Not run        | Not run          |
+| Customer cinemas                                           | List page and cinema selection | Location/programme reads; no dedicated cinema-detail route           | Not run        | Not run          |
+| Customer booking start and seat selection                  | Yes                            | Context, seat/status reads and server quote; selection remains local | Not run        | Not run          |
+| Customer login/callback                                    | Yes                            | OIDC authorization code flow with PKCE                               | Not run        | Not run          |
+| Customer standalone showtimes, account and booking history | Placeholders                   | No completed page integration                                        | Not run        | Not run          |
 
 ## Admin movies and screening versions
 
@@ -260,10 +277,10 @@ Read-only HTTP GETs succeeded on 2026-11-06, using the inputs in `orval.config.t
 The source service configuration declares the matching service names, default ports
 and `/v3/api-docs`; Movie security permits that documentation endpoint.
 
-| Runtime URL | Reported OpenAPI version | Inspected schemas |
-| --- | --- | --- |
-| `http://localhost:8081/v3/api-docs` | 3.0.1 | CreateMovieScreeningVersionRequest, SaveMovieScreeningVersionRequest, MovieScreeningVersionResponse |
-| `http://localhost:8083/v3/api-docs` | 3.1.0 | ShowtimeScreeningVersionResponse, RoomLayoutMatrixInput, RoomLayoutMatrixResponse |
+| Runtime URL                         | Reported OpenAPI version | Inspected schemas                                                                                   |
+| ----------------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------- |
+| `http://localhost:8081/v3/api-docs` | 3.0.1                    | CreateMovieScreeningVersionRequest, SaveMovieScreeningVersionRequest, MovieScreeningVersionResponse |
+| `http://localhost:8083/v3/api-docs` | 3.1.0                    | ShowtimeScreeningVersionResponse, RoomLayoutMatrixInput, RoomLayoutMatrixResponse                   |
 
 All four inspected screening-version schemas expose `projectionTechnology` with
 STANDARD, IMAX, FOUR_DX and SCREEN_X, separately from `contentFormat` values 2D/3D.

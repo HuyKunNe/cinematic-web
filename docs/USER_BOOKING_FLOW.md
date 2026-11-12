@@ -12,6 +12,8 @@ thanh toán chưa rõ. Thông tin phim/rạp là dữ liệu hiện tại, khôn
 lịch sử; ghế, tiền, đơn vị và trạng thái giữ nguyên từ booking response.
 
 - `/booking/:showtimeId`: chọn ghế, xác nhận báo giá hiện có, gửi tạo đơn.
+- `/booking/checkout/:bookingId`: kiểm tra thông tin đơn và phiên thanh toán sau khi tạo.
+- `/booking/result/:bookingId`: theo dõi kết quả booking và payment; không tự xác nhận từ query của URL trả về.
 - `/account/bookings`: phân trang đơn của tài khoản đăng nhập.
 - `/account/bookings?bookingId=<UUIDv7>`: chi tiết đơn, giá/ghế đã lưu, trạng thái và hạn giữ ghế.
 - Theo dõi PENDING/RESERVED mỗi 3 giây khi trang chi tiết đang mở; không tự gửi lại mutation.
@@ -36,11 +38,56 @@ cùng token ở bước xác minh. Đăng nhập vẫn chuyển qua User Service
 - `CreateBookingRequest`, `BookingResponse`, `BookingServiceImpl`: clientRequestId theo user và fingerprint request, expectedTotalAmount; tạo trả HTTP 202.
 - `BookingCancellationServiceImpl`, `Booking.cancel`: chỉ RESERVED, chưa đến expiresAt.
 - `BookingSecurityConfig`: booking cá nhân yêu cầu xác thực; dữ liệu được giới hạn theo CurrentUser.
-- `PaymentManagementController`, `PaymentSecurityConfig`: chưa có luồng thanh toán checkout dành cho USER.
+- `CustomerPaymentCheckoutController`, `CustomerPaymentCheckoutReadServiceImpl`,
+  `PaymentSecurityConfig`: GET `/api/v1/payments/bookings/{bookingId}/checkout`
+  dành cho chủ đơn đã xác thực. DTO có bookingId, paymentId, status, checkoutUri,
+  holdExpiresAt. URI chỉ được trả cho PENDING_PROVIDER còn hạn.
 
 Dùng generated client có sẵn, kiểm tra response ở feature và query key có subject. Không gửi userId từ UI để chọn chủ sở hữu đơn.
 
 ## Gửi tạo đơn và phục hồi
+
+### Rà soát input/output — 2026-11-12
+
+| Bước                 | Input FE                                                                                        | Output và cách sử dụng                                                                                                               |
+| -------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Chọn suất            | showtimeId từ route                                                                             | Đối chiếu showtime/movie/room/cinema; chỉ cho tiếp tục khi ngữ cảnh hợp lệ.                                                          |
+| Đọc sơ đồ            | showtimeId                                                                                      | Kiểm tra room/showtime, ID/số ghế trùng, vị trí, trạng thái và giá; Bill tạm tính từ snapshot.                                       |
+| Báo giá khi Tiếp tục | seats chứa seatNumber                                                                           | API tự áp dụng nhóm mặc định; response có ticketGroupId/name, loại ghế, đơn vị, capacity và giá. Kiểm tra đúng tập ghế và tổng tiền. |
+| Tạo đơn mới          | clientRequestId, showtimeId, seats gồm seatNumber/ticketGroupId từ báo giá, expectedTotalAmount | HTTP 202, chưa phải giữ ghế thành công. Đối chiếu owner, showtime, clientRequestId, tập ghế và requestedTicketGroupId.               |
+| Đọc chi tiết         | bookingId                                                                                       | PENDING/RESERVED poll mỗi 3 giây; dừng khi lỗi hoặc trạng thái cuối. Không dùng quote để thay giá đã lưu.                            |
+| Hủy                  | bookingId, chỉ RESERVED còn hạn                                                                 | Xác nhận qua dialog; chỉ hiển thị hủy thành công theo response CANCELLED.                                                            |
+
+Lỗi FE đã tìm thấy: trước lượt rà soát, quote dùng API theo nhóm vé nhưng POST
+chỉ gửi seatNumbers, bỏ ticketGroupId vừa báo giá. Đơn mới chuyển sang seats theo
+contract generated; không gửi đồng thời seatNumbers và seats. Request cũ đang
+chờ trong sessionStorage vẫn retry nguyên payload và clientRequestId cũ để giữ
+idempotency, không chuyển đổi request giữa chừng.
+
+Không được quy mọi giá trị null cho lỗi này: BE tạo BookingSeat ban đầu chỉ có
+số ghế và requestedTicketGroupId (nếu gửi). Loại ghế, giá, applied group và tổng
+tiền/currency chỉ hoàn chỉnh khi SeatReservedConsumerServiceImpl nhận sự kiện,
+gọi completeSnapshot rồi booking.reserve. Nhánh legacy của Inventory vẫn có thể
+điền nhóm mặc định khi suất đã gắn bảng giá, nhưng dùng giá snapshot ShowSeat,
+khác nhánh resolve theo ticketGroupId. Vì vậy bỏ group có thể gây PRICE_CHANGED,
+không chứng minh toàn bộ dữ liệu null của một đơn runtime cụ thể.
+
+UI phân biệt PENDING chưa có snapshot bằng số ghế yêu cầu và thông báo chờ,
+không nhóm tất cả vào “Loại ghế chưa xác định”. RESERVED/CONFIRMED/PAYMENT_FAILED
+thiếu loại ghế/giá/currency/tổng tiền có cảnh báo dữ liệu hệ thống chưa đầy đủ.
+Nhóm vé không có tên không hiển thị dòng phụ. Không suy giá lịch sử từ giá hiện tại.
+
+Giới hạn bằng chứng: đã đọc source FE/generated và BE, chưa quan sát response
+của đơn người dùng báo lỗi, chưa gọi mutation runtime hay truy cập database.
+Để kết luận trường hợp cụ thể, đối chiếu GET chi tiết: status, totalAmount,
+currency, seats[].seatType/price/ticketGroupName/requestedTicketGroupId/ticketGroupId.
+PENDING kéo dài cần kiểm tra chuỗi outbox/consumer và lỗi xử lý sự kiện ở BE;
+không thể xác nhận consumer bị lỗi chỉ từ source FE.
+
+Kiểm tra thủ công bổ sung: quote trả nhóm nào thì POST seats phải giữ nguyên ID
+nhóm đó, không có seatNumbers; GET sau RESERVED phải có loại/giá/nhóm khớp.
+Thử reload/retry một request legacy còn chờ để xác nhận payload không đổi;
+kiểm tra PENDING chuyển RESERVED/REJECTED, lỗi tải detail và trạng thái cuối.
 
 ### Quy tắc vị trí ghế
 
@@ -95,7 +142,9 @@ SessionStorage chỉ giúp phục hồi trong cùng tab; nếu mất bộ nhớ 
 
 ## Giới hạn
 
-- Chưa có API USER thanh toán/checkout URL nên không thêm thanh toán mô phỏng hoặc đánh dấu vé đã thanh toán ở FE.
+- Checkout đã có API USER trong source hiện tại và được nối bằng generated client;
+  ghi chú thiếu checkout trước đây đã cũ. Không tự tạo payment attempt, phương thức
+  thanh toán hoặc đánh dấu thành công tại FE.
 - Chưa có QR/vé điện tử từ API; CONFIRMED chỉ được hiển thị theo trạng thái BE.
 - Danh sách dùng mã suất từ booking, không gọi N API bổ sung cho từng đơn. Chi tiết
   đọc metadata của một suất qua API hiện có và ghi rõ thông tin phim/rạp hiện tại.
@@ -129,3 +178,42 @@ SessionStorage chỉ giúp phục hồi trong cùng tab; nếu mất bộ nhớ 
 8. Kiểm tra desktop/mobile và thao tác bàn phím trong hộp thoại.
 
 Chỉ kiểm tra cú pháp/static trong lần triển khai; chưa chạy test, build/typecheck hoặc kiểm tra browser/runtime.
+
+## Checkout và phần còn thiếu so với thiết kế — 2026-11-12
+
+- Sau POST thành công, đi tới checkout riêng, dùng chung phần thông tin suất/đơn
+  để không sao chép layout. Có route kết quả riêng, và chi tiết cũ vẫn truy cập được.
+- Payment query có owner-scoped key, kiểm tra bookingId, DTO/status và ngày hết hạn.
+  404 coi là chưa có phiên để tiếp tục chờ khi booking RESERVED; lỗi khác dừng
+  polling và cho thử lại. Không log/lưu checkoutUri vào bộ nhớ phiên.
+- RECEIVED/PROCESSING/PENDING_PROVIDER tự đọc lại mỗi 3 giây khi RESERVED.
+  SUCCEEDED/FAILED/EXPIRED/RECONCILIATION_REQUIRED dừng payment polling; có thao tác
+  kiểm tra lại. Booking vẫn dùng trạng thái BE, không suy CONFIRMED từ SUCCEEDED.
+- Chỉ mở URI http(s) từ BE khi owner đúng, RESERVED, PENDING_PROVIDER, hai deadline
+  còn hiệu lực, dữ liệu vừa đọc không lỗi và người dùng đã xác nhận kiểm tra lựa chọn.
+  URI sai hoặc hết hạn không có hành động thanh toán khả dụng. Hết hạn không tự
+  đánh dấu booking EXPIRED. Kết quả chưa xác định không có thao tác thanh toán lại.
+- Mobile có thanh tóm tắt cố định và nút Tiếp tục dùng cùng instance checkout,
+  cùng quote, dialog và mutation; không tạo thêm luồng gửi yêu cầu song song.
+- Không áp dụng giới hạn 8 khách của demo. FE giới hạn tối đa 100 đơn vị ghế theo
+  contract quote; không giới hạn tổng capacity bằng 8. BE còn cấu hình
+  BOOKING_MAX_SEATS_PER_BOOKING (default 10 đơn vị); FE không thể bỏ giới hạn BE.
+- Chưa có contract đồ ăn/giỏ hàng, ưu đãi trên đơn, thông tin người nhận trong
+  booking, guest lookup, vé/QR hoặc sử dụng vé. Không tạo trang có nút giả hay
+  hardcode hàng hóa/giá/QR để lấp các bước này. FE vẫn yêu cầu OIDC trước chọn ghế.
+  Chưa thể gọi toàn bộ hành trình thiết kế là hoàn tất khi những contract này thiếu.
+
+Kiểm tra thủ công checkout:
+
+1. Tạo booking mới, xác nhận URL checkout có đúng bookingId; PENDING chưa cho trả tiền.
+2. RESERVED nhưng payment 404: hiện chờ; khi URI sẵn sàng, chọn checkbox và mở cổng.
+3. Hoàn tất ở provider, quay lại checkout/result và kiểm tra cả payment lẫn booking.
+   Query URL như success=true không được làm đổi trạng thái.
+4. SUCCEEDED nhưng booking còn RESERVED: hiện chờ xác nhận; không phát vé/QR giả.
+5. RECONCILIATION_REQUIRED, FAILED, EXPIRED, lỗi mạng, URI thiếu/sai, hủy đơn và hết hạn:
+   không được tiếp tục trả tiền; thử lại chỉ đọc API.
+6. Đăng xuất/đổi tài khoản, sửa bookingId, reload và dùng đường dẫn chi tiết cũ.
+7. Chọn trên 8 khách (kể cả ghế đôi), kiểm tra quy tắc ghế và giới hạn BE riêng;
+   không nhầm số khách với số đơn vị ghế. Mobile Tiếp tục phải dùng đúng quote hiện tại.
+
+Chưa thực hiện giao dịch, kiểm tra browser hoặc các tình huống runtime trên đây.

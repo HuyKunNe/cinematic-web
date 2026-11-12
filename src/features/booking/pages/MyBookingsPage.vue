@@ -17,6 +17,7 @@ import AppButton from '@/components/ui/AppButton.vue'
 import CustomerAccountNav from '@/components/navigation/CustomerAccountNav.vue'
 import BookingProgress from '../components/BookingProgress.vue'
 import BookingShowtimeSummary from '../components/BookingShowtimeSummary.vue'
+import BookingPayment from '../components/BookingPayment.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { CINEMA_TIME_ZONE } from '@/utils/cinema-time'
@@ -34,8 +35,11 @@ const route = useRoute()
 const auth = useAuthStore()
 const queries = useQueryClient()
 const id = computed(() =>
-  typeof route.query.bookingId === 'string' ? route.query.bookingId.toLowerCase() : '',
+  typeof route.params.bookingId === 'string' ? route.params.bookingId.toLowerCase() :
+    typeof route.query.bookingId === 'string' ? route.query.bookingId.toLowerCase() : '',
 )
+const isCheckout = computed(() => route.name === ROUTE_NAMES.BOOKING_CHECKOUT)
+const isResult = computed(() => route.name === ROUTE_NAMES.BOOKING_RESULT)
 const validId = computed(() => customerBookingId.safeParse(id.value).success)
 const page = ref(0)
 const list = useCustomerBookingsQuery(page, () => !id.value)
@@ -51,6 +55,20 @@ const seatTypeLabels: Record<string, string> = {
   COUPLE: 'Ghế đôi',
   ACCESSIBLE: 'Hỗ trợ tiếp cận',
 }
+const awaitingSeatSnapshot = computed(
+  () =>
+    booking.value?.status === 'PENDING' &&
+    booking.value.seats?.some((seat) => !seat.seatType || seat.price === null),
+)
+const incompleteSeatSnapshot = computed(
+  () =>
+    booking.value &&
+    ['RESERVED', 'CONFIRMED', 'PAYMENT_FAILED'].includes(booking.value.status) &&
+    (!booking.value.currency ||
+      booking.value.totalAmount === null ||
+      !booking.value.seats?.length ||
+      booking.value.seats.some((seat) => !seat.seatType || seat.price === null)),
+)
 const seatGroups = computed(() => {
   const groups = new Map<string, NonNullable<CustomerBooking['seats']>>()
   for (const seat of booking.value?.seats ?? []) {
@@ -66,7 +84,7 @@ const seatGroups = computed(() => {
     count: seats.length,
     unit: seats.every((seat) => seat.unit === 'PAIR') ? 'cặp' : 'ghế',
     ticketGroups: [
-      ...new Set(seats.map((seat) => seat.ticketGroupName || 'Nhóm vé chưa xác định')),
+      ...new Set(seats.map((seat) => seat.ticketGroupName?.trim()).filter(Boolean)),
     ].join(', '),
     total: seats.some((seat) => seat.price === null)
       ? null
@@ -192,7 +210,7 @@ async function cancel() {
         <div>
           <p class="lumiere-eyebrow">{{ id ? 'CHI TIẾT GIAO DỊCH' : 'VÉ & GIAO DỊCH' }}</p>
           <h1 class="booking-start__title">
-            {{ id ? 'Chi tiết đơn đặt vé' : 'Những cuộc hẹn đã lưu' }}
+            {{ isCheckout ? 'Kiểm tra để an tâm tận hưởng' : isResult ? 'Kết quả đặt vé' : id ? 'Chi tiết đơn đặt vé' : 'Những cuộc hẹn đã lưu' }}
           </h1>
         </div>
         <RouterLink
@@ -205,7 +223,7 @@ async function cancel() {
           >Đặt vé mới</RouterLink
         >
       </header>
-      <BookingProgress v-if="id" current="order" />
+      <BookingProgress v-if="id" :current="isCheckout ? 'checkout' : 'order'" />
       <p v-if="!auth.isAuthenticated" class="booking-error" role="alert">
         Vui lòng đăng nhập để xem đơn đặt vé.
       </p>
@@ -262,8 +280,8 @@ async function cancel() {
               {{ booking.rejectionReason }}
             </p>
             <p v-if="booking.status === 'RESERVED'" class="booking-note">
-              Thanh toán trực tuyến chưa khả dụng trên website. Bạn có thể theo dõi hoặc hủy đơn
-              trong thời gian giữ ghế.
+              Kiểm tra thông tin bên dưới và tiếp tục thanh toán trong thời gian giữ ghế.
+              Kết quả chỉ được xác nhận khi hệ thống cập nhật trạng thái đơn.
             </p>
             <div class="customer-bookings__actions">
               <AppButton
@@ -292,17 +310,28 @@ async function cancel() {
                 aria-labelledby="customer-booking-seats"
               >
                 <h3 id="customer-booking-seats">Ghế và giá đã lưu</h3>
-                <ul v-if="booking.seats?.length" class="customer-bookings__seats">
+                <p v-if="awaitingSeatSnapshot" class="booking-note" role="status">
+                  Ghế yêu cầu: {{ booking.seats?.map((seat) => seat.seatNumber).join(', ') }}. Đang
+                  chờ hệ thống xác nhận loại ghế và giá đã lưu. Trang sẽ tự cập nhật.
+                </p>
+                <p v-if="incompleteSeatSnapshot" class="booking-error" role="alert">
+                  Dữ liệu đơn từ hệ thống chưa đầy đủ loại ghế hoặc giá đã lưu. Vui lòng cập nhật
+                  trạng thái; giá báo trước khi đặt không thay thế giá của đơn.
+                </p>
+                <ul
+                  v-if="booking.seats?.length && !awaitingSeatSnapshot"
+                  class="customer-bookings__seats"
+                >
                   <li v-for="group in seatGroups" :key="group.type">
                     <div>
                       <strong>{{ group.label }} · {{ group.count }} {{ group.unit }}</strong>
                       <small>Ghế: {{ group.numbers }}</small>
-                      <small>{{ group.ticketGroups }}</small>
+                      <small v-if="group.ticketGroups">{{ group.ticketGroups }}</small>
                     </div>
                     <strong>{{ money(group.total, booking.currency) }}</strong>
                   </li>
                 </ul>
-                <p v-else class="booking-note">
+                <p v-else-if="!awaitingSeatSnapshot" class="booking-note">
                   {{
                     booking.status === 'PENDING'
                       ? 'Ghế đang được hệ thống xử lý.'
@@ -351,6 +380,7 @@ async function cancel() {
                   <dd>{{ date(booking.cancelledAt) }}</dd>
                 </div>
               </dl>
+              <BookingPayment :key="booking.id" :booking="booking" :disabled="cancelling || detail.isFetching.value || detail.isError.value" @refresh="detail.refetch()" />
             </section>
           </div>
           <div class="customer-bookings__result-actions">
