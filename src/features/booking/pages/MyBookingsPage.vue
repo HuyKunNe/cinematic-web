@@ -14,6 +14,9 @@ import {
 } from 'reka-ui'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppPagination from '@/components/ui/AppPagination.vue'
+import { Ticket } from 'lucide-vue-next'
+import BookingTicketCard from '../components/BookingTicketCard.vue'
 import CustomerAccountNav from '@/components/navigation/CustomerAccountNav.vue'
 import BookingProgress from '../components/BookingProgress.vue'
 import BookingShowtimeSummary from '../components/BookingShowtimeSummary.vue'
@@ -35,8 +38,11 @@ const route = useRoute()
 const auth = useAuthStore()
 const queries = useQueryClient()
 const id = computed(() =>
-  typeof route.params.bookingId === 'string' ? route.params.bookingId.toLowerCase() :
-    typeof route.query.bookingId === 'string' ? route.query.bookingId.toLowerCase() : '',
+  typeof route.params.bookingId === 'string'
+    ? route.params.bookingId.toLowerCase()
+    : typeof route.query.bookingId === 'string'
+      ? route.query.bookingId.toLowerCase()
+      : '',
 )
 const isCheckout = computed(() => route.name === ROUTE_NAMES.BOOKING_CHECKOUT)
 const isResult = computed(() => route.name === ROUTE_NAMES.BOOKING_RESULT)
@@ -204,13 +210,21 @@ async function cancel() {
 </script>
 
 <template>
-  <div class="booking-start-page customer-bookings">
+  <div class="booking-start-page customer-bookings" :class="{ 'customer-bookings--list': !id }">
     <AppContainer>
       <header class="customer-bookings__heading">
         <div>
           <p class="lumiere-eyebrow">{{ id ? 'CHI TIẾT GIAO DỊCH' : 'VÉ & GIAO DỊCH' }}</p>
           <h1 class="booking-start__title">
-            {{ isCheckout ? 'Kiểm tra để an tâm tận hưởng' : isResult ? 'Kết quả đặt vé' : id ? 'Chi tiết đơn đặt vé' : 'Những cuộc hẹn đã lưu' }}
+            {{
+              isCheckout
+                ? 'Kiểm tra để an tâm tận hưởng'
+                : isResult
+                  ? 'Kết quả đặt vé'
+                  : id
+                    ? 'Chi tiết đơn đặt vé'
+                    : 'Những cuộc hẹn đã lưu'
+            }}
           </h1>
         </div>
         <RouterLink
@@ -280,8 +294,8 @@ async function cancel() {
               {{ booking.rejectionReason }}
             </p>
             <p v-if="booking.status === 'RESERVED'" class="booking-note">
-              Kiểm tra thông tin bên dưới và tiếp tục thanh toán trong thời gian giữ ghế.
-              Kết quả chỉ được xác nhận khi hệ thống cập nhật trạng thái đơn.
+              Kiểm tra thông tin bên dưới và tiếp tục thanh toán trong thời gian giữ ghế. Kết quả
+              chỉ được xác nhận khi hệ thống cập nhật trạng thái đơn.
             </p>
             <div class="customer-bookings__actions">
               <AppButton
@@ -380,7 +394,12 @@ async function cancel() {
                   <dd>{{ date(booking.cancelledAt) }}</dd>
                 </div>
               </dl>
-              <BookingPayment :key="booking.id" :booking="booking" :disabled="cancelling || detail.isFetching.value || detail.isError.value" @refresh="detail.refetch()" />
+              <BookingPayment
+                :key="booking.id"
+                :booking="booking"
+                :disabled="cancelling || detail.isFetching.value || detail.isError.value"
+                @refresh="detail.refetch()"
+              />
             </section>
           </div>
           <div class="customer-bookings__result-actions">
@@ -404,64 +423,52 @@ async function cancel() {
             <AppButton :loading="list.isFetching.value" @click="list.refetch()">Thử lại</AppButton>
           </div>
           <template v-else-if="list.data.value">
-            <div class="customer-bookings__heading">
-              <span class="booking-note"
-                >{{ list.data.value.page.totalElements }} đơn · Giờ Việt Nam</span
-              ><AppButton variant="ghost" :loading="list.isFetching.value" @click="list.refetch()"
+            <div class="customer-bookings__list-toolbar">
+              <h2 class="customer-bookings__list-label">
+                Tất cả giao dịch <span>{{ list.data.value.page.totalElements }}</span>
+              </h2>
+              <AppButton
+                variant="ghost"
+                size="sm"
+                :loading="list.isFetching.value"
+                @click="list.refetch()"
                 >Làm mới</AppButton
               >
             </div>
-            <p v-if="!list.data.value.content.length" class="booking-panel">
-              Chưa có đơn trên trang này.
+            <div v-if="!list.data.value.content.length" class="customer-bookings__empty">
+              <Ticket aria-hidden="true" />
+              <h2>Chưa có đơn trong mục này</h2>
+              <p>Chọn một bộ phim để bắt đầu cuộc hẹn mới.</p>
+              <RouterLink
+                class="customer-bookings__order-link"
+                :to="{ name: ROUTE_NAMES.BOOKING_START }"
+                >Xem lịch chiếu →</RouterLink
+              >
               <AppButton v-if="page" variant="ghost" @click="page = 0">Về trang đầu</AppButton>
-            </p>
-            <div class="customer-bookings__list">
-              <article
+            </div>
+            <div
+              id="customer-booking-orders"
+              class="customer-bookings__list"
+              :aria-busy="list.isFetching.value"
+            >
+              <BookingTicketCard
                 v-for="item in list.data.value.content"
                 :key="item.id"
-                class="customer-bookings__order-card"
-              >
-                <img
-                  class="customer-bookings__order-art"
-                  src="/customer/movie-placeholder.svg"
-                  alt=""
-                  loading="lazy"
-                />
-                <div class="customer-bookings__order-main">
-                  <small class="customer-bookings__id">{{ item.id }}</small>
-                  <h2>Đơn đặt vé</h2>
-                  <p class="booking-note">
-                    {{ date(item.createdAt) }}<br />Ghế:
-                    {{ item.seats?.map((seat) => seat.seatNumber).join(', ') || 'Đang xác nhận' }}
-                  </p>
-                  <span class="customer-bookings__badge" :data-status="item.status">{{
-                    customerBookingLabels[item.status]
-                  }}</span>
-                </div>
-                <div class="customer-bookings__order-actions">
-                  <strong>{{ money(item.totalAmount, item.currency) }}</strong>
-                  <RouterLink
-                    class="customer-bookings__order-link"
-                    :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: item.id } }"
-                    >Chi tiết đơn →</RouterLink
-                  >
-                </div>
-              </article>
+                :booking="item"
+              />
             </div>
-            <nav class="customer-bookings__actions" aria-label="Phân trang đơn">
-              <AppButton
-                variant="secondary"
-                :disabled="!page || list.isFetching.value"
-                @click="page--"
-                >Trang trước</AppButton
-              ><span>Trang {{ page + 1 }} / {{ Math.max(1, list.data.value.page.totalPages) }}</span
-              ><AppButton
-                variant="secondary"
-                :disabled="list.data.value.page.last || list.isFetching.value"
-                @click="page++"
-                >Trang sau</AppButton
-              >
-            </nav>
+            <AppPagination
+              :page="page + 1"
+              :total="list.data.value.page.totalElements"
+              :page-size="list.data.value.page.size"
+              :disabled="list.isFetching.value"
+              controls="customer-booking-orders"
+              @update:page="page = $event - 1"
+            />
+            <p class="customer-bookings__list-note">
+              Trạng thái đơn được cập nhật từ hệ thống. Thông tin phim và rạp hiển thị theo danh mục
+              hiện tại; giá vé theo đơn đã lưu.
+            </p>
           </template>
         </section>
       </div>

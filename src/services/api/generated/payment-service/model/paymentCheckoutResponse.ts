@@ -5,12 +5,12 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { PaymentCheckoutResponseStatus } from './paymentCheckoutResponseStatus'
+import type { PaymentCheckoutResponseStatus } from './paymentCheckoutResponseStatus';
 
 export interface PaymentCheckoutResponse {
-  bookingId?: string
-  paymentId?: string
-  status?: PaymentCheckoutResponseStatus
-  checkoutUri?: string
-  holdExpiresAt?: string
+  bookingId?: string;
+  paymentId?: string;
+  status?: PaymentCheckoutResponseStatus;
+  checkoutUri?: string;
+  holdExpiresAt?: string;
 }

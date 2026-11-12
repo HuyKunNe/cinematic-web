@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PaymentCheckoutResponseStatus =
-  (typeof PaymentCheckoutResponseStatus)[keyof typeof PaymentCheckoutResponseStatus]
+export type PaymentCheckoutResponseStatus = typeof PaymentCheckoutResponseStatus[keyof typeof PaymentCheckoutResponseStatus];
+
 
 export const PaymentCheckoutResponseStatus = {
   RECEIVED: 'RECEIVED',
@@ -17,4 +17,4 @@ export const PaymentCheckoutResponseStatus = {
   FAILED: 'FAILED',
   EXPIRED: 'EXPIRED',
   RECONCILIATION_REQUIRED: 'RECONCILIATION_REQUIRED',
-} as const
+} as const;

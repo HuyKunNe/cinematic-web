@@ -5,16 +5,20 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ApiResponsePaymentCheckoutResponse } from '../model'
+import type {
+  ApiResponsePaymentCheckoutResponse
+} from '../model';
 
-import { apiRequest } from '../../../../http/axios-instance'
+import { apiRequest } from '../../../../http/axios-instance';
 
-export const getCheckoutForCurrentUser = (bookingId: string) => {
-  return apiRequest<ApiResponsePaymentCheckoutResponse>({
-    url: `/api/v1/payments/bookings/${bookingId}/checkout`,
-    method: 'GET',
-  })
-}
-export type GetCheckoutForCurrentUserResult = NonNullable<
-  Awaited<ReturnType<typeof getCheckoutForCurrentUser>>
->
+
+
+  export const getCheckoutForCurrentUser = (
+    bookingId: string,
+ ) => {
+      return apiRequest<ApiResponsePaymentCheckoutResponse>(
+      {url: `/api/v1/payments/bookings/${bookingId}/checkout`, method: 'GET'
+    },
+      );
+    }
+  export type GetCheckoutForCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCheckoutForCurrentUser>>>

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { BookingSeatSelectionRequest } from './bookingSeatSelectionRequest';
+import type { CreateBookingRequestPaymentProvider } from './createBookingRequestPaymentProvider';
 
 export interface CreateBookingRequest {
   /**
@@ -22,4 +23,5 @@ export interface CreateBookingRequest {
   /** @minimum 0 */
   expectedTotalAmount?: number;
   seats?: BookingSeatSelectionRequest[];
+  paymentProvider?: CreateBookingRequestPaymentProvider;
 }

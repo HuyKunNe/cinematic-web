@@ -1,5 +1,30 @@
 # Luồng đặt vé USER
 
+## Giao diện danh sách vé theo reference — 2026-11-12
+
+Trang `/account/bookings` đối chiếu `ticketsPage`/`orderCard` trong Lumière:
+tiêu đề lớn, sidebar, tiêu đề danh sách gạch chân, poster, tên phim, rạp,
+giờ/ngày chiếu, ghế, trạng thái đơn, tổng tiền và nút chi tiết. Tablet đưa giá và
+nút xuống hàng; mobile chuyển sidebar thành hàng ngang và giữ poster nhỏ.
+Phân trang dùng AppPagination, giữ page/size/total thật của API.
+
+BookingTicketCard đọc context suất bằng API hiện có, chỉ cho các đơn trên trang
+đã xác minh owner. Query dùng chung cache theo showtimeId, không polling metadata.
+Đây là thay đổi so với ghi chú trước về không đọc thêm metadata cho danh sách:
+response Booking chưa có movie/cinema/poster nên mỗi suất duy nhất trên trang có
+thể cần bốn GET (showtime, movie, room, cinema). Các đơn cùng suất chia sẻ query.
+Lỗi metadata không che mã/ghế/giá/trạng thái hay chặn mở chi tiết; có thử lại,
+poster thiếu/lỗi dùng asset dự phòng của dự án. Nội dung phim/rạp là hiện tại,
+không giả là snapshot lịch sử.
+
+Khác reference: chỉ có “Tất cả giao dịch”, không dựng các tab lọc toàn lịch sử
+Sắp xem/Đã xem/Chưa hoàn tất khi API chưa hỗ trợ lọc hoặc trạng thái sử dụng vé.
+Không suy Đã sử dụng từ thời gian, không thêm badge thanh toán/vé giả hoặc nút
+Mở vé khi chưa có contract vé điện tử. Sidebar giữ các đường dẫn đang hoạt động.
+Kiểm tra thủ công: poster/tên phim, cùng suất ở nhiều đơn, lỗi metadata/ảnh,
+mã dài, nhiều ghế, đơn chưa có giá, rỗng/lỗi API, phân trang và mở chi tiết trên
+desktop/tablet/mobile. Chưa thực hiện kiểm tra trình duyệt hoặc giao dịch.
+
 ## Phạm vi đã nối
 
 Sau tạo đơn, trang chi tiết theo dõi status từ BE và có phần phim/rạp/phòng/suất.

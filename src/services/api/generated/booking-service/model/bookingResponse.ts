@@ -5,6 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
+import type { BookingResponsePaymentProvider } from './bookingResponsePaymentProvider';
 import type { BookingResponseStatus } from './bookingResponseStatus';
 import type { BookingSeatResponse } from './bookingSeatResponse';
 
@@ -13,6 +14,7 @@ export interface BookingResponse {
   userId?: string;
   showtimeId?: string;
   clientRequestId?: string;
+  paymentProvider?: BookingResponsePaymentProvider;
   status?: BookingResponseStatus;
   totalAmount?: number;
   currency?: string;
