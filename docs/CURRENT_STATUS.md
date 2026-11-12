@@ -1,5 +1,31 @@
 # Current Status
 
+## USER booking result follow-up — 2026-11-12
+
+The booking-detail source now includes a non-polling showtime/movie/room/cinema
+summary using existing generated context reads, after owner-scoped booking data
+is validated. It labels current catalogue metadata separately from stored seat
+fares. Detail status still follows Backend polling; the expiry clock updates
+once per second. Terminal rejected/cancelled/expired orders can choose another
+showtime. No USER payment initiation contract was found in current generated
+clients or inspected Payment controllers/security; no simulated checkout added.
+
+Verification is limited to syntax/diff/module transforms. No create/cancel/payment
+mutations, browser interactions, tests, lint, typecheck or build were performed.
+
+## USER profile follow-up — 2026-11-12
+
+Current `/account` source now wires generated GET/PUT `/api/v1/users/me` after
+checking CurrentUserController, profile DTOs/service and authenticated security.
+It reads verified email and edits first/last names plus phone. Queries and response
+identity checks are scoped to the authenticated subject. Email/username/password
+are not editable in this form. The older customer account placeholder descriptions
+below are historical audit findings, not the current implementation.
+
+The Lumière form includes loading/retry, validation, pending, save feedback, undo,
+owner isolation and responsive fields. No API mutations or browser/manual checks
+were performed; tests, lint, typecheck and build were not run. See USER_ACCOUNT_FLOW.md.
+
 ## Last source inspection
 
 2026-11-06 — roadmap tasks A0.1 and A0.2 (separate rounds).

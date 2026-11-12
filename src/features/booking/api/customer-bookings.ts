@@ -53,6 +53,7 @@ const bookingSchema = z.object({
         id: uuid,
         showtimeId: uuid,
         seatNumber: z.string().min(1),
+        seatType: z.string().nullish(),
         price: money,
         ticketGroupName: z.string().nullish(),
         capacity: z.number().int().positive().nullish(),
@@ -123,7 +124,9 @@ export function useCustomerBookingQuery(id: MaybeRefOrGetter<string>) {
     ),
     queryFn: async ({ queryKey }) => {
       if (!auth.isAuthenticated || auth.subject !== queryKey[1]) throw new Error('Session changed')
-      return readBooking(await findById(queryKey[3]), queryKey[1]!, queryKey[3])
+      const booking = readBooking(await findById(queryKey[3]), queryKey[1]!, queryKey[3])
+      if (!auth.isAuthenticated || auth.subject !== queryKey[1]) throw new Error('Session changed')
+      return booking
     },
     retry: false,
     staleTime: 0,
@@ -160,6 +163,8 @@ export function useCustomerBookingsQuery(
         })
         .parse(await findAllBookings({ page: queryKey[3], size: 10 })).data
       if (
+        !auth.isAuthenticated ||
+        auth.subject !== queryKey[1] ||
         response.page.page !== queryKey[3] ||
         response.content.some((booking) => booking.userId !== queryKey[1])
       )

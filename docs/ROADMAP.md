@@ -188,6 +188,10 @@
 
 ### U3.1 — Hồ sơ
 
+Source follow-up 2026-11-12: `/account` đã nối GET/PUT hồ sơ hiện tại, chỉ sửa
+họ/tên/điện thoại; email chỉ đọc. Xem `USER_ACCOUNT_FLOW.md`. Chưa xác minh thao tác
+lưu thực tế/browser nên chưa đánh dấu U3 hoàn tất.
+
 - Kết nối profile qua OIDC/session hiện tại; không gửi mật khẩu trực tiếp từ Vue.
 - Hiển thị lỗi 401/403 và session hết hạn.
 

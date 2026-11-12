@@ -2,6 +2,15 @@
 
 ## Phạm vi đã nối
 
+Sau tạo đơn, trang chi tiết theo dõi status từ BE và có phần phim/rạp/phòng/suất.
+Metadata được đọc bằng context query chỉ ở chi tiết đơn của owner đã xác minh;
+không gọi bổ sung cho từng item của danh sách. Không poll metadata; query trạng thái
+booking vẫn poll PENDING/RESERVED. Đồng hồ giữ ghế dùng scheduler 1 giây.
+Đơn REJECTED/CANCELLED/EXPIRED có liên kết chọn suất khác khi dữ liệu trạng thái
+đã tải thành công. Không thêm thao tác đặt lại cho PENDING/RESERVED hoặc kết quả
+thanh toán chưa rõ. Thông tin phim/rạp là dữ liệu hiện tại, không giả làm snapshot
+lịch sử; ghế, tiền, đơn vị và trạng thái giữ nguyên từ booking response.
+
 - `/booking/:showtimeId`: chọn ghế, xác nhận báo giá hiện có, gửi tạo đơn.
 - `/account/bookings`: phân trang đơn của tài khoản đăng nhập.
 - `/account/bookings?bookingId=<UUIDv7>`: chi tiết đơn, giá/ghế đã lưu, trạng thái và hạn giữ ghế.
@@ -88,10 +97,27 @@ SessionStorage chỉ giúp phục hồi trong cùng tab; nếu mất bộ nhớ 
 
 - Chưa có API USER thanh toán/checkout URL nên không thêm thanh toán mô phỏng hoặc đánh dấu vé đã thanh toán ở FE.
 - Chưa có QR/vé điện tử từ API; CONFIRMED chỉ được hiển thị theo trạng thái BE.
-- Danh sách/chi tiết dùng mã suất từ booking; không suy đoán tên phim/rạp hoặc gọi N API bổ sung cho từng đơn.
+- Danh sách dùng mã suất từ booking, không gọi N API bổ sung cho từng đơn. Chi tiết
+  đọc metadata của một suất qua API hiện có và ghi rõ thông tin phim/rạp hiện tại.
 - UI tiếp tục dùng design tokens và bố cục customer hiện có; không sao chép dữ liệu demo hoặc quy tắc giữ ghế cố định của reference.
 
 ## Kiểm tra thủ công
+
+### Đối chiếu giao diện Lumière
+
+- Danh sách Vé & giao dịch dùng sidebar tài khoản và các hàng đơn ngang theo
+  `ticketsPage`/`orderCard` trong reference; giữ phân trang API hiện có.
+- Chi tiết dùng phần trạng thái căn giữa theo `resultPage`, hai cột theo
+  `orderPage`: thông tin suất/ghế bên trái, thông tin đơn/tổng tiền bên phải.
+  Mobile xếp thành một cột; hành động và giá trong hàng đơn xuống dưới.
+- Giá từng ghế và tổng tiền lấy từ đơn đã lưu. Thông tin phim/rạp tải riêng;
+  lỗi metadata có nút thử lại và không che thông tin đơn.
+- Khác reference: danh sách dùng ảnh dự phòng và tên chung “Đơn đặt vé” vì
+  response chưa có tên/poster phim; không gọi thêm API cho từng hàng. Không
+  dựng tab Sắp xem/Đã xem, QR, phương thức thanh toán hoặc thông tin liên hệ
+  khi API chưa cung cấp. Giữ luồng hủy và polling trạng thái thật của BE.
+- Kiểm tra thêm ở desktop/mobile: hàng đơn có mã dài, nhiều ghế, tổng tiền chưa
+  xác định; mở chi tiết, lỗi tải metadata, các trạng thái đơn và hộp thoại hủy.
 
 1. Đăng nhập USER, chọn suất đang mở bán, chọn ghế và kiểm tra Bill tạm tính cập nhật ngay.
 2. Xác nhận đặt vé; kiểm tra POST một lần và chuyển sang chi tiết đơn.

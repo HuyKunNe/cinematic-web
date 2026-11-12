@@ -65,7 +65,10 @@ async function readBookingContext(showtimeId: string): Promise<BookingContext | 
   return { showtime, movie, room, cinema }
 }
 
-export function useBookingContextQuery(showtimeId: MaybeRefOrGetter<string>) {
+export function useBookingContextQuery(
+  showtimeId: MaybeRefOrGetter<string>,
+  options: { poll?: boolean } = {},
+) {
   return useQuery<
     BookingContext | null,
     ApiError,
@@ -77,8 +80,8 @@ export function useBookingContextQuery(showtimeId: MaybeRefOrGetter<string>) {
     queryFn: ({ queryKey }) => readBookingContext(queryKey[2]),
     staleTime: 0,
     retry: false,
-    refetchOnWindowFocus: true,
-    refetchInterval: (query) => (query.state.error ? false : 30_000),
+    refetchOnWindowFocus: options.poll !== false,
+    refetchInterval: (query) => (options.poll === false || query.state.error ? false : 30_000),
   })
 }
 

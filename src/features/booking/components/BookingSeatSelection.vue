@@ -411,19 +411,6 @@ watch(
         </div>
       </dl>
 
-      <AppButton
-        variant="ghost"
-        size="sm"
-        :disabled="checkoutLocked || preparingReview"
-        @click="
-          () => {
-            selection = []
-            selectionNotice = ''
-          }
-        "
-      >
-        Bỏ chọn tất cả
-      </AppButton>
       <BookingCheckout
         :selection-error="selectionError"
         :review="review"

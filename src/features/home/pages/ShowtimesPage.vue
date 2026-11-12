@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useNow } from '@vueuse/core'
+import { useIntervalFn, useNow } from '@vueuse/core'
 import { useRoute, useRouter } from 'vue-router'
 import { TabsRoot, TabsList, TabsTrigger, TabsContent } from 'reka-ui'
 import { CalendarDays, MapPin } from 'lucide-vue-next'
@@ -24,7 +24,9 @@ const {
   selectCinemaById,
 } = useCinemaLocation()
 const catalog = useHomeMovies()
-const now = useNow({ interval: 1000 })
+const now = useNow({
+  scheduler: (update) => useIntervalFn(update, 1_000),
+})
 const today = computed(() => getCinemaDateKey(now.value.toISOString()))
 const mode = ref(route.query.mode === 'cinema' ? 'cinema' : 'movie')
 const movieId = ref(typeof route.query.movieId === 'string' ? route.query.movieId : '')
