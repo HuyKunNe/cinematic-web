@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useSessionStorage } from '@vueuse/core'
 import { useQueryClient } from '@tanstack/vue-query'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
@@ -11,9 +11,12 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import { submitCustomerBooking, customerBookingError } from '../api/customer-bookings'
 import BookingReviewDialog from './BookingReviewDialog.vue'
 import type { BookingReview } from '../models/booking-review.model'
+import { bookingSeatQuoteErrorMessage } from '../api/booking-seat-quote'
 
 const props = defineProps<{
   review?: BookingReview
+  prepareReview: () => Promise<BookingReview | undefined>
+  selectionError?: string
   showtimeId: string
   seatNumbers: string[]
   totalAmount?: number
@@ -45,17 +48,31 @@ const resolved = ref(false)
 const resolvedBookingId = ref('')
 const error = ref('')
 const reviewing = ref(false)
+const checking = ref(false)
 const reviewed = ref<BookingReview | null>(null)
 const fingerprint = (value: BookingReview | null | undefined) => JSON.stringify(value)
-function continueBooking() {
+async function continueBooking() {
   if (checkpoint.value) {
     void submit()
     return
   }
-  if (props.disabled || !props.review || sending.value || resolved.value) return
+  if (props.disabled || checking.value || sending.value || resolved.value) return
   error.value = ''
-  reviewed.value = props.review
-  reviewing.value = true
+  checking.value = true
+  try {
+    const current = await props.prepareReview()
+    await nextTick()
+    if (!current || props.disabled || fingerprint(props.review) !== fingerprint(current)) {
+      error.value = 'Ghế đã thay đổi. Vui lòng kiểm tra lại trước khi tiếp tục.'
+      return
+    }
+    reviewed.value = current
+    reviewing.value = true
+  } catch (cause) {
+    error.value = bookingSeatQuoteErrorMessage(cause)
+  } finally {
+    checking.value = false
+  }
 }
 function invalidateReview() {
   if (!reviewing.value) return
@@ -63,6 +80,15 @@ function invalidateReview() {
   reviewed.value = null
   error.value = 'Ghế hoặc báo giá đã thay đổi. Vui lòng kiểm tra lại đơn trước khi xác nhận.'
 }
+watch(
+  () => props.selectionError,
+  (message) => {
+    if (!message || !reviewing.value) return
+    reviewing.value = false
+    reviewed.value = null
+    error.value = message
+  },
+)
 watch(
   () => props.review,
   (current) => {
@@ -138,12 +164,12 @@ async function submit() {
     </p>
     <AppButton
       v-if="!resolved"
-      :loading="sending"
-      :disabled="sending || (!checkpoint && disabled)"
+      :loading="sending || checking"
+      :disabled="sending || checking || (!checkpoint && disabled)"
+      :aria-describedby="selectionError ? 'booking-selection-error' : undefined"
       @click="continueBooking"
-      >{{ checkpoint ? 'Gửi lại cùng yêu cầu' : 'Tiếp tục · Kiểm tra đơn' }}</AppButton
+      >{{ checkpoint ? 'Gửi lại cùng yêu cầu' : 'Tiếp tục' }}</AppButton
     >
-    <AppLink :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }">Vé của tôi</AppLink>
     <AppLink
       v-if="resolvedBookingId"
       :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: resolvedBookingId } }"

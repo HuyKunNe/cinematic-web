@@ -2,8 +2,17 @@
 import { nextTick, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { useRoute } from 'vue-router'
-import { MapPin, Menu, Search, UserRound, X } from 'lucide-vue-next'
-import { DialogRoot, DialogTrigger, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'reka-ui'
+import { MapPin, Menu, Search, UserRound, LogOut, X } from 'lucide-vue-next'
+import {
+  DialogRoot,
+  DialogTrigger,
+  DialogPortal,
+  DialogOverlay,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from 'reka-ui'
 import { CUSTOMER_MEDIA_QUERIES } from '@/config/customer-responsive'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
@@ -19,6 +28,7 @@ withDefaults(
     cityKey?: string
     cityOptions?: readonly { key: string; name: string }[]
     citiesDisabled?: boolean
+    signOutPending?: boolean
   }>(),
   {
     locationLabel: 'Chọn thành phố',
@@ -27,6 +37,7 @@ withDefaults(
     cityKey: '',
     cityOptions: () => [],
     citiesDisabled: false,
+    signOutPending: false,
   },
 )
 
@@ -34,6 +45,7 @@ const emit = defineEmits<{
   searchRequest: []
   locationRequest: [trigger: HTMLButtonElement]
   'city-change': [key: string]
+  signOut: []
 }>()
 
 const route = useRoute()
@@ -58,6 +70,12 @@ async function requestSearch() {
   closeMenu(false)
   await nextTick()
   emit('searchRequest')
+}
+
+async function requestSignOut() {
+  closeMenu(false)
+  await nextTick()
+  emit('signOut')
 }
 
 async function requestLocation(event: MouseEvent) {
@@ -93,47 +111,144 @@ watch(
     if (menuOpen.value) closeMenu(false)
   },
 )
-
 </script>
 
 <template>
   <DialogRoot v-model:open="menuOpen">
     <header class="customer-mobile-header">
       <div class="customer-mobile-header__bar">
-        <RouterLink :to="{ name: ROUTE_NAMES.HOME }" class="cinematic-wordmark" aria-label="Lumière Cinema — Trang chủ"><CustomerBrand /></RouterLink>
-        <button class="customer-mobile-header__icon-button" type="button" aria-label="Tìm phim" @click="requestSearch"><Search aria-hidden="true" class="customer-navigation__icon" /></button>
+        <RouterLink
+          :to="{ name: ROUTE_NAMES.HOME }"
+          class="cinematic-wordmark"
+          aria-label="Lumière Cinema — Trang chủ"
+          ><CustomerBrand
+        /></RouterLink>
+        <button
+          class="customer-mobile-header__icon-button"
+          type="button"
+          aria-label="Tìm phim"
+          @click="requestSearch"
+        >
+          <Search aria-hidden="true" class="customer-navigation__icon" />
+        </button>
         <DialogTrigger as-child>
-          <button class="customer-mobile-header__icon-button" type="button" aria-label="Mở menu điều hướng"><Menu aria-hidden="true" class="customer-navigation__icon" /></button>
+          <button
+            class="customer-mobile-header__icon-button"
+            type="button"
+            aria-label="Mở menu điều hướng"
+          >
+            <Menu aria-hidden="true" class="customer-navigation__icon" />
+          </button>
         </DialogTrigger>
       </div>
       <div class="customer-mobile-header__location-row">
-        <CustomerCitySelect id="customer-mobile-city" :model-value="cityKey" :options="cityOptions" :disabled="citiesDisabled" @update:model-value="emit('city-change', $event)" />
-        <button class="customer-mobile-header__cinema" type="button" aria-haspopup="dialog" :aria-expanded="locationOpen" :aria-label="locationDescription" @click="requestLocation">
-          <MapPin aria-hidden="true" class="customer-navigation__icon" /><span>{{ locationLabel }}</span>
+        <CustomerCitySelect
+          id="customer-mobile-city"
+          :model-value="cityKey"
+          :options="cityOptions"
+          :disabled="citiesDisabled"
+          @update:model-value="emit('city-change', $event)"
+        />
+        <button
+          class="customer-mobile-header__cinema"
+          type="button"
+          aria-haspopup="dialog"
+          :aria-expanded="locationOpen"
+          :aria-label="locationDescription"
+          @click="requestLocation"
+        >
+          <MapPin aria-hidden="true" class="customer-navigation__icon" /><span>{{
+            locationLabel
+          }}</span>
         </button>
       </div>
     </header>
     <DialogPortal>
       <DialogOverlay class="customer-mobile-drawer__backdrop customer-mobile-drawer__overlay" />
-      <DialogContent class="customer-mobile-drawer__panel customer-mobile-drawer__content" @close-auto-focus="(!restoreFocusOnClose || isDesktop) && $event.preventDefault()">
+      <DialogContent
+        class="customer-mobile-drawer__panel customer-mobile-drawer__content"
+        @close-auto-focus="(!restoreFocusOnClose || isDesktop) && $event.preventDefault()"
+      >
         <div class="customer-mobile-drawer__heading">
-          <div><DialogTitle class="customer-mobile-drawer__title">Khám phá Lumière</DialogTitle><DialogDescription class="customer-mobile-drawer__description">Phim hay, rạp gần bạn và những cuộc hẹn điện ảnh.</DialogDescription></div>
-          <DialogClose as-child><button class="customer-mobile-drawer__close" type="button" aria-label="Đóng menu"><X aria-hidden="true" class="customer-navigation__icon" /></button></DialogClose>
+          <div>
+            <DialogTitle class="customer-mobile-drawer__title">Khám phá Lumière</DialogTitle
+            ><DialogDescription class="customer-mobile-drawer__description"
+              >Phim hay, rạp gần bạn và những cuộc hẹn điện ảnh.</DialogDescription
+            >
+          </div>
+          <DialogClose as-child
+            ><button class="customer-mobile-drawer__close" type="button" aria-label="Đóng menu">
+              <X aria-hidden="true" class="customer-navigation__icon" /></button
+          ></DialogClose>
         </div>
         <div class="customer-mobile-drawer__auth">
-          <RouterLink v-if="auth.isAuthenticated" class="customer-header__account" :to="{ name: ROUTE_NAMES.ACCOUNT }" @click="closeMenu(false)"><UserRound aria-hidden="true" class="customer-navigation__icon" />Tài khoản của bạn</RouterLink>
+          <p v-if="signOutPending" role="status">Đang đăng xuất…</p>
+          <RouterLink
+            v-else-if="auth.isAuthenticated"
+            class="customer-header__account"
+            :to="{ name: ROUTE_NAMES.ACCOUNT }"
+            @click="closeMenu(false)"
+            ><UserRound aria-hidden="true" class="customer-navigation__icon" />Tài khoản của
+            bạn</RouterLink
+          >
           <template v-else>
-            <RouterLink class="customer-header__sign-in" :to="{ name: ROUTE_NAMES.LOGIN, query: { returnTo: route.fullPath } }" @click="closeMenu(false)">Đăng nhập</RouterLink>
-            <RouterLink class="customer-header__register" :to="{ name: ROUTE_NAMES.REGISTER }" @click="closeMenu(false)">Đăng ký</RouterLink>
+            <RouterLink
+              class="customer-header__sign-in"
+              :to="{ name: ROUTE_NAMES.LOGIN, query: { returnTo: route.fullPath } }"
+              @click="closeMenu(false)"
+              >Đăng nhập</RouterLink
+            >
+            <RouterLink
+              class="customer-header__register"
+              :to="{ name: ROUTE_NAMES.REGISTER }"
+              @click="closeMenu(false)"
+              >Đăng ký</RouterLink
+            >
           </template>
         </div>
         <nav class="customer-mobile-drawer__nav" aria-label="Điều hướng chính">
-          <RouterLink v-for="item in navigation" :key="item.routeName" :to="{ name: item.routeName }" class="customer-mobile-drawer__link" :class="{ 'is-active': isActive(item.routeName) }" :aria-current="isActive(item.routeName) ? 'page' : undefined" @click="closeMenu(false)">{{ item.label }}</RouterLink>
+          <RouterLink
+            v-for="item in navigation"
+            :key="item.routeName"
+            :to="{ name: item.routeName }"
+            class="customer-mobile-drawer__link"
+            :class="{ 'is-active': isActive(item.routeName) }"
+            :aria-current="isActive(item.routeName) ? 'page' : undefined"
+            @click="closeMenu(false)"
+            >{{ item.label }}</RouterLink
+          >
         </nav>
         <div class="customer-mobile-drawer__actions">
-          <button class="customer-mobile-drawer__link" type="button" :aria-label="locationDescription" @click="requestLocation"><MapPin aria-hidden="true" class="customer-navigation__icon" /><span>{{ locationLabel }}</span></button>
-          <button class="customer-mobile-drawer__link" type="button" @click="requestSearch"><Search aria-hidden="true" class="customer-navigation__icon" />Tìm phim</button>
-          <RouterLink class="customer-mobile-drawer__booking" :to="{ name: ROUTE_NAMES.BOOKING_START }" @click="closeMenu(false)">Đặt vé ngay</RouterLink>
+          <button
+            class="customer-mobile-drawer__link"
+            type="button"
+            :aria-label="locationDescription"
+            @click="requestLocation"
+          >
+            <MapPin aria-hidden="true" class="customer-navigation__icon" /><span>{{
+              locationLabel
+            }}</span>
+          </button>
+          <button class="customer-mobile-drawer__link" type="button" @click="requestSearch">
+            <Search aria-hidden="true" class="customer-navigation__icon" />Tìm phim
+          </button>
+          <button
+            v-if="auth.isAuthenticated || signOutPending"
+            class="customer-mobile-drawer__link customer-account-menu__sign-out"
+            type="button"
+            :disabled="signOutPending"
+            @click="requestSignOut"
+          >
+            <LogOut aria-hidden="true" class="customer-navigation__icon" />{{
+              signOutPending ? 'Đang đăng xuất…' : 'Đăng xuất'
+            }}
+          </button>
+          <RouterLink
+            class="customer-mobile-drawer__booking"
+            :to="{ name: ROUTE_NAMES.BOOKING_START }"
+            @click="closeMenu(false)"
+            >Đặt vé ngay</RouterLink
+          >
         </div>
       </DialogContent>
     </DialogPortal>

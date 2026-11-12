@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { nextTick, readonly, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useQueryClient } from '@tanstack/vue-query'
+import { signOut, restoreAuthSession } from '@/features/auth'
 import CustomerHeader from '@/components/navigation/CustomerHeader.vue'
 import CustomerMobileHeader from '@/components/navigation/CustomerMobileHeader.vue'
 import MobileBottomNav from '@/components/navigation/MobileBottomNav.vue'
@@ -17,6 +19,24 @@ import '@/styles/customer-lumiere.css'
 
 const route = useRoute()
 const router = useRouter()
+const queries = useQueryClient()
+const signOutPending = ref(false)
+const signOutError = ref('')
+
+async function logout() {
+  if (signOutPending.value) return
+  signOutPending.value = true
+  signOutError.value = ''
+  try {
+    await signOut()
+    queries.clear()
+  } catch {
+    await restoreAuthSession()
+    signOutError.value = 'Chưa thể đăng xuất. Vui lòng thử lại từ menu tài khoản.'
+  } finally {
+    signOutPending.value = false
+  }
+}
 
 const locationOpen = ref(false)
 const locationTrigger = shallowRef<HTMLButtonElement | null>(null)
@@ -109,6 +129,8 @@ watch(
       <span>ĐIỆN ẢNH BẮT ĐẦU TỪ MỘT CUỘC HẸN</span><span>Giờ Việt Nam · UTC+7</span>
     </div>
     <CustomerHeader
+      :sign-out-pending="signOutPending"
+      @sign-out="logout"
       :location-label="locationLabel"
       :location-description="locationDescription"
       :location-open="locationOpen"
@@ -123,6 +145,8 @@ watch(
     />
 
     <CustomerMobileHeader
+      :sign-out-pending="signOutPending"
+      @sign-out="logout"
       :location-label="locationLabel"
       :location-description="locationDescription"
       :location-open="locationOpen"
@@ -137,6 +161,9 @@ watch(
     />
 
     <main class="customer-layout__main">
+      <AppContainer v-if="signOutError" class="customer-layout__search-feedback">
+        <p class="customer-layout__search-error" role="alert">{{ signOutError }}</p>
+      </AppContainer>
       <AppContainer v-if="searchError" class="customer-layout__search-feedback">
         <p class="customer-layout__search-error" role="alert">
           {{ searchError }}

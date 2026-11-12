@@ -22,9 +22,7 @@ const emit = defineEmits<{ close: []; confirm: [] }>()
       <DialogOverlay class="booking-review__overlay" />
       <DialogContent class="booking-review">
         <DialogTitle class="booking-review__title">Kiểm tra đơn đặt vé</DialogTitle>
-        <DialogDescription class="booking-review__description">
-          Kiểm tra suất chiếu, ghế và giá trước khi gửi yêu cầu giữ ghế.
-        </DialogDescription>
+
         <template v-if="review">
           <section class="booking-review__context" aria-label="Thông tin suất chiếu">
             <h3>{{ review.movieTitle }}</h3>
@@ -46,10 +44,7 @@ const emit = defineEmits<{ close: []; confirm: [] }>()
             <strong>{{ formatBookingMoney(review.totalMinor) }}</strong>
           </div>
         </template>
-        <p class="booking-review__description">
-          Sau khi gửi, hệ thống sẽ kiểm tra và giữ ghế. Chỉ khi nhận được trạng thái xác nhận từ hệ
-          thống, yêu cầu mới được coi là thành công.
-        </p>
+
         <p v-if="disabled" class="booking-note" role="status">Đang kiểm tra lại ghế và báo giá…</p>
         <div class="booking-review__actions">
           <DialogClose as-child>

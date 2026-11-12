@@ -98,6 +98,13 @@ QuickBooking lọc đúng danh sách rạp và tự chuyển trường; thử Th
 
 ### Header USER — 2026-11-12
 
+Hoàn thiện tiếp menu tài khoản: desktop dùng Reka DropdownMenu với tên phiên đăng nhập,
+Hồ sơ, Vé & giao dịch và Đăng xuất. Mobile có thao tác đăng xuất trong drawer.
+Component chỉ phát sự kiện; CustomerLayout gọi public auth `signOut`, phục hồi phiên
+khi lỗi và xóa query cache khi đăng xuất thành công, như luồng Account hiện có.
+Có trạng thái pending/disabled/error, focus/hover, animation dropdown ngắn và tôn trọng
+prefers-reduced-motion. Chưa thực hiện đăng xuất hoặc quan sát browser trong lượt này.
+
 Đối chiếu header Lumière với source hiện tại: desktop chia ba vùng logo/nav/thao tác,
 sticky bên dưới thanh thông tin; thành phố, tìm phim và tài khoản nằm trong cùng hàng.
 Chưa đăng nhập có hai liên kết Đăng nhập/Đăng ký, đăng nhập giữ returnTo qua OIDC.

@@ -33,6 +33,44 @@ Dùng generated client có sẵn, kiểm tra response ở feature và query key 
 
 ## Gửi tạo đơn và phục hồi
 
+### Quy tắc vị trí ghế
+
+- Chọn đúng một đơn vị ghế được phép đứng riêng; ghế đôi vẫn là đơn vị nguyên cặp.
+- Cho phép chọn nhiều hàng. Trong từng hàng, các đơn vị đã chọn phải liền nhau
+  theo row/column/span thực tế, không bắt buộc các hàng chọn cùng số ghế.
+- Nếu cả đơn chọn nhiều ghế, không hàng nào được chỉ chọn một ghế đơn đứng riêng.
+  G6 + F8 không hợp lệ; G6 + G7 + F8 vẫn lỗi tại F8. Thêm F9 để mỗi hàng thành
+  cụm liền kề rồi tiếp tục kiểm tra ghế trống đơn còn lại. Ghế đôi nguyên cặp có
+  hai chỗ không tính là một ghế đơn đứng riêng.
+  Không nối qua lối đi, ô trống hay ghế không khả dụng; không suy từ nhãn/số ghế.
+- Trong dải ghế đang khả dụng chứa lựa chọn, không được để lại đúng một ghế đơn
+  ở đầu hoặc cuối. Một đơn vị ghế đôi còn lại không coi là một ghế đơn.
+- Dải có bốn ghế trống 1–4: chọn 2–3 không hợp lệ, chọn 1–2 hoặc 3–4 hợp lệ;
+  1–3–5 không hợp lệ; một ghế bất kỳ hợp lệ.
+- Có thể tạm chọn một cấu hình chưa hợp lệ để bổ sung/bỏ ghế. Hiện lý do và khóa
+  Tiếp tục; không quote hoặc tạo booking trước khi sửa. Kiểm tra lại sau quote
+  và khi snapshot cập nhật; review đang mở sẽ đóng nếu phát sinh vi phạm.
+- Ghế đơn đã bị cô lập ở dải khác trước đó không chặn lựa chọn hiện tại.
+  Sơ đồ legacy thiếu vị trí không cho kiểm tra nhiều ghế, UI thông báo chọn suất khác.
+- Đây là kiểm tra tại FE theo yêu cầu; không sửa quy tắc hoặc dữ liệu BE.
+
+Kiểm tra thủ công: các ví dụ trên với một dải bốn ghế; thêm ghế để lấp khoảng trống;
+bỏ ghế giữa cụm; lối đi; ghế BOOKED/HELD; ghế đôi; nhiều hàng đều hợp lệ hoặc chỉ
+một hàng vi phạm thì chặn toàn bộ lựa chọn; G6 + F8 phải báo lỗi, chỉ G6 được phép;
+ghế đôi nguyên cặp; snapshot thay đổi
+trong lúc review. Bill vẫn tính ngay, không gọi quote chỉ vì chọn/bỏ ghế.
+
+Bill cộng/trừ ngay giá từ snapshot ghế, cùng nguồn với giá theo loại ghế.
+Không gọi quote khi chọn/bỏ ghế, không debounce hoặc giữ Bill của lựa chọn cũ.
+Ghế đôi tính giá cả cặp một lần. Bill là tạm tính; chỉ khi bấm
+“Tiếp tục · Kiểm tra đơn” mới gọi quote và chờ API trả về trước khi mở hộp thoại.
+Đối chiếu showtime và tập ghế sau response; không xác nhận nếu lựa chọn đã đổi.
+POST booking vẫn dùng expectedTotalAmount từ quote BE. Giữ refresh snapshot nền
+để kiểm tra availability, không tự gọi lại quote khi focus/reconnect.
+Kiểm tra thủ công: mở Network, chọn/bỏ nhiều ghế phải không có request quote;
+bấm Tiếp tục mới có một quote. Thử mạng chậm, lỗi quote, giá thay đổi,
+ghế bị người khác giữ và hủy review để quay lại chọn.
+
 Từ sơ đồ, bấm “Tiếp tục · Kiểm tra đơn” để mở hộp thoại kiểm tra phim, rạp,
 phòng, suất, ghế và giá từng vé. Hộp thoại dùng báo giá API, chưa gửi mutation.
 “Quay lại chọn ghế” hoặc đóng hộp thoại giữ nguyên lựa chọn; chỉ “Xác nhận đặt vé”
@@ -55,7 +93,7 @@ SessionStorage chỉ giúp phục hồi trong cùng tab; nếu mất bộ nhớ 
 
 ## Kiểm tra thủ công
 
-1. Đăng nhập USER, chọn suất đang mở bán, chọn ghế và chờ báo giá hợp lệ.
+1. Đăng nhập USER, chọn suất đang mở bán, chọn ghế và kiểm tra Bill tạm tính cập nhật ngay.
 2. Xác nhận đặt vé; kiểm tra POST một lần và chuyển sang chi tiết đơn.
 3. Kiểm tra PENDING chuyển sang RESERVED/REJECTED theo xử lý BE; không báo thành công chỉ vì HTTP 202.
 4. Ngắt mạng khi gửi rồi gửi lại/reload cùng tab: giữ cùng clientRequestId và payload, không tạo đơn thứ hai.

@@ -5,7 +5,6 @@ import { quoteShowtimeSeats } from '@/services/api/generated/inventory-service/s
 import { SeatQuoteSeatType } from '@/services/api/generated/inventory-service/model/seatQuoteSeatType'
 import { SeatQuoteUnit } from '@/services/api/generated/inventory-service/model/seatQuoteUnit'
 import type { ShowtimeGroupedSeatQuoteResponse } from '@/services/api/generated/inventory-service/model/showtimeGroupedSeatQuoteResponse'
-import { isBookingUuid } from './booking-queries'
 
 export const MAX_QUOTED_SEATS = 100
 
@@ -57,6 +56,10 @@ export function bookingQuoteSeatKey(value: string): string {
   return value.trim().toUpperCase()
 }
 
+export function bookingQuoteSelectionKey(values: string[]): string {
+  return values.map(bookingQuoteSeatKey).sort().join('|')
+}
+
 function minorAmount(value: number): number {
   return Math.round(value * 100)
 }
@@ -94,6 +97,8 @@ async function readQuote(showtimeId: string, numbers: string[]) {
   return { ...parsed, seats, totalMinor }
 }
 
+export type BookingSeatQuote = Awaited<ReturnType<typeof readQuote>>
+
 export function bookingSeatQuoteErrorMessage(error: unknown): string {
   if (error instanceof z.ZodError) {
     return 'Dữ liệu báo giá chưa hợp lệ. Vui lòng làm mới danh sách ghế.'
@@ -119,23 +124,20 @@ export function bookingSeatQuoteErrorMessage(error: unknown): string {
 export function useBookingSeatQuote(
   showtimeId: MaybeRefOrGetter<string>,
   seatNumbers: MaybeRefOrGetter<string[]>,
-  enabled: MaybeRefOrGetter<boolean>,
 ) {
   const requestedSeats = computed(() => toValue(seatNumbers).map(bookingQuoteSeatKey).sort())
-
-  return useQuery({
+  const query = useQuery({
     queryKey: computed(
       () => ['booking', 'seat-quote', toValue(showtimeId), requestedSeats.value] as const,
     ),
-    enabled: computed(
-      () =>
-        toValue(enabled) && isBookingUuid(toValue(showtimeId)) && requestedSeats.value.length > 0,
-    ),
+    // Fetch only when the user explicitly continues to order review.
+    enabled: false,
     queryFn: ({ queryKey }) =>
       readQuote(uuid.parse(queryKey[2]), requestedSeatsSchema.parse(queryKey[3])),
     staleTime: 0,
     retry: false,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
+  return query
 }

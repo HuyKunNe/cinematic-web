@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { Search, UserRound } from 'lucide-vue-next'
+import { Search } from 'lucide-vue-next'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { useAuthStore } from '@/stores/auth.store'
 import { CUSTOMER_PRIMARY_NAVIGATION } from './customer-navigation'
 import CustomerBrand from './CustomerBrand.vue'
 import CustomerCitySelect from './CustomerCitySelect.vue'
+import CustomerAccountMenu from './CustomerAccountMenu.vue'
 
 withDefaults(
   defineProps<{
@@ -15,6 +16,7 @@ withDefaults(
     cityKey?: string
     cityOptions?: readonly { key: string; name: string }[]
     citiesDisabled?: boolean
+    signOutPending?: boolean
   }>(),
   {
     locationLabel: 'Chọn thành phố',
@@ -23,6 +25,7 @@ withDefaults(
     cityKey: '',
     cityOptions: () => [],
     citiesDisabled: false,
+    signOutPending: false,
   },
 )
 
@@ -30,6 +33,7 @@ const emit = defineEmits<{
   searchRequest: []
   locationRequest: [trigger: HTMLButtonElement]
   'city-change': [key: string]
+  signOut: []
 }>()
 
 const route = useRoute()
@@ -83,14 +87,22 @@ function isActive(routeName: string) {
           <Search aria-hidden="true" class="customer-navigation__icon" />
         </button>
 
-        <RouterLink v-if="auth.isAuthenticated" class="customer-header__account" :to="{ name: ROUTE_NAMES.ACCOUNT }">
-          <UserRound aria-hidden="true" class="customer-navigation__icon" />
-          <span>Tài khoản</span>
-        </RouterLink>
+        <CustomerAccountMenu
+          v-if="auth.isAuthenticated || signOutPending"
+          :username="auth.username"
+          :pending="signOutPending"
+          @sign-out="emit('signOut')"
+        />
 
         <div v-else class="customer-header__auth" aria-label="Tài khoản">
-          <RouterLink class="customer-header__sign-in" :to="{ name: ROUTE_NAMES.LOGIN, query: { returnTo: route.fullPath } }">Đăng nhập</RouterLink>
-          <RouterLink class="customer-header__register" :to="{ name: ROUTE_NAMES.REGISTER }">Đăng ký</RouterLink>
+          <RouterLink
+            class="customer-header__sign-in"
+            :to="{ name: ROUTE_NAMES.LOGIN, query: { returnTo: route.fullPath } }"
+            >Đăng nhập</RouterLink
+          >
+          <RouterLink class="customer-header__register" :to="{ name: ROUTE_NAMES.REGISTER }"
+            >Đăng ký</RouterLink
+          >
         </div>
       </div>
     </div>

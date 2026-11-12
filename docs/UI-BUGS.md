@@ -1,0 +1,1 @@
+- Tạo đợt suất chiếu - hiện toast message mặc dù chỉ mới click thêm khung giờ, chưa input dữ liệu.
