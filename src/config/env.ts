@@ -9,6 +9,7 @@ function normalizeBaseUrl(value: string): string {
 }
 
 export const appEnv = Object.freeze({
+  mockPaymentEnabled: import.meta.env.DEV && import.meta.env.VITE_PAYMENT_MOCK_ENABLED === 'true',
   apiBaseUrl: normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL || localApiBaseUrl),
   oidcAuthority: import.meta.env.VITE_OIDC_AUTHORITY || '',
   oidcClientId: import.meta.env.VITE_OIDC_CLIENT_ID || '',

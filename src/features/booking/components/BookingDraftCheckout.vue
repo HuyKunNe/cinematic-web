@@ -17,8 +17,13 @@ import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils
 import BookingCheckout from './BookingCheckout.vue'
 import BookingSavedSeats from './BookingSavedSeats.vue'
 import BookingJourneySummary from './BookingJourneySummary.vue'
+import BookingCheckoutRecap from './BookingCheckoutRecap.vue'
+import BookingProcessing from './BookingProcessing.vue'
 
 const props = defineProps<{ showtimeId: string }>()
+const emit = defineEmits<{ processing: [value: boolean] }>()
+const processing = ref(false)
+function updateProcessing(value: boolean) { processing.value = value; emit('processing', value) }
 const selection = useBookingSelection(props.showtimeId)
 const contextQuery = useBookingContextQuery(() => props.showtimeId)
 const context = computed(() => contextQuery.data.value)
@@ -130,13 +135,16 @@ watch(
 )
 async function retry() {
   await contextQuery.refetch()
+  if (!contextQuery.isSuccess.value || !context.value?.room.id) return
   await seatsQuery.refetch()
   if (ready.value) await refreshQuote().catch(() => {})
 }
 </script>
 
 <template>
-  <div class="booking-journey__layout">
+  <BookingProcessing v-if="processing" />
+  <!-- Keep the request owner mounted while the processing view is visible. -->
+  <div v-show="!processing" class="booking-journey__layout">
     <div class="booking-journey__main">
       <header class="booking-journey__heading">
         <p class="lumiere-eyebrow">BƯỚC 03</p>
@@ -148,7 +156,7 @@ async function retry() {
         <p
           v-if="
             contextQuery.isPending.value ||
-            seatsQuery.isPending.value ||
+            (context && seatsQuery.isPending.value) ||
             quoteQuery.isFetching.value
           "
           class="booking-note"
@@ -157,7 +165,12 @@ async function retry() {
           Đang kiểm tra ghế và báo giá…
         </p>
         <BookingSavedSeats v-if="quote" :quote="quote" />
-        <p v-if="selectionError" class="booking-error" role="alert">{{ selectionError }}</p>
+        <p v-if="contextQuery.isSuccess.value && !context" class="booking-error" role="alert">
+          Thông tin suất chiếu chưa đầy đủ hoặc không khớp. Vui lòng chọn lại suất chiếu.
+        </p>
+        <p v-if="selectionError" id="booking-selection-error" class="booking-error" role="alert">
+          {{ selectionError }}
+        </p>
         <p v-if="error" class="booking-error" role="alert">{{ error }}</p>
         <p
           v-if="contextQuery.isError.value || seatsQuery.isError.value"
@@ -168,6 +181,7 @@ async function retry() {
         </p>
         <p
           v-if="
+            !requestLocked &&
             context &&
             !ready &&
             !contextQuery.isFetching.value &&
@@ -179,9 +193,28 @@ async function retry() {
           Suất chiếu chưa sẵn sàng để tiếp tục đặt vé.
         </p>
         <RouterLink
+          v-if="!requestLocked"
           class="customer-bookings__link"
           :to="{ name: ROUTE_NAMES.BOOKING, params: { showtimeId } }"
           >← Thay đổi ghế</RouterLink
+        >
+        <AppButton
+          v-if="
+            !requestLocked &&
+            (error ||
+              contextQuery.isError.value ||
+              seatsQuery.isError.value ||
+              (ready && !quote && !quoteQuery.isFetching.value))
+          "
+          variant="secondary"
+          size="sm"
+          :loading="
+            contextQuery.isFetching.value ||
+            seatsQuery.isFetching.value ||
+            quoteQuery.isFetching.value
+          "
+          @click="retry"
+          >Thử lại báo giá</AppButton
         >
       </section>
       <div v-if="quote?.seats.some((seat) => seat.eligibilityDescription)" class="booking-notice">
@@ -206,9 +239,11 @@ async function retry() {
           :selection-error="selectionError"
           :disabled="!ready || !quote || quoteQuery.isFetching.value"
           @locked="requestLocked = $event"
+          @processing="updateProcessing"
         />
       </section>
     </div>
-    <BookingJourneySummary v-if="quote" :quote="quote" />
+    <BookingJourneySummary v-if="quote" id="booking-checkout-summary" :quote="quote" />
+    <BookingCheckoutRecap v-if="quote" :quote="quote" />
   </div>
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Check, Clock3, CircleAlert } from 'lucide-vue-next'
+import { Check, Clock3, CircleAlert, Ticket, Printer, ArrowRight } from 'lucide-vue-next'
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROUTE_NAMES } from '@/router/route-constants'
@@ -11,6 +11,7 @@ import BookingProgress from '../components/BookingProgress.vue'
 import BookingShowtimeSummary from '../components/BookingShowtimeSummary.vue'
 import BookingConfirmedTicket from '../components/BookingConfirmedTicket.vue'
 import BookingPayment from '../components/BookingPayment.vue'
+import BookingProcessing from '../components/BookingProcessing.vue'
 import BookingJourneySummary from '../components/BookingJourneySummary.vue'
 import BookingSavedSeats from '../components/BookingSavedSeats.vue'
 import type { PaymentCheckoutResponseStatus } from '@/services/api/generated/payment-service/model/paymentCheckoutResponseStatus'
@@ -34,14 +35,23 @@ const booking = computed(() =>
   auth.isAuthenticated && query.data.value?.userId === auth.subject ? query.data.value : undefined,
 )
 const checkout = computed(() => route.name === ROUTE_NAMES.BOOKING_CHECKOUT)
+const processing = computed(() => route.name === ROUTE_NAMES.BOOKING_PROCESSING)
 const ticket = computed(() => route.name === ROUTE_NAMES.BOOKING_TICKET)
 const paymentStatus = ref<PaymentCheckoutResponseStatus>()
+const paymentHasResult = computed(
+  () =>
+    paymentStatus.value !== undefined &&
+    ['SUCCEEDED', 'FAILED', 'EXPIRED', 'RECONCILIATION_REQUIRED'].includes(paymentStatus.value),
+)
+const navigationError = ref('')
+let redirecting = false
 watch(id, () => {
   paymentStatus.value = undefined
+  navigationError.value = ''
 })
 const titles: Record<CustomerBooking['status'], string> = {
   PENDING: 'Đang xác nhận giữ ghế',
-  RESERVED: 'Hoàn tất thanh toán cho cuộc hẹn',
+  RESERVED: 'Đang kiểm tra kết quả thanh toán',
   CONFIRMED: 'Hẹn bạn tại rạp!',
   REJECTED: 'Chưa thể giữ ghế cho bạn',
   PAYMENT_FAILED: 'Thanh toán chưa thành công',
@@ -53,7 +63,10 @@ const resultTitle = computed(() => {
   if (booking.value && ['REJECTED', 'CANCELLED', 'EXPIRED'].includes(booking.value.status))
     return titles[booking.value.status]
   if (paymentStatus.value === 'RECONCILIATION_REQUIRED') return 'Chưa xác định kết quả thanh toán'
-  if (paymentStatus.value === 'SUCCEEDED') return 'Thanh toán thành công, đang xác nhận vé'
+  if (paymentStatus.value === 'SUCCEEDED')
+    return booking.value && ['PENDING', 'RESERVED'].includes(booking.value.status)
+      ? 'Thanh toán thành công, đang xác nhận vé'
+      : 'Thanh toán đã được ghi nhận, cần kiểm tra đơn'
   if (paymentStatus.value === 'FAILED') return 'Thanh toán chưa thành công'
   if (paymentStatus.value === 'EXPIRED') return 'Đã hết thời gian thanh toán'
   return booking.value ? titles[booking.value.status] : ''
@@ -61,7 +74,11 @@ const resultTitle = computed(() => {
 const description = computed(() => {
   if (booking.value?.status !== 'CONFIRMED' && paymentStatus.value === 'RECONCILIATION_REQUIRED')
     return 'Chưa có xác nhận kết quả cuối cùng. Kiểm tra trạng thái đơn trước khi thực hiện thanh toán khác.'
-  if (booking.value?.status !== 'CONFIRMED' && paymentStatus.value === 'SUCCEEDED')
+  if (
+    booking.value &&
+    ['PENDING', 'RESERVED'].includes(booking.value.status) &&
+    paymentStatus.value === 'SUCCEEDED'
+  )
     return 'Hệ thống đã ghi nhận thanh toán và đang xác nhận đơn. Thông tin vé chỉ mở khi booking được xác nhận.'
   switch (booking.value?.status) {
     case 'CONFIRMED':
@@ -102,16 +119,43 @@ function printTicket() {
     window.print()
 }
 // Booking status is authoritative; URL query flags never confirm a payment or issue a ticket.
+async function showResult() {
+  if (redirecting || navigationError.value) return
+  const bookingId = id.value
+  redirecting = true
+  navigationError.value = ''
+  try {
+    const failure = await router.replace({
+      name: ROUTE_NAMES.BOOKING_RESULT,
+      params: { bookingId },
+    })
+    if (failure && id.value === bookingId)
+      navigationError.value = 'Chưa thể mở trang kết quả. Bạn có thể mở bằng liên kết bên dưới.'
+  } catch {
+    if (id.value === bookingId)
+      navigationError.value = 'Chưa thể mở trang kết quả. Bạn có thể mở bằng liên kết bên dưới.'
+  } finally {
+    redirecting = false
+  }
+}
 watch(
-  () => [route.name, booking.value?.status, query.isSuccess.value, query.isFetching.value] as const,
+  () =>
+    [
+      route.name,
+      booking.value?.status,
+      query.isSuccess.value,
+      query.isFetching.value,
+      paymentHasResult.value,
+    ] as const,
   () => {
     if (!booking.value || !query.isSuccess.value || query.isFetching.value || query.isError.value)
       return
     if (
-      (checkout.value && !['PENDING', 'RESERVED'].includes(booking.value.status)) ||
+      ((checkout.value || processing.value) &&
+        (paymentHasResult.value || !['PENDING', 'RESERVED'].includes(booking.value.status))) ||
       (ticket.value && booking.value.status !== 'CONFIRMED')
     ) {
-      void router.replace({ name: ROUTE_NAMES.BOOKING_RESULT, params: { bookingId: id.value } })
+      void showResult()
     }
   },
   { immediate: true },
@@ -131,6 +175,7 @@ watch(
     <AppContainer>
       <BookingProgress v-if="checkout" :current="checkout ? 'checkout' : 'order'" />
       <p v-if="!valid" class="booking-error" role="alert">Mã đơn đặt vé không hợp lệ.</p>
+      <BookingProcessing v-else-if="processing && query.isPending.value" />
       <p v-else-if="query.isPending.value" class="booking-note" role="status">
         Đang tải đơn đặt vé…
       </p>
@@ -139,7 +184,18 @@ watch(
         <AppButton :loading="query.isFetching.value" @click="query.refetch()">Thử lại</AppButton>
       </div>
       <template v-if="valid && booking">
-        <template v-if="checkout">
+        <div v-if="navigationError" class="booking-error" role="alert">
+          <p>{{ navigationError }}</p>
+          <RouterLink
+            class="customer-bookings__link"
+            :to="{ name: ROUTE_NAMES.BOOKING_RESULT, params: { bookingId: booking.id } }"
+            >Mở kết quả đơn →</RouterLink
+          >
+        </div>
+        <template v-if="processing">
+          <BookingProcessing :booking-id="booking.id"><BookingPayment :key="booking.id" processing :booking="booking" :disabled="query.isFetching.value || query.isError.value" @payment-status="paymentStatus = $event" @refresh="query.refetch()" /></BookingProcessing>
+        </template>
+        <template v-else-if="checkout">
           <div class="booking-journey__layout">
             <div class="booking-journey__main">
               <header class="booking-journey__heading">
@@ -256,19 +312,12 @@ watch(
             </section>
           </div>
           <div class="booking-journey__actions">
-            <AppButton
-              v-if="booking.status === 'CONFIRMED'"
-              variant="secondary"
-              :disabled="query.isFetching.value || query.isError.value"
-              @click="printTicket"
-              >In thông tin vé</AppButton
-            >
             <RouterLink
               v-if="booking.status === 'CONFIRMED' && !ticket"
               class="booking-journey__primary-link"
               :to="{ name: ROUTE_NAMES.BOOKING_TICKET, params: { bookingId: booking.id } }"
-              >Xem vé →</RouterLink
-            >
+              >Xem vé <Ticket aria-hidden="true"
+            /></RouterLink>
             <RouterLink
               v-if="
                 ['REJECTED', 'CANCELLED', 'EXPIRED'].includes(booking.status) &&
@@ -276,20 +325,31 @@ watch(
                 !query.isFetching.value
               "
               class="booking-journey__primary-link"
-              :to="{ name: ROUTE_NAMES.BOOKING_START }"
-              >Chọn lại suất chiếu →</RouterLink
+              :to="{ name: ROUTE_NAMES.BOOKING, params: { showtimeId: booking.showtimeId } }"
+              >Chọn lại ghế <ArrowRight aria-hidden="true"
+            /></RouterLink>
+            <AppButton
+              v-if="booking.status === 'CONFIRMED'"
+              variant="secondary"
+              :disabled="query.isFetching.value || query.isError.value"
+              @click="printTicket"
+              ><Printer aria-hidden="true" /> In vé</AppButton
             >
             <RouterLink
-              class="customer-bookings__link"
+              v-if="ticket"
+              class="booking-journey__outline-link"
+              :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }"
+              >Vé &amp; giao dịch</RouterLink
+            >
+            <RouterLink
+              v-else-if="booking.status !== 'CONFIRMED'"
+              class="booking-journey__outline-link"
               :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: booking.id } }"
               >Chi tiết đơn</RouterLink
             >
-            <RouterLink class="customer-bookings__link" :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }"
-              >Vé &amp; giao dịch</RouterLink
-            >
             <RouterLink class="customer-bookings__link" :to="{ name: ROUTE_NAMES.HOME }"
-              >Về trang chủ →</RouterLink
-            >
+              >Về trang chủ <ArrowRight aria-hidden="true"
+            /></RouterLink>
           </div>
         </template>
       </template>

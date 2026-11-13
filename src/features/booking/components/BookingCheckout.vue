@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { z } from 'zod'
 import { CreateBookingRequestPaymentProvider } from '@/services/api/generated/booking-service/model/createBookingRequestPaymentProvider'
+import { CreditCard, Wallet } from 'lucide-vue-next'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppLink from '@/components/ui/AppLink.vue'
 import { useAuthStore } from '@/stores/auth.store'
@@ -14,6 +15,8 @@ import { useBookingSelection } from '../composables/use-booking-selection'
 import { useBookingFlowStore } from '../stores/booking-flow.store'
 import type { BookingReview } from '../models/booking-review.model'
 import { bookingSeatQuoteErrorMessage } from '../api/booking-seat-quote'
+import { formatBookingMoney } from '../mappers/booking-seat.mapper'
+import { appEnv } from '@/config/env'
 
 const props = defineProps<{
   page?: boolean
@@ -25,7 +28,7 @@ const props = defineProps<{
   totalAmount?: number
   disabled: boolean
 }>()
-const emit = defineEmits<{ locked: [value: boolean]; rejected: [] }>()
+const emit = defineEmits<{ locked: [value: boolean]; rejected: []; processing: [value: boolean] }>()
 const auth = useAuthStore()
 const owner = auth.subject ?? ''
 const router = useRouter()
@@ -74,13 +77,37 @@ const error = ref('')
 const reviewing = ref(false)
 const checking = ref(false)
 const reviewed = ref<BookingReview | null>(null)
-const paymentProvider = ref<CreateBookingRequestPaymentProvider>()
+// BACKEND_DEFAULT is a UI choice, never a generated request enum value.
+const paymentProvider = ref<CreateBookingRequestPaymentProvider | 'BACKEND_DEFAULT' | undefined>(
+  appEnv.mockPaymentEnabled ? 'BACKEND_DEFAULT' : undefined,
+)
+const providerOptions = [
+  ...Object.values(CreateBookingRequestPaymentProvider).map((value) => ({
+    value,
+    label: value === 'MOMO' ? 'Ví MoMo' : 'VNPAY',
+    description: 'Thanh toán tại cổng bảo mật của nhà cung cấp',
+  })),
+  ...(appEnv.mockPaymentEnabled
+    ? [
+        {
+          value: 'BACKEND_DEFAULT' as const,
+          label: 'Mock provider · Test',
+          description: 'Dùng provider mặc định của BE. BE cần cấu hình PAYMENT_PROVIDER=MOCK.',
+        },
+      ]
+    : []),
+]
 const agreed = ref(false)
 let active = true
 onBeforeUnmount(() => {
   active = false
 })
 const fingerprint = (value: BookingReview | null | undefined) => JSON.stringify(value)
+const paymentLabel = computed(() =>
+  props.review
+    ? `Thanh toán · ${formatBookingMoney(props.review.totalMinor)}`
+    : 'Xác nhận và thanh toán',
+)
 async function continueBooking() {
   if (!props.page) {
     if (checking.value || sending.value || resolved.value || (!checkpoint.value && props.disabled))
@@ -157,6 +184,8 @@ watch(
 )
 watch(() => props.seatNumbers.slice().sort().join('|'), invalidateReview)
 const blocked = computed(() => sending.value || !!checkpoint.value || resolved.value)
+const processing = computed(() => !!props.page && (checking.value || sending.value || (resolved.value && !error.value)))
+watch(processing, (value) => emit('processing', value), { immediate: true, flush: 'sync' })
 onBeforeRouteLeave(() => !sending.value || resolved.value)
 onBeforeRouteUpdate(() => !sending.value || resolved.value)
 watch(blocked, (value) => emit('locked', value), { immediate: true, flush: 'sync' })
@@ -194,7 +223,8 @@ async function submit() {
         }))
         .sort((a, b) => a.seatNumber.localeCompare(b.seatNumber)),
       expectedTotalAmount: props.totalAmount,
-      paymentProvider: paymentProvider.value,
+      paymentProvider:
+        paymentProvider.value === 'BACKEND_DEFAULT' ? undefined : paymentProvider.value,
     })
     stored.value = JSON.stringify(request)
   }
@@ -211,15 +241,22 @@ async function submit() {
     stored.value = ''
     queries.setQueryData(['customer-bookings', owner, 'detail', booking.id], booking)
     await queries.invalidateQueries({ queryKey: ['customer-bookings', owner], refetchType: 'none' })
-    if (props.page && agreed.value) flow.requestPayment(owner, booking.id)
+    if (!active || !auth.isAuthenticated || auth.subject !== owner) return
+    if (props.page && agreed.value && paymentProvider.value !== 'BACKEND_DEFAULT')
+      flow.requestPayment(owner, booking.id)
     const failure = await router.push({
-      name: ROUTE_NAMES.BOOKING_CHECKOUT,
+      name: ROUTE_NAMES.BOOKING_PROCESSING,
       params: { bookingId: booking.id },
     })
-    if (failure) error.value = 'Đơn đã được tiếp nhận. Mở chi tiết đơn để theo dõi kết quả giữ ghế.'
+    if (failure) {
+      flow.consumePayment(owner, booking.id)
+      error.value = 'Đơn đã được tiếp nhận. Mở chi tiết đơn để theo dõi kết quả giữ ghế.'
+    }
   } catch (cause) {
-    if (resolved.value) error.value = 'Đơn đã tạo. Mở Vé của tôi để xem kết quả.'
-    else {
+    if (resolved.value) {
+      flow.consumePayment(owner, resolvedBookingId.value)
+      error.value = 'Đơn đã tạo. Mở Vé của tôi để xem kết quả.'
+    } else {
       const status = (cause as { status?: number })?.status
       // Only definite validation rejections release the request. Unknown outcomes keep the same key.
       if (status && [400, 403, 404, 422].includes(status)) {
@@ -243,21 +280,39 @@ defineExpose({ continueBooking })
     <p v-else-if="checkpoint" class="booking-notice" role="status">
       Có yêu cầu đặt vé cần xác nhận kết quả. Lựa chọn đã khóa để tránh tạo trùng đơn.
     </p>
+    <template v-if="page && checkpoint">
+      <p class="booking-note">
+        Ghế trong yêu cầu đã gửi:
+        {{
+          (checkpoint.seats?.map((seat) => seat.seatNumber) ?? checkpoint.seatNumbers ?? []).join(
+            ', ',
+          )
+        }}<template v-if="checkpoint.paymentProvider">
+          · {{ checkpoint.paymentProvider === 'MOMO' ? 'Ví MoMo' : 'VNPAY' }}</template
+        >
+      </p>
+      <AppLink :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }"
+        >Kiểm tra vé &amp; giao dịch trước khi đặt lại</AppLink
+      >
+    </template>
     <template v-if="page && !checkpoint && !resolved">
       <fieldset class="booking-checkout__providers" :disabled="sending || checking">
         <legend>Phương thức thanh toán</legend>
         <label
-          v-for="provider in CreateBookingRequestPaymentProvider"
-          :key="provider"
-          :data-selected="paymentProvider === provider"
+          v-for="provider in providerOptions"
+          :key="provider.value"
+          :data-selected="paymentProvider === provider.value"
           ><input
             v-model="paymentProvider"
             type="radio"
             name="checkout-payment-provider"
-            :value="provider"
+            :value="provider.value"
+          /><Wallet v-if="provider.value === 'MOMO'" aria-hidden="true" /><CreditCard
+            v-else
+            aria-hidden="true"
           /><span
-            ><strong>{{ provider === 'MOMO' ? 'Ví MoMo' : 'VNPAY' }}</strong
-            ><small>Thanh toán tại cổng bảo mật của nhà cung cấp</small></span
+            ><strong>{{ provider.label }}</strong
+            ><small>{{ provider.description }}</small></span
           ></label
         >
       </fieldset>
@@ -277,9 +332,7 @@ defineExpose({ continueBooking })
       "
       :aria-describedby="selectionError ? 'booking-selection-error' : undefined"
       @click="continueBooking"
-      >{{
-        page ? (checkpoint ? 'Gửi lại cùng yêu cầu' : 'Xác nhận và thanh toán') : 'Tiếp tục'
-      }}</AppButton
+      >{{ page ? (checkpoint ? 'Gửi lại cùng yêu cầu' : paymentLabel) : 'Tiếp tục' }}</AppButton
     >
     <AppLink
       v-if="resolvedBookingId"
@@ -291,6 +344,14 @@ defineExpose({ continueBooking })
 </template>
 
 <style scoped>
+.booking-checkout {
+  --booking-checkout-option-padding: 0.875rem;
+  --booking-checkout-option-selected: #fff4ed;
+  --booking-checkout-option-icon: 1.125rem;
+  --booking-checkout-option-icon-color: #a08e6a;
+  --booking-checkout-consent-size: 0.6875rem;
+  --booking-checkout-consent-line-height: 1.8;
+}
 .booking-checkout__providers {
   display: grid;
   gap: var(--space-3);
@@ -307,18 +368,25 @@ defineExpose({ continueBooking })
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-4);
+  padding: var(--booking-checkout-option-padding);
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
+  font-size: var(--font-size-xs);
 }
 .booking-checkout__providers label[data-selected='true'] {
   border-color: var(--color-primary);
-  background: var(--color-surface-hover);
+  background: var(--booking-checkout-option-selected);
+}
+.booking-checkout__providers label > svg {
+  width: var(--booking-checkout-option-icon);
+  height: var(--booking-checkout-option-icon);
+  color: var(--booking-checkout-option-icon-color);
+  flex-shrink: 0;
 }
 .booking-checkout__providers small {
   display: block;
-  font-size: var(--font-size-xs);
+  font-size: var(--lumiere-caption-size);
   color: var(--color-text-secondary);
 }
 .booking-checkout__consent {
@@ -326,7 +394,8 @@ defineExpose({ continueBooking })
   align-items: start;
   gap: var(--space-3);
   margin-block: var(--space-4);
-  font-size: var(--font-size-sm);
+  font-size: var(--booking-checkout-consent-size);
+  line-height: var(--booking-checkout-consent-line-height);
 }
 .booking-checkout input {
   accent-color: var(--color-primary);

@@ -15,7 +15,7 @@ import {
   useCustomerPaymentQuery,
 } from '../api/customer-payment'
 
-const props = defineProps<{ booking: CustomerBooking; disabled: boolean; resultOnly?: boolean }>()
+const props = defineProps<{ booking: CustomerBooking; disabled: boolean; resultOnly?: boolean; processing?: boolean }>()
 const emit = defineEmits<{
   refresh: []
   paymentStatus: [status: PaymentCheckoutResponseStatus | undefined]
@@ -24,6 +24,7 @@ const auth = useAuthStore()
 const flow = useBookingFlowStore()
 const route = useRoute()
 const agreed = ref(false)
+const handoffError = ref('')
 const hasPaymentIntent = computed(
   () =>
     auth.isAuthenticated &&
@@ -57,8 +58,25 @@ const payment = computed(() =>
 )
 const validLink = computed(() => checkoutLink(payment.value?.checkoutUri))
 watch(
-  () => payment.value?.status,
-  (status) => emit('paymentStatus', status),
+  () =>
+    [
+      payment.value?.status,
+      query.isFetchedAfterMount.value,
+      query.isSuccess.value,
+      query.isFetching.value,
+      query.isError.value,
+    ] as const,
+  () => {
+    if (query.isError.value || !payment.value) emit('paymentStatus', undefined)
+    else if (query.isFetchedAfterMount.value && query.isSuccess.value && !query.isFetching.value) {
+      if (
+        auth.subject &&
+        ['SUCCEEDED', 'FAILED', 'EXPIRED', 'RECONCILIATION_REQUIRED'].includes(payment.value.status)
+      )
+        flow.consumePayment(auth.subject, props.booking.id)
+      emit('paymentStatus', payment.value.status)
+    }
+  },
   { immediate: true },
 )
 const canPay = computed(
@@ -68,6 +86,7 @@ const canPay = computed(
     auth.isAuthenticated &&
     !props.disabled &&
     !query.isError.value &&
+    query.isFetchedAfterMount.value &&
     !query.isFetching.value &&
     props.booking.status === 'RESERVED' &&
     payment.value?.status === 'PENDING_PROVIDER' &&
@@ -75,6 +94,8 @@ const canPay = computed(
       now.value.getTime() &&
     !!validLink.value,
 )
+const processingNeedsAction = computed(() => !!props.processing && (query.isError.value || !!handoffError.value ||
+  (payment.value?.status === 'PENDING_PROVIDER' && (!hasPaymentIntent.value || !validLink.value))))
 const message = computed(() => {
   if (props.booking.status === 'PENDING')
     return 'Đang chờ xác nhận giữ ghế trước khi chuẩn bị thanh toán.'
@@ -92,8 +113,13 @@ const message = computed(() => {
     return 'Thanh toán chưa thành công. Kiểm tra trạng thái đơn trước khi đặt lại.'
   if (payment.value?.status === 'EXPIRED')
     return 'Đã hết thời gian thanh toán. Kiểm tra trạng thái đơn để biết kết quả giải phóng ghế.'
-  if (Date.parse(props.booking.expiresAt) <= now.value.getTime())
-    return 'Đã đến hạn giữ ghế. Vui lòng kiểm tra kết quả đơn trước khi tiếp tục.'
+  if (
+    Math.min(
+      Date.parse(props.booking.expiresAt),
+      payment.value ? Date.parse(payment.value.holdExpiresAt) : Infinity,
+    ) <= now.value.getTime()
+  )
+    return 'Đã đến hạn giữ ghế hoặc phiên thanh toán. Vui lòng kiểm tra kết quả đơn trước khi tiếp tục.'
   if (payment.value?.status === 'PENDING_PROVIDER' && !validLink.value)
     return 'Cổng thanh toán chưa cung cấp liên kết hợp lệ. Vui lòng kiểm tra lại sau.'
   if (payment.value?.status === 'PENDING_PROVIDER')
@@ -106,8 +132,14 @@ async function refresh() {
 }
 function pay() {
   if (canPay.value && validLink.value) {
+    handoffError.value = ''
     if (auth.subject) flow.consumePayment(auth.subject, props.booking.id)
-    window.location.assign(validLink.value)
+    try {
+      window.location.assign(validLink.value)
+    } catch {
+      handoffError.value =
+        'Chưa thể mở cổng thanh toán. Vui lòng bấm tiếp tục thanh toán để thử lại.'
+    }
   }
 }
 watch(
@@ -120,11 +152,11 @@ watch(
 </script>
 
 <template>
-  <section class="booking-payment" aria-labelledby="booking-payment-title">
-    <h3 id="booking-payment-title" :class="{ 'sr-only': resultOnly }">
+  <section class="booking-payment" :class="{ 'booking-payment--processing': processing }" aria-labelledby="booking-payment-title">
+    <h3 id="booking-payment-title" :class="{ 'sr-only': resultOnly || processing }">
       {{ resultOnly ? 'Trạng thái thanh toán' : 'Phương thức thanh toán' }}
     </h3>
-    <div v-if="booking.paymentProvider && !resultOnly" class="booking-payment__provider">
+    <div v-if="booking.paymentProvider && !resultOnly && !processing" class="booking-payment__provider">
       <Wallet v-if="booking.paymentProvider === 'MOMO'" aria-hidden="true" /><CreditCard
         v-else
         aria-hidden="true"
@@ -135,27 +167,28 @@ watch(
       </div>
     </div>
     <p
-      v-if="query.isPending.value && booking.status === 'RESERVED'"
+      v-if="query.isPending.value && booking.status === 'RESERVED' && !processing"
       class="booking-note"
       role="status"
     >
       Đang tải phiên thanh toán…
     </p>
-    <p v-if="payment" class="booking-payment__status" role="status">
+    <p v-if="payment && !processing" class="booking-payment__status" role="status">
       {{ customerPaymentLabels[payment.status] }}
     </p>
-    <p class="booking-note">{{ message }}</p>
+    <p v-if="!processing || processingNeedsAction" class="booking-note">{{ message }}</p>
+    <p v-if="handoffError" class="booking-error" role="alert">{{ handoffError }}</p>
     <p v-if="query.isError.value" class="booking-error" role="alert">
       Chưa thể kiểm tra thanh toán. Vui lòng thử lại; không tạo thêm một đơn để thanh toán lại.
     </p>
-    <label v-if="booking.status === 'RESERVED' && !resultOnly" class="booking-payment__consent">
+    <label v-if="booking.status === 'RESERVED' && !resultOnly && (!processing || processingNeedsAction)" class="booking-payment__consent">
       <input v-model="agreed" type="checkbox" :disabled="disabled" />
       <span
         >Tôi đã kiểm tra phim, suất chiếu, ghế, điều kiện độ tuổi và tổng tiền trước khi thanh
         toán.</span
       >
     </label>
-    <div class="booking-payment__actions">
+    <div v-if="!processing || processingNeedsAction" class="booking-payment__actions">
       <AppButton
         v-if="
           !resultOnly &&
@@ -169,7 +202,7 @@ watch(
       >
       <AppButton
         v-if="booking.status !== 'PENDING' && booking.status !== 'REJECTED'"
-        variant="secondary"
+        :variant="resultOnly ? 'primary' : 'secondary'"
         :disabled="disabled"
         :loading="query.isFetching.value"
         @click="refresh"
@@ -182,7 +215,11 @@ watch(
         >Xem kết quả đơn</RouterLink
       >
       <RouterLink
-        v-if="booking.status === 'RESERVED' && route.name !== ROUTE_NAMES.BOOKING_CHECKOUT"
+        v-if="
+          !resultOnly &&
+          booking.status === 'RESERVED' &&
+          route.name !== ROUTE_NAMES.BOOKING_CHECKOUT
+        "
         :to="{ name: ROUTE_NAMES.BOOKING_CHECKOUT, params: { bookingId: booking.id } }"
         class="customer-bookings__link"
         >Thông tin thanh toán</RouterLink
@@ -254,4 +291,6 @@ watch(
   outline: var(--focus-ring-width) solid var(--color-focus);
   outline-offset: var(--space-1);
 }
+.booking-payment.booking-payment--processing { max-width: var(--journey-copy-width); margin: var(--space-5) auto 0; padding: 0; border: 0; text-align: center; }
+.booking-payment--processing .booking-payment__actions { justify-content: center; }
 </style>

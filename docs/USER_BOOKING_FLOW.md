@@ -1,5 +1,115 @@
 # Luồng đặt vé USER
 
+## Processing sau nút Thanh toán — 2026-11-13
+
+Ngay khi xác nhận thanh toán, checkout chuyển sang view processing toàn trang:
+spinner 48px, tiêu đề “Đang xử lý thanh toán”, nội dung “Vui lòng chờ. Chưa có vé
+được phát hành cho đơn này.” theo nhánh processing của resultPage trong reference.
+Không có progress/sidebar/form/recap trong view chờ. Component giữ request vẫn
+mounted bằng v-show để callback quote/POST không bị hủy hoặc phát sinh gửi trùng.
+
+Khi có bookingId, đi `/booking/processing/:bookingId` (route xác thực, cùng query
+owner-scoped hiện có), tiếp tục chờ booking/payment thật. Provider thật có intent
+hợp lệ thì mở URI; MOCK không có URI, chờ xử lý nội bộ. Kết quả payment hoặc trạng
+thái booking cuối chuyển result; chỉ booking CONFIRMED cho xem vé. Không chèn
+timeout/minimum delay để làm chậm mock hoặc giả một trạng thái thành công.
+
+Quote lỗi/đổi giá hoặc POST chưa xác nhận được kết quả thì trở lại checkout với
+lỗi và checkpoint cũ để retry đúng request. Sau khi có ID, lỗi GET, URI không hợp
+lệ hoặc reload làm mất consent có phần kiểm tra/tiếp tục tương ứng dưới spinner,
+không tự tạo payment attempt. Mã đơn chỉ hiện khi BE đã trả ID, không tự bịa mã.
+
+Kiểm tra thủ công: Thanh toán phải ẩn checkout và hiện processing; quote lỗi quay
+lại form; POST lỗi mạng giữ cùng clientRequestId; POST 202 chuyển URL processing;
+reload URL processing đọc lại owner/status; mock chờ result; provider thật mở URI
+khi hợp lệ; expired/failed/reconciliation chuyển result; reduced motion/mobile.
+Đã kiểm tra cú pháp Vue/TS/CSS và diff, chưa chạy test/lint/typecheck/build hoặc
+giao dịch/browser runtime.
+
+## Mock payment cho local/dev — 2026-11-13
+
+Theo yêu cầu test của người dùng, có lựa chọn provider mặc định BE chỉ trong dev
+khi VITE_PAYMENT_MOCK_ENABLED=true. Lựa chọn test bỏ paymentProvider khỏi POST
+để Payment Service dùng PAYMENT_PROVIDER=MOCK; không mở URI tự động và không
+giả trạng thái thành công ở FE. Xem [USER_BOOKING_MOCK_PAYMENT.md](USER_BOOKING_MOCK_PAYMENT.md)
+để cấu hình, kiểm tra payload và giới hạn. Ngoại lệ UI này chỉ dành cho dev test,
+không thay thiết kế hoặc provider options của production.
+
+## Chuẩn thiết kế bắt buộc cho các lượt tiếp theo
+
+Theo yêu cầu người dùng: giao diện và thao tác booking phải dựa vào
+`docs/design/reference/lumiere-cinema/index.html`, cụ thể `#/booking/checkout`,
+`#/result/{code}`, `#/ticket/{code}` và `#/tickets`. Đọc app.js/CSS của đúng màn
+hình trước khi chỉnh. Không tự thêm khối, thay thứ tự nút, đổi layout hoặc tạo
+biến thể giao diện theo ý riêng. Không sửa reference gốc.
+
+Những khác biệt chỉ vì contract/nghiệp vụ phải được nêu rõ: bước đồ ăn, voucher,
+người nhận, QR/used status chưa có API; không giả lập dữ liệu/hành vi để lấp chỗ.
+Không dùng giới hạn 8 khách của demo; việc Tiếp tục đi thẳng checkout, không modal,
+là yêu cầu riêng đã được chốt. Không thay quyền, API hoặc cơ chế thanh toán thật
+bằng tài khoản/thanh toán mô phỏng của reference.
+
+## Đồng bộ hành động và mobile theo reference — 2026-11-13
+
+- Result CONFIRMED: Xem vé → In vé → Về trang chủ. Bỏ liên kết Chi tiết đơn và
+  Vé & giao dịch dư so với mẫu trong trạng thái này. Ticket: In vé → Vé & giao
+  dịch → Về trang chủ. Nút dùng icon và viền theo reference.
+- Chọn lại ghế chỉ hiện khi booking REJECTED/CANCELLED/EXPIRED và dữ liệu đọc
+  không lỗi; quay về sơ đồ cùng showtimeId như hành vi retry của mẫu. Không tự
+  tạo booking mới khi payment đơn thuần báo failed/unknown mà booking chưa kết thúc.
+- Checkout mobile có thanh cố định với phim, rạp/giờ/ngày, ghế, tổng tiền, Xem
+  tóm tắt và Xem tổng tiền. Hai nút cuộn tới sidebar như mobileRecap('checkout')
+  trong reference, không gọi mutation/quote. Navigation mobile được ẩn chỉ khi
+  thanh recap checkout hiện, để tránh chồng hai thanh dưới màn hình.
+- Thẻ chọn provider dùng radio/icon, padding, màu checked và typography đối
+  chiếu radio-card/checkbox-line. Chỉ hiển thị provider VNPAY/MOMO theo DTO thật;
+  không dựng thêm thẻ nội địa/quốc tế thành phương thức API không có.
+
+Kiểm tra thủ công: thứ tự nút ở result/ticket, In vé và chi tiết, retry cùng suất,
+viewport mobile với tên phim/danh sách ghế dài, cuộn tới tổng tiền, safe area,
+keyboard focus và reduced motion. Chưa quan sát giao diện trên browser; chỉ kiểm
+tra cú pháp/static, không chạy test/lint/typecheck/build.
+
+## Từ payment sang result và xử lý điều hướng — 2026-11-13
+
+Checkout theo bookingId chuyển result khi payment vừa đọc có kết quả SUCCEEDED,
+FAILED, EXPIRED hoặc RECONCILIATION_REQUIRED, không chỉ chờ booking đổi trạng thái.
+Vé vẫn chỉ mở theo booking CONFIRMED; payment thành công trước booking hiển thị chờ
+xác nhận. Không suy trạng thái từ URL trả về của provider.
+
+BookingPayment chỉ phát trạng thái dùng cho điều hướng và mở cổng sau khi query
+đã fetch trong lần mount hiện tại, thành công và không đang fetch/lỗi. Cache cũ
+không đủ để tự chuyển tới provider. Hạn thanh toán dùng deadline sớm hơn giữa
+booking và payment. Lỗi router có thông báo/liên kết mở result, không lặp điều
+hướng mỗi lần polling. Lỗi mở URI có thông báo và thử lại cùng phiên; không tạo
+payment mới. Intent tự mở cổng được hủy nếu điều hướng sau tạo đơn thất bại;
+callback không đổi route hoặc tạo intent khi trang đã đóng/đổi tài khoản.
+
+Kiểm tra thủ công: payment thành công nhưng booking còn RESERVED; failed/expired/
+reconciliation trong lúc booking cập nhật chậm; reload trang với cache checkout;
+GET checkout lỗi; deadline payment sớm hơn booking; router bị chặn hoặc không mở
+được URI. Xem vé phải vẫn bị chặn trước CONFIRMED. Chưa thực hiện runtime các ca
+này; không chạy test/lint/typecheck/build.
+
+## Hoàn thiện trạng thái checkout — 2026-11-13
+
+Checkout trước booking có nút Thử lại báo giá khi quote/context/snapshot lỗi,
+hoặc lần kiểm tra trước bị gián đoạn bởi refetch nền mà không còn quote hợp lệ.
+Context trả null/không khớp có thông báo lỗi rõ, không chờ loading ghế vô hạn.
+Nút Thanh toán hiển thị tiền theo quote đang xem; báo giá vẫn được kiểm tra lại
+trước khi POST và không tự chấp nhận giá mới.
+
+Khi checkpoint tồn tại/đang gửi, không hiển thị sai rằng suất chưa sẵn sàng và
+không cho Thay đổi ghế. Hiển thị ghế/provider của request đã gửi và liên kết
+Vé & giao dịch; giữ nguyên cơ chế retry cùng clientRequestId/payload.
+Liên kết aria-describedby của nút xác nhận trỏ đúng thông báo lỗi chọn ghế.
+
+Kiểm tra thủ công bổ sung: ngắt mạng khi quote rồi kết nối lại/Thử lại; refetch
+nền trong lúc xác nhận quote; context thiếu dữ liệu; retry sau reload của yêu cầu
+chưa rõ kết quả; kiểm tra tiền trên nút với ghế đôi và vé nhiều loại.
+Browser access host không khả dụng trong lần thử mở URL; chưa quan sát giao diện
+hay thực hiện booking/payment runtime. Không chạy test/lint/typecheck/build.
+
 ## Tiếp tục sang trang thanh toán, không dùng modal — 2026-11-13
 
 - Trên `/booking/:showtimeId`, Tiếp tục (desktop/mobile dùng cùng action) lưu lựa

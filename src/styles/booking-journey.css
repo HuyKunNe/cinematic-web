@@ -11,6 +11,8 @@
   --journey-copy-width: 42.5rem;
   --journey-ticket-title: 1.6875rem;
   --journey-result-width: 68.75rem;
+  --journey-action-gap: 0.8125rem;
+  --journey-mobile-recap-space: 8rem;
   --journey-checkout-top: 2.1875rem;
   --journey-checkout-bottom: 4.0625rem;
   --journey-result-top: 3.4375rem;
@@ -26,8 +28,12 @@
   display: grid;
   gap: var(--space-6);
 }
-.booking-journey--checkout { padding-block: var(--journey-checkout-top) var(--journey-checkout-bottom); }
-.booking-journey--result { padding-block: var(--journey-result-top) var(--journey-result-bottom); }
+.booking-journey--checkout {
+  padding-block: var(--journey-checkout-top) var(--journey-checkout-bottom);
+}
+.booking-journey--result {
+  padding-block: var(--journey-result-top) var(--journey-result-bottom);
+}
 .booking-journey--result > .app-container {
   max-width: var(--journey-result-width);
 }
@@ -106,14 +112,47 @@
 .booking-journey__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--journey-action-gap);
   justify-content: center;
   align-items: center;
-  margin-block: var(--space-4);
+  margin: var(--space-7) 0 0;
+}
+.booking-journey__actions svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  flex-shrink: 0;
+}
+.booking-journey__actions > .customer-bookings__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.booking-journey__outline-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-5);
+  min-height: var(--control-height-md);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--lumiere-button-radius);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+}
+.booking-journey__outline-link:hover {
+  border-color: var(--color-primary);
+  color: var(--lumiere-orange-dark);
+}
+.booking-journey .booking-journey__actions .app-button--secondary {
+  border: var(--border-width-thin) solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-primary);
 }
 .booking-journey__primary-link {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-2);
   justify-content: center;
   padding: var(--space-3) var(--space-5);
   min-height: var(--control-height-md);
@@ -472,6 +511,18 @@
   }
 }
 @variant lumiere-mobile {
+  .booking-journey {
+    --journey-action-gap: 0.6875rem;
+  }
+  .booking-journey__layout:has(.booking-checkout-recap) {
+    padding-bottom: var(--journey-mobile-recap-space);
+  }
+  .customer-layout:has(.booking-checkout-recap) > .mobile-bottom-nav {
+    display: none;
+  }
+  #booking-checkout-summary {
+    scroll-margin-top: calc(var(--header-height-mobile) + var(--space-4));
+  }
   .booking-journey__ticket-details {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-5);

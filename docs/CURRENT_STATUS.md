@@ -1,5 +1,16 @@
 # Current Status
 
+## USER payment processing screen — 2026-11-13
+
+Pay now switches draft checkout into the reference processing view immediately
+while quote/create is running, keeping the request component mounted. After BE
+returns an ID, `/booking/processing/:bookingId` continues owner-scoped booking and
+payment reads. The shared BookingProcessing view follows resultPage's spinner,
+heading/copy and mobile sizes; no artificial success or minimum wait. Errors return
+to checkout/retry or show recovery controls, with idempotent payload preserved.
+Results still require authoritative BE status; ticket access requires CONFIRMED.
+Syntax/diff checks only; no tests/build/typecheck, browser or payment transactions.
+
 ## USER seat-to-checkout navigation — 2026-11-13
 
 Continue on the seat page now navigates directly to

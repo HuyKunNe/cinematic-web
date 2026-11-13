@@ -115,6 +115,12 @@ const routes: RouteRecordRaw[] = [
     meta: { layout: 'customer', title: 'Kiểm tra và thanh toán', requiresAuth: true },
   },
   {
+    path: ROUTE_PATHS.BOOKING_PROCESSING,
+    name: ROUTE_NAMES.BOOKING_PROCESSING,
+    component: () => import('../features/booking/pages/BookingOrderPage.vue'),
+    meta: { layout: 'customer', title: 'Đang xử lý thanh toán', requiresAuth: true },
+  },
+  {
     path: ROUTE_PATHS.BOOKING_RESULT,
     name: ROUTE_NAMES.BOOKING_RESULT,
     component: () => import('../features/booking/pages/BookingOrderPage.vue'),
