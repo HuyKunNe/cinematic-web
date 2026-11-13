@@ -103,6 +103,12 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: ROUTE_PATHS.BOOKING_REVIEW,
+    name: ROUTE_NAMES.BOOKING_REVIEW,
+    component: () => import('../features/booking/pages/BookingDraftCheckoutPage.vue'),
+    meta: { layout: 'customer', title: 'Kiểm tra và thanh toán', requiresAuth: true },
+  },
+  {
     path: ROUTE_PATHS.BOOKING_CHECKOUT,
     name: ROUTE_NAMES.BOOKING_CHECKOUT,
     component: () => import('../features/booking/pages/BookingOrderPage.vue'),

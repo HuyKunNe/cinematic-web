@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { CustomerBooking } from '../api/customer-bookings'
-defineProps<{ booking: CustomerBooking }>()
+import type { BookingSeatQuote } from '../api/booking-seat-quote'
+const props = defineProps<{ booking?: CustomerBooking; quote?: BookingSeatQuote }>()
+const source = computed(() => props.booking ?? props.quote)
 const types: Record<string, string> = {
   STANDARD: 'Tiêu chuẩn',
   VIP: 'VIP',
@@ -15,7 +18,7 @@ function money(value: number | null, currency: string | null) {
 </script>
 <template>
   <ul class="booking-journey__seat-lines">
-    <li v-for="seat in booking.seats ?? []" :key="seat.id">
+    <li v-for="seat in source?.seats ?? []" :key="seat.seatNumber">
       <div>
         <span
           >Ghế {{ seat.seatNumber
@@ -29,7 +32,7 @@ function money(value: number | null, currency: string | null) {
           }}</small
         >
       </div>
-      <strong>{{ money(seat.price, booking.currency) }}</strong>
+      <strong>{{ money(seat.price, source?.currency ?? null) }}</strong>
     </li>
   </ul>
 </template>

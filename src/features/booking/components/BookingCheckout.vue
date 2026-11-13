@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useSessionStorage } from '@vueuse/core'
 import { useQueryClient } from '@tanstack/vue-query'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
@@ -10,13 +10,15 @@ import AppLink from '@/components/ui/AppLink.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { submitCustomerBooking, customerBookingError } from '../api/customer-bookings'
-import BookingReviewDialog from './BookingReviewDialog.vue'
+import { useBookingSelection } from '../composables/use-booking-selection'
+import { useBookingFlowStore } from '../stores/booking-flow.store'
 import type { BookingReview } from '../models/booking-review.model'
 import { bookingSeatQuoteErrorMessage } from '../api/booking-seat-quote'
 
 const props = defineProps<{
+  page?: boolean
   review?: BookingReview
-  prepareReview: () => Promise<BookingReview | undefined>
+  prepareReview?: () => Promise<BookingReview | undefined>
   selectionError?: string
   showtimeId: string
   seatNumbers: string[]
@@ -28,6 +30,8 @@ const auth = useAuthStore()
 const owner = auth.subject ?? ''
 const router = useRouter()
 const queries = useQueryClient()
+const selection = useBookingSelection(props.showtimeId)
+const flow = useBookingFlowStore()
 const storageKey = `cinematic:booking-request:${owner}:${props.showtimeId}`
 // Save only the idempotent request so refresh/network retries cannot create another order.
 const requestBaseSchema = z.object({
@@ -71,24 +75,59 @@ const reviewing = ref(false)
 const checking = ref(false)
 const reviewed = ref<BookingReview | null>(null)
 const paymentProvider = ref<CreateBookingRequestPaymentProvider>()
+const agreed = ref(false)
+let active = true
+onBeforeUnmount(() => {
+  active = false
+})
 const fingerprint = (value: BookingReview | null | undefined) => JSON.stringify(value)
 async function continueBooking() {
+  if (!props.page) {
+    if (checking.value || sending.value || resolved.value || (!checkpoint.value && props.disabled))
+      return
+    error.value = ''
+    checking.value = true
+    try {
+      if (!checkpoint.value) selection.save(props.seatNumbers)
+      const failure = await router.push({
+        name: ROUTE_NAMES.BOOKING_REVIEW,
+        query: { showtimeId: props.showtimeId },
+      })
+      if (failure) error.value = 'Chưa thể mở trang thanh toán. Vui lòng thử lại.'
+    } catch {
+      error.value = 'Chưa thể mở trang thanh toán. Vui lòng thử lại.'
+    } finally {
+      checking.value = false
+    }
+    return
+  }
   if (checkpoint.value) {
     void submit()
     return
   }
-  if (props.disabled || checking.value || sending.value || resolved.value) return
+  if (
+    props.disabled ||
+    checking.value ||
+    sending.value ||
+    resolved.value ||
+    !paymentProvider.value ||
+    !agreed.value
+  )
+    return
   error.value = ''
   checking.value = true
   try {
+    if (!props.prepareReview) return
     const current = await props.prepareReview()
     await nextTick()
+    if (!active) return
     if (!current || props.disabled || fingerprint(props.review) !== fingerprint(current)) {
       error.value = 'Ghế đã thay đổi. Vui lòng kiểm tra lại trước khi tiếp tục.'
       return
     }
     reviewed.value = current
     reviewing.value = true
+    await submit()
   } catch (cause) {
     error.value = bookingSeatQuoteErrorMessage(cause)
   } finally {
@@ -122,7 +161,14 @@ onBeforeRouteLeave(() => !sending.value || resolved.value)
 onBeforeRouteUpdate(() => !sending.value || resolved.value)
 watch(blocked, (value) => emit('locked', value), { immediate: true, flush: 'sync' })
 async function submit() {
-  if (sending.value || resolved.value || !owner || !auth.isAuthenticated || auth.subject !== owner)
+  if (
+    !active ||
+    sending.value ||
+    resolved.value ||
+    !owner ||
+    !auth.isAuthenticated ||
+    auth.subject !== owner
+  )
     return
   if (!checkpoint.value) {
     if (
@@ -159,12 +205,13 @@ async function submit() {
   error.value = ''
   try {
     const booking = await submitCustomerBooking(request, owner)
-    if (!auth.isAuthenticated || auth.subject !== owner) return
+    if (!active || !auth.isAuthenticated || auth.subject !== owner) return
     resolved.value = true
     resolvedBookingId.value = booking.id
     stored.value = ''
     queries.setQueryData(['customer-bookings', owner, 'detail', booking.id], booking)
     await queries.invalidateQueries({ queryKey: ['customer-bookings', owner], refetchType: 'none' })
+    if (props.page && agreed.value) flow.requestPayment(owner, booking.id)
     const failure = await router.push({
       name: ROUTE_NAMES.BOOKING_CHECKOUT,
       params: { bookingId: booking.id },
@@ -196,13 +243,43 @@ defineExpose({ continueBooking })
     <p v-else-if="checkpoint" class="booking-notice" role="status">
       Có yêu cầu đặt vé cần xác nhận kết quả. Lựa chọn đã khóa để tránh tạo trùng đơn.
     </p>
+    <template v-if="page && !checkpoint && !resolved">
+      <fieldset class="booking-checkout__providers" :disabled="sending || checking">
+        <legend>Phương thức thanh toán</legend>
+        <label
+          v-for="provider in CreateBookingRequestPaymentProvider"
+          :key="provider"
+          :data-selected="paymentProvider === provider"
+          ><input
+            v-model="paymentProvider"
+            type="radio"
+            name="checkout-payment-provider"
+            :value="provider"
+          /><span
+            ><strong>{{ provider === 'MOMO' ? 'Ví MoMo' : 'VNPAY' }}</strong
+            ><small>Thanh toán tại cổng bảo mật của nhà cung cấp</small></span
+          ></label
+        >
+      </fieldset>
+      <label class="booking-checkout__consent"
+        ><input v-model="agreed" type="checkbox" :disabled="sending || checking" /><span
+          >Tôi xác nhận phim, suất, ghế, điều kiện độ tuổi và tổng tiền trước khi thanh toán.</span
+        ></label
+      >
+    </template>
     <AppButton
       v-if="!resolved"
       :loading="sending || checking"
-      :disabled="sending || checking || (!checkpoint && disabled)"
+      :disabled="
+        sending ||
+        checking ||
+        (!checkpoint && (disabled || (page && (!paymentProvider || !agreed))))
+      "
       :aria-describedby="selectionError ? 'booking-selection-error' : undefined"
       @click="continueBooking"
-      >{{ checkpoint ? 'Gửi lại cùng yêu cầu' : 'Tiếp tục' }}</AppButton
+      >{{
+        page ? (checkpoint ? 'Gửi lại cùng yêu cầu' : 'Xác nhận và thanh toán') : 'Tiếp tục'
+      }}</AppButton
     >
     <AppLink
       v-if="resolvedBookingId"
@@ -210,19 +287,55 @@ defineExpose({ continueBooking })
     >
       Theo dõi đơn vừa tạo
     </AppLink>
-    <BookingReviewDialog
-      :open="reviewing"
-      :review="reviewed"
-      :disabled="disabled || sending"
-      :payment-provider="paymentProvider"
-      @update:payment-provider="paymentProvider = $event"
-      @close="reviewing = false"
-      @confirm="submit"
-    />
   </div>
 </template>
 
 <style scoped>
+.booking-checkout__providers {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.booking-checkout__providers legend {
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+.booking-checkout__providers label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.booking-checkout__providers label[data-selected='true'] {
+  border-color: var(--color-primary);
+  background: var(--color-surface-hover);
+}
+.booking-checkout__providers small {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+.booking-checkout__consent {
+  display: flex;
+  align-items: start;
+  gap: var(--space-3);
+  margin-block: var(--space-4);
+  font-size: var(--font-size-sm);
+}
+.booking-checkout input {
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+.booking-checkout input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
 .booking-checkout {
   display: grid;
   gap: var(--space-3);

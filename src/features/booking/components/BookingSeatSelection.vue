@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppLink from '@/components/ui/AppLink.vue'
 import type { RouteLocationRaw } from 'vue-router'
@@ -7,15 +7,10 @@ import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils
 import BookingCheckout from './BookingCheckout.vue'
 import BookingSeatMatrix from './BookingSeatMatrix.vue'
 import { useBookingSeatsQuery, type BookingContext } from '../api/booking-queries'
-import {
-  bookingQuoteSelectionKey,
-  type BookingSeatQuote,
-  MAX_QUOTED_SEATS,
-  useBookingSeatQuote,
-} from '../api/booking-seat-quote'
+import { MAX_QUOTED_SEATS } from '../api/booking-seat-quote'
+import { useBookingSelection } from '../composables/use-booking-selection'
 import { bookingSeatStatusLabels, formatBookingMoney } from '../mappers/booking-seat.mapper'
 import type { BookingSeat, SelectedBookingSeat } from '../models/booking-seat.model'
-import type { BookingReview } from '../models/booking-review.model'
 import { seatSelectionError } from '../utils/seat-selection-rules'
 
 const props = defineProps<{
@@ -31,6 +26,8 @@ const query = useBookingSeatsQuery(
   () => props.roomId,
 )
 
+const selectionState = useBookingSelection(props.showtimeId)
+let restoredSelection = false
 const selection = ref<SelectedBookingSeat[]>([])
 const selectionNotice = ref('')
 const checkoutLocked = ref(false)
@@ -85,75 +82,14 @@ const chosenSeats = computed(() =>
 )
 const selectionError = computed(() => seatSelectionError(seats.value, chosenSeats.value))
 
-const quoteQuery = useBookingSeatQuote(
-  () => props.showtimeId,
-  () => chosenSeats.value.map((seat) => seat.seatNumber),
-)
-const preparingReview = ref(false)
-const approvedQuote = shallowRef<BookingSeatQuote | null>(null)
-const selectionKey = computed(() =>
-  bookingQuoteSelectionKey(chosenSeats.value.map((seat) => seat.seatNumber)),
-)
-watch(
-  selectionKey,
-  () => {
-    approvedQuote.value = null
-  },
-  { flush: 'sync' },
-)
-const quote = computed(() => {
-  const current = approvedQuote.value
-  return ready.value &&
-    !selectionError.value &&
-    current &&
-    current.showtimeId === props.showtimeId &&
-    bookingQuoteSelectionKey(current.seats.map((seat) => seat.seatNumber)) === selectionKey.value
-    ? current
-    : undefined
-})
 const estimatedTotalMinor = computed(() => {
   const total = chosenSeats.value.reduce((sum, seat) => sum + (seat.priceMinor ?? 0), 0)
   return Number.isSafeInteger(total) ? total : null
 })
 
-async function prepareReview(): Promise<BookingReview | undefined> {
-  if (selectionError.value) throw new Error(selectionError.value)
-  if (
-    !ready.value ||
-    !chosenSeats.value.length ||
-    estimatedTotalMinor.value === null ||
-    preparingReview.value
-  )
-    return undefined
-  const requestedKey = selectionKey.value
-  preparingReview.value = true
-  approvedQuote.value = null
-  try {
-    const result = await quoteQuery.refetch({ throwOnError: true })
-    const current = result.data
-    if (
-      !ready.value ||
-      selectionError.value ||
-      !current ||
-      current.showtimeId !== props.showtimeId ||
-      selectionKey.value !== requestedKey ||
-      bookingQuoteSelectionKey(current.seats.map((seat) => seat.seatNumber)) !== requestedKey
-    ) {
-      throw new Error('Ghế đã thay đổi. Vui lòng kiểm tra lại trước khi tiếp tục.')
-    }
-    approvedQuote.value = current
-    return review.value
-  } finally {
-    preparingReview.value = false
-  }
-}
-const ticketConditions = computed(() => [
-  ...new Set((quote.value?.seats ?? []).map((seat) => seat.eligibilityDescription).filter(Boolean)),
-])
-const totalLabel = computed(() => {
-  const amount = quote.value?.totalMinor ?? estimatedTotalMinor.value
-  return amount === null ? '—' : formatBookingMoney(amount)
-})
+const totalLabel = computed(() =>
+  estimatedTotalMinor.value === null ? '\u2014' : formatBookingMoney(estimatedTotalMinor.value),
+)
 
 const posterFailed = ref(false)
 const poster = computed(() =>
@@ -168,39 +104,13 @@ const showDate = computed(() => {
 const showTime = computed(() =>
   props.context.showtime.startsAt ? formatCinemaTime(props.context.showtime.startsAt) : '',
 )
-const review = computed<BookingReview | undefined>(() => {
-  if (!quote.value) return undefined
-  return {
-    movieTitle: props.context.movie.title || 'Phim chưa có tên',
-    cinemaName: props.context.cinema.name || '',
-    roomName: props.context.room.name || '',
-    showtimeLabel: `${showTime.value} · ${showDate.value}`,
-    totalMinor: quote.value.totalMinor,
-    seats: quote.value.seats.map((seat) => ({
-      seatNumber: seat.seatNumber,
-      typeLabel:
-        chosenSeats.value.find((item) => item.seatNumber === seat.seatNumber)?.typeLabel || '',
-      ticketGroupId: seat.ticketGroupId,
-      ticketGroupName: seat.ticketGroupName,
-      capacity: seat.capacity,
-      priceMinor: seat.priceMinor,
-      unit: seat.unit,
-    })),
-  }
-})
 const priceLines = computed(() => {
   const groups = new Map<string, { label: string; count: number; amount: number }>()
-  const items =
-    quote.value?.seats.map((seat) => ({
-      label: seat.ticketGroupName,
-      unit: seat.unit,
-      priceMinor: seat.priceMinor,
-    })) ??
-    chosenSeats.value.map((seat) => ({
-      label: seat.typeLabel,
-      unit: seat.seatType === 'COUPLE' ? 'PAIR' : 'SEAT',
-      priceMinor: seat.priceMinor ?? 0,
-    }))
+  const items = chosenSeats.value.map((seat) => ({
+    label: seat.typeLabel,
+    unit: seat.seatType === 'COUPLE' ? 'PAIR' : 'SEAT',
+    priceMinor: seat.priceMinor ?? 0,
+  }))
   for (const seat of items) {
     const label = `${seat.label} / ${seat.unit === 'PAIR' ? 'cặp' : 'ghế'}`
     const key = `${label}:${seat.priceMinor}`
@@ -219,7 +129,7 @@ function isSelected(seat: BookingSeat): boolean {
 }
 
 function toggleSeat(seat: BookingSeat) {
-  if (!ready.value || preparingReview.value || !seat.selectable || seat.priceMinor === null) return
+  if (!ready.value || !seat.selectable || seat.priceMinor === null) return
 
   selectionNotice.value = ''
 
@@ -238,6 +148,18 @@ watch(
   () => query.data.value,
   (updatedSeats) => {
     if (!updatedSeats || checkoutLocked.value) return
+    if (!restoredSelection) {
+      restoredSelection = true
+      selection.value = updatedSeats.seats
+        .filter(
+          (seat) =>
+            seat.selectable &&
+            seat.priceMinor !== null &&
+            selectionState.numbers.value.includes(seat.seatNumber),
+        )
+        .map((seat) => ({ id: seat.id, priceMinor: seat.priceMinor! }))
+      return
+    }
 
     const remaining = selection.value.filter((selected) =>
       updatedSeats.seats.some(
@@ -252,6 +174,19 @@ watch(
       selection.value = remaining
     }
   },
+  { immediate: true },
+)
+watch(
+  selection,
+  () => {
+    if (restoredSelection && !checkoutLocked.value)
+      selectionState.save(
+        seats.value
+          .filter((seat) => selection.value.some((item) => item.id === seat.id))
+          .map((seat) => seat.seatNumber),
+      )
+  },
+  { deep: true },
 )
 </script>
 
@@ -274,7 +209,7 @@ watch(
           variant="ghost"
           size="sm"
           :loading="query.isFetching.value"
-          :disabled="checkoutLocked || preparingReview"
+          :disabled="checkoutLocked"
           @click="query.refetch()"
         >
           Làm mới
@@ -303,7 +238,7 @@ watch(
           :seats="seats"
           :matrix="query.data.value.matrix"
           :selected-ids="chosenSeats.map((seat) => seat.id)"
-          :disabled="!ready || preparingReview"
+          :disabled="!ready"
           @select="toggleSeat"
         />
         <template v-else>
@@ -322,7 +257,7 @@ watch(
                   }"
                   type="button"
                   :aria-pressed="isSelected(seat)"
-                  :disabled="!ready || preparingReview || !seat.selectable"
+                  :disabled="!ready || !seat.selectable"
                   @click="toggleSeat(seat)"
                 >
                   <strong>{{ seat.seatNumber }}</strong>
@@ -345,10 +280,7 @@ watch(
       <p v-else-if="query.isSuccess.value" class="booking-note" role="status">
         Chưa có danh sách ghế để chọn cho suất chiếu này.
       </p>
-      <div v-if="ticketConditions.length" class="booking-notice">
-        <strong>Điều kiện vé theo đối tượng</strong>
-        <p v-for="condition in ticketConditions" :key="condition">{{ condition }}</p>
-      </div>
+
       <AppLink :to="changeShowtimeTo" variant="muted">← Đổi suất chiếu</AppLink>
     </section>
 
@@ -416,11 +348,8 @@ watch(
       <BookingCheckout
         ref="checkout"
         :selection-error="selectionError"
-        :review="review"
-        :prepare-review="prepareReview"
         :showtime-id="showtimeId"
         :seat-numbers="chosenSeats.map((seat) => seat.seatNumber)"
-        :total-amount="quote?.totalAmount"
         :disabled="
           !ready || !chosenSeats.length || !!selectionError || estimatedTotalMinor === null
         "
@@ -439,7 +368,14 @@ watch(
       </div>
       <div>
         <strong>{{ totalLabel }}</strong>
-        <AppButton size="sm" :disabled="!ready || !chosenSeats.length || !!selectionError || estimatedTotalMinor === null" :loading="preparingReview" @click="checkout?.continueBooking()">Tiếp tục</AppButton>
+        <AppButton
+          size="sm"
+          :disabled="
+            !ready || !chosenSeats.length || !!selectionError || estimatedTotalMinor === null
+          "
+          @click="checkout?.continueBooking()"
+          >Tiếp tục</AppButton
+        >
       </div>
     </div>
   </div>
@@ -447,13 +383,50 @@ watch(
 
 <style scoped>
 @reference '../../../styles/main.css';
-.booking-mobile-recap { display: none; }
+.booking-mobile-recap {
+  display: none;
+}
 @variant lumiere-mobile {
-  .lumiere-seat-booking { --booking-mobile-recap-space: 10rem; padding-bottom: var(--booking-mobile-recap-space); }
-  .booking-mobile-recap { position: fixed; inset-inline: 0; bottom: 0; z-index: calc(var(--z-header) - 1); display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom)); background: var(--color-surface); border-top: var(--border-width-thin) solid var(--color-border); box-shadow: var(--shadow-raised); }
-  .booking-mobile-recap > div { min-width: 0; display: grid; gap: var(--space-1); }
-  .booking-mobile-recap > div:last-child { flex-shrink: 0; text-align: right; }
-  .booking-mobile-recap strong { font-size: var(--font-size-sm); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .booking-mobile-recap span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+  .lumiere-seat-booking {
+    --booking-mobile-recap-space: 10rem;
+    padding-bottom: var(--booking-mobile-recap-space);
+  }
+  .booking-mobile-recap {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: calc(var(--z-header) - 1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+    background: var(--color-surface);
+    border-top: var(--border-width-thin) solid var(--color-border);
+    box-shadow: var(--shadow-raised);
+  }
+  .booking-mobile-recap > div {
+    min-width: 0;
+    display: grid;
+    gap: var(--space-1);
+  }
+  .booking-mobile-recap > div:last-child {
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .booking-mobile-recap strong {
+    font-size: var(--font-size-sm);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .booking-mobile-recap span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+  }
 }
 </style>

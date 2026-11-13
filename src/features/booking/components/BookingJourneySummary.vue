@@ -3,11 +3,18 @@ import { computed, ref } from 'vue'
 import { Ticket, Clock3 } from 'lucide-vue-next'
 import AppButton from '@/components/ui/AppButton.vue'
 import type { CustomerBooking } from '../api/customer-bookings'
+import type { BookingSeatQuote } from '../api/booking-seat-quote'
 import { useBookingContextQuery } from '../api/booking-queries'
 import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils/cinema-time'
 
-const props = defineProps<{ booking: CustomerBooking; remaining: string; expired: boolean }>()
-const query = useBookingContextQuery(() => props.booking.showtimeId, { poll: false })
+const props = defineProps<{
+  booking?: CustomerBooking
+  quote?: BookingSeatQuote
+  remaining?: string
+  expired?: boolean
+}>()
+const source = computed(() => props.booking ?? props.quote)
+const query = useBookingContextQuery(() => source.value?.showtimeId ?? '', { poll: false })
 const context = computed(() => query.data.value)
 const imageFailed = ref(false)
 const poster = computed(() =>
@@ -16,12 +23,12 @@ const poster = computed(() =>
     : context.value.movie.posterUrl,
 )
 const amount = computed(() =>
-  props.booking.totalAmount === null || !props.booking.currency
+  source.value?.totalAmount == null || !source.value.currency
     ? 'Đang xác nhận'
     : new Intl.NumberFormat('vi-VN', {
         style: 'currency',
-        currency: props.booking.currency,
-      }).format(props.booking.totalAmount),
+        currency: source.value.currency,
+      }).format(source.value.totalAmount),
 )
 </script>
 
@@ -73,9 +80,9 @@ const amount = computed(() =>
     <div class="booking-journey__summary-seats">
       <span>Ghế đã chọn</span
       ><strong>{{
-        booking.seats?.map((seat) => seat.seatNumber).join(', ') || 'Đang xác nhận'
+        source?.seats?.map((seat) => seat.seatNumber).join(', ') || 'Đang xác nhận'
       }}</strong
-      ><small>{{ booking.seatCount ?? '—' }} đơn vị · {{ booking.capacity ?? '—' }} khách</small>
+      ><small>{{ source?.seatCount ?? '—' }} đơn vị · {{ source?.capacity ?? '—' }} khách</small>
     </div>
     <dl class="booking-journey__price-breakdown">
       <div>
@@ -87,8 +94,7 @@ const amount = computed(() =>
         <dd>{{ amount }}</dd>
       </div>
     </dl>
-    <p class="booking-journey__summary-note">Giá theo đơn đã được hệ thống xác nhận.</p>
-    <div v-if="booking.status === 'RESERVED'" class="booking-journey__clock">
+    <div v-if="booking?.status === 'RESERVED'" class="booking-journey__clock">
       <Clock3 aria-hidden="true" /><span
         >{{ expired ? 'Đã đến hạn giữ ghế. Đang chờ cập nhật.' : 'Giữ chỗ còn' }}
         <strong v-if="!expired">{{ remaining }}</strong></span

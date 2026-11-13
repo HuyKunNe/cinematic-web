@@ -1,5 +1,40 @@
 # Luồng đặt vé USER
 
+## Tiếp tục sang trang thanh toán, không dùng modal — 2026-11-13
+
+- Trên `/booking/:showtimeId`, Tiếp tục (desktop/mobile dùng cùng action) lưu lựa
+  chọn ghế theo owner/suất và mở `/booking/checkout?showtimeId=...`. Không mở
+  BookingReviewDialog, không quote hay POST booking ở bước chọn ghế.
+- Route checkout trước khi có bookingId dùng BookingDraftCheckoutPage và
+  BookingDraftCheckout: xem vé/báo giá/điều kiện, Sửa ghế, chọn MoMo/VNPAY, checkbox
+  xác nhận và Xác nhận và thanh toán. Back hoặc reload khôi phục lựa chọn cùng
+  tài khoản trong cùng tab; không lưu quote như giá lịch sử hoặc giả là đã giữ ghế.
+- Checkout đọc context/snapshot thật, kiểm tra suất còn bán, availability và quy
+  tắc ghế lẻ. Lấy quote khi mở trang và kiểm tra lại trước POST. Giá/nhóm vé thay
+  đổi thì cập nhật giá và yêu cầu bấm xác nhận lại, không tự gửi theo số tiền mới.
+- BookingCheckout giữ nguyên checkpoint/clientRequestId khi kết quả mutation chưa
+  rõ. Request cũ vẫn retry nguyên payload. Trong trạng thái này không sửa lựa chọn,
+  không coi ghế HELD là lý do tạo booking mới. Nếu rời trang khi đang quote thì
+  callback không được POST sau khi component đã unmount.
+- Sau POST hợp lệ, chuyển `/booking/checkout/:bookingId` để chờ giữ ghế/phiên
+  payment. Xác nhận vừa thực hiện tạo payment intent trong Pinia, chỉ trong bộ nhớ,
+  theo owner/bookingId; khi URI hợp lệ/còn hạn sẵn sàng thì tiếp tục tới cổng đã chọn.
+  Intent được tiêu thụ một lần, hủy khi bỏ checkbox, rời trang hoặc đổi tài khoản;
+  không lấy consent từ URL và không tự phục hồi intent sau reload. Retry sau reload
+  vẫn cần xác nhận thanh toán ở trang đơn nếu không còn consent trong bộ nhớ.
+- Route checkout theo bookingId, result và ticket cũ vẫn hoạt động; kết quả vé
+  vẫn chỉ dựa trên booking CONFIRMED. Không thêm giới hạn 8 khách.
+
+Kiểm tra thủ công: chọn ghế → Tiếp tục phải đổi URL, không modal/POST; kiểm tra
+quote và chọn cổng trên checkout; Sửa ghế/Back/reload; giá đổi, ghế bị giữ, ghế lẻ,
+suất ngừng bán; xác nhận hai lần chỉ có một request; lỗi mạng giữ cùng ID; rời
+trang khi quote chậm không tạo đơn; chờ provider và chỉ chuyển một lần; đổi tài
+khoản không thấy lựa chọn/intent trước. Không thực hiện giao dịch thật trong lượt này.
+
+Các ghi chú cũ về modal và quote khi bấm Tiếp tục tại sơ đồ bên dưới là lịch sử,
+được thay bằng luồng checkout riêng ở mục này. Không có API đồ ăn/voucher/contact
+snapshot/QR mới được thêm hoặc giả lập trong lượt sửa này.
+
 ## Đối chiếu riêng ba màn hình Lumière — 2026-11-12
 
 | FE | Reference | Cấu trúc đã điều chỉnh |

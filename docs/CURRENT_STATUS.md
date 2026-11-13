@@ -1,5 +1,20 @@
 # Current Status
 
+## USER seat-to-checkout navigation — 2026-11-13
+
+Continue on the seat page now navigates directly to
+`/booking/checkout?showtimeId=...`, without a review modal, quote or create mutation
+on the seat page. Draft checkout owns quote review, provider selection and consent;
+only its explicit confirmation submits a booking. Session-scoped selection restores
+on Back/reload by owner/showtime. Existing idempotent requests are retained unchanged.
+Prices are rechecked and changes require confirmation again. Async quote callbacks
+cannot submit after leaving the page. A one-use in-memory payment intent carries
+explicit consent through the created-order route to the real provider URI once ready;
+it is not restored by URL/reload and is cleared on account changes/navigation.
+Checkout/result/ticket routes for existing orders remain supported; no demo cap of 8.
+Verification: Vue/TS/CSS syntax and diff checks only; no tests, lint, build, typecheck,
+browser/payment transaction was performed in this change.
+
 ## USER checkout/result/ticket UI — 2026-11-12
 
 Checkout and result now use a dedicated BookingOrderPage following Lumière

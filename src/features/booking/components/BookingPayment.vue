@@ -2,7 +2,8 @@
 import { computed, ref, watch } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { CreditCard, Wallet } from 'lucide-vue-next'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router'
+import { useBookingFlowStore } from '../stores/booking-flow.store'
 import AppButton from '@/components/ui/AppButton.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROUTE_NAMES } from '@/router/route-constants'
@@ -20,8 +21,28 @@ const emit = defineEmits<{
   paymentStatus: [status: PaymentCheckoutResponseStatus | undefined]
 }>()
 const auth = useAuthStore()
+const flow = useBookingFlowStore()
 const route = useRoute()
 const agreed = ref(false)
+const hasPaymentIntent = computed(
+  () =>
+    auth.isAuthenticated &&
+    flow.paymentIntent?.owner === auth.subject &&
+    flow.paymentIntent.bookingId === props.booking.id,
+)
+watch(
+  hasPaymentIntent,
+  (value) => {
+    if (value) agreed.value = true
+  },
+  { immediate: true },
+)
+watch(agreed, (value) => {
+  if (!value && auth.subject) flow.consumePayment(auth.subject, props.booking.id)
+})
+onBeforeRouteLeave(() => {
+  if (auth.subject) flow.consumePayment(auth.subject, props.booking.id)
+})
 const now = useNow({ scheduler: (update) => useIntervalFn(update, 1_000) })
 const query = useCustomerPaymentQuery(
   () => props.booking.id,
@@ -84,14 +105,35 @@ async function refresh() {
   emit('refresh')
 }
 function pay() {
-  if (canPay.value && validLink.value) window.location.assign(validLink.value)
+  if (canPay.value && validLink.value) {
+    if (auth.subject) flow.consumePayment(auth.subject, props.booking.id)
+    window.location.assign(validLink.value)
+  }
 }
+watch(
+  canPay,
+  (value) => {
+    if (value && hasPaymentIntent.value) pay()
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
   <section class="booking-payment" aria-labelledby="booking-payment-title">
-    <h3 id="booking-payment-title" :class="{ 'sr-only': resultOnly }">{{ resultOnly ? 'Trạng thái thanh toán' : 'Phương thức thanh toán' }}</h3>
-    <div v-if="booking.paymentProvider && !resultOnly" class="booking-payment__provider"><Wallet v-if="booking.paymentProvider === 'MOMO'" aria-hidden="true" /><CreditCard v-else aria-hidden="true" /><div><strong>{{ booking.paymentProvider === 'MOMO' ? 'Ví MoMo' : 'VNPAY' }}</strong><small>Phương thức đã chọn khi xác nhận đặt vé</small></div></div>
+    <h3 id="booking-payment-title" :class="{ 'sr-only': resultOnly }">
+      {{ resultOnly ? 'Trạng thái thanh toán' : 'Phương thức thanh toán' }}
+    </h3>
+    <div v-if="booking.paymentProvider && !resultOnly" class="booking-payment__provider">
+      <Wallet v-if="booking.paymentProvider === 'MOMO'" aria-hidden="true" /><CreditCard
+        v-else
+        aria-hidden="true"
+      />
+      <div>
+        <strong>{{ booking.paymentProvider === 'MOMO' ? 'Ví MoMo' : 'VNPAY' }}</strong
+        ><small>Phương thức đã chọn khi xác nhận đặt vé</small>
+      </div>
+    </div>
     <p
       v-if="query.isPending.value && booking.status === 'RESERVED'"
       class="booking-note"
@@ -150,10 +192,29 @@ function pay() {
 </template>
 
 <style scoped>
-.booking-payment__provider { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border: var(--border-width-thin) solid var(--color-primary); border-radius: var(--radius-sm); background: var(--color-surface-hover); }
-.booking-payment__provider svg { width: var(--icon-size-lg); height: var(--icon-size-lg); flex-shrink: 0; color: var(--color-primary); }
-.booking-payment__provider strong { font-size: var(--font-size-sm); }
-.booking-payment__provider small { display: block; color: var(--color-text-secondary); font-size: var(--font-size-xs); }
+.booking-payment__provider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-hover);
+}
+.booking-payment__provider svg {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+.booking-payment__provider strong {
+  font-size: var(--font-size-sm);
+}
+.booking-payment__provider small {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
 .booking-payment {
   display: grid;
   gap: var(--space-3);
