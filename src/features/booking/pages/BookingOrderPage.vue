@@ -357,6 +357,12 @@ watch(
               :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: booking.id } }"
               >Chi tiết đơn</RouterLink
             >
+            <RouterLink
+              v-if="booking.status !== 'CONFIRMED'"
+              class="customer-bookings__link"
+              :to="{ name: ROUTE_NAMES.SUPPORT_CONTACT }"
+              >Liên hệ hỗ trợ</RouterLink
+            >
             <RouterLink class="customer-bookings__link" :to="{ name: ROUTE_NAMES.HOME }"
               >Về trang chủ <ArrowRight aria-hidden="true"
             /></RouterLink>

@@ -27,8 +27,10 @@ import CustomerBrand from './CustomerBrand.vue'
         <RouterLink :to="{ name: ROUTE_NAMES.REGISTER }">Đăng ký tài khoản</RouterLink>
       </div>
       <div>
-        <h2>Thông tin đặt vé</h2>
-        <p>Chọn phim, suất chiếu và ghế phù hợp. Theo dõi trạng thái đơn trong Vé của tôi.</p>
+        <h2>Hỗ trợ</h2>
+        <RouterLink :to="{ name: ROUTE_NAMES.SUPPORT }">Câu hỏi thường gặp</RouterLink>
+        <RouterLink :to="{ name: ROUTE_NAMES.SUPPORT_GUIDE }">Hướng dẫn đặt vé</RouterLink>
+        <RouterLink :to="{ name: ROUTE_NAMES.SUPPORT_CONTACT }">Liên hệ hỗ trợ</RouterLink>
         <small>Thời gian hiển thị theo giờ Việt Nam (UTC+7).</small>
       </div>
     </div>

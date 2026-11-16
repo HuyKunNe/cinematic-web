@@ -1,5 +1,23 @@
 # Current Status
 
+## USER support pages — 2026-11-16
+
+Added `/support`, `/support/guide`, `/support/contact` with Lumière's support
+heading, sticky sidebar, grouped FAQ and guide panel. FAQ uses Reka Accordion;
+mobile navigation scrolls horizontally. Operational copy follows the real flow:
+authentication, server hold deadline, quote recheck, payment processing and
+confirmed-booking ticket access, without demo limits, prices or policies.
+
+Contact shows published cinema details through existing public cinema APIs;
+there is no fake support submission or demo hotline/email. Footer links now open
+all three pages; unconfirmed booking results link to contact. Legal/demo policy
+pages remain excluded because demo copy is not a production policy.
+
+Manual checks: footer navigation; expand FAQ with keyboard; guide → booking;
+contact cinema selection, valid tel/mail links, empty contact fields and API
+retry; mobile sidebar and loading. No test/lint/typecheck/build or browser
+verification performed; no BE/generated/reference edits, commits or pushes.
+
 ## USER cinema detail — 2026-11-16
 
 Added `/cinemas/:cinemaId`, linked from the cinema list, following Lumière's

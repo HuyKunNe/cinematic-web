@@ -85,6 +85,32 @@ const routes: RouteRecordRaw[] = [
     component: loadOffersPage,
     meta: { layout: 'customer', title: 'Ưu đãi' },
   },
+  ...[
+    {
+      path: ROUTE_PATHS.SUPPORT,
+      name: ROUTE_NAMES.SUPPORT,
+      topic: 'faq',
+      title: 'Trung tâm hỗ trợ',
+    },
+    {
+      path: ROUTE_PATHS.SUPPORT_GUIDE,
+      name: ROUTE_NAMES.SUPPORT_GUIDE,
+      topic: 'guide',
+      title: 'Hướng dẫn đặt vé',
+    },
+    {
+      path: ROUTE_PATHS.SUPPORT_CONTACT,
+      name: ROUTE_NAMES.SUPPORT_CONTACT,
+      topic: 'contact',
+      title: 'Liên hệ hỗ trợ',
+    },
+  ].map(({ path, name, topic, title }) => ({
+    path,
+    name,
+    component: () => import('../features/support/pages/SupportPage.vue'),
+    props: { topic },
+    meta: { layout: 'customer' as const, title },
+  })),
   {
     path: ROUTE_PATHS.BOOKING_START,
     name: ROUTE_NAMES.BOOKING_START,
