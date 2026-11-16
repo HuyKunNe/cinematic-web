@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, readonly, ref, shallowRef, watch } from 'vue'
+import { nextTick, onBeforeUnmount, readonly, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQueryClient } from '@tanstack/vue-query'
 import { signOut, restoreAuthSession } from '@/features/auth'
@@ -51,6 +51,7 @@ const locationOpen = ref(false)
 const locationTrigger = shallowRef<HTMLButtonElement | null>(null)
 const searchError = ref('')
 const searchFocusPending = ref(false)
+const pendingPageFocus = ref<string | null>(route.path)
 let openingSearch = false
 
 const {
@@ -135,6 +136,65 @@ provideCinemaLocationDialog({
   open: openLocation,
 })
 
+function focusMainContent() {
+  const main = document.getElementById('customer-main-content')
+  if (!main) return
+  main.focus({ preventScroll: true })
+  main.scrollIntoView({ block: 'start', behavior: 'auto' })
+}
+
+const previousDocumentTitle = document.title
+let lastUserTitle = ''
+watch(
+  [() => route.meta.title, () => route.meta.layout],
+  ([title, layout]) => {
+    if (layout !== 'customer') return
+    lastUserTitle = typeof title === 'string' ? `${title} | Lumière Cinema` : 'Lumière Cinema'
+    document.title = lastUserTitle
+  },
+  { immediate: true },
+)
+onBeforeUnmount(() => {
+  if (document.title === lastUserTitle) document.title = previousDocumentTitle
+})
+
+watch(
+  () => route.path,
+  (path) => {
+    pendingPageFocus.value = path
+  },
+  { flush: 'sync' },
+)
+watch(
+  [() => route.path, pageLoading.loading],
+  async () => {
+    const path = pendingPageFocus.value
+    if (!path || pageLoading.loading.value || locationOpen.value) return
+    await nextTick()
+    if (path !== route.path || pageLoading.loading.value || locationOpen.value) return
+    pendingPageFocus.value = null
+    const focused = document.activeElement
+    if (
+      openingSearch ||
+      searchFocusPending.value ||
+      (focused instanceof HTMLElement &&
+        (focused.matches('input, textarea, select, [contenteditable="true"]') ||
+          focused.closest('[role="dialog"], [role="alertdialog"]')))
+    )
+      return
+    const main = document.getElementById('customer-main-content')
+    const anchor = /^#[A-Za-z][\w-]*$/.test(route.hash)
+      ? document.getElementById(route.hash.slice(1))
+      : null
+    const target = anchor ?? main?.querySelector<HTMLElement>('h1') ?? main
+    if (!target) return
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1')
+    target.focus({ preventScroll: true })
+    if (anchor) anchor.scrollIntoView({ block: 'start', behavior: 'auto' })
+  },
+  { immediate: true, flush: 'post' },
+)
+
 watch(
   () => route.fullPath,
   () => {
@@ -147,6 +207,12 @@ watch(
 
 <template>
   <div class="customer-layout">
+    <a
+      class="customer-layout__skip-link"
+      href="#customer-main-content"
+      @click.prevent="focusMainContent"
+      >Bỏ qua đến nội dung</a
+    >
     <div class="lumiere-topline">
       <span>ĐIỆN ẢNH BẮT ĐẦU TỪ MỘT CUỘC HẸN</span><span>Giờ Việt Nam · UTC+7</span>
     </div>
@@ -182,7 +248,7 @@ watch(
       @location-request="openLocation"
     />
 
-    <main class="customer-layout__main">
+    <main id="customer-main-content" class="customer-layout__main" tabindex="-1">
       <AppContainer v-if="signOutError" class="customer-layout__search-feedback">
         <p class="customer-layout__search-error" role="alert">{{ signOutError }}</p>
       </AppContainer>
@@ -220,6 +286,32 @@ watch(
 </template>
 
 <style scoped>
+@reference '../styles/main.css';
+.customer-layout__skip-link {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-4);
+  z-index: calc(var(--z-header) + 1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--lumiere-dark);
+  color: var(--lumiere-white);
+  font-size: var(--font-size-sm);
+  transform: translateY(calc(-100% - var(--space-4)));
+}
+.customer-layout__skip-link:focus {
+  transform: none;
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+.customer-layout__main {
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
+}
+@variant lumiere-mobile {
+  .customer-layout__main {
+    scroll-margin-top: calc(var(--header-height-mobile) + var(--space-4));
+  }
+}
 .customer-layout__loading {
   padding-block: var(--lumiere-page-space);
 }

@@ -161,11 +161,7 @@ async function submit() {
       <p v-if="errors.phoneNumber" id="profile-phoneNumber-error" class="booking-error">
         {{ errors.phoneNumber }}
       </p>
-      <p
-        v-if="feedback"
-        class="booking-error"
-        role="alert"
-      >
+      <p v-if="feedback" class="booking-error" role="alert">
         {{ feedback }}
       </p>
       <div class="current-profile-form__actions">

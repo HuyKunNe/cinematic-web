@@ -1,5 +1,21 @@
 # Current Status
 
+## USER keyboard page navigation — 2026-11-16
+
+Customer layout now exposes Lumière's skip-to-content link and a focusable main
+landmark, and updates browser titles from customer route metadata. On path changes
+it waits for the existing page-loading state and DOM render before focusing the
+new heading/main or an existing named hash target. Query/filter changes do not
+restart focus; active form fields, dialogs and explicit header-search focus are
+preserved. Title handling is scoped to the customer layout and restores the prior
+title on disposal without changing Admin/auth layouts.
+
+Manual checks: first Tab reveals skip link, activation skips desktop/mobile
+navigation, route loading → heading focus, title per page, header search → input,
+Back/Forward, hash links, form typing and open dialogs. No tests/lint/typecheck/
+build or browser verification performed. Existing profile/404 modifications were
+preserved; no BE/generated/reference edits, database changes or commits/pushes.
+
 ## USER not-found and profile feedback — 2026-11-16
 
 Catch-all customer route now renders Lumière's dedicated 404 screen with home
