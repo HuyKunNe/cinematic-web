@@ -1,5 +1,26 @@
 # Current Status
 
+## USER registration and verification form feedback — 2026-11-16
+
+Email verification now uses a reusable password input with an accessible reveal
+toggle, native autocomplete/required attributes and focus styling matching the
+existing form. Passwords reset to hidden when cleared. Validation marks only the
+relevant field, connects its error description and clears stale local errors on
+edit. The 12-character/72-byte UTF-8 rules and generated confirmEmail request remain
+unchanged; credentials/tokens are not persisted or logged.
+
+Registration focuses its accepted/server-error feedback after the real response;
+verification focuses success or the password field after a failed API attempt.
+General registration messages do not infer account existence; verification still
+clears passwords, keeps fragment-token handling and does not auto-login/resend.
+Fixed an undefined font-weight token in the shared registration styling.
+
+Manual checks: keyboard reveal toggles and focus, short/over-byte-limit/nonmatching
+passwords, correct invalid field, API errors, 202 registration/204 verification,
+missing/expired token, no login token, mobile layout and pending disabled fields.
+No tests/lint/typecheck/build or browser/API mutation verification performed;
+no BE/generated/reference edits, database changes, commits or pushes.
+
 ## USER keyboard page navigation — 2026-11-16
 
 Customer layout now exposes Lumière's skip-to-content link and a focusable main

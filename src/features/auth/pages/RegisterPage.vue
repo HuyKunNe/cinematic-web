@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from 'vue'
+import { nextTick, onBeforeUnmount, reactive, ref } from 'vue'
 import { z } from 'zod'
 import AuthPageLayout from '../components/AuthPageLayout.vue'
 import AppButton from '@/components/ui/AppButton.vue'
@@ -12,6 +12,10 @@ import '@/styles/registration-auth.css'
 const form = reactive({ email: '', firstName: '', lastName: '', phoneNumber: '' })
 const errors = ref<Record<string, string>>({})
 const registration = useRegistration()
+let active = true
+onBeforeUnmount(() => {
+  active = false
+})
 const optionalText = (max: number) =>
   z
     .string()
@@ -43,6 +47,12 @@ async function submit() {
     return
   }
   await registration.submit(parsed.data)
+  if (!active) return
+  await nextTick()
+  if (!active) return
+  document
+    .getElementById(registration.accepted.value ? 'register-accepted' : 'register-server-error')
+    ?.focus()
 }
 </script>
 
@@ -52,7 +62,7 @@ async function submit() {
       <p class="lumiere-eyebrow">TÀI KHOẢN LUMIÈRE</p>
       <h1 id="register-title">Bắt đầu cuộc hẹn điện ảnh</h1>
       <template v-if="registration.accepted.value">
-        <div class="registration-auth__success" role="status">
+        <div id="register-accepted" class="registration-auth__success" role="status" tabindex="-1">
           <h2>Kiểm tra hộp thư của bạn</h2>
           <p>{{ registration.message.value }}</p>
           <p>Mở liên kết trong email để xác minh và đặt mật khẩu. Kiểm tra cả thư mục thư rác.</p>
@@ -140,7 +150,13 @@ async function submit() {
           >
             {{ errors.phoneNumber }}
           </p>
-          <p v-if="registration.error.value" class="registration-auth__error" role="alert">
+          <p
+            v-if="registration.error.value"
+            id="register-server-error"
+            class="registration-auth__error"
+            role="alert"
+            tabindex="-1"
+          >
             {{ registration.error.value }}
           </p>
           <AppButton type="submit" :loading="registration.pending.value"

@@ -80,7 +80,7 @@
 }
 .registration-auth__required,
 .registration-auth__hint {
-  font-weight: var(--font-weight-normal);
+  font-weight: var(--font-weight-regular);
 }
 .registration-auth__success {
   padding: var(--space-5);
