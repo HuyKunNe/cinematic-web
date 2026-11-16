@@ -5,15 +5,15 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ShowtimeSeatMapElementResponseKind } from './showtimeSeatMapElementResponseKind';
+import type { ShowtimeSeatMapElementResponseKind } from './showtimeSeatMapElementResponseKind'
 
 export interface ShowtimeSeatMapElementResponse {
-  id?: string;
-  kind?: ShowtimeSeatMapElementResponseKind;
-  label?: string;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  rotationDegrees?: number;
+  id?: string
+  kind?: ShowtimeSeatMapElementResponseKind
+  label?: string
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  rotationDegrees?: number
 }

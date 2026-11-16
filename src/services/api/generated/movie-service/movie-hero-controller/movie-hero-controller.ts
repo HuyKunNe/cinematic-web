@@ -9,32 +9,24 @@ import type {
   GetHeroMoviesParams,
   MovieHeroConfigurationResponse,
   MovieResponse,
-  UpdateMovieHeroRequest
-} from '../model';
+  UpdateMovieHeroRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const updateMovieHero = (
-    movieId: string,
-    updateMovieHeroRequest: UpdateMovieHeroRequest,
- ) => {
-      return apiRequest<MovieHeroConfigurationResponse>(
-      {url: `/api/v1/movies/${movieId}/hero`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: updateMovieHeroRequest
-    },
-      );
-    }
-  export const getHeroMovies = (
-    params?: GetHeroMoviesParams,
- ) => {
-      return apiRequest<MovieResponse[]>(
-      {url: `/api/v1/movies/hero`, method: 'GET',
-        params
-    },
-      );
-    }
-  export type UpdateMovieHeroResult = NonNullable<Awaited<ReturnType<typeof updateMovieHero>>>
+export const updateMovieHero = (
+  movieId: string,
+  updateMovieHeroRequest: UpdateMovieHeroRequest,
+) => {
+  return apiRequest<MovieHeroConfigurationResponse>({
+    url: `/api/v1/movies/${movieId}/hero`,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateMovieHeroRequest,
+  })
+}
+export const getHeroMovies = (params?: GetHeroMoviesParams) => {
+  return apiRequest<MovieResponse[]>({ url: `/api/v1/movies/hero`, method: 'GET', params })
+}
+export type UpdateMovieHeroResult = NonNullable<Awaited<ReturnType<typeof updateMovieHero>>>
 export type GetHeroMoviesResult = NonNullable<Awaited<ReturnType<typeof getHeroMovies>>>

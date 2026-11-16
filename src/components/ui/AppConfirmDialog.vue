@@ -10,13 +10,16 @@ import {
 } from 'reka-ui'
 import AppButton from './AppButton.vue'
 
-const props = withDefaults(defineProps<{
-  open: boolean
-  title: string
-  description: string
-  pending?: boolean
-  confirmLabel?: string
-}>(), { pending: false, confirmLabel: 'Xóa bản nháp' })
+const props = withDefaults(
+  defineProps<{
+    open: boolean
+    title: string
+    description: string
+    pending?: boolean
+    confirmLabel?: string
+  }>(),
+  { pending: false, confirmLabel: 'Xóa bản nháp' },
+)
 
 const emit = defineEmits<{ cancel: []; confirm: [] }>()
 
@@ -42,7 +45,11 @@ function cancel() {
           <AlertDialogCancel as-child>
             <AppButton variant="secondary" :disabled="pending">Giữ bản nháp</AppButton>
           </AlertDialogCancel>
-          <AppButton class="app-confirm-dialog__confirm" :loading="pending" @click="emit('confirm')">
+          <AppButton
+            class="app-confirm-dialog__confirm"
+            :loading="pending"
+            @click="emit('confirm')"
+          >
             {{ pending ? 'Đang xóa…' : confirmLabel }}
           </AppButton>
         </div>

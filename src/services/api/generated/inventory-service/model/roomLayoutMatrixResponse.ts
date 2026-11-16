@@ -5,10 +5,10 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { MatrixSeatResponse } from './matrixSeatResponse';
+import type { MatrixSeatResponse } from './matrixSeatResponse'
 
 export interface RoomLayoutMatrixResponse {
-  rowCount?: number;
-  columnCount?: number;
-  seats?: MatrixSeatResponse[];
+  rowCount?: number
+  columnCount?: number
+  seats?: MatrixSeatResponse[]
 }

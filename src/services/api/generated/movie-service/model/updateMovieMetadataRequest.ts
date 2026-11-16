@@ -5,13 +5,13 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { UpdateMovieMetadataRequestAgeRating } from './updateMovieMetadataRequestAgeRating';
+import type { UpdateMovieMetadataRequestAgeRating } from './updateMovieMetadataRequestAgeRating'
 
 export interface UpdateMovieMetadataRequest {
   /**
-     * @minLength 0
-     * @maxLength 500
-     */
-  backdropUrl: string;
-  ageRating: UpdateMovieMetadataRequestAgeRating;
+   * @minLength 0
+   * @maxLength 500
+   */
+  backdropUrl: string
+  ageRating: UpdateMovieMetadataRequestAgeRating
 }

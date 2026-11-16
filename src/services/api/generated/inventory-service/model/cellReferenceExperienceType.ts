@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CellReferenceExperienceType = typeof CellReferenceExperienceType[keyof typeof CellReferenceExperienceType];
-
+export type CellReferenceExperienceType =
+  (typeof CellReferenceExperienceType)[keyof typeof CellReferenceExperienceType]
 
 export const CellReferenceExperienceType = {
   STANDARD: 'STANDARD',
@@ -15,4 +15,4 @@ export const CellReferenceExperienceType = {
   IMAX: 'IMAX',
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
-} as const;
+} as const

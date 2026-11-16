@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CreateMovieRequestStatus = typeof CreateMovieRequestStatus[keyof typeof CreateMovieRequestStatus];
-
+export type CreateMovieRequestStatus =
+  (typeof CreateMovieRequestStatus)[keyof typeof CreateMovieRequestStatus]
 
 export const CreateMovieRequestStatus = {
   UPCOMING: 'UPCOMING',
   NOW_SHOWING: 'NOW_SHOWING',
   ENDED: 'ENDED',
   INACTIVE: 'INACTIVE',
-} as const;
+} as const

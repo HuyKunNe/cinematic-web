@@ -6,11 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CellInputState = typeof CellInputState[keyof typeof CellInputState];
-
+export type CellInputState = (typeof CellInputState)[keyof typeof CellInputState]
 
 export const CellInputState = {
   UNCONFIGURED: 'UNCONFIGURED',
   PRICED: 'PRICED',
   NOT_APPLICABLE: 'NOT_APPLICABLE',
-} as const;
+} as const

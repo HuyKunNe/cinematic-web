@@ -5,17 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CurrentUserProfileResponseStatus } from './currentUserProfileResponseStatus';
+import type { CurrentUserProfileResponseStatus } from './currentUserProfileResponseStatus'
 
 export interface CurrentUserProfileResponse {
-  id?: string;
-  email?: string;
-  username?: string;
-  status?: CurrentUserProfileResponseStatus;
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  emailVerifiedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  id?: string
+  email?: string
+  username?: string
+  status?: CurrentUserProfileResponseStatus
+  firstName?: string
+  lastName?: string
+  phoneNumber?: string
+  emailVerifiedAt?: string
+  createdAt?: string
+  updatedAt?: string
 }

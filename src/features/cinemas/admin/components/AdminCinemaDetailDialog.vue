@@ -149,8 +149,14 @@ function amenitiesError(error: unknown) {
               <DialogDescription class="admin-cinemas__muted">
                 Thông tin liên hệ, phòng chiếu và tiện ích.
               </DialogDescription>
-              <span v-if="cinema.data.value" class="admin-cinemas__status"
-                :class="{ 'is-active': cinema.data.value.active === true, 'is-paused': cinema.data.value.active === false }">
+              <span
+                v-if="cinema.data.value"
+                class="admin-cinemas__status"
+                :class="{
+                  'is-active': cinema.data.value.active === true,
+                  'is-paused': cinema.data.value.active === false,
+                }"
+              >
                 {{ statusLabel(cinema.data.value.active) }}
               </span>
             </div>
@@ -162,217 +168,249 @@ function amenitiesError(error: unknown) {
         </header>
 
         <div class="admin-cinema-detail__body">
-        <p v-if="!canManage" class="admin-cinemas__error" role="alert">
-          Tài khoản không có quyền xem thông tin quản lý cụm rạp.
-        </p>
+          <p v-if="!canManage" class="admin-cinemas__error" role="alert">
+            Tài khoản không có quyền xem thông tin quản lý cụm rạp.
+          </p>
 
-        <template v-else>
-          <div v-if="cinema.isError.value" class="admin-cinemas__feedback">
-            <p class="admin-cinemas__error" role="alert">
-              {{ cinemaError(cinema.error.value) }}
-            </p>
-            <p v-if="cinema.data.value" class="admin-cinemas__muted">
-              Đang hiển thị thông tin từ lần tải trước.
-            </p>
-            <AppButton
-              variant="secondary"
-              :loading="cinema.isFetching.value"
-              @click="cinema.refetch()"
-            >
-              Thử lại thông tin cụm rạp
-            </AppButton>
-          </div>
-
-          <div v-if="cinema.isFetching.value && !cinema.data.value" class="admin-cinemas__feedback">
-            <p role="status">Đang tải thông tin cụm rạp…</p>
-          </div>
-
-          <template v-if="cinema.data.value">
-            <div
-              class="admin-cinema-detail__tabs"
-              role="tablist"
-              aria-label="Thông tin cụm rạp"
-              @keydown="onTabKeydown"
-            >
-              <button
-                v-for="tab in tabs"
-                :id="`admin-cinema-detail-tab-${tab.id}`"
-                :key="tab.id"
-                class="admin-cinema-detail__tab"
-                :class="{ 'is-active': activeTab === tab.id }"
-                type="button"
-                role="tab"
-                :aria-selected="activeTab === tab.id"
-                :aria-controls="`admin-cinema-detail-panel-${tab.id}`"
-                :tabindex="activeTab === tab.id ? 0 : -1"
-                @click="activeTab = tab.id"
+          <template v-else>
+            <div v-if="cinema.isError.value" class="admin-cinemas__feedback">
+              <p class="admin-cinemas__error" role="alert">
+                {{ cinemaError(cinema.error.value) }}
+              </p>
+              <p v-if="cinema.data.value" class="admin-cinemas__muted">
+                Đang hiển thị thông tin từ lần tải trước.
+              </p>
+              <AppButton
+                variant="secondary"
+                :loading="cinema.isFetching.value"
+                @click="cinema.refetch()"
               >
-                {{ tab.label }}
-              </button>
+                Thử lại thông tin cụm rạp
+              </AppButton>
             </div>
 
-            <section
-              id="admin-cinema-detail-panel-overview"
-              class="admin-cinema-detail__panel"
-              role="tabpanel"
-              aria-labelledby="admin-cinema-detail-tab-overview"
-              tabindex="0"
-              :hidden="activeTab !== 'overview'"
-              :aria-busy="cinema.isFetching.value"
+            <div
+              v-if="cinema.isFetching.value && !cinema.data.value"
+              class="admin-cinemas__feedback"
             >
-              <div class="admin-cinema-detail__overview">
-                <section class="admin-cinema-detail__section" aria-labelledby="cinema-location-title">
-                  <h3 id="cinema-location-title">Địa điểm</h3>
-                  <dl class="admin-cinema-detail__grid">
-                    <div><dt>Địa chỉ</dt><dd>{{ display(cinema.data.value.address) }}</dd></div>
-                    <div><dt>Thành phố</dt><dd>{{ display(cinema.data.value.city) }}</dd></div>
-                    <div><dt>Hướng dẫn đường đi</dt><dd>{{ display(cinema.data.value.directions) }}</dd></div>
-                  </dl>
-                </section>
-                <section class="admin-cinema-detail__section" aria-labelledby="cinema-contact-title">
-                  <h3 id="cinema-contact-title">Liên hệ &amp; giờ hoạt động</h3>
-                  <dl class="admin-cinema-detail__grid">
-                    <div><dt>Số điện thoại</dt><dd>{{ display(cinema.data.value.phone) }}</dd></div>
-                    <div><dt>Email</dt><dd>{{ display(cinema.data.value.email) }}</dd></div>
-                    <div><dt>Giờ mở cửa</dt><dd>{{ display(cinema.data.value.openingHours) }}</dd></div>
-                    <div><dt>Múi giờ</dt><dd>{{ display(cinema.data.value.timeZone) }}</dd></div>
-                  </dl>
-                </section>
-              </div>
-            </section>
+              <p role="status">Đang tải thông tin cụm rạp…</p>
+            </div>
 
-            <section
-              id="admin-cinema-detail-panel-rooms"
-              class="admin-cinema-detail__panel"
-              role="tabpanel"
-              aria-labelledby="admin-cinema-detail-tab-rooms"
-              tabindex="0"
-              :hidden="activeTab !== 'rooms'"
-              :aria-busy="rooms.isFetching.value"
-            >
-              <p v-if="rooms.isFetching.value && !rooms.data.value" role="status">
-                Đang tải danh sách phòng…
-              </p>
-
-              <div v-if="rooms.isError.value" class="admin-cinemas__feedback">
-                <p class="admin-cinemas__error" role="alert">
-                  {{ adminRoomErrorMessage(rooms.error.value, 'Không thể tải danh sách phòng.') }}
-                </p>
-                <p v-if="rooms.data.value" class="admin-cinemas__muted">
-                  Đang hiển thị danh sách phòng từ lần tải trước.
-                </p>
-                <AppButton
-                  variant="secondary"
-                  :loading="rooms.isFetching.value"
-                  @click="rooms.refetch()"
-                >
-                  Thử lại danh sách phòng
-                </AppButton>
-              </div>
-
+            <template v-if="cinema.data.value">
               <div
-                v-if="rooms.data.value"
-                class="admin-cinemas__table-scroll"
-                role="region"
-                aria-label="Danh sách phòng thuộc cụm rạp"
-                tabindex="0"
+                class="admin-cinema-detail__tabs"
+                role="tablist"
+                aria-label="Thông tin cụm rạp"
+                @keydown="onTabKeydown"
               >
-                <table class="admin-cinemas__table admin-cinema-detail__table">
-                  <caption class="admin-visually-hidden">
-                    Phòng chiếu thuộc cụm rạp đã chọn
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Phòng chiếu</th>
-                      <th scope="col">Loại phòng</th>
-                      <th scope="col">Định dạng</th>
-                      <th scope="col">Sức chứa</th>
-                      <th scope="col">Trạng thái</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(room, index) in rooms.data.value" :key="room.id ?? index">
-                      <td>{{ room.name || 'Chưa có tên phòng' }}</td>
-                      <td>{{ adminRoomTypeLabel(room.roomType) }}</td>
-                      <td>{{ contentFormatsLabel(room.contentFormats) }}</td>
-                      <td>
-                        <AdminRoomCapacityCell v-if="room.id" :key="room.id" :room-id="room.id" />
-                        <span v-else>Chưa có mã phòng</span>
-                      </td>
-                      <td>{{ statusLabel(room.active) }}</td>
-                    </tr>
-                    <tr v-if="!rooms.data.value.length">
-                      <td colspan="5" class="admin-cinemas__empty">Cụm rạp chưa có phòng chiếu.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <section
-              id="admin-cinema-detail-panel-amenities"
-              class="admin-cinema-detail__panel"
-              role="tabpanel"
-              aria-labelledby="admin-cinema-detail-tab-amenities"
-              tabindex="0"
-              :hidden="activeTab !== 'amenities'"
-              :aria-busy="amenities.isFetching.value"
-            >
-              <div class="admin-cinema-amenities">
-                <header class="admin-cinema-amenities__heading">
-                  <h3>Tiện ích tại cụm rạp</h3>
-
-                  <AppButton
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    :loading="amenities.isFetching.value"
-                    @click="amenities.refetch()"
-                  >
-                    Tải lại tiện ích
-                  </AppButton>
-                </header>
-
-                <p
-                  v-if="amenities.isFetching.value && !amenities.data.value"
-                  class="admin-cinemas__muted"
-                  role="status"
+                <button
+                  v-for="tab in tabs"
+                  :id="`admin-cinema-detail-tab-${tab.id}`"
+                  :key="tab.id"
+                  class="admin-cinema-detail__tab"
+                  :class="{ 'is-active': activeTab === tab.id }"
+                  type="button"
+                  role="tab"
+                  :aria-selected="activeTab === tab.id"
+                  :aria-controls="`admin-cinema-detail-panel-${tab.id}`"
+                  :tabindex="activeTab === tab.id ? 0 : -1"
+                  @click="activeTab = tab.id"
                 >
-                  Đang tải tiện ích…
+                  {{ tab.label }}
+                </button>
+              </div>
+
+              <section
+                id="admin-cinema-detail-panel-overview"
+                class="admin-cinema-detail__panel"
+                role="tabpanel"
+                aria-labelledby="admin-cinema-detail-tab-overview"
+                tabindex="0"
+                :hidden="activeTab !== 'overview'"
+                :aria-busy="cinema.isFetching.value"
+              >
+                <div class="admin-cinema-detail__overview">
+                  <section
+                    class="admin-cinema-detail__section"
+                    aria-labelledby="cinema-location-title"
+                  >
+                    <h3 id="cinema-location-title">Địa điểm</h3>
+                    <dl class="admin-cinema-detail__grid">
+                      <div>
+                        <dt>Địa chỉ</dt>
+                        <dd>{{ display(cinema.data.value.address) }}</dd>
+                      </div>
+                      <div>
+                        <dt>Thành phố</dt>
+                        <dd>{{ display(cinema.data.value.city) }}</dd>
+                      </div>
+                      <div>
+                        <dt>Hướng dẫn đường đi</dt>
+                        <dd>{{ display(cinema.data.value.directions) }}</dd>
+                      </div>
+                    </dl>
+                  </section>
+                  <section
+                    class="admin-cinema-detail__section"
+                    aria-labelledby="cinema-contact-title"
+                  >
+                    <h3 id="cinema-contact-title">Liên hệ &amp; giờ hoạt động</h3>
+                    <dl class="admin-cinema-detail__grid">
+                      <div>
+                        <dt>Số điện thoại</dt>
+                        <dd>{{ display(cinema.data.value.phone) }}</dd>
+                      </div>
+                      <div>
+                        <dt>Email</dt>
+                        <dd>{{ display(cinema.data.value.email) }}</dd>
+                      </div>
+                      <div>
+                        <dt>Giờ mở cửa</dt>
+                        <dd>{{ display(cinema.data.value.openingHours) }}</dd>
+                      </div>
+                      <div>
+                        <dt>Múi giờ</dt>
+                        <dd>{{ display(cinema.data.value.timeZone) }}</dd>
+                      </div>
+                    </dl>
+                  </section>
+                </div>
+              </section>
+
+              <section
+                id="admin-cinema-detail-panel-rooms"
+                class="admin-cinema-detail__panel"
+                role="tabpanel"
+                aria-labelledby="admin-cinema-detail-tab-rooms"
+                tabindex="0"
+                :hidden="activeTab !== 'rooms'"
+                :aria-busy="rooms.isFetching.value"
+              >
+                <p v-if="rooms.isFetching.value && !rooms.data.value" role="status">
+                  Đang tải danh sách phòng…
                 </p>
 
-                <div v-if="amenities.isError.value" class="admin-cinema-amenities__feedback">
+                <div v-if="rooms.isError.value" class="admin-cinemas__feedback">
                   <p class="admin-cinemas__error" role="alert">
-                    {{ amenitiesError(amenities.error.value) }}
+                    {{ adminRoomErrorMessage(rooms.error.value, 'Không thể tải danh sách phòng.') }}
                   </p>
-                  <p v-if="amenities.data.value" class="admin-cinemas__muted">
-                    Đang hiển thị tiện ích từ lần tải trước.
+                  <p v-if="rooms.data.value" class="admin-cinemas__muted">
+                    Đang hiển thị danh sách phòng từ lần tải trước.
                   </p>
+                  <AppButton
+                    variant="secondary"
+                    :loading="rooms.isFetching.value"
+                    @click="rooms.refetch()"
+                  >
+                    Thử lại danh sách phòng
+                  </AppButton>
                 </div>
 
-                <template v-if="amenities.data.value">
-                  <ul
-                    v-if="amenities.data.value.amenities.length"
-                    class="admin-cinema-amenities__list"
-                    aria-label="Danh sách tiện ích tại cụm rạp"
-                  >
-                    <li
-                      v-for="amenity in amenities.data.value.amenities"
-                      :key="amenity"
-                      class="admin-cinema-amenities__item"
-                    >
-                      {{ amenity }}
-                    </li>
-                  </ul>
+                <div
+                  v-if="rooms.data.value"
+                  class="admin-cinemas__table-scroll"
+                  role="region"
+                  aria-label="Danh sách phòng thuộc cụm rạp"
+                  tabindex="0"
+                >
+                  <table class="admin-cinemas__table admin-cinema-detail__table">
+                    <caption class="admin-visually-hidden">
+                      Phòng chiếu thuộc cụm rạp đã chọn
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Phòng chiếu</th>
+                        <th scope="col">Loại phòng</th>
+                        <th scope="col">Định dạng</th>
+                        <th scope="col">Sức chứa</th>
+                        <th scope="col">Trạng thái</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(room, index) in rooms.data.value" :key="room.id ?? index">
+                        <td>{{ room.name || 'Chưa có tên phòng' }}</td>
+                        <td>{{ adminRoomTypeLabel(room.roomType) }}</td>
+                        <td>{{ contentFormatsLabel(room.contentFormats) }}</td>
+                        <td>
+                          <AdminRoomCapacityCell v-if="room.id" :key="room.id" :room-id="room.id" />
+                          <span v-else>Chưa có mã phòng</span>
+                        </td>
+                        <td>{{ statusLabel(room.active) }}</td>
+                      </tr>
+                      <tr v-if="!rooms.data.value.length">
+                        <td colspan="5" class="admin-cinemas__empty">
+                          Cụm rạp chưa có phòng chiếu.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
 
-                  <p v-else class="admin-cinemas__muted" role="status">
-                    Cụm rạp chưa cập nhật tiện ích.
+              <section
+                id="admin-cinema-detail-panel-amenities"
+                class="admin-cinema-detail__panel"
+                role="tabpanel"
+                aria-labelledby="admin-cinema-detail-tab-amenities"
+                tabindex="0"
+                :hidden="activeTab !== 'amenities'"
+                :aria-busy="amenities.isFetching.value"
+              >
+                <div class="admin-cinema-amenities">
+                  <header class="admin-cinema-amenities__heading">
+                    <h3>Tiện ích tại cụm rạp</h3>
+
+                    <AppButton
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      :loading="amenities.isFetching.value"
+                      @click="amenities.refetch()"
+                    >
+                      Tải lại tiện ích
+                    </AppButton>
+                  </header>
+
+                  <p
+                    v-if="amenities.isFetching.value && !amenities.data.value"
+                    class="admin-cinemas__muted"
+                    role="status"
+                  >
+                    Đang tải tiện ích…
                   </p>
-                </template>
-              </div>
-            </section>
+
+                  <div v-if="amenities.isError.value" class="admin-cinema-amenities__feedback">
+                    <p class="admin-cinemas__error" role="alert">
+                      {{ amenitiesError(amenities.error.value) }}
+                    </p>
+                    <p v-if="amenities.data.value" class="admin-cinemas__muted">
+                      Đang hiển thị tiện ích từ lần tải trước.
+                    </p>
+                  </div>
+
+                  <template v-if="amenities.data.value">
+                    <ul
+                      v-if="amenities.data.value.amenities.length"
+                      class="admin-cinema-amenities__list"
+                      aria-label="Danh sách tiện ích tại cụm rạp"
+                    >
+                      <li
+                        v-for="amenity in amenities.data.value.amenities"
+                        :key="amenity"
+                        class="admin-cinema-amenities__item"
+                      >
+                        {{ amenity }}
+                      </li>
+                    </ul>
+
+                    <p v-else class="admin-cinemas__muted" role="status">
+                      Cụm rạp chưa cập nhật tiện ích.
+                    </p>
+                  </template>
+                </div>
+              </section>
+            </template>
           </template>
-        </template>
         </div>
       </DialogContent>
     </DialogPortal>

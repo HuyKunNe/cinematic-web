@@ -156,9 +156,14 @@ export class AdminRoomSaveConflictError extends Error {
 }
 
 export class AdminRoomPartialSaveError extends Error {
-  constructor(public readonly savedRoom: RoomResponse, public readonly originalError: unknown) {
-    super('Đã lưu thông tin phòng, nhưng chưa lưu được định dạng. ' +
-      adminRoomErrorMessage(originalError, 'Hãy thử lưu lại định dạng.'))
+  constructor(
+    public readonly savedRoom: RoomResponse,
+    public readonly originalError: unknown,
+  ) {
+    super(
+      'Đã lưu thông tin phòng, nhưng chưa lưu được định dạng. ' +
+        adminRoomErrorMessage(originalError, 'Hãy thử lưu lại định dạng.'),
+    )
   }
 }
 
@@ -185,19 +190,24 @@ export function useSaveAdminRoomMutation() {
         throw new AdminRoomSaveConflictError()
       }
 
-      const metadataChanged = current.name !== variables.input.name ||
-        current.roomType !== variables.input.roomType
+      const metadataChanged =
+        current.name !== variables.input.name || current.roomType !== variables.input.roomType
       const savedRoom = metadataChanged
         ? await updateRoom(variables.roomId, { ...variables.input, active: current.active })
         : current
-      const formatsChanged = [...(current.contentFormats ?? [])].sort().join('|') !==
+      const formatsChanged =
+        [...(current.contentFormats ?? [])].sort().join('|') !==
         [...variables.contentFormats.formats].sort().join('|')
 
       if (!formatsChanged) return savedRoom
 
       try {
-        if (savedRoom.id !== variables.roomId || typeof savedRoom.version !== 'number' ||
-          !Number.isSafeInteger(savedRoom.version) || savedRoom.version < 0) {
+        if (
+          savedRoom.id !== variables.roomId ||
+          typeof savedRoom.version !== 'number' ||
+          !Number.isSafeInteger(savedRoom.version) ||
+          savedRoom.version < 0
+        ) {
           throw new Error('Không nhận được version hợp lệ để lưu định dạng. Hãy tải lại thông tin.')
         }
 
@@ -208,10 +218,15 @@ export function useSaveAdminRoomMutation() {
           expectedVersion: savedRoom.version,
         })
 
-        if (formats.roomId !== variables.roomId || typeof formats.version !== 'number' ||
-          !Number.isSafeInteger(formats.version) || formats.version < savedRoom.version ||
+        if (
+          formats.roomId !== variables.roomId ||
+          typeof formats.version !== 'number' ||
+          !Number.isSafeInteger(formats.version) ||
+          formats.version < savedRoom.version ||
           !Array.isArray(formats.formats) ||
-          [...formats.formats].sort().join('|') !== [...variables.contentFormats.formats].sort().join('|')) {
+          [...formats.formats].sort().join('|') !==
+            [...variables.contentFormats.formats].sort().join('|')
+        ) {
           throw new Error('Chưa xác nhận được định dạng vừa lưu. Hãy tải lại thông tin.')
         }
 
@@ -230,7 +245,9 @@ export function useSaveAdminRoomMutation() {
 
       void queryClient.invalidateQueries({
         predicate: ({ queryKey }) =>
-          ['rooms', 'room-content-formats', 'showtimes', 'home', 'booking'].includes(String(queryKey[0])),
+          ['rooms', 'room-content-formats', 'showtimes', 'home', 'booking'].includes(
+            String(queryKey[0]),
+          ),
       })
     },
     onError: (error, variables) => {
@@ -242,7 +259,9 @@ export function useSaveAdminRoomMutation() {
 
       void queryClient.invalidateQueries({
         predicate: ({ queryKey }) =>
-          ['rooms', 'room-content-formats', 'showtimes', 'home', 'booking'].includes(String(queryKey[0])),
+          ['rooms', 'room-content-formats', 'showtimes', 'home', 'booking'].includes(
+            String(queryKey[0]),
+          ),
       })
     },
   })

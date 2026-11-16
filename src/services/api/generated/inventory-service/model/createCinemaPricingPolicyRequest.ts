@@ -5,21 +5,21 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CreateCinemaPricingPolicyRequestDayGroup } from './createCinemaPricingPolicyRequestDayGroup';
+import type { CreateCinemaPricingPolicyRequestDayGroup } from './createCinemaPricingPolicyRequestDayGroup'
 
 export interface CreateCinemaPricingPolicyRequest {
-  clientRequestId: string;
+  clientRequestId: string
   /**
-     * @minLength 0
-     * @maxLength 120
-     */
-  name: string;
+   * @minLength 0
+   * @maxLength 120
+   */
+  name: string
   /**
-     * @minLength 0
-     * @maxLength 1000
-     */
-  description?: string;
-  dayGroup: CreateCinemaPricingPolicyRequestDayGroup;
+   * @minLength 0
+   * @maxLength 1000
+   */
+  description?: string
+  dayGroup: CreateCinemaPricingPolicyRequestDayGroup
   /** @minItems 1 */
-  cinemaIds: string[];
+  cinemaIds: string[]
 }

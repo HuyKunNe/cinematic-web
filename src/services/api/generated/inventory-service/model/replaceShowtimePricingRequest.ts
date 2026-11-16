@@ -8,6 +8,6 @@
 
 export interface ReplaceShowtimePricingRequest {
   /** @minimum 0 */
-  expectedVersion: number;
-  pricingPolicyVersionId?: string;
+  expectedVersion: number
+  pricingPolicyVersionId?: string
 }

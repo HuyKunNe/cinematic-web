@@ -5,26 +5,23 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  FareMatrixResponse,
-  ReplacePricingConfigurationRequest
-} from '../model';
+import type { FareMatrixResponse, ReplacePricingConfigurationRequest } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const replacePricingPolicyConfiguration = (
-    cinemaId: string,
-    policyId: string,
-    versionId: string,
-    replacePricingConfigurationRequest: ReplacePricingConfigurationRequest,
- ) => {
-      return apiRequest<FareMatrixResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/configuration`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: replacePricingConfigurationRequest
-    },
-      );
-    }
-  export type ReplacePricingPolicyConfigurationResult = NonNullable<Awaited<ReturnType<typeof replacePricingPolicyConfiguration>>>
+export const replacePricingPolicyConfiguration = (
+  cinemaId: string,
+  policyId: string,
+  versionId: string,
+  replacePricingConfigurationRequest: ReplacePricingConfigurationRequest,
+) => {
+  return apiRequest<FareMatrixResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/configuration`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: replacePricingConfigurationRequest,
+  })
+}
+export type ReplacePricingPolicyConfigurationResult = NonNullable<
+  Awaited<ReturnType<typeof replacePricingPolicyConfiguration>>
+>

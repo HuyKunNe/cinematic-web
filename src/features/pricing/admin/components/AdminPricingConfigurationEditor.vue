@@ -248,11 +248,7 @@ function save(): void {
           </label>
           <label class="price-field">
             <span>Bắt đầu, bao gồm</span>
-            <AppTimePicker
-              v-model="row.start"
-              class="price-control"
-              :disabled="!editable"
-            />
+            <AppTimePicker v-model="row.start" class="price-control" :disabled="!editable" />
           </label>
           <label class="price-field">
             <span>Kết thúc, loại trừ</span>

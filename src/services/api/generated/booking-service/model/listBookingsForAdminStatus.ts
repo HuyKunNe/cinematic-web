@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ListBookingsForAdminStatus = typeof ListBookingsForAdminStatus[keyof typeof ListBookingsForAdminStatus];
-
+export type ListBookingsForAdminStatus =
+  (typeof ListBookingsForAdminStatus)[keyof typeof ListBookingsForAdminStatus]
 
 export const ListBookingsForAdminStatus = {
   PENDING: 'PENDING',
@@ -17,4 +17,4 @@ export const ListBookingsForAdminStatus = {
   PAYMENT_FAILED: 'PAYMENT_FAILED',
   CANCELLED: 'CANCELLED',
   EXPIRED: 'EXPIRED',
-} as const;
+} as const

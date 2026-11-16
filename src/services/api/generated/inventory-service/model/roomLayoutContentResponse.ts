@@ -5,14 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { RoomLayoutElementPositionResponse } from './roomLayoutElementPositionResponse';
-import type { RoomLayoutMatrixResponse } from './roomLayoutMatrixResponse';
-import type { RoomLayoutResponse } from './roomLayoutResponse';
-import type { RoomLayoutSeatPositionResponse } from './roomLayoutSeatPositionResponse';
+import type { RoomLayoutElementPositionResponse } from './roomLayoutElementPositionResponse'
+import type { RoomLayoutMatrixResponse } from './roomLayoutMatrixResponse'
+import type { RoomLayoutResponse } from './roomLayoutResponse'
+import type { RoomLayoutSeatPositionResponse } from './roomLayoutSeatPositionResponse'
 
 export interface RoomLayoutContentResponse {
-  layout?: RoomLayoutResponse;
-  seats?: RoomLayoutSeatPositionResponse[];
-  elements?: RoomLayoutElementPositionResponse[];
-  matrix?: RoomLayoutMatrixResponse;
+  layout?: RoomLayoutResponse
+  seats?: RoomLayoutSeatPositionResponse[]
+  elements?: RoomLayoutElementPositionResponse[]
+  matrix?: RoomLayoutMatrixResponse
 }

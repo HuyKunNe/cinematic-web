@@ -8,41 +8,36 @@
 import type {
   ChangeCurrentUserPasswordRequest,
   CurrentUserProfileResponse,
-  UpdateCurrentUserProfileRequest
-} from '../model';
+  UpdateCurrentUserProfileRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getCurrentProfile = (
-
- ) => {
-      return apiRequest<CurrentUserProfileResponse>(
-      {url: `/api/v1/users/me`, method: 'GET'
-    },
-      );
-    }
-  export const updateCurrentProfile = (
-    updateCurrentUserProfileRequest: UpdateCurrentUserProfileRequest,
- ) => {
-      return apiRequest<CurrentUserProfileResponse>(
-      {url: `/api/v1/users/me`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateCurrentUserProfileRequest
-    },
-      );
-    }
-  export const changePassword = (
-    changeCurrentUserPasswordRequest: ChangeCurrentUserPasswordRequest,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/users/me/password`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: changeCurrentUserPasswordRequest
-    },
-      );
-    }
-  export type GetCurrentProfileResult = NonNullable<Awaited<ReturnType<typeof getCurrentProfile>>>
-export type UpdateCurrentProfileResult = NonNullable<Awaited<ReturnType<typeof updateCurrentProfile>>>
+export const getCurrentProfile = () => {
+  return apiRequest<CurrentUserProfileResponse>({ url: `/api/v1/users/me`, method: 'GET' })
+}
+export const updateCurrentProfile = (
+  updateCurrentUserProfileRequest: UpdateCurrentUserProfileRequest,
+) => {
+  return apiRequest<CurrentUserProfileResponse>({
+    url: `/api/v1/users/me`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateCurrentUserProfileRequest,
+  })
+}
+export const changePassword = (
+  changeCurrentUserPasswordRequest: ChangeCurrentUserPasswordRequest,
+) => {
+  return apiRequest<void>({
+    url: `/api/v1/users/me/password`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: changeCurrentUserPasswordRequest,
+  })
+}
+export type GetCurrentProfileResult = NonNullable<Awaited<ReturnType<typeof getCurrentProfile>>>
+export type UpdateCurrentProfileResult = NonNullable<
+  Awaited<ReturnType<typeof updateCurrentProfile>>
+>
 export type ChangePasswordResult = NonNullable<Awaited<ReturnType<typeof changePassword>>>

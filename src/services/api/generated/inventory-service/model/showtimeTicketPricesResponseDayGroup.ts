@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ShowtimeTicketPricesResponseDayGroup = typeof ShowtimeTicketPricesResponseDayGroup[keyof typeof ShowtimeTicketPricesResponseDayGroup];
-
+export type ShowtimeTicketPricesResponseDayGroup =
+  (typeof ShowtimeTicketPricesResponseDayGroup)[keyof typeof ShowtimeTicketPricesResponseDayGroup]
 
 export const ShowtimeTicketPricesResponseDayGroup = {
   WEEKDAY: 'WEEKDAY',
   WEEKEND: 'WEEKEND',
   HOLIDAY: 'HOLIDAY',
-} as const;
+} as const

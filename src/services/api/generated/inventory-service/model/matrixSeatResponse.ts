@@ -5,13 +5,13 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { MatrixSeatResponseSeatType } from './matrixSeatResponseSeatType';
+import type { MatrixSeatResponseSeatType } from './matrixSeatResponseSeatType'
 
 export interface MatrixSeatResponse {
   /** Inventory seat identifier; null while the draft cell is unbound */
-  seatId: string | null;
-  rowIndex?: number;
-  columnIndex?: number;
-  number?: number;
-  seatType?: MatrixSeatResponseSeatType;
+  seatId: string | null
+  rowIndex?: number
+  columnIndex?: number
+  number?: number
+  seatType?: MatrixSeatResponseSeatType
 }

@@ -8,14 +8,14 @@ import {
   type MaybeRefOrGetter,
 } from 'vue'
 import { useRoute, useRouter, type LocationQueryRaw } from 'vue-router'
-import { useCinemaLocation, useCinemaRoomsQuery } from '@/features/cinemas'
+import { useCinemaLocation } from '@/features/cinemas'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { getCinemaDateKey, getCinemaDayRange } from '@/utils/cinema-time'
 import type { GetBookableShowtimesParams } from '@/services/api/generated/inventory-service/model/getBookableShowtimesParams'
 import type { ShowtimeResponse } from '@/services/api/generated/inventory-service/model/showtimeResponse'
 import type { RoomResponseRoomType } from '@/services/api/generated/inventory-service/model/roomResponseRoomType'
 import { ShowtimeScreeningVersionResponseContentFormat } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponseContentFormat'
-import { useMovieBookableShowtimes } from '../api/movie-showtime.queries'
+import { useMovieScheduleContexts } from '../api/movie-schedule-context.queries'
 
 type BookableShowtime = ShowtimeResponse & {
   id: string
@@ -54,9 +54,11 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
     typeof route.query.cinema === 'string' ? route.query.cinema.toLowerCase() : '',
   )
   const selectedCinema = computed(() =>
-    requestedCinemaId.value
-      ? cinemas.value.find((cinema) => cinema.id === requestedCinemaId.value)
-      : locationCinema.value,
+    requestedCinemaId.value === 'all'
+      ? undefined
+      : requestedCinemaId.value
+        ? cinemas.value.find((cinema) => cinema.id === requestedCinemaId.value)
+        : locationCinema.value,
   )
   const selectedCity = computed(() =>
     selectedCinema.value
@@ -83,7 +85,11 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
     if (checkingId.value || updatingFilters.value) return
     const target = {
       path: route.path,
-      query: { ...route.query, cinema: selectedCinema.value?.id, ...query },
+      query: {
+        ...route.query,
+        cinema: requestedCinemaId.value === 'all' ? 'all' : selectedCinema.value?.id,
+        ...query,
+      },
       hash: route.hash,
     }
     if (router.resolve(target).fullPath === route.fullPath) return
@@ -103,6 +109,13 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
   let disposed = false
 
   const cinemaId = computed(() => selectedCinema.value?.id ?? '')
+  const targetCinemas = computed(() => {
+    if (requestedCinemaId.value && requestedCinemaId.value !== 'all' && !selectedCinema.value)
+      return []
+    return selectedCinema.value
+      ? [selectedCinema.value]
+      : cinemas.value.filter((cinema) => cinema.cityKey === selectedCity.value?.key)
+  })
 
   const dateValid = computed(() =>
     Boolean(getCinemaDayRange(selectedDate.value) && selectedDate.value >= today.value),
@@ -113,52 +126,49 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
       locationQuery.isSuccess.value &&
       !locationQuery.isFetching.value &&
       !locationQuery.isError.value &&
-      Boolean(cinemaId.value),
+      Boolean(selectedCity.value),
   )
 
-  const request = computed<GetBookableShowtimesParams | null>(() => {
+  const requests = computed<GetBookableShowtimesParams[]>(() => {
     const id = toValue(movieId)
     const range = getCinemaDayRange(selectedDate.value)
-
-    if (!id || !locationReady.value || !dateValid.value || !range) {
-      return null
-    }
-
-    return {
-      cinemaId: cinemaId.value,
-      movieId: id,
-      ...range,
-    }
+    if (!id || !locationReady.value || !dateValid.value || !range) return []
+    return targetCinemas.value.map((cinema) => ({ cinemaId: cinema.id, movieId: id, ...range }))
   })
-
   const scopeKey = computed(() =>
-    [toValue(movieId), cinemaId.value, selectedDate.value, selectedFormat.value].join('|'),
+    [
+      toValue(movieId),
+      selectedCity.value?.key,
+      cinemaId.value || 'all',
+      selectedDate.value,
+      selectedFormat.value,
+    ].join('|'),
   )
-
-  const showtimesQuery = useMovieBookableShowtimes(request)
-  const roomsQuery = useCinemaRoomsQuery(cinemaId)
+  const { showtimesQuery, roomsQuery, refetchCinema } = useMovieScheduleContexts(requests)
 
   const roomsById = computed(
     () =>
       new Map(
         (roomsQuery.data.value ?? [])
           .filter(
-            (room) => Boolean(room.id) && room.active === true && room.cinemaId === cinemaId.value,
+            (room) =>
+              Boolean(room.id) &&
+              room.active === true &&
+              targetCinemas.value.some((cinema) => cinema.id === room.cinemaId),
           )
           .map((room) => [room.id, room] as const),
       ),
   )
 
   function filterShowtimes(items: ShowtimeResponse[]): BookableShowtime[] {
-    const params = request.value
-
-    if (!params) return []
-
-    const from = Date.parse(params.from)
-    const to = Date.parse(params.to)
+    const byCinema = new Map(requests.value.map((params) => [params.cinemaId, params]))
 
     return items
       .filter((item): item is BookableShowtime => {
+        const params = byCinema.get(item.cinemaId ?? '')
+        if (!params) return false
+        const from = Date.parse(params.from)
+        const to = Date.parse(params.to)
         const startsAt = Date.parse(item.startsAt ?? '')
 
         return Boolean(
@@ -199,7 +209,7 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
 
   const canBook = computed(
     () =>
-      Boolean(request.value) &&
+      requests.value.length > 0 &&
       showtimesQuery.isSuccess.value &&
       !showtimesQuery.isFetching.value &&
       !updatingFilters.value &&
@@ -246,7 +256,7 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
   watch(
     [requestedCinemaId, () => locationQuery.isSuccess.value],
     ([id, ready]) => {
-      if (!id || !ready) return
+      if (!id || id === 'all' || !ready) return
       const cinema = cinemas.value.find((item) => item.id === id)
       if (cinema) selectCinemaById(cinema.id, cinema.cityKey)
     },
@@ -261,6 +271,7 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
         previous &&
         city !== previous &&
         requestedCinemaId.value &&
+        requestedCinemaId.value !== 'all' &&
         selectedCinema.value?.cityKey !== city
       )
         void updateFilters({ cinema: undefined })
@@ -272,7 +283,7 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
   }
 
   function retryShowtimes() {
-    if (!request.value || checkingId.value) return
+    if (!requests.value.length || checkingId.value) return
 
     navigationError.value = ''
     void showtimesQuery.refetch()
@@ -291,7 +302,9 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
     navigationError.value = ''
 
     try {
-      const result = await showtimesQuery.refetch()
+      const chosen = showtimes.value.find((item) => item.id === showtimeId)
+      if (!chosen?.cinemaId) return
+      const result = await refetchCinema(chosen.cinemaId)
 
       if (disposed || chosenScope !== scopeKey.value) return
 
@@ -318,7 +331,7 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
         return
       }
 
-      const cinema = selectedCinema.value
+      const cinema = targetCinemas.value.find((item) => item.id === chosen.cinemaId)
       if (!cinema || !selectCinemaById(cinema.id, cinema.cityKey)) {
         navigationError.value = 'Chưa thể chọn rạp của suất chiếu. Vui lòng thử lại.'
         return
@@ -366,6 +379,13 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
     showtimesQuery,
     roomsQuery,
     showtimes,
+    targetCinemas,
+    showtimeGroups: computed(() =>
+      targetCinemas.value.flatMap((cinema) => {
+        const slots = showtimes.value.filter((slot) => slot.cinemaId === cinema.id)
+        return slots.length ? [{ cinema, slots }] : []
+      }),
+    ),
     checkingId,
     navigationError,
     canBook,

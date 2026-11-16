@@ -5,12 +5,12 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ErrorBody } from './errorBody';
-import type { PageResponsePaymentManagementResponse } from './pageResponsePaymentManagementResponse';
+import type { ErrorBody } from './errorBody'
+import type { PageResponsePaymentManagementResponse } from './pageResponsePaymentManagementResponse'
 
 export interface ApiResponsePageResponsePaymentManagementResponse {
-  success?: boolean;
-  timestamp?: string;
-  data?: PageResponsePaymentManagementResponse;
-  error?: ErrorBody;
+  success?: boolean
+  timestamp?: string
+  data?: PageResponsePaymentManagementResponse
+  error?: ErrorBody
 }

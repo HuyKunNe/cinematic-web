@@ -5,14 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { RoomLayoutGeometryResponse } from './roomLayoutGeometryResponse';
-import type { RoomLayoutSeatPositionResponseSeatTypeSnapshot } from './roomLayoutSeatPositionResponseSeatTypeSnapshot';
+import type { RoomLayoutGeometryResponse } from './roomLayoutGeometryResponse'
+import type { RoomLayoutSeatPositionResponseSeatTypeSnapshot } from './roomLayoutSeatPositionResponseSeatTypeSnapshot'
 
 export interface RoomLayoutSeatPositionResponse {
-  id?: string;
-  seatId?: string;
-  seatNumberSnapshot?: string;
-  rowLabelSnapshot?: string;
-  seatTypeSnapshot?: RoomLayoutSeatPositionResponseSeatTypeSnapshot;
-  geometry?: RoomLayoutGeometryResponse;
+  id?: string
+  seatId?: string
+  seatNumberSnapshot?: string
+  rowLabelSnapshot?: string
+  seatTypeSnapshot?: RoomLayoutSeatPositionResponseSeatTypeSnapshot
+  geometry?: RoomLayoutGeometryResponse
 }

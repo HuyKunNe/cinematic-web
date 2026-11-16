@@ -7,6 +7,6 @@
  */
 
 export interface HoldShowSeatRequest {
-  bookingId: string;
-  expiresAt: string;
+  bookingId: string
+  expiresAt: string
 }

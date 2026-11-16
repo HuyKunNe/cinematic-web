@@ -5,14 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { OptionsCellStatesItem } from './optionsCellStatesItem';
-import type { OptionsContentFormatsItem } from './optionsContentFormatsItem';
-import type { OptionsExperienceTypesItem } from './optionsExperienceTypesItem';
-import type { SeatTypeOption } from './seatTypeOption';
+import type { OptionsCellStatesItem } from './optionsCellStatesItem'
+import type { OptionsContentFormatsItem } from './optionsContentFormatsItem'
+import type { OptionsExperienceTypesItem } from './optionsExperienceTypesItem'
+import type { SeatTypeOption } from './seatTypeOption'
 
 export interface Options {
-  experienceTypes?: OptionsExperienceTypesItem[];
-  contentFormats?: OptionsContentFormatsItem[];
-  seatTypes?: SeatTypeOption[];
-  cellStates?: OptionsCellStatesItem[];
+  experienceTypes?: OptionsExperienceTypesItem[]
+  contentFormats?: OptionsContentFormatsItem[]
+  seatTypes?: SeatTypeOption[]
+  cellStates?: OptionsCellStatesItem[]
 }

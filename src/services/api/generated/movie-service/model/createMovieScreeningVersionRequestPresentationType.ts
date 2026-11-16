@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CreateMovieScreeningVersionRequestPresentationType = typeof CreateMovieScreeningVersionRequestPresentationType[keyof typeof CreateMovieScreeningVersionRequestPresentationType];
-
+export type CreateMovieScreeningVersionRequestPresentationType =
+  (typeof CreateMovieScreeningVersionRequestPresentationType)[keyof typeof CreateMovieScreeningVersionRequestPresentationType]
 
 export const CreateMovieScreeningVersionRequestPresentationType = {
   SUBTITLED: 'SUBTITLED',
   DUBBED: 'DUBBED',
   NO_SUBTITLES: 'NO_SUBTITLES',
-} as const;
+} as const

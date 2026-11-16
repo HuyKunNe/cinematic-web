@@ -9,79 +9,84 @@ import type {
   CinemaPricingPolicyVersionResponse,
   CreateCinemaPricingPolicyRequest,
   DeleteCinemaPricingPolicyDraftParams,
-  ReplacePricingPolicyDraftRequest
-} from '../model';
+  ReplacePricingPolicyDraftRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getCinemaPricingPolicyVersion = (
-    cinemaId: string,
-    policyId: string,
-    versionId: string,
- ) => {
-      return apiRequest<CinemaPricingPolicyVersionResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}`, method: 'GET'
-    },
-      );
-    }
-  export const replaceCinemaPricingPolicyDraft = (
-    cinemaId: string,
-    policyId: string,
-    versionId: string,
-    replacePricingPolicyDraftRequest: ReplacePricingPolicyDraftRequest,
- ) => {
-      return apiRequest<CinemaPricingPolicyVersionResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: replacePricingPolicyDraftRequest
-    },
-      );
-    }
-  export const deleteCinemaPricingPolicyDraft = (
-    cinemaId: string,
-    policyId: string,
-    versionId: string,
-    params: DeleteCinemaPricingPolicyDraftParams,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}`, method: 'DELETE',
-        params
-    },
-      );
-    }
-  export const listLatestCinemaPricingPolicies = (
-    cinemaId: string,
- ) => {
-      return apiRequest<CinemaPricingPolicyVersionResponse[]>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies`, method: 'GET'
-    },
-      );
-    }
-  export const createCinemaPricingPolicy = (
-    cinemaId: string,
-    createCinemaPricingPolicyRequest: CreateCinemaPricingPolicyRequest,
- ) => {
-      return apiRequest<CinemaPricingPolicyVersionResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createCinemaPricingPolicyRequest
-    },
-      );
-    }
-  export const listCinemaPricingPolicyVersions = (
-    cinemaId: string,
-    policyId: string,
- ) => {
-      return apiRequest<CinemaPricingPolicyVersionResponse[]>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions`, method: 'GET'
-    },
-      );
-    }
-  export type GetCinemaPricingPolicyVersionResult = NonNullable<Awaited<ReturnType<typeof getCinemaPricingPolicyVersion>>>
-export type ReplaceCinemaPricingPolicyDraftResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaPricingPolicyDraft>>>
-export type DeleteCinemaPricingPolicyDraftResult = NonNullable<Awaited<ReturnType<typeof deleteCinemaPricingPolicyDraft>>>
-export type ListLatestCinemaPricingPoliciesResult = NonNullable<Awaited<ReturnType<typeof listLatestCinemaPricingPolicies>>>
-export type CreateCinemaPricingPolicyResult = NonNullable<Awaited<ReturnType<typeof createCinemaPricingPolicy>>>
-export type ListCinemaPricingPolicyVersionsResult = NonNullable<Awaited<ReturnType<typeof listCinemaPricingPolicyVersions>>>
+export const getCinemaPricingPolicyVersion = (
+  cinemaId: string,
+  policyId: string,
+  versionId: string,
+) => {
+  return apiRequest<CinemaPricingPolicyVersionResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}`,
+    method: 'GET',
+  })
+}
+export const replaceCinemaPricingPolicyDraft = (
+  cinemaId: string,
+  policyId: string,
+  versionId: string,
+  replacePricingPolicyDraftRequest: ReplacePricingPolicyDraftRequest,
+) => {
+  return apiRequest<CinemaPricingPolicyVersionResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: replacePricingPolicyDraftRequest,
+  })
+}
+export const deleteCinemaPricingPolicyDraft = (
+  cinemaId: string,
+  policyId: string,
+  versionId: string,
+  params: DeleteCinemaPricingPolicyDraftParams,
+) => {
+  return apiRequest<void>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}`,
+    method: 'DELETE',
+    params,
+  })
+}
+export const listLatestCinemaPricingPolicies = (cinemaId: string) => {
+  return apiRequest<CinemaPricingPolicyVersionResponse[]>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies`,
+    method: 'GET',
+  })
+}
+export const createCinemaPricingPolicy = (
+  cinemaId: string,
+  createCinemaPricingPolicyRequest: CreateCinemaPricingPolicyRequest,
+) => {
+  return apiRequest<CinemaPricingPolicyVersionResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createCinemaPricingPolicyRequest,
+  })
+}
+export const listCinemaPricingPolicyVersions = (cinemaId: string, policyId: string) => {
+  return apiRequest<CinemaPricingPolicyVersionResponse[]>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions`,
+    method: 'GET',
+  })
+}
+export type GetCinemaPricingPolicyVersionResult = NonNullable<
+  Awaited<ReturnType<typeof getCinemaPricingPolicyVersion>>
+>
+export type ReplaceCinemaPricingPolicyDraftResult = NonNullable<
+  Awaited<ReturnType<typeof replaceCinemaPricingPolicyDraft>>
+>
+export type DeleteCinemaPricingPolicyDraftResult = NonNullable<
+  Awaited<ReturnType<typeof deleteCinemaPricingPolicyDraft>>
+>
+export type ListLatestCinemaPricingPoliciesResult = NonNullable<
+  Awaited<ReturnType<typeof listLatestCinemaPricingPolicies>>
+>
+export type CreateCinemaPricingPolicyResult = NonNullable<
+  Awaited<ReturnType<typeof createCinemaPricingPolicy>>
+>
+export type ListCinemaPricingPolicyVersionsResult = NonNullable<
+  Awaited<ReturnType<typeof listCinemaPricingPolicyVersions>>
+>

@@ -47,15 +47,17 @@ const layout = computed(() => {
     </header>
 
     <div class="showtime-create__panel-body">
-      <p v-if="!roomId" class="showtime-create__hint">
-        Chọn rạp và phòng để xác nhận sơ đồ.
-      </p>
+      <p v-if="!roomId" class="showtime-create__hint">Chọn rạp và phòng để xác nhận sơ đồ.</p>
       <p v-else-if="!canRead" class="showtime-create__hint">
         Bạn chưa có quyền đọc cấu hình sơ đồ phòng.
       </p>
 
       <template v-else>
-        <p v-if="query.isFetching.value || query.isPending.value" class="showtime-create__hint" role="status">
+        <p
+          v-if="query.isFetching.value || query.isPending.value"
+          class="showtime-create__hint"
+          role="status"
+        >
           Đang tải sơ đồ đã xuất bản…
         </p>
 
@@ -95,7 +97,8 @@ const layout = computed(() => {
         </template>
 
         <p v-else class="showtime-create__hint" role="status">
-          Phòng chưa có sơ đồ công bố. Hệ thống sẽ kiểm tra các ghế đang hoạt động của phòng khi lập lịch.
+          Phòng chưa có sơ đồ công bố. Hệ thống sẽ kiểm tra các ghế đang hoạt động của phòng khi lập
+          lịch.
         </p>
 
         <AppButton

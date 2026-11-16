@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type OptionsCellStatesItem = typeof OptionsCellStatesItem[keyof typeof OptionsCellStatesItem];
-
+export type OptionsCellStatesItem =
+  (typeof OptionsCellStatesItem)[keyof typeof OptionsCellStatesItem]
 
 export const OptionsCellStatesItem = {
   UNCONFIGURED: 'UNCONFIGURED',
   PRICED: 'PRICED',
   NOT_APPLICABLE: 'NOT_APPLICABLE',
-} as const;
+} as const

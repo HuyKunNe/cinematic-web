@@ -7,6 +7,6 @@
  */
 
 export type GetHeroMoviesParams = {
-limit?: number;
-movieIds?: string[];
-};
+  limit?: number
+  movieIds?: string[]
+}

@@ -5,17 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CellInputContentFormat } from './cellInputContentFormat';
-import type { CellInputExperienceType } from './cellInputExperienceType';
-import type { CellInputSeatType } from './cellInputSeatType';
-import type { CellInputState } from './cellInputState';
+import type { CellInputContentFormat } from './cellInputContentFormat'
+import type { CellInputExperienceType } from './cellInputExperienceType'
+import type { CellInputSeatType } from './cellInputSeatType'
+import type { CellInputState } from './cellInputState'
 
 export interface CellInput {
-  experienceType: CellInputExperienceType;
-  contentFormat: CellInputContentFormat;
-  timeBandId: string;
-  ticketGroupId: string;
-  seatType: CellInputSeatType;
-  state: CellInputState;
-  amount?: number;
+  experienceType: CellInputExperienceType
+  contentFormat: CellInputContentFormat
+  timeBandId: string
+  ticketGroupId: string
+  seatType: CellInputSeatType
+  state: CellInputState
+  amount?: number
 }

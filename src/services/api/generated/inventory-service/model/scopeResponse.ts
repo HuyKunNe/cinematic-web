@@ -5,10 +5,10 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ScopeResponseContentFormat } from './scopeResponseContentFormat';
-import type { ScopeResponseExperienceType } from './scopeResponseExperienceType';
+import type { ScopeResponseContentFormat } from './scopeResponseContentFormat'
+import type { ScopeResponseExperienceType } from './scopeResponseExperienceType'
 
 export interface ScopeResponse {
-  experienceType?: ScopeResponseExperienceType;
-  contentFormat?: ScopeResponseContentFormat;
+  experienceType?: ScopeResponseExperienceType
+  contentFormat?: ScopeResponseContentFormat
 }

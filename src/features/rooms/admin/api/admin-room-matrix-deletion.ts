@@ -10,9 +10,12 @@ export function useDeleteAdminRoomMatrixDraftMutation() {
     retry: false,
     mutationFn: async (input: { roomId: string; layoutId: string; expectedVersion: number }) => {
       if (
-        !isRoomSeatUuid(input.roomId) || !isRoomSeatUuid(input.layoutId) ||
-        !Number.isSafeInteger(input.expectedVersion) || input.expectedVersion < 0
-      ) throw new Error('Thông tin bản nháp cần xóa không hợp lệ.')
+        !isRoomSeatUuid(input.roomId) ||
+        !isRoomSeatUuid(input.layoutId) ||
+        !Number.isSafeInteger(input.expectedVersion) ||
+        input.expectedVersion < 0
+      )
+        throw new Error('Thông tin bản nháp cần xóa không hợp lệ.')
       await deleteRoomLayoutDraft(input.layoutId, { expectedVersion: input.expectedVersion })
     },
     onSuccess: (_data, input) => {
@@ -21,7 +24,8 @@ export function useDeleteAdminRoomMatrixDraftMutation() {
         previous?.filter((layout) => layout.id !== input.layoutId),
       )
       queryClient.removeQueries({
-        queryKey: adminRoomMatrixKeys.content(input.roomId, input.layoutId), exact: true,
+        queryKey: adminRoomMatrixKeys.content(input.roomId, input.layoutId),
+        exact: true,
       })
       void queryClient.invalidateQueries({ queryKey: key, refetchType: 'none' })
     },

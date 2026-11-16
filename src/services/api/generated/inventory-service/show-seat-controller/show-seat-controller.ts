@@ -9,83 +9,69 @@ import type {
   GetShowSeatsByShowtimeParams,
   HoldShowSeatRequest,
   ShowSeatBookingRequest,
-  ShowSeatResponse
-} from '../model';
+  ShowSeatResponse,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const makeShowSeatUnavailable = (
-    showSeatId: string,
- ) => {
-      return apiRequest<ShowSeatResponse>(
-      {url: `/api/v1/show-seats/${showSeatId}/unavailable`, method: 'PUT'
-    },
-      );
-    }
-  export const releaseShowSeat = (
-    showSeatId: string,
-    showSeatBookingRequest: ShowSeatBookingRequest,
- ) => {
-      return apiRequest<ShowSeatResponse>(
-      {url: `/api/v1/show-seats/${showSeatId}/release`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: showSeatBookingRequest
-    },
-      );
-    }
-  export const holdShowSeat = (
-    showSeatId: string,
-    holdShowSeatRequest: HoldShowSeatRequest,
- ) => {
-      return apiRequest<ShowSeatResponse>(
-      {url: `/api/v1/show-seats/${showSeatId}/hold`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: holdShowSeatRequest
-    },
-      );
-    }
-  export const bookShowSeat = (
-    showSeatId: string,
-    showSeatBookingRequest: ShowSeatBookingRequest,
- ) => {
-      return apiRequest<ShowSeatResponse>(
-      {url: `/api/v1/show-seats/${showSeatId}/book`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: showSeatBookingRequest
-    },
-      );
-    }
-  export const makeShowSeatAvailable = (
-    showSeatId: string,
- ) => {
-      return apiRequest<ShowSeatResponse>(
-      {url: `/api/v1/show-seats/${showSeatId}/available`, method: 'PUT'
-    },
-      );
-    }
-  export const getShowSeatsByShowtime = (
-    params: GetShowSeatsByShowtimeParams,
- ) => {
-      return apiRequest<ShowSeatResponse[]>(
-      {url: `/api/v1/show-seats`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const getShowSeatById = (
-    showSeatId: string,
- ) => {
-      return apiRequest<ShowSeatResponse>(
-      {url: `/api/v1/show-seats/${showSeatId}`, method: 'GET'
-    },
-      );
-    }
-  export type MakeShowSeatUnavailableResult = NonNullable<Awaited<ReturnType<typeof makeShowSeatUnavailable>>>
+export const makeShowSeatUnavailable = (showSeatId: string) => {
+  return apiRequest<ShowSeatResponse>({
+    url: `/api/v1/show-seats/${showSeatId}/unavailable`,
+    method: 'PUT',
+  })
+}
+export const releaseShowSeat = (
+  showSeatId: string,
+  showSeatBookingRequest: ShowSeatBookingRequest,
+) => {
+  return apiRequest<ShowSeatResponse>({
+    url: `/api/v1/show-seats/${showSeatId}/release`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: showSeatBookingRequest,
+  })
+}
+export const holdShowSeat = (showSeatId: string, holdShowSeatRequest: HoldShowSeatRequest) => {
+  return apiRequest<ShowSeatResponse>({
+    url: `/api/v1/show-seats/${showSeatId}/hold`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: holdShowSeatRequest,
+  })
+}
+export const bookShowSeat = (
+  showSeatId: string,
+  showSeatBookingRequest: ShowSeatBookingRequest,
+) => {
+  return apiRequest<ShowSeatResponse>({
+    url: `/api/v1/show-seats/${showSeatId}/book`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: showSeatBookingRequest,
+  })
+}
+export const makeShowSeatAvailable = (showSeatId: string) => {
+  return apiRequest<ShowSeatResponse>({
+    url: `/api/v1/show-seats/${showSeatId}/available`,
+    method: 'PUT',
+  })
+}
+export const getShowSeatsByShowtime = (params: GetShowSeatsByShowtimeParams) => {
+  return apiRequest<ShowSeatResponse[]>({ url: `/api/v1/show-seats`, method: 'GET', params })
+}
+export const getShowSeatById = (showSeatId: string) => {
+  return apiRequest<ShowSeatResponse>({ url: `/api/v1/show-seats/${showSeatId}`, method: 'GET' })
+}
+export type MakeShowSeatUnavailableResult = NonNullable<
+  Awaited<ReturnType<typeof makeShowSeatUnavailable>>
+>
 export type ReleaseShowSeatResult = NonNullable<Awaited<ReturnType<typeof releaseShowSeat>>>
 export type HoldShowSeatResult = NonNullable<Awaited<ReturnType<typeof holdShowSeat>>>
 export type BookShowSeatResult = NonNullable<Awaited<ReturnType<typeof bookShowSeat>>>
-export type MakeShowSeatAvailableResult = NonNullable<Awaited<ReturnType<typeof makeShowSeatAvailable>>>
-export type GetShowSeatsByShowtimeResult = NonNullable<Awaited<ReturnType<typeof getShowSeatsByShowtime>>>
+export type MakeShowSeatAvailableResult = NonNullable<
+  Awaited<ReturnType<typeof makeShowSeatAvailable>>
+>
+export type GetShowSeatsByShowtimeResult = NonNullable<
+  Awaited<ReturnType<typeof getShowSeatsByShowtime>>
+>
 export type GetShowSeatByIdResult = NonNullable<Awaited<ReturnType<typeof getShowSeatById>>>

@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type UpdateRoomRequestRoomType = typeof UpdateRoomRequestRoomType[keyof typeof UpdateRoomRequestRoomType];
-
+export type UpdateRoomRequestRoomType =
+  (typeof UpdateRoomRequestRoomType)[keyof typeof UpdateRoomRequestRoomType]
 
 export const UpdateRoomRequestRoomType = {
   STANDARD: 'STANDARD',
@@ -15,4 +15,4 @@ export const UpdateRoomRequestRoomType = {
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
   VIP: 'VIP',
-} as const;
+} as const

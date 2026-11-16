@@ -148,11 +148,10 @@ const editable = computed(
 )
 const dayGroupLocked = computed(() => (savedMatrix.value?.scopes.length ?? 0) > 0)
 const lookupCinemas = computed(() =>
-  metadata.cinemaIds
-    .map((id) => ({
-      id,
-      name: props.cinemas.find((cinema) => cinema.id === id)?.name ?? 'Chưa tải được tên cụm rạp',
-    })),
+  metadata.cinemaIds.map((id) => ({
+    id,
+    name: props.cinemas.find((cinema) => cinema.id === id)?.name ?? 'Chưa tải được tên cụm rạp',
+  })),
 )
 
 function canonical(value: string): string {

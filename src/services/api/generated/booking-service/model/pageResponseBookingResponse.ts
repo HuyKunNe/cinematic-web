@@ -5,10 +5,10 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { BookingResponse } from './bookingResponse';
-import type { PageInfo } from './pageInfo';
+import type { BookingResponse } from './bookingResponse'
+import type { PageInfo } from './pageInfo'
 
 export interface PageResponseBookingResponse {
-  content?: BookingResponse[];
-  page?: PageInfo;
+  content?: BookingResponse[]
+  page?: PageInfo
 }

@@ -9,12 +9,12 @@
 /**
  * Stored ShowSeat status; null when ShowSeat is missing.
  */
-export type ShowtimeSeatMapSeatResponseStatus = typeof ShowtimeSeatMapSeatResponseStatus[keyof typeof ShowtimeSeatMapSeatResponseStatus] | null;
-
+export type ShowtimeSeatMapSeatResponseStatus =
+  (typeof ShowtimeSeatMapSeatResponseStatus)[keyof typeof ShowtimeSeatMapSeatResponseStatus] | null
 
 export const ShowtimeSeatMapSeatResponseStatus = {
   AVAILABLE: 'AVAILABLE',
   HELD: 'HELD',
   BOOKED: 'BOOKED',
   UNAVAILABLE: 'UNAVAILABLE',
-} as const;
+} as const

@@ -5,31 +5,31 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CellResponse } from './cellResponse';
-import type { FareMatrixResponseDayGroup } from './fareMatrixResponseDayGroup';
-import type { FareMatrixResponseSeatTypesItem } from './fareMatrixResponseSeatTypesItem';
-import type { FareMatrixResponseStatus } from './fareMatrixResponseStatus';
-import type { Options } from './options';
-import type { ScopeResponse } from './scopeResponse';
-import type { TicketGroupResponse } from './ticketGroupResponse';
-import type { TimeBandResponse } from './timeBandResponse';
+import type { CellResponse } from './cellResponse'
+import type { FareMatrixResponseDayGroup } from './fareMatrixResponseDayGroup'
+import type { FareMatrixResponseSeatTypesItem } from './fareMatrixResponseSeatTypesItem'
+import type { FareMatrixResponseStatus } from './fareMatrixResponseStatus'
+import type { Options } from './options'
+import type { ScopeResponse } from './scopeResponse'
+import type { TicketGroupResponse } from './ticketGroupResponse'
+import type { TimeBandResponse } from './timeBandResponse'
 
 export interface FareMatrixResponse {
-  policyId?: string;
-  policyVersionId?: string;
-  revision?: number;
-  version?: number;
-  dayGroup?: FareMatrixResponseDayGroup;
-  status?: FareMatrixResponseStatus;
-  scopes?: ScopeResponse[];
-  timeBands?: TimeBandResponse[];
-  ticketGroups?: TicketGroupResponse[];
-  defaultTicketGroupId?: string;
-  seatTypes?: FareMatrixResponseSeatTypesItem[];
-  requiredCellCount?: number;
-  configuredCellCount?: number;
-  missingCellCount?: number;
-  coverageComplete?: boolean;
-  cells?: CellResponse[];
-  options?: Options;
+  policyId?: string
+  policyVersionId?: string
+  revision?: number
+  version?: number
+  dayGroup?: FareMatrixResponseDayGroup
+  status?: FareMatrixResponseStatus
+  scopes?: ScopeResponse[]
+  timeBands?: TimeBandResponse[]
+  ticketGroups?: TicketGroupResponse[]
+  defaultTicketGroupId?: string
+  seatTypes?: FareMatrixResponseSeatTypesItem[]
+  requiredCellCount?: number
+  configuredCellCount?: number
+  missingCellCount?: number
+  coverageComplete?: boolean
+  cells?: CellResponse[]
+  options?: Options
 }

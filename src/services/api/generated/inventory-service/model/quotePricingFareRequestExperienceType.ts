@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type QuotePricingFareRequestExperienceType = typeof QuotePricingFareRequestExperienceType[keyof typeof QuotePricingFareRequestExperienceType];
-
+export type QuotePricingFareRequestExperienceType =
+  (typeof QuotePricingFareRequestExperienceType)[keyof typeof QuotePricingFareRequestExperienceType]
 
 export const QuotePricingFareRequestExperienceType = {
   STANDARD: 'STANDARD',
@@ -15,4 +15,4 @@ export const QuotePricingFareRequestExperienceType = {
   IMAX: 'IMAX',
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
-} as const;
+} as const

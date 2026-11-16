@@ -10,41 +10,41 @@ import type {
   ApiResponsePageResponsePaymentTransactionManagementResponse,
   ApiResponsePaymentManagementResponse,
   ListBookingPaymentsForAdminParams,
-  ListPaymentTransactionsForAdminParams
-} from '../model';
+  ListPaymentTransactionsForAdminParams,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getPaymentForAdmin = (
-    paymentId: string,
- ) => {
-      return apiRequest<ApiResponsePaymentManagementResponse>(
-      {url: `/api/v1/payments/management/${paymentId}`, method: 'GET'
-    },
-      );
-    }
-  export const listPaymentTransactionsForAdmin = (
-    paymentId: string,
-    params?: ListPaymentTransactionsForAdminParams,
- ) => {
-      return apiRequest<ApiResponsePageResponsePaymentTransactionManagementResponse>(
-      {url: `/api/v1/payments/management/${paymentId}/transactions`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const listBookingPaymentsForAdmin = (
-    bookingId: string,
-    params?: ListBookingPaymentsForAdminParams,
- ) => {
-      return apiRequest<ApiResponsePageResponsePaymentManagementResponse>(
-      {url: `/api/v1/payments/management/by-booking/${bookingId}`, method: 'GET',
-        params
-    },
-      );
-    }
-  export type GetPaymentForAdminResult = NonNullable<Awaited<ReturnType<typeof getPaymentForAdmin>>>
-export type ListPaymentTransactionsForAdminResult = NonNullable<Awaited<ReturnType<typeof listPaymentTransactionsForAdmin>>>
-export type ListBookingPaymentsForAdminResult = NonNullable<Awaited<ReturnType<typeof listBookingPaymentsForAdmin>>>
+export const getPaymentForAdmin = (paymentId: string) => {
+  return apiRequest<ApiResponsePaymentManagementResponse>({
+    url: `/api/v1/payments/management/${paymentId}`,
+    method: 'GET',
+  })
+}
+export const listPaymentTransactionsForAdmin = (
+  paymentId: string,
+  params?: ListPaymentTransactionsForAdminParams,
+) => {
+  return apiRequest<ApiResponsePageResponsePaymentTransactionManagementResponse>({
+    url: `/api/v1/payments/management/${paymentId}/transactions`,
+    method: 'GET',
+    params,
+  })
+}
+export const listBookingPaymentsForAdmin = (
+  bookingId: string,
+  params?: ListBookingPaymentsForAdminParams,
+) => {
+  return apiRequest<ApiResponsePageResponsePaymentManagementResponse>({
+    url: `/api/v1/payments/management/by-booking/${bookingId}`,
+    method: 'GET',
+    params,
+  })
+}
+export type GetPaymentForAdminResult = NonNullable<Awaited<ReturnType<typeof getPaymentForAdmin>>>
+export type ListPaymentTransactionsForAdminResult = NonNullable<
+  Awaited<ReturnType<typeof listPaymentTransactionsForAdmin>>
+>
+export type ListBookingPaymentsForAdminResult = NonNullable<
+  Awaited<ReturnType<typeof listBookingPaymentsForAdmin>>
+>

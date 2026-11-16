@@ -7,6 +7,6 @@
  */
 
 export interface UpdateSeatActiveRequest {
-  roomId: string;
-  active: boolean;
+  roomId: string
+  active: boolean
 }

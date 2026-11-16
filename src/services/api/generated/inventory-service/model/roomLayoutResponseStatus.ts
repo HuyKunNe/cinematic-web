@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type RoomLayoutResponseStatus = typeof RoomLayoutResponseStatus[keyof typeof RoomLayoutResponseStatus];
-
+export type RoomLayoutResponseStatus =
+  (typeof RoomLayoutResponseStatus)[keyof typeof RoomLayoutResponseStatus]
 
 export const RoomLayoutResponseStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED',
   RETIRED: 'RETIRED',
-} as const;
+} as const

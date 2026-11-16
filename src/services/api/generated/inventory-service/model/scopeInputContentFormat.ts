@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ScopeInputContentFormat = typeof ScopeInputContentFormat[keyof typeof ScopeInputContentFormat];
-
+export type ScopeInputContentFormat =
+  (typeof ScopeInputContentFormat)[keyof typeof ScopeInputContentFormat]
 
 export const ScopeInputContentFormat = {
   '2D': '2D',
   '3D': '3D',
-} as const;
+} as const

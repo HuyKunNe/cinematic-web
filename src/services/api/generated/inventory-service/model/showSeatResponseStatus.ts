@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ShowSeatResponseStatus = typeof ShowSeatResponseStatus[keyof typeof ShowSeatResponseStatus];
-
+export type ShowSeatResponseStatus =
+  (typeof ShowSeatResponseStatus)[keyof typeof ShowSeatResponseStatus]
 
 export const ShowSeatResponseStatus = {
   AVAILABLE: 'AVAILABLE',
   HELD: 'HELD',
   BOOKED: 'BOOKED',
   UNAVAILABLE: 'UNAVAILABLE',
-} as const;
+} as const

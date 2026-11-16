@@ -6,11 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type FindCatalogSort = typeof FindCatalogSort[keyof typeof FindCatalogSort];
-
+export type FindCatalogSort = (typeof FindCatalogSort)[keyof typeof FindCatalogSort]
 
 export const FindCatalogSort = {
   RELEASE_DESC: 'RELEASE_DESC',
   RELEASE_ASC: 'RELEASE_ASC',
   TITLE_ASC: 'TITLE_ASC',
-} as const;
+} as const

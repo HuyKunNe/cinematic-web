@@ -57,7 +57,10 @@ const screeningVersionSchema = z.object({
   projectionTechnology: z.nativeEnum(MovieScreeningVersionResponseProjectionTechnology),
   audioLanguage: z.string().trim().min(1),
   presentationType: z.nativeEnum(MovieScreeningVersionResponsePresentationType),
-  subtitleLanguage: z.string().nullish().transform((value) => value ?? ''),
+  subtitleLanguage: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? ''),
   active: z.boolean(),
   version: z.number().int().nonnegative(),
 })
@@ -109,9 +112,11 @@ export function screeningVersionLabel(version: ShowtimeScreeningVersionOption): 
 }
 
 export function showtimePricingVersionLabel(version: ShowtimePricingVersionOption): string {
-  return [version.name, pricingDayGroupLabels[version.dayGroup], `Phiên bản ${version.revision}`].join(
-    ' · ',
-  )
+  return [
+    version.name,
+    pricingDayGroupLabels[version.dayGroup],
+    `Phiên bản ${version.revision}`,
+  ].join(' · ')
 }
 
 function uniqueIds<T extends { id: string }>(items: T[]): T[] {
@@ -155,7 +160,7 @@ export function useShowtimeCreationOptions(
 
   const movies = useQuery({
     ...queryOptions,
-        refetchOnWindowFocus: true,
+    refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     queryKey: ['showtimes', 'admin', 'create', 'movies'],
     enabled: computed(() => toValue(enabled)),
@@ -170,9 +175,7 @@ export function useShowtimeCreationOptions(
 
   const rooms = useQuery({
     ...queryOptions,
-    queryKey: computed(
-      () => ['showtimes', 'admin', 'create', 'rooms', toValue(cinemaId)] as const,
-    ),
+    queryKey: computed(() => ['showtimes', 'admin', 'create', 'rooms', toValue(cinemaId)] as const),
     enabled: computed(() => toValue(enabled) && uuid.safeParse(toValue(cinemaId)).success),
     queryFn: async ({ queryKey }) => {
       requireAccess()
@@ -199,7 +202,7 @@ export function useShowtimeCreationOptions(
 
   const screeningVersions = useQuery({
     ...queryOptions,
-        refetchOnWindowFocus: true,
+    refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     queryKey: computed(
       () => ['showtimes', 'admin', 'create', 'screening-versions', toValue(movieId)] as const,
@@ -210,9 +213,9 @@ export function useShowtimeCreationOptions(
 
       const requestedMovieId = uuid.parse(queryKey[4])
       const items = uniqueIds(
-        z.array(screeningVersionSchema).parse(
-          await listMovieScreeningVersions(requestedMovieId, { active: true }),
-        ),
+        z
+          .array(screeningVersionSchema)
+          .parse(await listMovieScreeningVersions(requestedMovieId, { active: true })),
       )
 
       if (items.some((item) => item.movieId !== requestedMovieId)) {
@@ -251,9 +254,7 @@ export function useShowtimeCreationOptions(
 
           const versions = z
             .array(pricingVersionSchema)
-            .parse(
-              await listCinemaPricingPolicyVersions(requestedCinemaId, policy.policyId),
-            )
+            .parse(await listCinemaPricingPolicyVersions(requestedCinemaId, policy.policyId))
 
           if (
             versions.some(
@@ -326,14 +327,12 @@ export function showtimeCreationErrorMessage(error: unknown): string {
       'Lịch phòng bị trùng, đã tính cả khoảng nghỉ. Điều chỉnh thời gian và tải lại lựa chọn trước khi gửi tiếp.',
     INVENTORY_SHOWTIME_DURATION_MISMATCH:
       'Thời lượng phim đã thay đổi hoặc giờ kết thúc chưa đúng. Hãy tải lại lựa chọn.',
-    INVENTORY_SHOWTIME_START_NOT_FUTURE:
-      'Giờ bắt đầu phải sau thời điểm hiện tại.',
+    INVENTORY_SHOWTIME_START_NOT_FUTURE: 'Giờ bắt đầu phải sau thời điểm hiện tại.',
     INVENTORY_SHOWTIME_BEFORE_RELEASE_DATE:
       'Suất chiếu nằm trước ngày khởi chiếu của phim theo múi giờ cụm rạp.',
     INVENTORY_SCREENING_VERSION_INACTIVE:
       'Phiên bản chiếu đã ngừng hoạt động. Hãy tải lại và chọn phiên bản khác.',
-    INVENTORY_SCREENING_VERSION_NOT_FOUND:
-      'Không tìm thấy phiên bản chiếu đã chọn.',
+    INVENTORY_SCREENING_VERSION_NOT_FOUND: 'Không tìm thấy phiên bản chiếu đã chọn.',
     INVENTORY_SHOWTIME_FORMAT_NOT_SUPPORTED:
       'Phòng không còn hỗ trợ định dạng của phiên bản chiếu. Hãy tải lại lựa chọn.',
     INVENTORY_ROOM_CONTENT_FORMATS_NOT_CONFIGURED:
@@ -350,18 +349,13 @@ export function showtimeCreationErrorMessage(error: unknown): string {
       'Phòng có sơ đồ đã công bố. Hãy tải lại và xác nhận phiên bản sơ đồ cần gắn.',
     INVENTORY_ROOM_LAYOUT_NOT_PUBLISHED:
       'Sơ đồ được chọn không còn ở trạng thái đã công bố. Hãy tải lại.',
-    INVENTORY_SHOWTIME_LAYOUT_ROOM_MISMATCH:
-      'Sơ đồ đã chọn không thuộc phòng này.',
+    INVENTORY_SHOWTIME_LAYOUT_ROOM_MISMATCH: 'Sơ đồ đã chọn không thuộc phòng này.',
     INVENTORY_ROOM_LAYOUT_SEAT_SNAPSHOT_MISMATCH:
       'Dữ liệu ghế không còn khớp sơ đồ. Hãy tải lại và kiểm tra phòng.',
-    INVENTORY_NO_ACTIVE_SEATS:
-      'Phòng chưa có ghế hoạt động hợp lệ để lập suất chiếu.',
-    INVENTORY_ROOM_INACTIVE:
-      'Phòng đã ngừng hoạt động.',
-    INVENTORY_CINEMA_INACTIVE:
-      'Cụm rạp đã ngừng hoạt động.',
-    INVENTORY_INVALID_SHOWTIME_BREAK:
-      'Khoảng nghỉ phải là số phút nguyên từ 0 đến 120.',
+    INVENTORY_NO_ACTIVE_SEATS: 'Phòng chưa có ghế hoạt động hợp lệ để lập suất chiếu.',
+    INVENTORY_ROOM_INACTIVE: 'Phòng đã ngừng hoạt động.',
+    INVENTORY_CINEMA_INACTIVE: 'Cụm rạp đã ngừng hoạt động.',
+    INVENTORY_INVALID_SHOWTIME_BREAK: 'Khoảng nghỉ phải là số phút nguyên từ 0 đến 120.',
   }
 
   const code = errorCode(error)
@@ -378,10 +372,7 @@ export function useCreateAdminShowtimeMutation(enabled: MaybeRefOrGetter<boolean
 
   return useMutation({
     retry: false,
-    mutationFn: async (input: {
-      cinemaId: string
-      request: CreateShowtimeRequest
-    }) => {
+    mutationFn: async (input: { cinemaId: string; request: CreateShowtimeRequest }) => {
       if (!toValue(enabled)) {
         throw new ShowtimeCreationInputError('Bạn không có quyền tạo suất chiếu.')
       }

@@ -9,56 +9,59 @@ import type {
   CreateMovieScreeningVersionRequest,
   ListMovieScreeningVersionsParams,
   MovieScreeningVersionResponse,
-  UpdateMovieScreeningVersionActiveRequest
-} from '../model';
+  UpdateMovieScreeningVersionActiveRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const updateMovieScreeningVersionActive = (
-    movieId: string,
-    versionId: string,
-    updateMovieScreeningVersionActiveRequest: UpdateMovieScreeningVersionActiveRequest,
- ) => {
-      return apiRequest<MovieScreeningVersionResponse>(
-      {url: `/api/v1/movies/${movieId}/screening-versions/${versionId}/active`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateMovieScreeningVersionActiveRequest
-    },
-      );
-    }
-  export const listMovieScreeningVersions = (
-    movieId: string,
-    params?: ListMovieScreeningVersionsParams,
- ) => {
-      return apiRequest<MovieScreeningVersionResponse[]>(
-      {url: `/api/v1/movies/${movieId}/screening-versions`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const createMovieScreeningVersion = (
-    movieId: string,
-    createMovieScreeningVersionRequest: CreateMovieScreeningVersionRequest,
- ) => {
-      return apiRequest<MovieScreeningVersionResponse>(
-      {url: `/api/v1/movies/${movieId}/screening-versions`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createMovieScreeningVersionRequest
-    },
-      );
-    }
-  export const getMovieScreeningVersion = (
-    movieId: string,
-    versionId: string,
- ) => {
-      return apiRequest<MovieScreeningVersionResponse>(
-      {url: `/api/v1/movies/${movieId}/screening-versions/${versionId}`, method: 'GET'
-    },
-      );
-    }
-  export type UpdateMovieScreeningVersionActiveResult = NonNullable<Awaited<ReturnType<typeof updateMovieScreeningVersionActive>>>
-export type ListMovieScreeningVersionsResult = NonNullable<Awaited<ReturnType<typeof listMovieScreeningVersions>>>
-export type CreateMovieScreeningVersionResult = NonNullable<Awaited<ReturnType<typeof createMovieScreeningVersion>>>
-export type GetMovieScreeningVersionResult = NonNullable<Awaited<ReturnType<typeof getMovieScreeningVersion>>>
+export const updateMovieScreeningVersionActive = (
+  movieId: string,
+  versionId: string,
+  updateMovieScreeningVersionActiveRequest: UpdateMovieScreeningVersionActiveRequest,
+) => {
+  return apiRequest<MovieScreeningVersionResponse>({
+    url: `/api/v1/movies/${movieId}/screening-versions/${versionId}/active`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateMovieScreeningVersionActiveRequest,
+  })
+}
+export const listMovieScreeningVersions = (
+  movieId: string,
+  params?: ListMovieScreeningVersionsParams,
+) => {
+  return apiRequest<MovieScreeningVersionResponse[]>({
+    url: `/api/v1/movies/${movieId}/screening-versions`,
+    method: 'GET',
+    params,
+  })
+}
+export const createMovieScreeningVersion = (
+  movieId: string,
+  createMovieScreeningVersionRequest: CreateMovieScreeningVersionRequest,
+) => {
+  return apiRequest<MovieScreeningVersionResponse>({
+    url: `/api/v1/movies/${movieId}/screening-versions`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createMovieScreeningVersionRequest,
+  })
+}
+export const getMovieScreeningVersion = (movieId: string, versionId: string) => {
+  return apiRequest<MovieScreeningVersionResponse>({
+    url: `/api/v1/movies/${movieId}/screening-versions/${versionId}`,
+    method: 'GET',
+  })
+}
+export type UpdateMovieScreeningVersionActiveResult = NonNullable<
+  Awaited<ReturnType<typeof updateMovieScreeningVersionActive>>
+>
+export type ListMovieScreeningVersionsResult = NonNullable<
+  Awaited<ReturnType<typeof listMovieScreeningVersions>>
+>
+export type CreateMovieScreeningVersionResult = NonNullable<
+  Awaited<ReturnType<typeof createMovieScreeningVersion>>
+>
+export type GetMovieScreeningVersionResult = NonNullable<
+  Awaited<ReturnType<typeof getMovieScreeningVersion>>
+>

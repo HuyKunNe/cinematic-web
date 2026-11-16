@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type OptionsExperienceTypesItem = typeof OptionsExperienceTypesItem[keyof typeof OptionsExperienceTypesItem];
-
+export type OptionsExperienceTypesItem =
+  (typeof OptionsExperienceTypesItem)[keyof typeof OptionsExperienceTypesItem]
 
 export const OptionsExperienceTypesItem = {
   STANDARD: 'STANDARD',
@@ -15,4 +15,4 @@ export const OptionsExperienceTypesItem = {
   IMAX: 'IMAX',
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
-} as const;
+} as const

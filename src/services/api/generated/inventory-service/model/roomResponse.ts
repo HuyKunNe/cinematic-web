@@ -5,17 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { RoomResponseContentFormatsItem } from './roomResponseContentFormatsItem';
-import type { RoomResponseRoomType } from './roomResponseRoomType';
+import type { RoomResponseContentFormatsItem } from './roomResponseContentFormatsItem'
+import type { RoomResponseRoomType } from './roomResponseRoomType'
 
 export interface RoomResponse {
-  id?: string;
-  cinemaId?: string;
-  name?: string;
-  roomType?: RoomResponseRoomType;
-  active?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  version?: number;
-  contentFormats?: RoomResponseContentFormatsItem[];
+  id?: string
+  cinemaId?: string
+  name?: string
+  roomType?: RoomResponseRoomType
+  active?: boolean
+  createdAt?: string
+  updatedAt?: string
+  version?: number
+  contentFormats?: RoomResponseContentFormatsItem[]
 }

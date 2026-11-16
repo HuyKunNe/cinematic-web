@@ -340,6 +340,12 @@
   background: var(--schedule-filter-background);
 }
 
+.movie-showtimes__results {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
 .movie-showtimes__location,
 .movie-showtimes__date {
   display: grid;

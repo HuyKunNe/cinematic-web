@@ -7,15 +7,15 @@
  */
 
 export interface BookingSeatResponse {
-  id?: string;
-  inventorySeatId?: string;
-  showtimeId?: string;
-  seatNumber?: string;
-  seatType?: string;
-  price?: number;
-  requestedTicketGroupId?: string;
-  ticketGroupId?: string;
-  ticketGroupName?: string;
-  capacity?: number;
-  unit?: string;
+  id?: string
+  inventorySeatId?: string
+  showtimeId?: string
+  seatNumber?: string
+  seatType?: string
+  price?: number
+  requestedTicketGroupId?: string
+  ticketGroupId?: string
+  ticketGroupName?: string
+  capacity?: number
+  unit?: string
 }

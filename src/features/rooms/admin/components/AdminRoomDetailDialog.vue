@@ -182,9 +182,7 @@ function statusLabel(active?: boolean) {
             <header>
               <div>
                 <h2 id="admin-room-detail-seats-title">Sức chứa &amp; hạng ghế</h2>
-                <p class="admin-rooms__muted">
-                  Thống kê từ sơ đồ ghế đã xuất bản.
-                </p>
+                <p class="admin-rooms__muted">Thống kê từ sơ đồ ghế đã xuất bản.</p>
               </div>
             </header>
 
@@ -256,7 +254,8 @@ function statusLabel(active?: boolean) {
               <p class="admin-room-detail__note">
                 <Info aria-hidden="true" />
                 <span>
-                  Ghế đôi: 1 đơn vị, 2 chỗ ngồi. Số liệu không thể hiện tình trạng đặt chỗ theo suất chiếu.
+                  Ghế đôi: 1 đơn vị, 2 chỗ ngồi. Số liệu không thể hiện tình trạng đặt chỗ theo suất
+                  chiếu.
                 </span>
               </p>
             </template>

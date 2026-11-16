@@ -6,12 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CellInputSeatType = typeof CellInputSeatType[keyof typeof CellInputSeatType];
-
+export type CellInputSeatType = (typeof CellInputSeatType)[keyof typeof CellInputSeatType]
 
 export const CellInputSeatType = {
   STANDARD: 'STANDARD',
   VIP: 'VIP',
   COUPLE: 'COUPLE',
   ACCESSIBLE: 'ACCESSIBLE',
-} as const;
+} as const

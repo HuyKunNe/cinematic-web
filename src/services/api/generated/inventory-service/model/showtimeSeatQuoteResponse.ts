@@ -5,14 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { SeatQuote } from './seatQuote';
+import type { SeatQuote } from './seatQuote'
 
 export interface ShowtimeSeatQuoteResponse {
-  showtimeId?: string;
-  serverTime?: string;
-  currency?: string;
-  seatCount?: number;
-  capacity?: number;
-  totalAmount?: number;
-  seats?: SeatQuote[];
+  showtimeId?: string
+  serverTime?: string
+  currency?: string
+  seatCount?: number
+  capacity?: number
+  totalAmount?: number
+  seats?: SeatQuote[]
 }

@@ -5,12 +5,12 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { BookingResponse } from './bookingResponse';
-import type { ErrorBody } from './errorBody';
+import type { BookingResponse } from './bookingResponse'
+import type { ErrorBody } from './errorBody'
 
 export interface ApiResponseBookingResponse {
-  success?: boolean;
-  timestamp?: string;
-  data?: BookingResponse;
-  error?: ErrorBody;
+  success?: boolean
+  timestamp?: string
+  data?: BookingResponse
+  error?: ErrorBody
 }

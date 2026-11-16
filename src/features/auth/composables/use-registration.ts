@@ -7,8 +7,14 @@ import type { RegisterUserRequest } from '@/services/api/generated/user-service/
 import type { ConfirmEmailVerificationRequest } from '@/services/api/generated/user-service/model/confirmEmailVerificationRequest'
 
 function apiMessage(error: unknown, fallback: string): string {
-  if (typeof error === 'object' && error !== null && 'message' in error &&
-    typeof error.message === 'string' && 'status' in error && error.status !== null) {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof error.message === 'string' &&
+    'status' in error &&
+    error.status !== null
+  ) {
     return error.message
   }
   return fallback
@@ -25,7 +31,9 @@ export function useRegistration() {
     error.value = ''
     try {
       const response = await register(request)
-      message.value = response.message || 'Yêu cầu đã được tiếp nhận. Vui lòng kiểm tra hộp thư để xác minh email.'
+      message.value =
+        response.message ||
+        'Yêu cầu đã được tiếp nhận. Vui lòng kiểm tra hộp thư để xác minh email.'
       accepted.value = true
     } catch (cause) {
       error.value = apiMessage(cause, 'Chưa thể gửi yêu cầu đăng ký. Vui lòng thử lại.')
@@ -50,7 +58,10 @@ export function useEmailVerification() {
       verified.value = true
       return true
     } catch (cause) {
-      error.value = apiMessage(cause, 'Không thể xác minh email. Liên kết có thể không hợp lệ hoặc đã hết hạn.')
+      error.value = apiMessage(
+        cause,
+        'Không thể xác minh email. Liên kết có thể không hợp lệ hoặc đã hết hạn.',
+      )
       return false
     } finally {
       pending.value = false

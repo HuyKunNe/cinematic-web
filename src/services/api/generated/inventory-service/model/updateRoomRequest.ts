@@ -5,14 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { UpdateRoomRequestRoomType } from './updateRoomRequestRoomType';
+import type { UpdateRoomRequestRoomType } from './updateRoomRequestRoomType'
 
 export interface UpdateRoomRequest {
   /**
-     * @minLength 0
-     * @maxLength 100
-     */
-  name: string;
-  roomType: UpdateRoomRequestRoomType;
-  active: boolean;
+   * @minLength 0
+   * @maxLength 100
+   */
+  name: string
+  roomType: UpdateRoomRequestRoomType
+  active: boolean
 }

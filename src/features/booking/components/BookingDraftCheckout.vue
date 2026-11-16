@@ -23,7 +23,10 @@ import BookingProcessing from './BookingProcessing.vue'
 const props = defineProps<{ showtimeId: string }>()
 const emit = defineEmits<{ processing: [value: boolean] }>()
 const processing = ref(false)
-function updateProcessing(value: boolean) { processing.value = value; emit('processing', value) }
+function updateProcessing(value: boolean) {
+  processing.value = value
+  emit('processing', value)
+}
 const selection = useBookingSelection(props.showtimeId)
 const contextQuery = useBookingContextQuery(() => props.showtimeId)
 const context = computed(() => contextQuery.data.value)

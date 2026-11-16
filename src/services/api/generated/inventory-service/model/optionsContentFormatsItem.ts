@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type OptionsContentFormatsItem = typeof OptionsContentFormatsItem[keyof typeof OptionsContentFormatsItem];
-
+export type OptionsContentFormatsItem =
+  (typeof OptionsContentFormatsItem)[keyof typeof OptionsContentFormatsItem]
 
 export const OptionsContentFormatsItem = {
   '2D': '2D',
   '3D': '3D',
-} as const;
+} as const

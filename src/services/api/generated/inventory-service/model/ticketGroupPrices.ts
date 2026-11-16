@@ -5,12 +5,12 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { SeatFare } from './seatFare';
+import type { SeatFare } from './seatFare'
 
 export interface TicketGroupPrices {
-  ticketGroupId?: string;
-  name?: string;
-  eligibilityDescription?: string;
-  defaultGroup?: boolean;
-  fares?: SeatFare[];
+  ticketGroupId?: string
+  name?: string
+  eligibilityDescription?: string
+  defaultGroup?: boolean
+  fares?: SeatFare[]
 }

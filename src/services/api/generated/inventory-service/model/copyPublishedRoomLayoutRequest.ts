@@ -7,5 +7,5 @@
  */
 
 export interface CopyPublishedRoomLayoutRequest {
-  expectedVersion: number;
+  expectedVersion: number
 }

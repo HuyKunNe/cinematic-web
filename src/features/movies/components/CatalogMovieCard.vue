@@ -7,11 +7,18 @@ import type { CatalogMovie } from '../models/movie.model'
 
 const props = defineProps<{ movie: CatalogMovie }>()
 const ageRating = computed(() => formatAgeRating(props.movie.ageRating))
-const detailLocation = computed(() => ({ name: ROUTE_NAMES.MOVIE_DETAIL, params: { movieId: props.movie.id } }))
-const metadata = computed(() => [
-  props.movie.genres.map((genre) => genre.name).join(' · ') || 'Thể loại chưa cập nhật',
-  props.movie.durationMinutes ? `${props.movie.durationMinutes} phút` : '',
-].filter(Boolean).join(' · '))
+const detailLocation = computed(() => ({
+  name: ROUTE_NAMES.MOVIE_DETAIL,
+  params: { movieId: props.movie.id },
+}))
+const metadata = computed(() =>
+  [
+    props.movie.genres.map((genre) => genre.name).join(' · ') || 'Thể loại chưa cập nhật',
+    props.movie.durationMinutes ? `${props.movie.durationMinutes} phút` : '',
+  ]
+    .filter(Boolean)
+    .join(' · '),
+)
 const caption = computed(() => {
   const date = props.movie.releaseDate
   if (!date) return props.movie.status === 'NOW_SHOWING' ? 'Đang chiếu' : 'Sắp chiếu'

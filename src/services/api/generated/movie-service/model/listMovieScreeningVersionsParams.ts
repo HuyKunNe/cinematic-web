@@ -7,5 +7,5 @@
  */
 
 export type ListMovieScreeningVersionsParams = {
-active?: boolean;
-};
+  active?: boolean
+}

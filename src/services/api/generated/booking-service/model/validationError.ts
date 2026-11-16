@@ -7,6 +7,6 @@
  */
 
 export interface ValidationError {
-  field?: string;
-  message?: string;
+  field?: string
+  message?: string
 }

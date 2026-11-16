@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetMovieCatalogStatus = typeof GetMovieCatalogStatus[keyof typeof GetMovieCatalogStatus];
-
+export type GetMovieCatalogStatus =
+  (typeof GetMovieCatalogStatus)[keyof typeof GetMovieCatalogStatus]
 
 export const GetMovieCatalogStatus = {
   UPCOMING: 'UPCOMING',
   NOW_SHOWING: 'NOW_SHOWING',
   ENDED: 'ENDED',
   INACTIVE: 'INACTIVE',
-} as const;
+} as const

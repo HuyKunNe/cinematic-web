@@ -7,5 +7,5 @@
  */
 
 export type DeleteCinemaPricingPolicyDraftParams = {
-expectedVersion: number;
-};
+  expectedVersion: number
+}

@@ -6,12 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type FindGenresStatus = typeof FindGenresStatus[keyof typeof FindGenresStatus];
-
+export type FindGenresStatus = (typeof FindGenresStatus)[keyof typeof FindGenresStatus]
 
 export const FindGenresStatus = {
   UPCOMING: 'UPCOMING',
   NOW_SHOWING: 'NOW_SHOWING',
   ENDED: 'ENDED',
   INACTIVE: 'INACTIVE',
-} as const;
+} as const

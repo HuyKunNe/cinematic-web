@@ -5,23 +5,23 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { BookingSeatSelectionRequest } from './bookingSeatSelectionRequest';
-import type { CreateBookingRequestPaymentProvider } from './createBookingRequestPaymentProvider';
+import type { BookingSeatSelectionRequest } from './bookingSeatSelectionRequest'
+import type { CreateBookingRequestPaymentProvider } from './createBookingRequestPaymentProvider'
 
 export interface CreateBookingRequest {
   /**
-     * @minLength 0
-     * @maxLength 100
-     */
-  clientRequestId: string;
-  showtimeId: string;
+   * @minLength 0
+   * @maxLength 100
+   */
+  clientRequestId: string
+  showtimeId: string
   /**
-     * @items.minLength 0
-     * @items.maxLength 20
-     */
-  seatNumbers?: string[];
+   * @items.minLength 0
+   * @items.maxLength 20
+   */
+  seatNumbers?: string[]
   /** @minimum 0 */
-  expectedTotalAmount?: number;
-  seats?: BookingSeatSelectionRequest[];
-  paymentProvider?: CreateBookingRequestPaymentProvider;
+  expectedTotalAmount?: number
+  seats?: BookingSeatSelectionRequest[]
+  paymentProvider?: CreateBookingRequestPaymentProvider
 }

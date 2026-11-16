@@ -5,20 +5,16 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  CinemaRoomCapacitiesResponse
-} from '../model';
+import type { CinemaRoomCapacitiesResponse } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getCinemaRoomCapacities = (
-    cinemaId: string,
- ) => {
-      return apiRequest<CinemaRoomCapacitiesResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/room-capacities`, method: 'GET'
-    },
-      );
-    }
-  export type GetCinemaRoomCapacitiesResult = NonNullable<Awaited<ReturnType<typeof getCinemaRoomCapacities>>>
+export const getCinemaRoomCapacities = (cinemaId: string) => {
+  return apiRequest<CinemaRoomCapacitiesResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/room-capacities`,
+    method: 'GET',
+  })
+}
+export type GetCinemaRoomCapacitiesResult = NonNullable<
+  Awaited<ReturnType<typeof getCinemaRoomCapacities>>
+>

@@ -7,5 +7,5 @@
  */
 
 export interface CreatePricingPolicyDraftRequest {
-  clientRequestId: string;
+  clientRequestId: string
 }

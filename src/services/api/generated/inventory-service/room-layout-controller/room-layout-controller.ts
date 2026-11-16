@@ -13,96 +13,84 @@ import type {
   PublishRoomLayoutRequest,
   ReplaceRoomLayoutContentRequest,
   RoomLayoutContentResponse,
-  RoomLayoutResponse
-} from '../model';
+  RoomLayoutResponse,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getRoomLayoutContent = (
-    layoutId: string,
- ) => {
-      return apiRequest<RoomLayoutContentResponse>(
-      {url: `/api/v1/room-layouts/${layoutId}/content`, method: 'GET'
-    },
-      );
-    }
-  export const replaceRoomLayoutContent = (
-    layoutId: string,
-    replaceRoomLayoutContentRequest: ReplaceRoomLayoutContentRequest,
- ) => {
-      return apiRequest<RoomLayoutContentResponse>(
-      {url: `/api/v1/room-layouts/${layoutId}/content`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: replaceRoomLayoutContentRequest
-    },
-      );
-    }
-  export const getRoomLayoutsByRoom = (
-    params: GetRoomLayoutsByRoomParams,
- ) => {
-      return apiRequest<RoomLayoutResponse[]>(
-      {url: `/api/v1/room-layouts`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const createRoomLayoutDraft = (
-    createRoomLayoutRequest: CreateRoomLayoutRequest,
- ) => {
-      return apiRequest<RoomLayoutResponse>(
-      {url: `/api/v1/room-layouts`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createRoomLayoutRequest
-    },
-      );
-    }
-  export const publishRoomLayout = (
-    layoutId: string,
-    publishRoomLayoutRequest: PublishRoomLayoutRequest,
- ) => {
-      return apiRequest<RoomLayoutResponse>(
-      {url: `/api/v1/room-layouts/${layoutId}/publish`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: publishRoomLayoutRequest
-    },
-      );
-    }
-  export const createRoomLayoutDraftFromPublished = (
-    layoutId: string,
-    copyPublishedRoomLayoutRequest: CopyPublishedRoomLayoutRequest,
- ) => {
-      return apiRequest<RoomLayoutContentResponse>(
-      {url: `/api/v1/room-layouts/${layoutId}/drafts`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: copyPublishedRoomLayoutRequest
-    },
-      );
-    }
-  export const getRoomLayoutById = (
-    layoutId: string,
- ) => {
-      return apiRequest<RoomLayoutResponse>(
-      {url: `/api/v1/room-layouts/${layoutId}`, method: 'GET'
-    },
-      );
-    }
-  export const deleteRoomLayoutDraft = (
-    layoutId: string,
-    params: DeleteRoomLayoutDraftParams,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/room-layouts/${layoutId}`, method: 'DELETE',
-        params
-    },
-      );
-    }
-  export type GetRoomLayoutContentResult = NonNullable<Awaited<ReturnType<typeof getRoomLayoutContent>>>
-export type ReplaceRoomLayoutContentResult = NonNullable<Awaited<ReturnType<typeof replaceRoomLayoutContent>>>
-export type GetRoomLayoutsByRoomResult = NonNullable<Awaited<ReturnType<typeof getRoomLayoutsByRoom>>>
-export type CreateRoomLayoutDraftResult = NonNullable<Awaited<ReturnType<typeof createRoomLayoutDraft>>>
+export const getRoomLayoutContent = (layoutId: string) => {
+  return apiRequest<RoomLayoutContentResponse>({
+    url: `/api/v1/room-layouts/${layoutId}/content`,
+    method: 'GET',
+  })
+}
+export const replaceRoomLayoutContent = (
+  layoutId: string,
+  replaceRoomLayoutContentRequest: ReplaceRoomLayoutContentRequest,
+) => {
+  return apiRequest<RoomLayoutContentResponse>({
+    url: `/api/v1/room-layouts/${layoutId}/content`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: replaceRoomLayoutContentRequest,
+  })
+}
+export const getRoomLayoutsByRoom = (params: GetRoomLayoutsByRoomParams) => {
+  return apiRequest<RoomLayoutResponse[]>({ url: `/api/v1/room-layouts`, method: 'GET', params })
+}
+export const createRoomLayoutDraft = (createRoomLayoutRequest: CreateRoomLayoutRequest) => {
+  return apiRequest<RoomLayoutResponse>({
+    url: `/api/v1/room-layouts`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createRoomLayoutRequest,
+  })
+}
+export const publishRoomLayout = (
+  layoutId: string,
+  publishRoomLayoutRequest: PublishRoomLayoutRequest,
+) => {
+  return apiRequest<RoomLayoutResponse>({
+    url: `/api/v1/room-layouts/${layoutId}/publish`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: publishRoomLayoutRequest,
+  })
+}
+export const createRoomLayoutDraftFromPublished = (
+  layoutId: string,
+  copyPublishedRoomLayoutRequest: CopyPublishedRoomLayoutRequest,
+) => {
+  return apiRequest<RoomLayoutContentResponse>({
+    url: `/api/v1/room-layouts/${layoutId}/drafts`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: copyPublishedRoomLayoutRequest,
+  })
+}
+export const getRoomLayoutById = (layoutId: string) => {
+  return apiRequest<RoomLayoutResponse>({ url: `/api/v1/room-layouts/${layoutId}`, method: 'GET' })
+}
+export const deleteRoomLayoutDraft = (layoutId: string, params: DeleteRoomLayoutDraftParams) => {
+  return apiRequest<void>({ url: `/api/v1/room-layouts/${layoutId}`, method: 'DELETE', params })
+}
+export type GetRoomLayoutContentResult = NonNullable<
+  Awaited<ReturnType<typeof getRoomLayoutContent>>
+>
+export type ReplaceRoomLayoutContentResult = NonNullable<
+  Awaited<ReturnType<typeof replaceRoomLayoutContent>>
+>
+export type GetRoomLayoutsByRoomResult = NonNullable<
+  Awaited<ReturnType<typeof getRoomLayoutsByRoom>>
+>
+export type CreateRoomLayoutDraftResult = NonNullable<
+  Awaited<ReturnType<typeof createRoomLayoutDraft>>
+>
 export type PublishRoomLayoutResult = NonNullable<Awaited<ReturnType<typeof publishRoomLayout>>>
-export type CreateRoomLayoutDraftFromPublishedResult = NonNullable<Awaited<ReturnType<typeof createRoomLayoutDraftFromPublished>>>
+export type CreateRoomLayoutDraftFromPublishedResult = NonNullable<
+  Awaited<ReturnType<typeof createRoomLayoutDraftFromPublished>>
+>
 export type GetRoomLayoutByIdResult = NonNullable<Awaited<ReturnType<typeof getRoomLayoutById>>>
-export type DeleteRoomLayoutDraftResult = NonNullable<Awaited<ReturnType<typeof deleteRoomLayoutDraft>>>
+export type DeleteRoomLayoutDraftResult = NonNullable<
+  Awaited<ReturnType<typeof deleteRoomLayoutDraft>>
+>

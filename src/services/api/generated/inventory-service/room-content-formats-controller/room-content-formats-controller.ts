@@ -5,33 +5,30 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  ReplaceRoomContentFormatsRequest,
-  RoomContentFormatsResponse
-} from '../model';
+import type { ReplaceRoomContentFormatsRequest, RoomContentFormatsResponse } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getRoomContentFormats = (
-    roomId: string,
- ) => {
-      return apiRequest<RoomContentFormatsResponse>(
-      {url: `/api/v1/rooms/${roomId}/content-formats`, method: 'GET'
-    },
-      );
-    }
-  export const replaceRoomContentFormats = (
-    roomId: string,
-    replaceRoomContentFormatsRequest: ReplaceRoomContentFormatsRequest,
- ) => {
-      return apiRequest<RoomContentFormatsResponse>(
-      {url: `/api/v1/rooms/${roomId}/content-formats`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: replaceRoomContentFormatsRequest
-    },
-      );
-    }
-  export type GetRoomContentFormatsResult = NonNullable<Awaited<ReturnType<typeof getRoomContentFormats>>>
-export type ReplaceRoomContentFormatsResult = NonNullable<Awaited<ReturnType<typeof replaceRoomContentFormats>>>
+export const getRoomContentFormats = (roomId: string) => {
+  return apiRequest<RoomContentFormatsResponse>({
+    url: `/api/v1/rooms/${roomId}/content-formats`,
+    method: 'GET',
+  })
+}
+export const replaceRoomContentFormats = (
+  roomId: string,
+  replaceRoomContentFormatsRequest: ReplaceRoomContentFormatsRequest,
+) => {
+  return apiRequest<RoomContentFormatsResponse>({
+    url: `/api/v1/rooms/${roomId}/content-formats`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: replaceRoomContentFormatsRequest,
+  })
+}
+export type GetRoomContentFormatsResult = NonNullable<
+  Awaited<ReturnType<typeof getRoomContentFormats>>
+>
+export type ReplaceRoomContentFormatsResult = NonNullable<
+  Awaited<ReturnType<typeof replaceRoomContentFormats>>
+>

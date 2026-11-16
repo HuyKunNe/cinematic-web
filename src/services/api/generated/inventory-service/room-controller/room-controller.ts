@@ -11,63 +11,38 @@ import type {
   GetActiveRoomsParams,
   GetManagedRoomsParams,
   RoomResponse,
-  UpdateRoomRequest
-} from '../model';
+  UpdateRoomRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getRoomById = (
-    roomId: string,
- ) => {
-      return apiRequest<RoomResponse>(
-      {url: `/api/v1/rooms/${roomId}`, method: 'GET'
-    },
-      );
-    }
-  export const updateRoom = (
-    roomId: string,
-    updateRoomRequest: UpdateRoomRequest,
- ) => {
-      return apiRequest<RoomResponse>(
-      {url: `/api/v1/rooms/${roomId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateRoomRequest
-    },
-      );
-    }
-  export const getActiveRooms = (
-    params: GetActiveRoomsParams,
- ) => {
-      return apiRequest<RoomResponse[]>(
-      {url: `/api/v1/rooms`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const createRoom = (
-    createRoomRequest: CreateRoomRequest,
-    params: CreateRoomParams,
- ) => {
-      return apiRequest<RoomResponse>(
-      {url: `/api/v1/rooms`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createRoomRequest,
-        params
-    },
-      );
-    }
-  export const getManagedRooms = (
-    params: GetManagedRoomsParams,
- ) => {
-      return apiRequest<RoomResponse[]>(
-      {url: `/api/v1/rooms/management`, method: 'GET',
-        params
-    },
-      );
-    }
-  export type GetRoomByIdResult = NonNullable<Awaited<ReturnType<typeof getRoomById>>>
+export const getRoomById = (roomId: string) => {
+  return apiRequest<RoomResponse>({ url: `/api/v1/rooms/${roomId}`, method: 'GET' })
+}
+export const updateRoom = (roomId: string, updateRoomRequest: UpdateRoomRequest) => {
+  return apiRequest<RoomResponse>({
+    url: `/api/v1/rooms/${roomId}`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateRoomRequest,
+  })
+}
+export const getActiveRooms = (params: GetActiveRoomsParams) => {
+  return apiRequest<RoomResponse[]>({ url: `/api/v1/rooms`, method: 'GET', params })
+}
+export const createRoom = (createRoomRequest: CreateRoomRequest, params: CreateRoomParams) => {
+  return apiRequest<RoomResponse>({
+    url: `/api/v1/rooms`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createRoomRequest,
+    params,
+  })
+}
+export const getManagedRooms = (params: GetManagedRoomsParams) => {
+  return apiRequest<RoomResponse[]>({ url: `/api/v1/rooms/management`, method: 'GET', params })
+}
+export type GetRoomByIdResult = NonNullable<Awaited<ReturnType<typeof getRoomById>>>
 export type UpdateRoomResult = NonNullable<Awaited<ReturnType<typeof updateRoom>>>
 export type GetActiveRoomsResult = NonNullable<Awaited<ReturnType<typeof getActiveRooms>>>
 export type CreateRoomResult = NonNullable<Awaited<ReturnType<typeof createRoom>>>

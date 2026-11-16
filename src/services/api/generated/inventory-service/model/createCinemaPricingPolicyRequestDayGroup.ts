@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CreateCinemaPricingPolicyRequestDayGroup = typeof CreateCinemaPricingPolicyRequestDayGroup[keyof typeof CreateCinemaPricingPolicyRequestDayGroup];
-
+export type CreateCinemaPricingPolicyRequestDayGroup =
+  (typeof CreateCinemaPricingPolicyRequestDayGroup)[keyof typeof CreateCinemaPricingPolicyRequestDayGroup]
 
 export const CreateCinemaPricingPolicyRequestDayGroup = {
   WEEKDAY: 'WEEKDAY',
   WEEKEND: 'WEEKEND',
   HOLIDAY: 'HOLIDAY',
-} as const;
+} as const

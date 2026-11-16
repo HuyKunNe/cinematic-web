@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type MovieResponseAgeRating = typeof MovieResponseAgeRating[keyof typeof MovieResponseAgeRating];
-
+export type MovieResponseAgeRating =
+  (typeof MovieResponseAgeRating)[keyof typeof MovieResponseAgeRating]
 
 export const MovieResponseAgeRating = {
   P: 'P',
@@ -15,4 +15,4 @@ export const MovieResponseAgeRating = {
   T13: 'T13',
   T16: 'T16',
   T18: 'T18',
-} as const;
+} as const

@@ -5,19 +5,19 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { FareMatrixValidationResponseStatus } from './fareMatrixValidationResponseStatus';
-import type { Issue } from './issue';
+import type { FareMatrixValidationResponseStatus } from './fareMatrixValidationResponseStatus'
+import type { Issue } from './issue'
 
 export interface FareMatrixValidationResponse {
-  policyId?: string;
-  policyVersionId?: string;
-  revision?: number;
-  version?: number;
-  status?: FareMatrixValidationResponseStatus;
-  valid?: boolean;
-  canPublish?: boolean;
-  requiredCellCount?: number;
-  configuredCellCount?: number;
-  missingCellCount?: number;
-  issues?: Issue[];
+  policyId?: string
+  policyVersionId?: string
+  revision?: number
+  version?: number
+  status?: FareMatrixValidationResponseStatus
+  valid?: boolean
+  canPublish?: boolean
+  requiredCellCount?: number
+  configuredCellCount?: number
+  missingCellCount?: number
+  issues?: Issue[]
 }

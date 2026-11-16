@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type RoomLayoutElementInputKind = typeof RoomLayoutElementInputKind[keyof typeof RoomLayoutElementInputKind];
-
+export type RoomLayoutElementInputKind =
+  (typeof RoomLayoutElementInputKind)[keyof typeof RoomLayoutElementInputKind]
 
 export const RoomLayoutElementInputKind = {
   SCREEN: 'SCREEN',
   AISLE: 'AISLE',
   EXIT: 'EXIT',
-} as const;
+} as const

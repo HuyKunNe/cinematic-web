@@ -478,7 +478,10 @@
   overflow-wrap: anywhere;
 }
 
-.pricing-setup .pricing-config-row > .pricing-field > :is(input, select, textarea, .app-time-picker) {
+.pricing-setup
+  .pricing-config-row
+  > .pricing-field
+  > :is(input, select, textarea, .app-time-picker) {
   grid-row: 2;
   align-self: end;
   min-width: 0;

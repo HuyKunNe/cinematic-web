@@ -6,13 +6,22 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import type { HomeMovie } from '../models/home-movie'
 import MovieCard from './MovieCard.vue'
 
-const props = defineProps<{ nowShowing: HomeMovie[]; upcoming: HomeMovie[]; loading: boolean; error: boolean }>()
+const props = defineProps<{
+  nowShowing: HomeMovie[]
+  upcoming: HomeMovie[]
+  loading: boolean
+  error: boolean
+}>()
 const PAGE_SIZE = 8
 const activeTab = ref('NOW_SHOWING')
 const page = ref(1)
-const movies = computed(() => activeTab.value === 'UPCOMING' ? props.upcoming : props.nowShowing)
-const visibleMovies = computed(() => movies.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE))
-watch([activeTab, () => movies.value.map((movie) => movie.id).join('|')], () => { page.value = 1 })
+const movies = computed(() => (activeTab.value === 'UPCOMING' ? props.upcoming : props.nowShowing))
+const visibleMovies = computed(() =>
+  movies.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE),
+)
+watch([activeTab, () => movies.value.map((movie) => movie.id).join('|')], () => {
+  page.value = 1
+})
 </script>
 
 <template>

@@ -295,7 +295,12 @@ const preview = [
           <select v-if="field.type === 'select'" class="admin-reference__input">
             <option value="">{{ field.placeholder }}</option>
           </select>
-          <AppTimePicker v-else-if="field.type === 'time'" model-value="" class="admin-reference__input" disabled />
+          <AppTimePicker
+            v-else-if="field.type === 'time'"
+            model-value=""
+            class="admin-reference__input"
+            disabled
+          />
           <input
             v-else
             class="admin-reference__input"
@@ -399,7 +404,12 @@ const preview = [
             <select v-if="field.type === 'select'" class="admin-reference__input">
               <option value="">{{ field.placeholder }}</option>
             </select>
-            <AppTimePicker v-else-if="field.type === 'time'" model-value="" class="admin-reference__input" disabled />
+            <AppTimePicker
+              v-else-if="field.type === 'time'"
+              model-value=""
+              class="admin-reference__input"
+              disabled
+            />
             <input
               v-else
               class="admin-reference__input"

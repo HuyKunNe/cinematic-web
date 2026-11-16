@@ -7,5 +7,5 @@
  */
 
 export type GetShowtimeSeatQuoteParams = {
-seatNumbers: string[];
-};
+  seatNumbers: string[]
+}

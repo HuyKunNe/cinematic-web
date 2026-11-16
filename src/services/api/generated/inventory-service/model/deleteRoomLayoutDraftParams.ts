@@ -7,5 +7,5 @@
  */
 
 export type DeleteRoomLayoutDraftParams = {
-expectedVersion: number;
-};
+  expectedVersion: number
+}

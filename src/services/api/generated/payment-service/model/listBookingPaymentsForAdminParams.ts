@@ -7,13 +7,13 @@
  */
 
 export type ListBookingPaymentsForAdminParams = {
-/**
- * @minimum 0
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 100
- */
-size?: number;
-};
+  /**
+   * @minimum 0
+   */
+  page?: number
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  size?: number
+}

@@ -5,25 +5,25 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { SaveMovieScreeningVersionRequestContentFormat } from './saveMovieScreeningVersionRequestContentFormat';
-import type { SaveMovieScreeningVersionRequestPresentationType } from './saveMovieScreeningVersionRequestPresentationType';
-import type { SaveMovieScreeningVersionRequestProjectionTechnology } from './saveMovieScreeningVersionRequestProjectionTechnology';
+import type { SaveMovieScreeningVersionRequestContentFormat } from './saveMovieScreeningVersionRequestContentFormat'
+import type { SaveMovieScreeningVersionRequestPresentationType } from './saveMovieScreeningVersionRequestPresentationType'
+import type { SaveMovieScreeningVersionRequestProjectionTechnology } from './saveMovieScreeningVersionRequestProjectionTechnology'
 
 export interface SaveMovieScreeningVersionRequest {
-  id?: string;
-  expectedVersion?: number;
-  contentFormat?: SaveMovieScreeningVersionRequestContentFormat;
-  projectionTechnology?: SaveMovieScreeningVersionRequestProjectionTechnology;
+  id?: string
+  expectedVersion?: number
+  contentFormat?: SaveMovieScreeningVersionRequestContentFormat
+  projectionTechnology?: SaveMovieScreeningVersionRequestProjectionTechnology
   /**
-     * @minLength 0
-     * @maxLength 100
-     */
-  audioLanguage: string;
-  presentationType: SaveMovieScreeningVersionRequestPresentationType;
+   * @minLength 0
+   * @maxLength 100
+   */
+  audioLanguage: string
+  presentationType: SaveMovieScreeningVersionRequestPresentationType
   /**
-     * @minLength 0
-     * @maxLength 100
-     */
-  subtitleLanguage?: string;
-  active: boolean;
+   * @minLength 0
+   * @maxLength 100
+   */
+  subtitleLanguage?: string
+  active: boolean
 }

@@ -5,13 +5,13 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CreateShowtimeRequest } from './createShowtimeRequest';
+import type { CreateShowtimeRequest } from './createShowtimeRequest'
 
 export interface CreateShowtimeBatchRequest {
-  clientRequestId: string;
+  clientRequestId: string
   /**
-     * @minItems 1
-     * @maxItems 50
-     */
-  showtimes: CreateShowtimeRequest[];
+   * @minItems 1
+   * @maxItems 50
+   */
+  showtimes: CreateShowtimeRequest[]
 }

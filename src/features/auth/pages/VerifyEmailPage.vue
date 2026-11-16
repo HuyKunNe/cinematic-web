@@ -19,8 +19,11 @@ async function submit() {
   if (!token.value || verification.pending.value || verification.verified.value) return
   validationError.value = ''
   let invalidField = 'verify-password'
-  if (!password.value.trim() || [...password.value].length < 12) validationError.value = 'Mật khẩu cần ít nhất 12 ký tự.'
-  else if (new TextEncoder().encode(password.value).byteLength > 72) validationError.value = 'Mật khẩu không được vượt quá 72 byte UTF-8. Ký tự có dấu hoặc emoji có thể chiếm nhiều byte.'
+  if (!password.value.trim() || [...password.value].length < 12)
+    validationError.value = 'Mật khẩu cần ít nhất 12 ký tự.'
+  else if (new TextEncoder().encode(password.value).byteLength > 72)
+    validationError.value =
+      'Mật khẩu không được vượt quá 72 byte UTF-8. Ký tự có dấu hoặc emoji có thể chiếm nhiều byte.'
   else if (password.value !== confirmation.value) {
     validationError.value = 'Mật khẩu xác nhận chưa khớp.'
     invalidField = 'verify-confirmation'
@@ -53,21 +56,55 @@ onBeforeUnmount(() => {
       </div>
       <div v-else-if="!token" class="registration-auth__error" role="alert">
         <p>Liên kết xác minh không hợp lệ hoặc thiếu token. Hãy mở đầy đủ liên kết từ email.</p>
-        <p>Nếu vừa tải lại trang, hãy mở lại liên kết email. Token chỉ được giữ trong bộ nhớ khi trang đang mở.</p>
+        <p>
+          Nếu vừa tải lại trang, hãy mở lại liên kết email. Token chỉ được giữ trong bộ nhớ khi
+          trang đang mở.
+        </p>
       </div>
       <form v-else novalidate @submit.prevent="submit">
         <p class="registration-auth__intro">Đặt mật khẩu để hoàn tất xác minh email.</p>
         <fieldset :disabled="verification.pending.value" :aria-busy="verification.pending.value">
-          <label class="registration-auth__field" for="verify-password">Mật khẩu mới
-            <input id="verify-password" v-model="password" type="password" autocomplete="new-password" required minlength="12" aria-describedby="verify-password-help verify-validation" :aria-invalid="!!validationError" />
+          <label class="registration-auth__field" for="verify-password"
+            >Mật khẩu mới
+            <input
+              id="verify-password"
+              v-model="password"
+              type="password"
+              autocomplete="new-password"
+              required
+              minlength="12"
+              aria-describedby="verify-password-help verify-validation"
+              :aria-invalid="!!validationError"
+            />
           </label>
-          <p id="verify-password-help" class="registration-auth__hint">Ít nhất 12 ký tự, tối đa 72 byte UTF-8.</p>
-          <label class="registration-auth__field" for="verify-confirmation">Xác nhận mật khẩu
-            <input id="verify-confirmation" v-model="confirmation" type="password" autocomplete="new-password" required aria-describedby="verify-validation" :aria-invalid="!!validationError" />
+          <p id="verify-password-help" class="registration-auth__hint">
+            Ít nhất 12 ký tự, tối đa 72 byte UTF-8.
+          </p>
+          <label class="registration-auth__field" for="verify-confirmation"
+            >Xác nhận mật khẩu
+            <input
+              id="verify-confirmation"
+              v-model="confirmation"
+              type="password"
+              autocomplete="new-password"
+              required
+              aria-describedby="verify-validation"
+              :aria-invalid="!!validationError"
+            />
           </label>
-          <p id="verify-validation" class="registration-auth__error" :role="validationError ? 'alert' : undefined">{{ validationError }}</p>
-          <p v-if="verification.error.value" class="registration-auth__error" role="alert">{{ verification.error.value }}</p>
-          <AppButton type="submit" :loading="verification.pending.value">Xác minh và đặt mật khẩu</AppButton>
+          <p
+            id="verify-validation"
+            class="registration-auth__error"
+            :role="validationError ? 'alert' : undefined"
+          >
+            {{ validationError }}
+          </p>
+          <p v-if="verification.error.value" class="registration-auth__error" role="alert">
+            {{ verification.error.value }}
+          </p>
+          <AppButton type="submit" :loading="verification.pending.value"
+            >Xác minh và đặt mật khẩu</AppButton
+          >
         </fieldset>
       </form>
       <AuthSignInAction />

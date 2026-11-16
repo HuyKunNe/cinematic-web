@@ -5,24 +5,19 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  QuoteShowtimeSeatsRequest,
-  ShowtimeGroupedSeatQuoteResponse
-} from '../model';
+import type { QuoteShowtimeSeatsRequest, ShowtimeGroupedSeatQuoteResponse } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const quoteShowtimeSeats = (
-    showtimeId: string,
-    quoteShowtimeSeatsRequest: QuoteShowtimeSeatsRequest,
- ) => {
-      return apiRequest<ShowtimeGroupedSeatQuoteResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}/seat-quote`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: quoteShowtimeSeatsRequest
-    },
-      );
-    }
-  export type QuoteShowtimeSeatsResult = NonNullable<Awaited<ReturnType<typeof quoteShowtimeSeats>>>
+export const quoteShowtimeSeats = (
+  showtimeId: string,
+  quoteShowtimeSeatsRequest: QuoteShowtimeSeatsRequest,
+) => {
+  return apiRequest<ShowtimeGroupedSeatQuoteResponse>({
+    url: `/api/v1/showtimes/${showtimeId}/seat-quote`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: quoteShowtimeSeatsRequest,
+  })
+}
+export type QuoteShowtimeSeatsResult = NonNullable<Awaited<ReturnType<typeof quoteShowtimeSeats>>>

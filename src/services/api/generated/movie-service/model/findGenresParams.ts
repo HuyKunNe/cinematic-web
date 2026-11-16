@@ -5,9 +5,9 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { FindGenresStatus } from './findGenresStatus';
+import type { FindGenresStatus } from './findGenresStatus'
 
 export type FindGenresParams = {
-status?: FindGenresStatus;
-movieIds?: string[];
-};
+  status?: FindGenresStatus
+  movieIds?: string[]
+}

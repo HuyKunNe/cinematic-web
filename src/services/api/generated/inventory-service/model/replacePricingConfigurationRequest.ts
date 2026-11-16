@@ -5,14 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { TicketGroupInput } from './ticketGroupInput';
-import type { TimeBandInput } from './timeBandInput';
+import type { TicketGroupInput } from './ticketGroupInput'
+import type { TimeBandInput } from './timeBandInput'
 
 export interface ReplacePricingConfigurationRequest {
   /** @minimum 0 */
-  expectedVersion: number;
+  expectedVersion: number
   /** @minItems 1 */
-  timeBands: TimeBandInput[];
+  timeBands: TimeBandInput[]
   /** @minItems 1 */
-  ticketGroups: TicketGroupInput[];
+  ticketGroups: TicketGroupInput[]
 }

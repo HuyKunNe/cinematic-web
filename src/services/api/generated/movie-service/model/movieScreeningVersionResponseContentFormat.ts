@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type MovieScreeningVersionResponseContentFormat = typeof MovieScreeningVersionResponseContentFormat[keyof typeof MovieScreeningVersionResponseContentFormat];
-
+export type MovieScreeningVersionResponseContentFormat =
+  (typeof MovieScreeningVersionResponseContentFormat)[keyof typeof MovieScreeningVersionResponseContentFormat]
 
 export const MovieScreeningVersionResponseContentFormat = {
   '2D': '2D',
   '3D': '3D',
-} as const;
+} as const

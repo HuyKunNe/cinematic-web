@@ -8,13 +8,13 @@
 
 export interface UpdateGenreRequest {
   /**
-     * @minLength 0
-     * @maxLength 100
-     */
-  name: string;
+   * @minLength 0
+   * @maxLength 100
+   */
+  name: string
   /**
-     * @minLength 0
-     * @maxLength 500
-     */
-  description?: string;
+   * @minLength 0
+   * @maxLength 500
+   */
+  description?: string
 }

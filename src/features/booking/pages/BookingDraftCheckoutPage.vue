@@ -12,13 +12,23 @@ const processing = ref(false)
 const showtimeId = computed(() =>
   isBookingUuid(route.query.showtimeId) ? route.query.showtimeId.toLowerCase() : '',
 )
-watch(showtimeId, () => { processing.value = false })
+watch(showtimeId, () => {
+  processing.value = false
+})
 </script>
 <template>
-  <div class="booking-journey customer-bookings" :class="{ 'booking-journey--checkout': !processing, 'booking-journey--result': processing }">
+  <div
+    class="booking-journey customer-bookings"
+    :class="{ 'booking-journey--checkout': !processing, 'booking-journey--result': processing }"
+  >
     <AppContainer>
       <BookingProgress v-if="!processing" current="checkout" />
-      <BookingDraftCheckout v-if="showtimeId" :key="showtimeId" :showtime-id="showtimeId" @processing="processing = $event" />
+      <BookingDraftCheckout
+        v-if="showtimeId"
+        :key="showtimeId"
+        :showtime-id="showtimeId"
+        @processing="processing = $event"
+      />
       <div v-else class="booking-panel">
         <p class="booking-error" role="alert">Chưa có suất chiếu hợp lệ để thanh toán.</p>
         <RouterLink :to="{ name: ROUTE_NAMES.BOOKING_START }" class="customer-bookings__link"

@@ -7,7 +7,7 @@
  */
 
 export interface SeatActiveStateResponse {
-  seatId?: string;
-  roomId?: string;
-  active?: boolean;
+  seatId?: string
+  roomId?: string
+  active?: boolean
 }

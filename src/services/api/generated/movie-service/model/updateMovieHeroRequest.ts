@@ -7,9 +7,9 @@
  */
 
 export interface UpdateMovieHeroRequest {
-  heroEnabled?: boolean;
+  heroEnabled?: boolean
   /** @minimum 0 */
-  heroPriority?: number;
-  heroStartsAt?: string;
-  heroEndsAt?: string;
+  heroPriority?: number
+  heroStartsAt?: string
+  heroEndsAt?: string
 }

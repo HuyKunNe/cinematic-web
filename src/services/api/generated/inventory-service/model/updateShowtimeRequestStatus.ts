@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type UpdateShowtimeRequestStatus = typeof UpdateShowtimeRequestStatus[keyof typeof UpdateShowtimeRequestStatus];
-
+export type UpdateShowtimeRequestStatus =
+  (typeof UpdateShowtimeRequestStatus)[keyof typeof UpdateShowtimeRequestStatus]
 
 export const UpdateShowtimeRequestStatus = {
   SCHEDULED: 'SCHEDULED',
@@ -15,4 +15,4 @@ export const UpdateShowtimeRequestStatus = {
   CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED',
   COMPLETED: 'COMPLETED',
-} as const;
+} as const

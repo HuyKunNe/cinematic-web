@@ -9,49 +9,39 @@ import type {
   ApiResponseBookingResponse,
   ApiResponsePageResponseBookingResponse,
   CreateBookingRequest,
-  FindAllBookingsParams
-} from '../model';
+  FindAllBookingsParams,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const findAllBookings = (
-    params?: FindAllBookingsParams,
- ) => {
-      return apiRequest<ApiResponsePageResponseBookingResponse>(
-      {url: `/api/v1/bookings`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const createBooking = (
-    createBookingRequest: CreateBookingRequest,
- ) => {
-      return apiRequest<ApiResponseBookingResponse>(
-      {url: `/api/v1/bookings`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createBookingRequest
-    },
-      );
-    }
-  export const cancelBooking = (
-    bookingId: string,
- ) => {
-      return apiRequest<ApiResponseBookingResponse>(
-      {url: `/api/v1/bookings/${bookingId}/cancel`, method: 'POST'
-    },
-      );
-    }
-  export const findById = (
-    bookingId: string,
- ) => {
-      return apiRequest<ApiResponseBookingResponse>(
-      {url: `/api/v1/bookings/${bookingId}`, method: 'GET'
-    },
-      );
-    }
-  export type FindAllBookingsResult = NonNullable<Awaited<ReturnType<typeof findAllBookings>>>
+export const findAllBookings = (params?: FindAllBookingsParams) => {
+  return apiRequest<ApiResponsePageResponseBookingResponse>({
+    url: `/api/v1/bookings`,
+    method: 'GET',
+    params,
+  })
+}
+export const createBooking = (createBookingRequest: CreateBookingRequest) => {
+  return apiRequest<ApiResponseBookingResponse>({
+    url: `/api/v1/bookings`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createBookingRequest,
+  })
+}
+export const cancelBooking = (bookingId: string) => {
+  return apiRequest<ApiResponseBookingResponse>({
+    url: `/api/v1/bookings/${bookingId}/cancel`,
+    method: 'POST',
+  })
+}
+export const findById = (bookingId: string) => {
+  return apiRequest<ApiResponseBookingResponse>({
+    url: `/api/v1/bookings/${bookingId}`,
+    method: 'GET',
+  })
+}
+export type FindAllBookingsResult = NonNullable<Awaited<ReturnType<typeof findAllBookings>>>
 export type CreateBookingResult = NonNullable<Awaited<ReturnType<typeof createBooking>>>
 export type CancelBookingResult = NonNullable<Awaited<ReturnType<typeof cancelBooking>>>
 export type FindByIdResult = NonNullable<Awaited<ReturnType<typeof findById>>>

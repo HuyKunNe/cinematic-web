@@ -372,12 +372,12 @@ function submit(event: Event) {
                 />
 
                 <p
-                   v-if="visibleErrors.description"
+                  v-if="visibleErrors.description"
                   id="admin-genre-description-error"
                   class="admin-movies__error"
                   role="alert"
                 >
-                   {{ visibleErrors.description }}
+                  {{ visibleErrors.description }}
                 </p>
               </div>
             </fieldset>

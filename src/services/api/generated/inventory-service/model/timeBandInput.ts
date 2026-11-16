@@ -7,22 +7,22 @@
  */
 
 export interface TimeBandInput {
-  id?: string;
+  id?: string
   /**
-     * @minLength 0
-     * @maxLength 120
-     */
-  name: string;
+   * @minLength 0
+   * @maxLength 120
+   */
+  name: string
   /**
-     * @minimum 0
-     * @maximum 1439
-     */
-  startMinute: number;
+   * @minimum 0
+   * @maximum 1439
+   */
+  startMinute: number
   /**
-     * @minimum 0
-     * @maximum 1440
-     */
-  endMinute: number;
+   * @minimum 0
+   * @maximum 1440
+   */
+  endMinute: number
   /** @minimum 0 */
-  sortOrder: number;
+  sortOrder: number
 }

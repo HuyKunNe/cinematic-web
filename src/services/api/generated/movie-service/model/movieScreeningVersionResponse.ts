@@ -5,18 +5,18 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { MovieScreeningVersionResponseContentFormat } from './movieScreeningVersionResponseContentFormat';
-import type { MovieScreeningVersionResponsePresentationType } from './movieScreeningVersionResponsePresentationType';
-import type { MovieScreeningVersionResponseProjectionTechnology } from './movieScreeningVersionResponseProjectionTechnology';
+import type { MovieScreeningVersionResponseContentFormat } from './movieScreeningVersionResponseContentFormat'
+import type { MovieScreeningVersionResponsePresentationType } from './movieScreeningVersionResponsePresentationType'
+import type { MovieScreeningVersionResponseProjectionTechnology } from './movieScreeningVersionResponseProjectionTechnology'
 
 export interface MovieScreeningVersionResponse {
-  id?: string;
-  movieId?: string;
-  contentFormat?: MovieScreeningVersionResponseContentFormat;
-  projectionTechnology?: MovieScreeningVersionResponseProjectionTechnology;
-  audioLanguage?: string;
-  presentationType?: MovieScreeningVersionResponsePresentationType;
-  subtitleLanguage?: string;
-  active?: boolean;
-  version?: number;
+  id?: string
+  movieId?: string
+  contentFormat?: MovieScreeningVersionResponseContentFormat
+  projectionTechnology?: MovieScreeningVersionResponseProjectionTechnology
+  audioLanguage?: string
+  presentationType?: MovieScreeningVersionResponsePresentationType
+  subtitleLanguage?: string
+  active?: boolean
+  version?: number
 }

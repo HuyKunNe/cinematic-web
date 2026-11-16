@@ -6,11 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type RoomCapacitySource = typeof RoomCapacitySource[keyof typeof RoomCapacitySource];
-
+export type RoomCapacitySource = (typeof RoomCapacitySource)[keyof typeof RoomCapacitySource]
 
 export const RoomCapacitySource = {
   PUBLISHED_MATRIX: 'PUBLISHED_MATRIX',
   PUBLISHED_GEOMETRY: 'PUBLISHED_GEOMETRY',
   NOT_PUBLISHED: 'NOT_PUBLISHED',
-} as const;
+} as const

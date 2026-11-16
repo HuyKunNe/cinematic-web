@@ -26,9 +26,7 @@ const bookingSchema = z.object({
   userId: z.string().uuid(),
   showtimeId: z.string().uuid(),
   status: z.nativeEnum(BookingResponseStatus),
-  createdAt: z
-    .string()
-    .refine((value) => Number.isFinite(Date.parse(value))),
+  createdAt: z.string().refine((value) => Number.isFinite(Date.parse(value))),
   totalAmount: z
     .number()
     .finite()
@@ -112,23 +110,15 @@ export function useAdminBookingsQuery(
           ADMIN_BOOKING_PAGE_SIZE,
         ] as const,
     ),
-    enabled: computed(
-      () => toValue(enabled) && toValue(subject).trim() !== '',
-    ),
+    enabled: computed(() => toValue(enabled) && toValue(subject).trim() !== ''),
     queryFn: async ({ queryKey }) => {
-      if (
-        !toValue(enabled) ||
-        queryKey[3] === '' ||
-        queryKey[3] !== toValue(subject)
-      ) {
+      if (!toValue(enabled) || queryKey[3] === '' || queryKey[3] !== toValue(subject)) {
         throw new Error('Bạn không có quyền tải danh sách đơn.')
       }
 
       const requestedPage = counter.parse(queryKey[5])
       const requestedStatus =
-        queryKey[4] === ''
-          ? undefined
-          : z.nativeEnum(BookingResponseStatus).parse(queryKey[4])
+        queryKey[4] === '' ? undefined : z.nativeEnum(BookingResponseStatus).parse(queryKey[4])
 
       const request = {
         page: requestedPage,
@@ -136,16 +126,13 @@ export function useAdminBookingsQuery(
         ...(requestedStatus ? { status: requestedStatus } : {}),
       } satisfies ListBookingsForAdminParams
 
-      const result = responseSchema.parse(
-        await listBookingsForAdmin(request),
-      ).data
+      const result = responseSchema.parse(await listBookingsForAdmin(request)).data
 
       if (
         result.page.page !== requestedPage ||
         result.page.size !== ADMIN_BOOKING_PAGE_SIZE ||
         result.content.length > result.page.size ||
-        new Set(result.content.map((item) => item.id)).size !==
-          result.content.length ||
+        new Set(result.content.map((item) => item.id)).size !== result.content.length ||
         result.content.some(
           (item) =>
             (requestedStatus !== undefined && item.status !== requestedStatus) ||
@@ -154,9 +141,7 @@ export function useAdminBookingsQuery(
               item.seatCount !== item.seats.length),
         )
       ) {
-        throw new Error(
-          'Danh sách phản hồi không khớp bộ lọc hoặc trang đang yêu cầu.',
-        )
+        throw new Error('Danh sách phản hồi không khớp bộ lọc hoặc trang đang yêu cầu.')
       }
 
       return result

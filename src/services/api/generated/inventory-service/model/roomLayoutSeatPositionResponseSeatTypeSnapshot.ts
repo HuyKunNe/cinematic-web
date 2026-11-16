@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type RoomLayoutSeatPositionResponseSeatTypeSnapshot = typeof RoomLayoutSeatPositionResponseSeatTypeSnapshot[keyof typeof RoomLayoutSeatPositionResponseSeatTypeSnapshot];
-
+export type RoomLayoutSeatPositionResponseSeatTypeSnapshot =
+  (typeof RoomLayoutSeatPositionResponseSeatTypeSnapshot)[keyof typeof RoomLayoutSeatPositionResponseSeatTypeSnapshot]
 
 export const RoomLayoutSeatPositionResponseSeatTypeSnapshot = {
   STANDARD: 'STANDARD',
   VIP: 'VIP',
   COUPLE: 'COUPLE',
   ACCESSIBLE: 'ACCESSIBLE',
-} as const;
+} as const

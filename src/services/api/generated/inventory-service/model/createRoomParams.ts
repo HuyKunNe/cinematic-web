@@ -7,5 +7,5 @@
  */
 
 export type CreateRoomParams = {
-cinemaId: string;
-};
+  cinemaId: string
+}

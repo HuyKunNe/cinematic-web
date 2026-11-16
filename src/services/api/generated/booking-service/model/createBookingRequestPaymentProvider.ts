@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CreateBookingRequestPaymentProvider = typeof CreateBookingRequestPaymentProvider[keyof typeof CreateBookingRequestPaymentProvider];
-
+export type CreateBookingRequestPaymentProvider =
+  (typeof CreateBookingRequestPaymentProvider)[keyof typeof CreateBookingRequestPaymentProvider]
 
 export const CreateBookingRequestPaymentProvider = {
   VNPAY: 'VNPAY',
   MOMO: 'MOMO',
-} as const;
+} as const

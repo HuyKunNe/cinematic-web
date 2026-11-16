@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type FindAllBookingsStatusItem = typeof FindAllBookingsStatusItem[keyof typeof FindAllBookingsStatusItem];
-
+export type FindAllBookingsStatusItem =
+  (typeof FindAllBookingsStatusItem)[keyof typeof FindAllBookingsStatusItem]
 
 export const FindAllBookingsStatusItem = {
   PENDING: 'PENDING',
@@ -17,4 +17,4 @@ export const FindAllBookingsStatusItem = {
   PAYMENT_FAILED: 'PAYMENT_FAILED',
   CANCELLED: 'CANCELLED',
   EXPIRED: 'EXPIRED',
-} as const;
+} as const

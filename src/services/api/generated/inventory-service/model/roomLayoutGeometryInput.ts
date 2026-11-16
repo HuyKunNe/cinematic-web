@@ -8,12 +8,12 @@
 
 export interface RoomLayoutGeometryInput {
   /** @minimum 0 */
-  x: number;
+  x: number
   /** @minimum 0 */
-  y: number;
+  y: number
   /** @minimum 0 */
-  width: number;
+  width: number
   /** @minimum 0 */
-  height: number;
-  rotationDegrees: number;
+  height: number
+  rotationDegrees: number
 }

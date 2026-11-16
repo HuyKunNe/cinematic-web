@@ -5,14 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { QuotePricingFareRequestContentFormat } from './quotePricingFareRequestContentFormat';
-import type { QuotePricingFareRequestExperienceType } from './quotePricingFareRequestExperienceType';
-import type { QuotePricingFareRequestSeatType } from './quotePricingFareRequestSeatType';
+import type { QuotePricingFareRequestContentFormat } from './quotePricingFareRequestContentFormat'
+import type { QuotePricingFareRequestExperienceType } from './quotePricingFareRequestExperienceType'
+import type { QuotePricingFareRequestSeatType } from './quotePricingFareRequestSeatType'
 
 export interface QuotePricingFareRequest {
-  startsAt: string;
-  experienceType: QuotePricingFareRequestExperienceType;
-  contentFormat: QuotePricingFareRequestContentFormat;
-  ticketGroupId?: string;
-  seatType: QuotePricingFareRequestSeatType;
+  startsAt: string
+  experienceType: QuotePricingFareRequestExperienceType
+  contentFormat: QuotePricingFareRequestContentFormat
+  ticketGroupId?: string
+  seatType: QuotePricingFareRequestSeatType
 }

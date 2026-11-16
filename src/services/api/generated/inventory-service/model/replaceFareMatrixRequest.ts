@@ -5,22 +5,22 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CellInput } from './cellInput';
-import type { ReplaceFareMatrixRequestSeatTypesItem } from './replaceFareMatrixRequestSeatTypesItem';
-import type { ScopeInput } from './scopeInput';
+import type { CellInput } from './cellInput'
+import type { ReplaceFareMatrixRequestSeatTypesItem } from './replaceFareMatrixRequestSeatTypesItem'
+import type { ScopeInput } from './scopeInput'
 
 export interface ReplaceFareMatrixRequest {
   /** @minimum 0 */
-  expectedVersion: number;
+  expectedVersion: number
   /**
-     * @minItems 0
-     * @maxItems 10
-     */
-  scopes: ScopeInput[];
+   * @minItems 0
+   * @maxItems 10
+   */
+  scopes: ScopeInput[]
   /**
-     * @minItems 0
-     * @maxItems 4
-     */
-  seatTypes: ReplaceFareMatrixRequestSeatTypesItem[];
-  cells: CellInput[];
+   * @minItems 0
+   * @maxItems 4
+   */
+  seatTypes: ReplaceFareMatrixRequestSeatTypesItem[]
+  cells: CellInput[]
 }

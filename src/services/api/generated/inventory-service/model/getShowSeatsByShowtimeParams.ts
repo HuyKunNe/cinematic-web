@@ -7,6 +7,6 @@
  */
 
 export type GetShowSeatsByShowtimeParams = {
-showtimeId: string;
-availableOnly?: boolean;
-};
+  showtimeId: string
+  availableOnly?: boolean
+}

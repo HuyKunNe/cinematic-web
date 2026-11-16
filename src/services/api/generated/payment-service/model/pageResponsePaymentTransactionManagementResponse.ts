@@ -5,10 +5,10 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { PageInfo } from './pageInfo';
-import type { PaymentTransactionManagementResponse } from './paymentTransactionManagementResponse';
+import type { PageInfo } from './pageInfo'
+import type { PaymentTransactionManagementResponse } from './paymentTransactionManagementResponse'
 
 export interface PageResponsePaymentTransactionManagementResponse {
-  content?: PaymentTransactionManagementResponse[];
-  page?: PageInfo;
+  content?: PaymentTransactionManagementResponse[]
+  page?: PageInfo
 }

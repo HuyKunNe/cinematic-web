@@ -7,6 +7,6 @@
  */
 
 export interface UpdateMovieScreeningVersionActiveRequest {
-  expectedVersion: number;
-  active: boolean;
+  expectedVersion: number
+  active: boolean
 }

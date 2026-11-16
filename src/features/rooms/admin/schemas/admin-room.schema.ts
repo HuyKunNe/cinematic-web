@@ -133,8 +133,7 @@ export const adminRoomContentFormatsSchema = z
 
 export const adminRoomCreateSchema = adminRoomSchema.extend({
   active: z.boolean(),
-  contentFormats: adminRoomContentFormatsSchema
-    .min(1, 'Chọn ít nhất một định dạng phòng hỗ trợ.'),
+  contentFormats: adminRoomContentFormatsSchema.min(1, 'Chọn ít nhất một định dạng phòng hỗ trợ.'),
 })
 
 export type AdminRoomValues = z.infer<typeof adminRoomSchema>

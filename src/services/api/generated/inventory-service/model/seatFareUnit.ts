@@ -6,10 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SeatFareUnit = typeof SeatFareUnit[keyof typeof SeatFareUnit];
-
+export type SeatFareUnit = (typeof SeatFareUnit)[keyof typeof SeatFareUnit]
 
 export const SeatFareUnit = {
   SEAT: 'SEAT',
   PAIR: 'PAIR',
-} as const;
+} as const

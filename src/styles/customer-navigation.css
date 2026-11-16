@@ -8,7 +8,7 @@
 .customer-layout__main {
   min-width: 0;
   max-width: 100%;
- min-height: calc(var(--viewport-height) - var(--header-height-mobile));
+  min-height: calc(var(--viewport-height) - var(--header-height-mobile));
   padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
 }
 
@@ -171,7 +171,7 @@
 
 .customer-header__booking:hover,
 .customer-mobile-drawer__booking:hover {
- filter: brightness(var(--filter-brightness-hover));
+  filter: brightness(var(--filter-brightness-hover));
 }
 
 .customer-mobile-drawer__actions > button > span {

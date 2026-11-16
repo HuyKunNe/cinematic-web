@@ -5,15 +5,15 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { RoomLayoutElementInputKind } from './roomLayoutElementInputKind';
-import type { RoomLayoutGeometryInput } from './roomLayoutGeometryInput';
+import type { RoomLayoutElementInputKind } from './roomLayoutElementInputKind'
+import type { RoomLayoutGeometryInput } from './roomLayoutGeometryInput'
 
 export interface RoomLayoutElementInput {
-  kind: RoomLayoutElementInputKind;
+  kind: RoomLayoutElementInputKind
   /**
-     * @minLength 0
-     * @maxLength 150
-     */
-  label?: string;
-  geometry: RoomLayoutGeometryInput;
+   * @minLength 0
+   * @maxLength 150
+   */
+  label?: string
+  geometry: RoomLayoutGeometryInput
 }

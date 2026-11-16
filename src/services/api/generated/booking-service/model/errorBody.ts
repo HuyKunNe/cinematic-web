@@ -5,11 +5,11 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ValidationError } from './validationError';
+import type { ValidationError } from './validationError'
 
 export interface ErrorBody {
-  code?: string;
-  message?: string;
-  category?: string;
-  details?: ValidationError[];
+  code?: string
+  message?: string
+  category?: string
+  details?: ValidationError[]
 }

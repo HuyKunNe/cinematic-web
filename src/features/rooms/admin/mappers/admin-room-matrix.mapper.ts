@@ -17,7 +17,8 @@ export const ADMIN_ROOM_MATRIX_LIMITS = MATRIX_LIMITS
 // Generated transport fields are optional; Admin requires these fields after validation.
 export type AdminRoomLayout = RoomLayoutResponse &
   Required<
-    Pick<RoomLayoutResponse,
+    Pick<
+      RoomLayoutResponse,
       'id' | 'roomId' | 'layoutVersion' | 'status' | 'version' | 'createdAt' | 'updatedAt'
     >
   >
@@ -38,15 +39,15 @@ export type AdminRoomMatrixDocument = Omit<SeatMatrixDocument, 'rows'> & {
 
 function validDimension(value: unknown): value is number {
   return (
-    typeof value === 'number' && Number.isSafeInteger(value) &&
-    value >= 1 && value <= ADMIN_ROOM_MATRIX_LIMITS.dimension
+    typeof value === 'number' &&
+    Number.isSafeInteger(value) &&
+    value >= 1 &&
+    value <= ADMIN_ROOM_MATRIX_LIMITS.dimension
   )
 }
 
 function validIndex(value: unknown, length: number): value is number {
-  return (
-    typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 && value < length
-  )
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 && value < length
 }
 
 function validSeatType(value: unknown): value is MatrixSeat['seatType'] {

@@ -36,7 +36,7 @@
   padding: var(--movies-panel-padding);
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-lg);
- background: var(--surface-gradient-panel);
+  background: var(--surface-gradient-panel);
   box-shadow: var(--shadow-card);
 }
 

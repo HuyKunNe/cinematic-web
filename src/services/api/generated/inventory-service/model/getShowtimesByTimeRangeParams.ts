@@ -7,6 +7,6 @@
  */
 
 export type GetShowtimesByTimeRangeParams = {
-from: string;
-to: string;
-};
+  from: string
+  to: string
+}

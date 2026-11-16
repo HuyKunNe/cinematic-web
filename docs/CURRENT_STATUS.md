@@ -1,5 +1,25 @@
 # Current Status
 
+## USER movie schedules across city cinemas — 2026-11-16
+
+Movie detail now offers All Cinemas in the selected city and groups matching
+showtimes into cinema panels, following Lumière. Explicit `cinema=all` is UI URL
+state only; each real bookable-showtime request still supplies a valid cinema ID.
+Existing single-cinema selection and date/content-format URL filters are retained.
+
+Movie schedule context queries combine existing showtime reads with cached active
+room metadata. Partial cinema failures retain successful schedules with retry;
+room metadata failure does not suppress available slots. Choosing a slot refetches
+only its cinema, validates movie/cinema/day/format and availability, then selects
+that cinema through the existing location store before normal booking navigation.
+No made-up endpoints, room types, prices or booking states are introduced.
+
+Manual checks: All/single cinema; date/format; header city and Back/Forward;
+partial schedule and room failures; recheck only the clicked cinema; unchanged
+room labels; empty schedules and mobile panels. No tests/lint/typecheck/build or
+browser verification performed. Existing generated booking contract changes were
+preserved without edits; no BE/MySQL/reference changes or commits/pushes.
+
 ## USER schedule URL state — 2026-11-16
 
 Change Showtime from the seat map opens `/showtimes` with the original movie and

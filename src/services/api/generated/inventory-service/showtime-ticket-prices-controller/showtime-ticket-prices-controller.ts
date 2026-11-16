@@ -5,20 +5,16 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  ShowtimeTicketPricesResponse
-} from '../model';
+import type { ShowtimeTicketPricesResponse } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getShowtimeTicketPrices = (
-    showtimeId: string,
- ) => {
-      return apiRequest<ShowtimeTicketPricesResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}/ticket-prices`, method: 'GET'
-    },
-      );
-    }
-  export type GetShowtimeTicketPricesResult = NonNullable<Awaited<ReturnType<typeof getShowtimeTicketPrices>>>
+export const getShowtimeTicketPrices = (showtimeId: string) => {
+  return apiRequest<ShowtimeTicketPricesResponse>({
+    url: `/api/v1/showtimes/${showtimeId}/ticket-prices`,
+    method: 'GET',
+  })
+}
+export type GetShowtimeTicketPricesResult = NonNullable<
+  Awaited<ReturnType<typeof getShowtimeTicketPrices>>
+>

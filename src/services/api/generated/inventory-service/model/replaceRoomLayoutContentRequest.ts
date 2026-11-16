@@ -5,13 +5,13 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { RoomLayoutElementInput } from './roomLayoutElementInput';
-import type { RoomLayoutMatrixInput } from './roomLayoutMatrixInput';
-import type { RoomLayoutSeatInput } from './roomLayoutSeatInput';
+import type { RoomLayoutElementInput } from './roomLayoutElementInput'
+import type { RoomLayoutMatrixInput } from './roomLayoutMatrixInput'
+import type { RoomLayoutSeatInput } from './roomLayoutSeatInput'
 
 export interface ReplaceRoomLayoutContentRequest {
-  expectedVersion: number;
-  seats?: RoomLayoutSeatInput[];
-  elements?: RoomLayoutElementInput[];
-  matrix?: RoomLayoutMatrixInput;
+  expectedVersion: number
+  seats?: RoomLayoutSeatInput[]
+  elements?: RoomLayoutElementInput[]
+  matrix?: RoomLayoutMatrixInput
 }

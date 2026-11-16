@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type FinancialAuditRecordResponseAction = typeof FinancialAuditRecordResponseAction[keyof typeof FinancialAuditRecordResponseAction];
-
+export type FinancialAuditRecordResponseAction =
+  (typeof FinancialAuditRecordResponseAction)[keyof typeof FinancialAuditRecordResponseAction]
 
 export const FinancialAuditRecordResponseAction = {
   REFUND_REQUESTED: 'REFUND_REQUESTED',
@@ -16,4 +16,4 @@ export const FinancialAuditRecordResponseAction = {
   RECONCILIATION_OPENED: 'RECONCILIATION_OPENED',
   RECONCILIATION_RESOLVED: 'RECONCILIATION_RESOLVED',
   RECONCILIATION_REJECTED: 'RECONCILIATION_REJECTED',
-} as const;
+} as const

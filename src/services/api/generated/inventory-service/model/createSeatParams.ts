@@ -7,5 +7,5 @@
  */
 
 export type CreateSeatParams = {
-roomId: string;
-};
+  roomId: string
+}

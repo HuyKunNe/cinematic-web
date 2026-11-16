@@ -5,12 +5,12 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { RoomContentFormatsResponseFormatsItem } from './roomContentFormatsResponseFormatsItem';
-import type { RoomContentFormatsResponseSupportedFormatOptionsItem } from './roomContentFormatsResponseSupportedFormatOptionsItem';
+import type { RoomContentFormatsResponseFormatsItem } from './roomContentFormatsResponseFormatsItem'
+import type { RoomContentFormatsResponseSupportedFormatOptionsItem } from './roomContentFormatsResponseSupportedFormatOptionsItem'
 
 export interface RoomContentFormatsResponse {
-  roomId?: string;
-  version?: number;
-  formats?: RoomContentFormatsResponseFormatsItem[];
-  supportedFormatOptions?: RoomContentFormatsResponseSupportedFormatOptionsItem[];
+  roomId?: string
+  version?: number
+  formats?: RoomContentFormatsResponseFormatsItem[]
+  supportedFormatOptions?: RoomContentFormatsResponseSupportedFormatOptionsItem[]
 }

@@ -50,7 +50,9 @@ export function useAdminRoomMatrixLayoutsQuery(
       }
 
       const ids = new Set<string>()
-      const validatedLayouts = layouts.map((layout) => validateAdminRoomLayout(layout, requestedRoomId))
+      const validatedLayouts = layouts.map((layout) =>
+        validateAdminRoomLayout(layout, requestedRoomId),
+      )
 
       for (const layout of validatedLayouts) {
         if (ids.has(layout.id)) {
@@ -81,7 +83,9 @@ export function useAdminRoomMatrixContentQuery(
     ),
     queryFn: async ({ queryKey }) => {
       const content = validateAdminRoomLayoutContent(
-        await getRoomLayoutContent(queryKey[4]), queryKey[2], queryKey[4],
+        await getRoomLayoutContent(queryKey[4]),
+        queryKey[2],
+        queryKey[4],
       )
 
       // null means a legacy layout, not an empty matrix.
@@ -116,9 +120,7 @@ export function useCreateAdminRoomMatrixDraftMutation() {
     onSuccess: (created) => {
       const key = adminRoomMatrixKeys.layouts(created.roomId)
 
-      queryClient.setQueryData<AdminRoomLayout[]>(key, (previous) =>
-        mergeLayout(previous, created),
-      )
+      queryClient.setQueryData<AdminRoomLayout[]>(key, (previous) => mergeLayout(previous, created))
 
       void queryClient.invalidateQueries({
         queryKey: key,
@@ -151,7 +153,9 @@ export function useSaveAdminRoomMatrixMutation() {
       const submittedKey = JSON.stringify(input.matrix)
 
       const saved = validateAdminRoomLayoutContent(
-        await replaceRoomLayoutContent(layoutId, input), roomId, layoutId,
+        await replaceRoomLayoutContent(layoutId, input),
+        roomId,
+        layoutId,
       )
       const savedDocument = readAdminRoomMatrix(saved, roomId, layoutId)
 

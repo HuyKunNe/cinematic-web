@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetManagedShowtimesStatus = typeof GetManagedShowtimesStatus[keyof typeof GetManagedShowtimesStatus];
-
+export type GetManagedShowtimesStatus =
+  (typeof GetManagedShowtimesStatus)[keyof typeof GetManagedShowtimesStatus]
 
 export const GetManagedShowtimesStatus = {
   SCHEDULED: 'SCHEDULED',
@@ -15,4 +15,4 @@ export const GetManagedShowtimesStatus = {
   CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED',
   COMPLETED: 'COMPLETED',
-} as const;
+} as const

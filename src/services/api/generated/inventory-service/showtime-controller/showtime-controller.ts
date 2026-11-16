@@ -13,137 +13,110 @@ import type {
   GetShowtimesByTimeRangeParams,
   PageResponseShowtimeResponse,
   ShowtimeResponse,
-  UpdateShowtimeRequest
-} from '../model';
+  UpdateShowtimeRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getShowtimeById = (
-    showtimeId: string,
- ) => {
-      return apiRequest<ShowtimeResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}`, method: 'GET'
-    },
-      );
-    }
-  export const updateShowtime = (
-    showtimeId: string,
-    updateShowtimeRequest: UpdateShowtimeRequest,
- ) => {
-      return apiRequest<ShowtimeResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateShowtimeRequest
-    },
-      );
-    }
-  export const getShowtimesByTimeRange = (
-    params: GetShowtimesByTimeRangeParams,
- ) => {
-      return apiRequest<ShowtimeResponse[]>(
-      {url: `/api/v1/showtimes`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const createShowtime = (
-    createShowtimeRequest: CreateShowtimeRequest,
- ) => {
-      return apiRequest<ShowtimeResponse>(
-      {url: `/api/v1/showtimes`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createShowtimeRequest
-    },
-      );
-    }
-  export const createShowtimeBatch = (
-    createShowtimeBatchRequest: CreateShowtimeBatchRequest,
- ) => {
-      return apiRequest<ShowtimeResponse[]>(
-      {url: `/api/v1/showtimes/batch`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createShowtimeBatchRequest
-    },
-      );
-    }
-  export const openShowtimeForBooking = (
-    showtimeId: string,
- ) => {
-      return apiRequest<ShowtimeResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}/open`, method: 'PATCH'
-    },
-      );
-    }
-  export const completeShowtime = (
-    showtimeId: string,
- ) => {
-      return apiRequest<ShowtimeResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}/complete`, method: 'PATCH'
-    },
-      );
-    }
-  export const closeShowtime = (
-    showtimeId: string,
- ) => {
-      return apiRequest<ShowtimeResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}/close`, method: 'PATCH'
-    },
-      );
-    }
-  export const cancelShowtime = (
-    showtimeId: string,
- ) => {
-      return apiRequest<ShowtimeResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}/cancel`, method: 'PATCH'
-    },
-      );
-    }
-  export const getManagedShowtimes = (
-    params: GetManagedShowtimesParams,
- ) => {
-      return apiRequest<PageResponseShowtimeResponse>(
-      {url: `/api/v1/showtimes/management`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const getShowtimesByRoom = (
-    roomId: string,
- ) => {
-      return apiRequest<ShowtimeResponse[]>(
-      {url: `/api/v1/showtimes/by-room/${roomId}`, method: 'GET'
-    },
-      );
-    }
-  export const getShowtimesByMovie = (
-    movieId: string,
- ) => {
-      return apiRequest<ShowtimeResponse[]>(
-      {url: `/api/v1/showtimes/by-movie/${movieId}`, method: 'GET'
-    },
-      );
-    }
-  export const getBookableShowtimes = (
-    params: GetBookableShowtimesParams,
- ) => {
-      return apiRequest<ShowtimeResponse[]>(
-      {url: `/api/v1/showtimes/bookable`, method: 'GET',
-        params
-    },
-      );
-    }
-  export type GetShowtimeByIdResult = NonNullable<Awaited<ReturnType<typeof getShowtimeById>>>
+export const getShowtimeById = (showtimeId: string) => {
+  return apiRequest<ShowtimeResponse>({ url: `/api/v1/showtimes/${showtimeId}`, method: 'GET' })
+}
+export const updateShowtime = (
+  showtimeId: string,
+  updateShowtimeRequest: UpdateShowtimeRequest,
+) => {
+  return apiRequest<ShowtimeResponse>({
+    url: `/api/v1/showtimes/${showtimeId}`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateShowtimeRequest,
+  })
+}
+export const getShowtimesByTimeRange = (params: GetShowtimesByTimeRangeParams) => {
+  return apiRequest<ShowtimeResponse[]>({ url: `/api/v1/showtimes`, method: 'GET', params })
+}
+export const createShowtime = (createShowtimeRequest: CreateShowtimeRequest) => {
+  return apiRequest<ShowtimeResponse>({
+    url: `/api/v1/showtimes`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createShowtimeRequest,
+  })
+}
+export const createShowtimeBatch = (createShowtimeBatchRequest: CreateShowtimeBatchRequest) => {
+  return apiRequest<ShowtimeResponse[]>({
+    url: `/api/v1/showtimes/batch`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createShowtimeBatchRequest,
+  })
+}
+export const openShowtimeForBooking = (showtimeId: string) => {
+  return apiRequest<ShowtimeResponse>({
+    url: `/api/v1/showtimes/${showtimeId}/open`,
+    method: 'PATCH',
+  })
+}
+export const completeShowtime = (showtimeId: string) => {
+  return apiRequest<ShowtimeResponse>({
+    url: `/api/v1/showtimes/${showtimeId}/complete`,
+    method: 'PATCH',
+  })
+}
+export const closeShowtime = (showtimeId: string) => {
+  return apiRequest<ShowtimeResponse>({
+    url: `/api/v1/showtimes/${showtimeId}/close`,
+    method: 'PATCH',
+  })
+}
+export const cancelShowtime = (showtimeId: string) => {
+  return apiRequest<ShowtimeResponse>({
+    url: `/api/v1/showtimes/${showtimeId}/cancel`,
+    method: 'PATCH',
+  })
+}
+export const getManagedShowtimes = (params: GetManagedShowtimesParams) => {
+  return apiRequest<PageResponseShowtimeResponse>({
+    url: `/api/v1/showtimes/management`,
+    method: 'GET',
+    params,
+  })
+}
+export const getShowtimesByRoom = (roomId: string) => {
+  return apiRequest<ShowtimeResponse[]>({
+    url: `/api/v1/showtimes/by-room/${roomId}`,
+    method: 'GET',
+  })
+}
+export const getShowtimesByMovie = (movieId: string) => {
+  return apiRequest<ShowtimeResponse[]>({
+    url: `/api/v1/showtimes/by-movie/${movieId}`,
+    method: 'GET',
+  })
+}
+export const getBookableShowtimes = (params: GetBookableShowtimesParams) => {
+  return apiRequest<ShowtimeResponse[]>({
+    url: `/api/v1/showtimes/bookable`,
+    method: 'GET',
+    params,
+  })
+}
+export type GetShowtimeByIdResult = NonNullable<Awaited<ReturnType<typeof getShowtimeById>>>
 export type UpdateShowtimeResult = NonNullable<Awaited<ReturnType<typeof updateShowtime>>>
-export type GetShowtimesByTimeRangeResult = NonNullable<Awaited<ReturnType<typeof getShowtimesByTimeRange>>>
+export type GetShowtimesByTimeRangeResult = NonNullable<
+  Awaited<ReturnType<typeof getShowtimesByTimeRange>>
+>
 export type CreateShowtimeResult = NonNullable<Awaited<ReturnType<typeof createShowtime>>>
 export type CreateShowtimeBatchResult = NonNullable<Awaited<ReturnType<typeof createShowtimeBatch>>>
-export type OpenShowtimeForBookingResult = NonNullable<Awaited<ReturnType<typeof openShowtimeForBooking>>>
+export type OpenShowtimeForBookingResult = NonNullable<
+  Awaited<ReturnType<typeof openShowtimeForBooking>>
+>
 export type CompleteShowtimeResult = NonNullable<Awaited<ReturnType<typeof completeShowtime>>>
 export type CloseShowtimeResult = NonNullable<Awaited<ReturnType<typeof closeShowtime>>>
 export type CancelShowtimeResult = NonNullable<Awaited<ReturnType<typeof cancelShowtime>>>
 export type GetManagedShowtimesResult = NonNullable<Awaited<ReturnType<typeof getManagedShowtimes>>>
 export type GetShowtimesByRoomResult = NonNullable<Awaited<ReturnType<typeof getShowtimesByRoom>>>
 export type GetShowtimesByMovieResult = NonNullable<Awaited<ReturnType<typeof getShowtimesByMovie>>>
-export type GetBookableShowtimesResult = NonNullable<Awaited<ReturnType<typeof getBookableShowtimes>>>
+export type GetBookableShowtimesResult = NonNullable<
+  Awaited<ReturnType<typeof getBookableShowtimes>>
+>

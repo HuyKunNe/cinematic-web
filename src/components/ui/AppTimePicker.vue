@@ -4,29 +4,48 @@ import { Clock3 } from 'lucide-vue-next'
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
 
 defineOptions({ inheritAttrs: false })
-const props = withDefaults(defineProps<{
-  modelValue: string
-  disabled?: boolean
-  allowEndOfDay?: boolean
-}>(), { disabled: false, allowEndOfDay: false })
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    disabled?: boolean
+    allowEndOfDay?: boolean
+  }>(),
+  { disabled: false, allowEndOfDay: false },
+)
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 const attrs = useAttrs()
 const prefix = useId()
 const open = ref(false)
 const touched = ref(false)
-const inputAttrs = computed(() => Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== 'class')))
-const pattern = computed(() => props.allowEndOfDay
-  ? '(?:[01][0-9]|2[0-3]):[0-5][0-9]|24:00'
-  : '(?:[01][0-9]|2[0-3]):[0-5][0-9]')
-const invalid = computed(() => Boolean(attrs['aria-invalid'] === true || attrs['aria-invalid'] === 'true' ||
-  (touched.value && props.modelValue && !new RegExp(`^(?:${pattern.value})$`).test(props.modelValue))))
-const hours = computed(() => Array.from({ length: props.allowEndOfDay ? 25 : 24 }, (_, i) => String(i).padStart(2, '0')))
+const inputAttrs = computed(() =>
+  Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== 'class')),
+)
+const pattern = computed(() =>
+  props.allowEndOfDay ? '(?:[01][0-9]|2[0-3]):[0-5][0-9]|24:00' : '(?:[01][0-9]|2[0-3]):[0-5][0-9]',
+)
+const invalid = computed(() =>
+  Boolean(
+    attrs['aria-invalid'] === true ||
+    attrs['aria-invalid'] === 'true' ||
+    (touched.value &&
+      props.modelValue &&
+      !new RegExp(`^(?:${pattern.value})$`).test(props.modelValue)),
+  ),
+)
+const hours = computed(() =>
+  Array.from({ length: props.allowEndOfDay ? 25 : 24 }, (_, i) => String(i).padStart(2, '0')),
+)
 const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'))
 const hour = computed(() => props.modelValue.split(':')[0] ?? '')
 const minute = computed(() => props.modelValue.split(':')[1] ?? '')
 const triggerLabel = computed(() => `${attrs['aria-label'] || 'Chọn giờ'} — định dạng 24 giờ`)
 
-watch(() => props.disabled, (disabled) => { if (disabled) open.value = false })
+watch(
+  () => props.disabled,
+  (disabled) => {
+    if (disabled) open.value = false
+  },
+)
 
 function update(value: string) {
   if (!props.disabled) emit('update:modelValue', value)
@@ -57,28 +76,62 @@ function chooseMinute(event: Event) {
 </script>
 
 <template>
-  <span class="app-time-picker" :class="attrs.class" :data-disabled="disabled || undefined" :data-invalid="invalid || undefined">
-    <input v-bind="inputAttrs" class="app-time-picker__input" type="text" inputmode="numeric"
-      autocomplete="off" placeholder="HH:mm" maxlength="5" :pattern="pattern" :value="modelValue"
-      :disabled="disabled" :aria-invalid="invalid || undefined" @input="onInput" @blur="onBlur" />
+  <span
+    class="app-time-picker"
+    :class="attrs.class"
+    :data-disabled="disabled || undefined"
+    :data-invalid="invalid || undefined"
+  >
+    <input
+      v-bind="inputAttrs"
+      class="app-time-picker__input"
+      type="text"
+      inputmode="numeric"
+      autocomplete="off"
+      placeholder="HH:mm"
+      maxlength="5"
+      :pattern="pattern"
+      :value="modelValue"
+      :disabled="disabled"
+      :aria-invalid="invalid || undefined"
+      @input="onInput"
+      @blur="onBlur"
+    />
     <PopoverRoot v-model:open="open">
       <PopoverTrigger as-child>
-        <button class="app-time-picker__trigger" type="button" :disabled="disabled" :aria-label="triggerLabel" title="Chọn giờ (24 giờ)">
+        <button
+          class="app-time-picker__trigger"
+          type="button"
+          :disabled="disabled"
+          :aria-label="triggerLabel"
+          title="Chọn giờ (24 giờ)"
+        >
           <Clock3 aria-hidden="true" />
         </button>
       </PopoverTrigger>
       <PopoverPortal>
-        <PopoverContent class="app-time-picker__content" align="end" :aria-labelledby="`${prefix}-title`">
+        <PopoverContent
+          class="app-time-picker__content"
+          align="end"
+          :aria-labelledby="`${prefix}-title`"
+        >
           <p :id="`${prefix}-title`">Chọn giờ <span>24 giờ</span></p>
           <div class="app-time-picker__columns">
-            <label :for="`${prefix}-hour`">Giờ
+            <label :for="`${prefix}-hour`"
+              >Giờ
               <select :id="`${prefix}-hour`" :value="hour" @change="chooseHour">
                 <option value="" disabled>--</option>
                 <option v-for="value in hours" :key="value" :value="value">{{ value }}</option>
               </select>
             </label>
-            <label :for="`${prefix}-minute`">Phút
-              <select :id="`${prefix}-minute`" :value="minute" :disabled="hour === '24'" @change="chooseMinute">
+            <label :for="`${prefix}-minute`"
+              >Phút
+              <select
+                :id="`${prefix}-minute`"
+                :value="minute"
+                :disabled="hour === '24'"
+                @change="chooseMinute"
+              >
                 <option value="" disabled>--</option>
                 <option v-for="value in minutes" :key="value" :value="value">{{ value }}</option>
               </select>
@@ -138,16 +191,27 @@ function chooseMinute(event: Event) {
   color: var(--color-text-secondary);
   cursor: pointer;
 }
-.app-time-picker__trigger svg { width: var(--icon-size-sm); height: var(--icon-size-sm); }
-.app-time-picker__trigger:hover:not(:disabled) { color: var(--color-primary); }
+.app-time-picker__trigger svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+.app-time-picker__trigger:hover:not(:disabled) {
+  color: var(--color-primary);
+}
 .app-time-picker:focus-within,
 .app-time-picker__content :is(select, button):focus-visible {
   outline: var(--focus-ring-width) solid var(--color-focus);
   outline-offset: var(--space-1);
 }
-.app-time-picker[data-invalid] { border-color: var(--color-error); }
-.app-time-picker[data-disabled] { background: var(--color-surface-raised); }
-.app-time-picker :disabled { cursor: not-allowed; }
+.app-time-picker[data-invalid] {
+  border-color: var(--color-error);
+}
+.app-time-picker[data-disabled] {
+  background: var(--color-surface-raised);
+}
+.app-time-picker :disabled {
+  cursor: not-allowed;
+}
 .app-time-picker__content {
   z-index: var(--time-picker-layer);
   display: grid;
@@ -163,10 +227,25 @@ function chooseMinute(event: Event) {
   font-size: var(--font-size-sm);
   box-shadow: var(--shadow-raised);
 }
-.app-time-picker__content p { display: flex; justify-content: space-between; margin: 0; font-weight: var(--font-weight-semibold); }
-.app-time-picker__content :is(p span, small) { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
-.app-time-picker__columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-.app-time-picker__columns label { display: grid; gap: var(--time-picker-gap); }
+.app-time-picker__content p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+.app-time-picker__content :is(p span, small) {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+.app-time-picker__columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+.app-time-picker__columns label {
+  display: grid;
+  gap: var(--time-picker-gap);
+}
 .app-time-picker__content :is(select, button) {
   min-height: var(--control-height-sm);
   padding: var(--space-2);
@@ -176,6 +255,13 @@ function chooseMinute(event: Event) {
   color: inherit;
   font: inherit;
 }
-.app-time-picker__content .app-time-picker__done { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); cursor: pointer; }
-.app-time-picker__done:hover { background: var(--color-primary-hover); }
+.app-time-picker__content .app-time-picker__done {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+  cursor: pointer;
+}
+.app-time-picker__done:hover {
+  background: var(--color-primary-hover);
+}
 </style>

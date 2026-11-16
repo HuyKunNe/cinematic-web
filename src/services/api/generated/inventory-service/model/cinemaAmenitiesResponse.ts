@@ -7,7 +7,7 @@
  */
 
 export interface CinemaAmenitiesResponse {
-  cinemaId?: string;
-  version?: number;
-  amenities?: string[];
+  cinemaId?: string
+  version?: number
+  amenities?: string[]
 }

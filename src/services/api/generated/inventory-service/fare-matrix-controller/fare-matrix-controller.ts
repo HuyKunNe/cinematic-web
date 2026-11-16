@@ -5,37 +5,32 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  FareMatrixResponse,
-  ReplaceFareMatrixRequest
-} from '../model';
+import type { FareMatrixResponse, ReplaceFareMatrixRequest } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getPricingFareMatrix = (
-    cinemaId: string,
-    policyId: string,
-    versionId: string,
- ) => {
-      return apiRequest<FareMatrixResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/fare-matrix`, method: 'GET'
-    },
-      );
-    }
-  export const replacePricingFareMatrix = (
-    cinemaId: string,
-    policyId: string,
-    versionId: string,
-    replaceFareMatrixRequest: ReplaceFareMatrixRequest,
- ) => {
-      return apiRequest<FareMatrixResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/fare-matrix`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: replaceFareMatrixRequest
-    },
-      );
-    }
-  export type GetPricingFareMatrixResult = NonNullable<Awaited<ReturnType<typeof getPricingFareMatrix>>>
-export type ReplacePricingFareMatrixResult = NonNullable<Awaited<ReturnType<typeof replacePricingFareMatrix>>>
+export const getPricingFareMatrix = (cinemaId: string, policyId: string, versionId: string) => {
+  return apiRequest<FareMatrixResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/fare-matrix`,
+    method: 'GET',
+  })
+}
+export const replacePricingFareMatrix = (
+  cinemaId: string,
+  policyId: string,
+  versionId: string,
+  replaceFareMatrixRequest: ReplaceFareMatrixRequest,
+) => {
+  return apiRequest<FareMatrixResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/fare-matrix`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: replaceFareMatrixRequest,
+  })
+}
+export type GetPricingFareMatrixResult = NonNullable<
+  Awaited<ReturnType<typeof getPricingFareMatrix>>
+>
+export type ReplacePricingFareMatrixResult = NonNullable<
+  Awaited<ReturnType<typeof replacePricingFareMatrix>>
+>

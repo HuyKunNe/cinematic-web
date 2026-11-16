@@ -7,16 +7,16 @@
  */
 
 export interface CinemaResponse {
-  id?: string;
-  name?: string;
-  address?: string;
-  city?: string;
-  active?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  phone?: string;
-  email?: string;
-  openingHours?: string;
-  directions?: string;
-  timeZone?: string;
+  id?: string
+  name?: string
+  address?: string
+  city?: string
+  active?: boolean
+  createdAt?: string
+  updatedAt?: string
+  phone?: string
+  email?: string
+  openingHours?: string
+  directions?: string
+  timeZone?: string
 }

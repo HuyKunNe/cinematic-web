@@ -7,16 +7,16 @@
  */
 
 export interface CreateShowtimeRequest {
-  movieId: string;
-  roomId: string;
-  startsAt: string;
-  endsAt: string;
-  roomLayoutId?: string;
-  movieScreeningVersionId: string;
+  movieId: string
+  roomId: string
+  startsAt: string
+  endsAt: string
+  roomLayoutId?: string
+  movieScreeningVersionId: string
   /**
-     * @minimum 0
-     * @maximum 120
-     */
-  breakMinutes: number;
-  pricingPolicyVersionId?: string;
+   * @minimum 0
+   * @maximum 120
+   */
+  breakMinutes: number
+  pricingPolicyVersionId?: string
 }

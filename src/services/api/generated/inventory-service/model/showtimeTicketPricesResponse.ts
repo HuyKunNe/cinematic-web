@@ -5,24 +5,24 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ShowtimeTicketPricesResponseContentFormat } from './showtimeTicketPricesResponseContentFormat';
-import type { ShowtimeTicketPricesResponseDayGroup } from './showtimeTicketPricesResponseDayGroup';
-import type { ShowtimeTicketPricesResponseExperienceType } from './showtimeTicketPricesResponseExperienceType';
-import type { TicketGroupPrices } from './ticketGroupPrices';
+import type { ShowtimeTicketPricesResponseContentFormat } from './showtimeTicketPricesResponseContentFormat'
+import type { ShowtimeTicketPricesResponseDayGroup } from './showtimeTicketPricesResponseDayGroup'
+import type { ShowtimeTicketPricesResponseExperienceType } from './showtimeTicketPricesResponseExperienceType'
+import type { TicketGroupPrices } from './ticketGroupPrices'
 
 export interface ShowtimeTicketPricesResponse {
-  showtimeId?: string;
-  cinemaId?: string;
-  pricingPolicyVersionId?: string;
-  pricingPolicyRevision?: number;
-  dayGroup?: ShowtimeTicketPricesResponseDayGroup;
-  experienceType?: ShowtimeTicketPricesResponseExperienceType;
-  contentFormat?: ShowtimeTicketPricesResponseContentFormat;
-  currency?: string;
-  timeZone?: string;
-  localStartsAt?: string;
-  timeBandId?: string;
-  timeBandName?: string;
-  defaultTicketGroupId?: string;
-  ticketGroups?: TicketGroupPrices[];
+  showtimeId?: string
+  cinemaId?: string
+  pricingPolicyVersionId?: string
+  pricingPolicyRevision?: number
+  dayGroup?: ShowtimeTicketPricesResponseDayGroup
+  experienceType?: ShowtimeTicketPricesResponseExperienceType
+  contentFormat?: ShowtimeTicketPricesResponseContentFormat
+  currency?: string
+  timeZone?: string
+  localStartsAt?: string
+  timeBandId?: string
+  timeBandName?: string
+  defaultTicketGroupId?: string
+  ticketGroups?: TicketGroupPrices[]
 }

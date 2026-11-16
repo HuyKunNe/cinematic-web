@@ -5,17 +5,19 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { FindAllBookingsStatusItem } from './findAllBookingsStatusItem';
+import type { FindAllBookingsPeriod } from './findAllBookingsPeriod'
+import type { FindAllBookingsStatusItem } from './findAllBookingsStatusItem'
 
 export type FindAllBookingsParams = {
-/**
- * @minimum 0
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 100
- */
-size?: number;
-status?: FindAllBookingsStatusItem[];
-};
+  /**
+   * @minimum 0
+   */
+  page?: number
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  size?: number
+  status?: FindAllBookingsStatusItem[]
+  period?: FindAllBookingsPeriod
+}

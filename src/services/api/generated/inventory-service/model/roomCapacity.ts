@@ -5,17 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { RoomCapacitySource } from './roomCapacitySource';
+import type { RoomCapacitySource } from './roomCapacitySource'
 
 export interface RoomCapacity {
-  roomId?: string;
-  roomName?: string;
-  roomActive?: boolean;
-  layoutId?: string;
-  layoutVersion?: number;
-  source?: RoomCapacitySource;
-  seatUnitCount?: number;
-  capacity?: number;
-  activeSeatUnitCount?: number;
-  activeSeatCapacity?: number;
+  roomId?: string
+  roomName?: string
+  roomActive?: boolean
+  layoutId?: string
+  layoutVersion?: number
+  source?: RoomCapacitySource
+  seatUnitCount?: number
+  capacity?: number
+  activeSeatUnitCount?: number
+  activeSeatCapacity?: number
 }

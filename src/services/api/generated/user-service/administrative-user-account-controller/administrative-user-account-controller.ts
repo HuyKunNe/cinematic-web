@@ -5,43 +5,21 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const unlockUserAccount = (
-    userId: string,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/users/${userId}/unlock`, method: 'PATCH'
-    },
-      );
-    }
-  export const lockUserAccount = (
-    userId: string,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/users/${userId}/lock`, method: 'PATCH'
-    },
-      );
-    }
-  export const enableUserAccount = (
-    userId: string,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/users/${userId}/enable`, method: 'PATCH'
-    },
-      );
-    }
-  export const disableUserAccount = (
-    userId: string,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/users/${userId}/disable`, method: 'PATCH'
-    },
-      );
-    }
-  export type UnlockUserAccountResult = NonNullable<Awaited<ReturnType<typeof unlockUserAccount>>>
+export const unlockUserAccount = (userId: string) => {
+  return apiRequest<void>({ url: `/api/v1/users/${userId}/unlock`, method: 'PATCH' })
+}
+export const lockUserAccount = (userId: string) => {
+  return apiRequest<void>({ url: `/api/v1/users/${userId}/lock`, method: 'PATCH' })
+}
+export const enableUserAccount = (userId: string) => {
+  return apiRequest<void>({ url: `/api/v1/users/${userId}/enable`, method: 'PATCH' })
+}
+export const disableUserAccount = (userId: string) => {
+  return apiRequest<void>({ url: `/api/v1/users/${userId}/disable`, method: 'PATCH' })
+}
+export type UnlockUserAccountResult = NonNullable<Awaited<ReturnType<typeof unlockUserAccount>>>
 export type LockUserAccountResult = NonNullable<Awaited<ReturnType<typeof lockUserAccount>>>
 export type EnableUserAccountResult = NonNullable<Awaited<ReturnType<typeof enableUserAccount>>>
 export type DisableUserAccountResult = NonNullable<Awaited<ReturnType<typeof disableUserAccount>>>

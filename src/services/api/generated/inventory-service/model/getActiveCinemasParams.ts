@@ -7,5 +7,5 @@
  */
 
 export type GetActiveCinemasParams = {
-city?: string;
-};
+  city?: string
+}

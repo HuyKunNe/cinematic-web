@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type QuotePricingFareRequestSeatType = typeof QuotePricingFareRequestSeatType[keyof typeof QuotePricingFareRequestSeatType];
-
+export type QuotePricingFareRequestSeatType =
+  (typeof QuotePricingFareRequestSeatType)[keyof typeof QuotePricingFareRequestSeatType]
 
 export const QuotePricingFareRequestSeatType = {
   STANDARD: 'STANDARD',
   VIP: 'VIP',
   COUPLE: 'COUPLE',
   ACCESSIBLE: 'ACCESSIBLE',
-} as const;
+} as const

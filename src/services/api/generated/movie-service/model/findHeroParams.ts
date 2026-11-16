@@ -7,6 +7,6 @@
  */
 
 export type FindHeroParams = {
-limit?: number;
-movieIds?: string[];
-};
+  limit?: number
+  movieIds?: string[]
+}

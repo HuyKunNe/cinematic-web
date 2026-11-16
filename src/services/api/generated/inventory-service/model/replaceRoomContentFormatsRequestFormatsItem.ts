@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ReplaceRoomContentFormatsRequestFormatsItem = typeof ReplaceRoomContentFormatsRequestFormatsItem[keyof typeof ReplaceRoomContentFormatsRequestFormatsItem];
-
+export type ReplaceRoomContentFormatsRequestFormatsItem =
+  (typeof ReplaceRoomContentFormatsRequestFormatsItem)[keyof typeof ReplaceRoomContentFormatsRequestFormatsItem]
 
 export const ReplaceRoomContentFormatsRequestFormatsItem = {
   '2D': '2D',
   '3D': '3D',
-} as const;
+} as const

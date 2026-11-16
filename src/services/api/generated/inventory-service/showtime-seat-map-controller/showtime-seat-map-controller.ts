@@ -5,20 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  ShowtimeSeatMapResponse
-} from '../model';
+import type { ShowtimeSeatMapResponse } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getShowtimeSeatMap = (
-    showtimeId: string,
- ) => {
-      return apiRequest<ShowtimeSeatMapResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}/seat-map`, method: 'GET'
-    },
-      );
-    }
-  export type GetShowtimeSeatMapResult = NonNullable<Awaited<ReturnType<typeof getShowtimeSeatMap>>>
+export const getShowtimeSeatMap = (showtimeId: string) => {
+  return apiRequest<ShowtimeSeatMapResponse>({
+    url: `/api/v1/showtimes/${showtimeId}/seat-map`,
+    method: 'GET',
+  })
+}
+export type GetShowtimeSeatMapResult = NonNullable<Awaited<ReturnType<typeof getShowtimeSeatMap>>>

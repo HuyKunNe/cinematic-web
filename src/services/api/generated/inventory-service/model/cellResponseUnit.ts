@@ -6,10 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CellResponseUnit = typeof CellResponseUnit[keyof typeof CellResponseUnit];
-
+export type CellResponseUnit = (typeof CellResponseUnit)[keyof typeof CellResponseUnit]
 
 export const CellResponseUnit = {
   SEAT: 'SEAT',
   PAIR: 'PAIR',
-} as const;
+} as const

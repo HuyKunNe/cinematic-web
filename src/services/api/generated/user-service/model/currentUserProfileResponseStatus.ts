@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CurrentUserProfileResponseStatus = typeof CurrentUserProfileResponseStatus[keyof typeof CurrentUserProfileResponseStatus];
-
+export type CurrentUserProfileResponseStatus =
+  (typeof CurrentUserProfileResponseStatus)[keyof typeof CurrentUserProfileResponseStatus]
 
 export const CurrentUserProfileResponseStatus = {
   PENDING_VERIFICATION: 'PENDING_VERIFICATION',
   ACTIVE: 'ACTIVE',
   LOCKED: 'LOCKED',
   DISABLED: 'DISABLED',
-} as const;
+} as const

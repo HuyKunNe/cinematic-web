@@ -7,6 +7,6 @@
  */
 
 export type GetRoomPublishedSeatMapParams = {
-roomId: string;
-layoutId?: string;
-};
+  roomId: string
+  layoutId?: string
+}

@@ -8,8 +8,11 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 
 const route = useRoute()
 const loading = ref(false)
-const errorMessage = ref(route.query.authError === 'signin_redirect_failed'
-  ? 'Không thể mở trang đăng nhập. Vui lòng thử lại.' : '')
+const errorMessage = ref(
+  route.query.authError === 'signin_redirect_failed'
+    ? 'Không thể mở trang đăng nhập. Vui lòng thử lại.'
+    : '',
+)
 
 async function handleSignIn() {
   if (loading.value) return

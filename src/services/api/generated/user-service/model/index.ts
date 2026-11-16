@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export * from './changeCurrentUserPasswordRequest';
-export * from './confirmEmailVerificationRequest';
-export * from './currentUserProfileResponse';
-export * from './currentUserProfileResponseStatus';
-export * from './registerUserRequest';
-export * from './registrationAcceptedResponse';
-export * from './updateCurrentUserProfileRequest';
+export * from './changeCurrentUserPasswordRequest'
+export * from './confirmEmailVerificationRequest'
+export * from './currentUserProfileResponse'
+export * from './currentUserProfileResponseStatus'
+export * from './registerUserRequest'
+export * from './registrationAcceptedResponse'
+export * from './updateCurrentUserProfileRequest'

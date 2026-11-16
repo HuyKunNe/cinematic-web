@@ -11,79 +11,55 @@ import type {
   MovieResponse,
   PageResponseMovieResponse,
   UpdateMovieMetadataRequest,
-  UpdateMovieRequest
-} from '../model';
+  UpdateMovieRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const findMovieById = (
-    id: string,
- ) => {
-      return apiRequest<MovieResponse>(
-      {url: `/api/v1/movies/${id}`, method: 'GET'
-    },
-      );
-    }
-  export const updateMovie = (
-    id: string,
-    updateMovieRequest: UpdateMovieRequest,
- ) => {
-      return apiRequest<MovieResponse>(
-      {url: `/api/v1/movies/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateMovieRequest
-    },
-      );
-    }
-  export const deleteMovie = (
-    id: string,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/movies/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  export const updateMovieMetadata = (
-    id: string,
-    updateMovieMetadataRequest: UpdateMovieMetadataRequest,
- ) => {
-      return apiRequest<MovieResponse>(
-      {url: `/api/v1/movies/${id}/metadata`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateMovieMetadataRequest
-    },
-      );
-    }
-  export const findAllMovies = (
-
- ) => {
-      return apiRequest<MovieResponse[]>(
-      {url: `/api/v1/movies`, method: 'GET'
-    },
-      );
-    }
-  export const createMovie = (
-    createMovieRequest: CreateMovieRequest,
- ) => {
-      return apiRequest<MovieResponse>(
-      {url: `/api/v1/movies`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createMovieRequest
-    },
-      );
-    }
-  export const getMovieCatalog = (
-    params?: GetMovieCatalogParams,
- ) => {
-      return apiRequest<PageResponseMovieResponse>(
-      {url: `/api/v1/movies/catalog`, method: 'GET',
-        params
-    },
-      );
-    }
-  export type FindMovieByIdResult = NonNullable<Awaited<ReturnType<typeof findMovieById>>>
+export const findMovieById = (id: string) => {
+  return apiRequest<MovieResponse>({ url: `/api/v1/movies/${id}`, method: 'GET' })
+}
+export const updateMovie = (id: string, updateMovieRequest: UpdateMovieRequest) => {
+  return apiRequest<MovieResponse>({
+    url: `/api/v1/movies/${id}`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateMovieRequest,
+  })
+}
+export const deleteMovie = (id: string) => {
+  return apiRequest<void>({ url: `/api/v1/movies/${id}`, method: 'DELETE' })
+}
+export const updateMovieMetadata = (
+  id: string,
+  updateMovieMetadataRequest: UpdateMovieMetadataRequest,
+) => {
+  return apiRequest<MovieResponse>({
+    url: `/api/v1/movies/${id}/metadata`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateMovieMetadataRequest,
+  })
+}
+export const findAllMovies = () => {
+  return apiRequest<MovieResponse[]>({ url: `/api/v1/movies`, method: 'GET' })
+}
+export const createMovie = (createMovieRequest: CreateMovieRequest) => {
+  return apiRequest<MovieResponse>({
+    url: `/api/v1/movies`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createMovieRequest,
+  })
+}
+export const getMovieCatalog = (params?: GetMovieCatalogParams) => {
+  return apiRequest<PageResponseMovieResponse>({
+    url: `/api/v1/movies/catalog`,
+    method: 'GET',
+    params,
+  })
+}
+export type FindMovieByIdResult = NonNullable<Awaited<ReturnType<typeof findMovieById>>>
 export type UpdateMovieResult = NonNullable<Awaited<ReturnType<typeof updateMovie>>>
 export type DeleteMovieResult = NonNullable<Awaited<ReturnType<typeof deleteMovie>>>
 export type UpdateMovieMetadataResult = NonNullable<Awaited<ReturnType<typeof updateMovieMetadata>>>

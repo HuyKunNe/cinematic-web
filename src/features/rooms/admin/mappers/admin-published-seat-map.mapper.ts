@@ -41,8 +41,10 @@ export interface AdminPublishedSeatMatrix {
 
 function validDimension(value: unknown): value is number {
   return (
-    typeof value === 'number' && Number.isSafeInteger(value) &&
-    value >= 1 && value <= MATRIX_LIMITS.dimension
+    typeof value === 'number' &&
+    Number.isSafeInteger(value) &&
+    value >= 1 &&
+    value <= MATRIX_LIMITS.dimension
   )
 }
 
@@ -80,9 +82,7 @@ export function mapAdminPublishedSeats(
   const { rowCount, columnCount } = matrix
   const document: SeatMatrixDocument = {
     columns: columnCount,
-    rows: Array.from({ length: rowCount }, () =>
-      Array.from({ length: columnCount }, () => null),
-    ),
+    rows: Array.from({ length: rowCount }, () => Array.from({ length: columnCount }, () => null)),
   }
 
   const ids = new Set<string>()

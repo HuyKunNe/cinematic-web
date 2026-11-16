@@ -7,5 +7,5 @@
  */
 
 export type CreateSeatRangeParams = {
-roomId: string;
-};
+  roomId: string
+}

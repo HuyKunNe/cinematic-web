@@ -7,5 +7,5 @@
  */
 
 export interface ShowSeatBookingRequest {
-  bookingId: string;
+  bookingId: string
 }

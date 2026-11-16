@@ -10,61 +10,37 @@ import type {
   CreateCinemaRequest,
   GetActiveCinemasParams,
   GetManagedCinemasParams,
-  UpdateCinemaRequest
-} from '../model';
+  UpdateCinemaRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getCinemaById = (
-    cinemaId: string,
- ) => {
-      return apiRequest<CinemaResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}`, method: 'GET'
-    },
-      );
-    }
-  export const updateCinema = (
-    cinemaId: string,
-    updateCinemaRequest: UpdateCinemaRequest,
- ) => {
-      return apiRequest<CinemaResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateCinemaRequest
-    },
-      );
-    }
-  export const getActiveCinemas = (
-    params?: GetActiveCinemasParams,
- ) => {
-      return apiRequest<CinemaResponse[]>(
-      {url: `/api/v1/cinemas`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const createCinema = (
-    createCinemaRequest: CreateCinemaRequest,
- ) => {
-      return apiRequest<CinemaResponse>(
-      {url: `/api/v1/cinemas`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createCinemaRequest
-    },
-      );
-    }
-  export const getManagedCinemas = (
-    params?: GetManagedCinemasParams,
- ) => {
-      return apiRequest<CinemaResponse[]>(
-      {url: `/api/v1/cinemas/management`, method: 'GET',
-        params
-    },
-      );
-    }
-  export type GetCinemaByIdResult = NonNullable<Awaited<ReturnType<typeof getCinemaById>>>
+export const getCinemaById = (cinemaId: string) => {
+  return apiRequest<CinemaResponse>({ url: `/api/v1/cinemas/${cinemaId}`, method: 'GET' })
+}
+export const updateCinema = (cinemaId: string, updateCinemaRequest: UpdateCinemaRequest) => {
+  return apiRequest<CinemaResponse>({
+    url: `/api/v1/cinemas/${cinemaId}`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateCinemaRequest,
+  })
+}
+export const getActiveCinemas = (params?: GetActiveCinemasParams) => {
+  return apiRequest<CinemaResponse[]>({ url: `/api/v1/cinemas`, method: 'GET', params })
+}
+export const createCinema = (createCinemaRequest: CreateCinemaRequest) => {
+  return apiRequest<CinemaResponse>({
+    url: `/api/v1/cinemas`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createCinemaRequest,
+  })
+}
+export const getManagedCinemas = (params?: GetManagedCinemasParams) => {
+  return apiRequest<CinemaResponse[]>({ url: `/api/v1/cinemas/management`, method: 'GET', params })
+}
+export type GetCinemaByIdResult = NonNullable<Awaited<ReturnType<typeof getCinemaById>>>
 export type UpdateCinemaResult = NonNullable<Awaited<ReturnType<typeof updateCinema>>>
 export type GetActiveCinemasResult = NonNullable<Awaited<ReturnType<typeof getActiveCinemas>>>
 export type CreateCinemaResult = NonNullable<Awaited<ReturnType<typeof createCinema>>>

@@ -5,23 +5,23 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { PaymentManagementResponseStatus } from './paymentManagementResponseStatus';
+import type { PaymentManagementResponseStatus } from './paymentManagementResponseStatus'
 
 export interface PaymentManagementResponse {
-  id?: string;
-  bookingId?: string;
-  userId?: string;
-  paymentAttempt?: number;
-  amount?: number;
-  currency?: string;
-  provider?: string;
-  status?: PaymentManagementResponseStatus;
-  providerReference?: string;
-  failureCode?: string;
-  holdExpiresAt?: string;
-  requestedAt?: string;
-  completedAt?: string;
-  version?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  id?: string
+  bookingId?: string
+  userId?: string
+  paymentAttempt?: number
+  amount?: number
+  currency?: string
+  provider?: string
+  status?: PaymentManagementResponseStatus
+  providerReference?: string
+  failureCode?: string
+  holdExpiresAt?: string
+  requestedAt?: string
+  completedAt?: string
+  version?: number
+  createdAt?: string
+  updatedAt?: string
 }

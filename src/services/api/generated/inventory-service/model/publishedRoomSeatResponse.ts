@@ -5,17 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { PublishedRoomSeatResponseSeatType } from './publishedRoomSeatResponseSeatType';
+import type { PublishedRoomSeatResponseSeatType } from './publishedRoomSeatResponseSeatType'
 
 export interface PublishedRoomSeatResponse {
-  seatId?: string;
-  rowIndex?: number;
-  columnIndex?: number;
-  number?: number;
-  seatNumber?: string;
-  rowLabel?: string;
-  seatType?: PublishedRoomSeatResponseSeatType;
-  capacity?: number;
-  columnSpan?: number;
-  active?: boolean;
+  seatId?: string
+  rowIndex?: number
+  columnIndex?: number
+  number?: number
+  seatNumber?: string
+  rowLabel?: string
+  seatType?: PublishedRoomSeatResponseSeatType
+  capacity?: number
+  columnSpan?: number
+  active?: boolean
 }

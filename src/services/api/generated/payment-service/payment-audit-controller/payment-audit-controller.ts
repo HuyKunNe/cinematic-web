@@ -5,20 +5,16 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  FinancialAuditRecordResponse
-} from '../model';
+import type { FinancialAuditRecordResponse } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const findAuditByPaymentId = (
-    paymentId: string,
- ) => {
-      return apiRequest<FinancialAuditRecordResponse[]>(
-      {url: `/api/v1/payments/${paymentId}/audit`, method: 'GET'
-    },
-      );
-    }
-  export type FindAuditByPaymentIdResult = NonNullable<Awaited<ReturnType<typeof findAuditByPaymentId>>>
+export const findAuditByPaymentId = (paymentId: string) => {
+  return apiRequest<FinancialAuditRecordResponse[]>({
+    url: `/api/v1/payments/${paymentId}/audit`,
+    method: 'GET',
+  })
+}
+export type FindAuditByPaymentIdResult = NonNullable<
+  Awaited<ReturnType<typeof findAuditByPaymentId>>
+>

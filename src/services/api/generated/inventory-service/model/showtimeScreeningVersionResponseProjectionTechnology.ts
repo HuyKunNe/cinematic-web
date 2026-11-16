@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ShowtimeScreeningVersionResponseProjectionTechnology = typeof ShowtimeScreeningVersionResponseProjectionTechnology[keyof typeof ShowtimeScreeningVersionResponseProjectionTechnology];
-
+export type ShowtimeScreeningVersionResponseProjectionTechnology =
+  (typeof ShowtimeScreeningVersionResponseProjectionTechnology)[keyof typeof ShowtimeScreeningVersionResponseProjectionTechnology]
 
 export const ShowtimeScreeningVersionResponseProjectionTechnology = {
   STANDARD: 'STANDARD',
   IMAX: 'IMAX',
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
-} as const;
+} as const

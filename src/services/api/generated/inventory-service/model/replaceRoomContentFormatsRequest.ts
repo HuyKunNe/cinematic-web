@@ -5,13 +5,13 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ReplaceRoomContentFormatsRequestFormatsItem } from './replaceRoomContentFormatsRequestFormatsItem';
+import type { ReplaceRoomContentFormatsRequestFormatsItem } from './replaceRoomContentFormatsRequestFormatsItem'
 
 export interface ReplaceRoomContentFormatsRequest {
-  expectedVersion: number;
+  expectedVersion: number
   /**
-     * @minItems 0
-     * @maxItems 2
-     */
-  formats: ReplaceRoomContentFormatsRequestFormatsItem[];
+   * @minItems 0
+   * @maxItems 2
+   */
+  formats: ReplaceRoomContentFormatsRequestFormatsItem[]
 }

@@ -5,22 +5,22 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { MatrixSeatInput } from './matrixSeatInput';
+import type { MatrixSeatInput } from './matrixSeatInput'
 
 export interface RoomLayoutMatrixInput {
   /**
-     * @minimum 1
-     * @maximum 100
-     */
-  rowCount: number;
+   * @minimum 1
+   * @maximum 100
+   */
+  rowCount: number
   /**
-     * @minimum 1
-     * @maximum 100
-     */
-  columnCount: number;
+   * @minimum 1
+   * @maximum 100
+   */
+  columnCount: number
   /**
-     * @minItems 0
-     * @maxItems 2500
-     */
-  seats: MatrixSeatInput[];
+   * @minItems 0
+   * @maxItems 2500
+   */
+  seats: MatrixSeatInput[]
 }

@@ -5,26 +5,21 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  PricingFareQuoteResponse,
-  QuotePricingFareRequest
-} from '../model';
+import type { PricingFareQuoteResponse, QuotePricingFareRequest } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const quotePricingFare = (
-    cinemaId: string,
-    policyId: string,
-    versionId: string,
-    quotePricingFareRequest: QuotePricingFareRequest,
- ) => {
-      return apiRequest<PricingFareQuoteResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/quote`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: quotePricingFareRequest
-    },
-      );
-    }
-  export type QuotePricingFareResult = NonNullable<Awaited<ReturnType<typeof quotePricingFare>>>
+export const quotePricingFare = (
+  cinemaId: string,
+  policyId: string,
+  versionId: string,
+  quotePricingFareRequest: QuotePricingFareRequest,
+) => {
+  return apiRequest<PricingFareQuoteResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/quote`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: quotePricingFareRequest,
+  })
+}
+export type QuotePricingFareResult = NonNullable<Awaited<ReturnType<typeof quotePricingFare>>>

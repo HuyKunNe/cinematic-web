@@ -7,9 +7,9 @@
  */
 
 export interface TicketGroupResponse {
-  id?: string;
-  name?: string;
-  eligibilityDescription?: string;
-  defaultGroup?: boolean;
-  sortOrder?: number;
+  id?: string
+  name?: string
+  eligibilityDescription?: string
+  defaultGroup?: boolean
+  sortOrder?: number
 }

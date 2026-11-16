@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PaymentTransactionManagementResponseStatus = typeof PaymentTransactionManagementResponseStatus[keyof typeof PaymentTransactionManagementResponseStatus];
-
+export type PaymentTransactionManagementResponseStatus =
+  (typeof PaymentTransactionManagementResponseStatus)[keyof typeof PaymentTransactionManagementResponseStatus]
 
 export const PaymentTransactionManagementResponseStatus = {
   READY: 'READY',
@@ -15,4 +15,4 @@ export const PaymentTransactionManagementResponseStatus = {
   PENDING_PROVIDER: 'PENDING_PROVIDER',
   SUCCEEDED: 'SUCCEEDED',
   FAILED: 'FAILED',
-} as const;
+} as const

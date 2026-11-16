@@ -7,6 +7,6 @@
  */
 
 export type GetManagedSeatsParams = {
-roomId: string;
-active?: boolean;
-};
+  roomId: string
+  active?: boolean
+}

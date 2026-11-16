@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type FinancialAuditRecordResponseActorType = typeof FinancialAuditRecordResponseActorType[keyof typeof FinancialAuditRecordResponseActorType];
-
+export type FinancialAuditRecordResponseActorType =
+  (typeof FinancialAuditRecordResponseActorType)[keyof typeof FinancialAuditRecordResponseActorType]
 
 export const FinancialAuditRecordResponseActorType = {
   USER: 'USER',
   SERVICE: 'SERVICE',
   SYSTEM: 'SYSTEM',
-} as const;
+} as const

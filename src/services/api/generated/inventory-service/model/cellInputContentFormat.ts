@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CellInputContentFormat = typeof CellInputContentFormat[keyof typeof CellInputContentFormat];
-
+export type CellInputContentFormat =
+  (typeof CellInputContentFormat)[keyof typeof CellInputContentFormat]
 
 export const CellInputContentFormat = {
   '2D': '2D',
   '3D': '3D',
-} as const;
+} as const

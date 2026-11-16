@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CinemaPricingPolicyVersionResponseDayGroup = typeof CinemaPricingPolicyVersionResponseDayGroup[keyof typeof CinemaPricingPolicyVersionResponseDayGroup];
-
+export type CinemaPricingPolicyVersionResponseDayGroup =
+  (typeof CinemaPricingPolicyVersionResponseDayGroup)[keyof typeof CinemaPricingPolicyVersionResponseDayGroup]
 
 export const CinemaPricingPolicyVersionResponseDayGroup = {
   WEEKDAY: 'WEEKDAY',
   WEEKEND: 'WEEKEND',
   HOLIDAY: 'HOLIDAY',
-} as const;
+} as const

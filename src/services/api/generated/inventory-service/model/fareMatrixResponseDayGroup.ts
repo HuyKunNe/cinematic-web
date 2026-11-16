@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type FareMatrixResponseDayGroup = typeof FareMatrixResponseDayGroup[keyof typeof FareMatrixResponseDayGroup];
-
+export type FareMatrixResponseDayGroup =
+  (typeof FareMatrixResponseDayGroup)[keyof typeof FareMatrixResponseDayGroup]
 
 export const FareMatrixResponseDayGroup = {
   WEEKDAY: 'WEEKDAY',
   WEEKEND: 'WEEKEND',
   HOLIDAY: 'HOLIDAY',
-} as const;
+} as const

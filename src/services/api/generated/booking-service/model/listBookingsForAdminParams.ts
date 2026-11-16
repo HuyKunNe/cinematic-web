@@ -5,21 +5,21 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ListBookingsForAdminStatus } from './listBookingsForAdminStatus';
+import type { ListBookingsForAdminStatus } from './listBookingsForAdminStatus'
 
 export type ListBookingsForAdminParams = {
-status?: ListBookingsForAdminStatus;
-showtimeId?: string;
-userId?: string;
-createdFrom?: string;
-createdTo?: string;
-/**
- * @minimum 0
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 100
- */
-size?: number;
-};
+  status?: ListBookingsForAdminStatus
+  showtimeId?: string
+  userId?: string
+  createdFrom?: string
+  createdTo?: string
+  /**
+   * @minimum 0
+   */
+  page?: number
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  size?: number
+}

@@ -25,10 +25,14 @@ export function useAdminShowtimePricing(input: {
     if (dayGroup.value === 'WEEKDAY') return 'Ngày thường'
     return 'Chưa chọn ngày'
   })
-  const choices = computed(() => toValue(input.versions).filter((version) =>
-    version.status === 'PUBLISHED' && version.dayGroup === dayGroup.value &&
-    version.cinemaIds.includes(toValue(input.cinemaId)),
-  ))
+  const choices = computed(() =>
+    toValue(input.versions).filter(
+      (version) =>
+        version.status === 'PUBLISHED' &&
+        version.dayGroup === dayGroup.value &&
+        version.cinemaIds.includes(toValue(input.cinemaId)),
+    ),
+  )
   const latestPolicies = computed(() => {
     const policies = new Map<string, ShowtimePricingVersionOption>()
     for (const version of choices.value) {
@@ -41,23 +45,33 @@ export function useAdminShowtimePricing(input: {
     latestPolicies.value.length === 1 ? latestPolicies.value[0] : undefined,
   )
 
-  watch([() => toValue(input.date), () => toValue(input.cinemaId), holiday],
+  watch(
+    [() => toValue(input.date), () => toValue(input.cinemaId), holiday],
     ([date], previous) => {
       if (toValue(input.locked)) return
       if (date !== previous[0]) holiday.value = false
       input.selectedId.value = ''
-    }, { flush: 'sync' })
+    },
+    { flush: 'sync' },
+  )
 
-  watch([choices, () => toValue(input.ready), () => toValue(input.date), () => toValue(input.locked)], () => {
-    if (toValue(input.locked) || !toValue(input.ready)) return
-    input.selectedId.value = assignedVersion.value?.id ?? ''
-  }, { immediate: true, flush: 'post' })
+  watch(
+    [choices, () => toValue(input.ready), () => toValue(input.date), () => toValue(input.locked)],
+    () => {
+      if (toValue(input.locked) || !toValue(input.ready)) return
+      input.selectedId.value = assignedVersion.value?.id ?? ''
+    },
+    { immediate: true, flush: 'post' },
+  )
 
   const hint = computed(() => {
-    if (!toValue(input.cinemaId) || !dayGroup.value) return 'Chọn rạp và ngày chiếu để tự chọn bảng giá.'
+    if (!toValue(input.cinemaId) || !dayGroup.value)
+      return 'Chọn rạp và ngày chiếu để tự chọn bảng giá.'
     if (!toValue(input.ready)) return 'Đang kiểm tra bảng giá theo loại ngày.'
-    if (!choices.value.length) return `Chưa có bảng giá ${dayLabel.value.toLocaleLowerCase('vi-VN')} đã công bố. Cần công bố bảng giá phù hợp trước khi tạo suất.`
-    if (latestPolicies.value.length > 1) return `Có ${latestPolicies.value.length} chính sách cùng phù hợp, chưa thể tự gán duy nhất một bảng giá. Cần rà soát cấu hình chính sách giá của cụm rạp.`
+    if (!choices.value.length)
+      return `Chưa có bảng giá ${dayLabel.value.toLocaleLowerCase('vi-VN')} đã công bố. Cần công bố bảng giá phù hợp trước khi tạo suất.`
+    if (latestPolicies.value.length > 1)
+      return `Có ${latestPolicies.value.length} chính sách cùng phù hợp, chưa thể tự gán duy nhất một bảng giá. Cần rà soát cấu hình chính sách giá của cụm rạp.`
     return 'Tự gán phiên bản đã công bố mới nhất theo cụm rạp và loại ngày.'
   })
 

@@ -7,8 +7,8 @@
  */
 
 export interface ShowtimeSchedulingResponse {
-  movieRevision?: number;
-  durationMinutes?: number;
-  breakMinutes?: number;
-  readyAt?: string;
+  movieRevision?: number
+  durationMinutes?: number
+  breakMinutes?: number
+  readyAt?: string
 }

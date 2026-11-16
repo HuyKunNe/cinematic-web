@@ -7,5 +7,5 @@
  */
 
 export type GetRoomLayoutsByRoomParams = {
-roomId: string;
-};
+  roomId: string
+}

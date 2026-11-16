@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type FareMatrixResponseStatus = typeof FareMatrixResponseStatus[keyof typeof FareMatrixResponseStatus];
-
+export type FareMatrixResponseStatus =
+  (typeof FareMatrixResponseStatus)[keyof typeof FareMatrixResponseStatus]
 
 export const FareMatrixResponseStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED',
   RETIRED: 'RETIRED',
-} as const;
+} as const

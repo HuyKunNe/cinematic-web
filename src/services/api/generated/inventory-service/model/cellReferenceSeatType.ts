@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CellReferenceSeatType = typeof CellReferenceSeatType[keyof typeof CellReferenceSeatType];
-
+export type CellReferenceSeatType =
+  (typeof CellReferenceSeatType)[keyof typeof CellReferenceSeatType]
 
 export const CellReferenceSeatType = {
   STANDARD: 'STANDARD',
   VIP: 'VIP',
   COUPLE: 'COUPLE',
   ACCESSIBLE: 'ACCESSIBLE',
-} as const;
+} as const

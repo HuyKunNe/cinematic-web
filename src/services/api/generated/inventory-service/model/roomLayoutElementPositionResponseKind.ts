@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type RoomLayoutElementPositionResponseKind = typeof RoomLayoutElementPositionResponseKind[keyof typeof RoomLayoutElementPositionResponseKind];
-
+export type RoomLayoutElementPositionResponseKind =
+  (typeof RoomLayoutElementPositionResponseKind)[keyof typeof RoomLayoutElementPositionResponseKind]
 
 export const RoomLayoutElementPositionResponseKind = {
   SCREEN: 'SCREEN',
   AISLE: 'AISLE',
   EXIT: 'EXIT',
-} as const;
+} as const

@@ -7,5 +7,5 @@
  */
 
 export type GetActiveSeatsParams = {
-roomId: string;
-};
+  roomId: string
+}

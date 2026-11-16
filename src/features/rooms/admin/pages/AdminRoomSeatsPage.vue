@@ -649,7 +649,9 @@ async function changeActivity() {
 
             <div v-if="selected" class="seatmap-details__selection">
               <strong>{{ selected.seat.seatNumber }}</strong>
-              <span>{{ typeLabel(selected.seat.seatType) }} · {{ selected.seat.capacity }} chỗ</span>
+              <span
+                >{{ typeLabel(selected.seat.seatType) }} · {{ selected.seat.capacity }} chỗ</span
+              >
             </div>
             <dl v-if="selected">
               <div>
@@ -697,7 +699,8 @@ async function changeActivity() {
                 </div>
               </dl>
               <p class="seatmap-muted">
-                Ghế đôi có 2 chỗ ngồi. Trạng thái ghế không thể hiện tình trạng đặt chỗ theo suất chiếu.
+                Ghế đôi có 2 chỗ ngồi. Trạng thái ghế không thể hiện tình trạng đặt chỗ theo suất
+                chiếu.
               </p>
             </details>
           </aside>

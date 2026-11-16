@@ -5,12 +5,12 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CellReference } from './cellReference';
-import type { ScopeResponse } from './scopeResponse';
+import type { CellReference } from './cellReference'
+import type { ScopeResponse } from './scopeResponse'
 
 export interface Issue {
-  code?: string;
-  message?: string;
-  scope?: ScopeResponse;
-  cell?: CellReference;
+  code?: string
+  message?: string
+  scope?: ScopeResponse
+  cell?: CellReference
 }

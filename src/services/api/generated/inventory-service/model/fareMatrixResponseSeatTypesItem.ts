@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type FareMatrixResponseSeatTypesItem = typeof FareMatrixResponseSeatTypesItem[keyof typeof FareMatrixResponseSeatTypesItem];
-
+export type FareMatrixResponseSeatTypesItem =
+  (typeof FareMatrixResponseSeatTypesItem)[keyof typeof FareMatrixResponseSeatTypesItem]
 
 export const FareMatrixResponseSeatTypesItem = {
   STANDARD: 'STANDARD',
   VIP: 'VIP',
   COUPLE: 'COUPLE',
   ACCESSIBLE: 'ACCESSIBLE',
-} as const;
+} as const

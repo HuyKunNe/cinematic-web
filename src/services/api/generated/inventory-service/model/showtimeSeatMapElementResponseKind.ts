@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ShowtimeSeatMapElementResponseKind = typeof ShowtimeSeatMapElementResponseKind[keyof typeof ShowtimeSeatMapElementResponseKind];
-
+export type ShowtimeSeatMapElementResponseKind =
+  (typeof ShowtimeSeatMapElementResponseKind)[keyof typeof ShowtimeSeatMapElementResponseKind]
 
 export const ShowtimeSeatMapElementResponseKind = {
   SCREEN: 'SCREEN',
   AISLE: 'AISLE',
   EXIT: 'EXIT',
-} as const;
+} as const

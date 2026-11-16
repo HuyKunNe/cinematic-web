@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ShowtimeTicketPricesResponseExperienceType = typeof ShowtimeTicketPricesResponseExperienceType[keyof typeof ShowtimeTicketPricesResponseExperienceType];
-
+export type ShowtimeTicketPricesResponseExperienceType =
+  (typeof ShowtimeTicketPricesResponseExperienceType)[keyof typeof ShowtimeTicketPricesResponseExperienceType]
 
 export const ShowtimeTicketPricesResponseExperienceType = {
   STANDARD: 'STANDARD',
@@ -15,4 +15,4 @@ export const ShowtimeTicketPricesResponseExperienceType = {
   IMAX: 'IMAX',
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
-} as const;
+} as const

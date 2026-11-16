@@ -5,22 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  GenreResponse,
-  GetMovieCatalogGenresParams
-} from '../model';
+import type { GenreResponse, GetMovieCatalogGenresParams } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getMovieCatalogGenres = (
-    params?: GetMovieCatalogGenresParams,
- ) => {
-      return apiRequest<GenreResponse[]>(
-      {url: `/api/v1/movies/catalog/genres`, method: 'GET',
-        params
-    },
-      );
-    }
-  export type GetMovieCatalogGenresResult = NonNullable<Awaited<ReturnType<typeof getMovieCatalogGenres>>>
+export const getMovieCatalogGenres = (params?: GetMovieCatalogGenresParams) => {
+  return apiRequest<GenreResponse[]>({
+    url: `/api/v1/movies/catalog/genres`,
+    method: 'GET',
+    params,
+  })
+}
+export type GetMovieCatalogGenresResult = NonNullable<
+  Awaited<ReturnType<typeof getMovieCatalogGenres>>
+>

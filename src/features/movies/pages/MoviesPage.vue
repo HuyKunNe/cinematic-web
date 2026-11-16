@@ -128,8 +128,12 @@ const filteredMovies = computed(() => {
 })
 
 const pageCount = computed(() => Math.max(1, Math.ceil(filteredMovies.value.length / PAGE_SIZE)))
-const visibleMovies = computed(() => filteredMovies.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE))
-watch(pageCount, (count) => { page.value = Math.min(page.value, count) })
+const visibleMovies = computed(() =>
+  filteredMovies.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE),
+)
+watch(pageCount, (count) => {
+  page.value = Math.min(page.value, count)
+})
 
 const statusDescription = computed(() =>
   selectedStatus.value === 'NOW_SHOWING' ? 'đang chiếu' : 'sắp chiếu',
@@ -283,7 +287,10 @@ function retry() {
           </span>
 
           <span v-if="filteredMovies.length" class="movies-results__shown">
-            Đang hiển thị {{ (page - 1) * PAGE_SIZE + 1 }}–{{ Math.min(page * PAGE_SIZE, filteredMovies.length) }} / {{ filteredMovies.length }} phim.
+            Đang hiển thị {{ (page - 1) * PAGE_SIZE + 1 }}–{{
+              Math.min(page * PAGE_SIZE, filteredMovies.length)
+            }}
+            / {{ filteredMovies.length }} phim.
           </span>
         </p>
 

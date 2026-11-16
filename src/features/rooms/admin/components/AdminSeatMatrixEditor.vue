@@ -1389,7 +1389,11 @@ defineExpose({
         <section class="seat-matrix-editor__panel">
           <h2>Cấu trúc sơ đồ</h2>
           <p>Hàng {{ matrixRowLabel(selection.row) }} · Cột {{ selection.column + 1 }}</p>
-          <section v-for="group in structureGroups" :key="group.title" class="seat-matrix-editor__structure-group">
+          <section
+            v-for="group in structureGroups"
+            :key="group.title"
+            class="seat-matrix-editor__structure-group"
+          >
             <h3>{{ group.title }}</h3>
             <p v-if="group.description">{{ group.description }}</p>
             <div class="seat-matrix-editor__structure-actions">
@@ -1433,7 +1437,9 @@ defineExpose({
   --matrix-row-drop-line: var(--space-1);
   --matrix-row-drag-opacity: var(--opacity-disabled);
   --matrix-inspector-danger-background: color-mix(
-    in srgb, var(--color-error) var(--matrix-seat-tint), var(--color-surface)
+    in srgb,
+    var(--color-error) var(--matrix-seat-tint),
+    var(--color-surface)
   );
   --matrix-table-width: calc(
     var(--matrix-axis-size) + var(--matrix-cell-width) * var(--matrix-column-count)

@@ -5,20 +5,20 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ShowtimeSeatMapElementResponse } from './showtimeSeatMapElementResponse';
-import type { ShowtimeSeatMapMatrixResponse } from './showtimeSeatMapMatrixResponse';
-import type { ShowtimeSeatMapSeatResponse } from './showtimeSeatMapSeatResponse';
+import type { ShowtimeSeatMapElementResponse } from './showtimeSeatMapElementResponse'
+import type { ShowtimeSeatMapMatrixResponse } from './showtimeSeatMapMatrixResponse'
+import type { ShowtimeSeatMapSeatResponse } from './showtimeSeatMapSeatResponse'
 
 export interface ShowtimeSeatMapResponse {
-  showtimeId?: string;
-  cinemaId?: string;
-  roomId?: string;
-  layoutId?: string;
-  layoutVersion?: number;
-  serverTime?: string;
-  canvasWidth?: number;
-  canvasHeight?: number;
-  elements?: ShowtimeSeatMapElementResponse[];
-  seats?: ShowtimeSeatMapSeatResponse[];
-  matrix?: ShowtimeSeatMapMatrixResponse;
+  showtimeId?: string
+  cinemaId?: string
+  roomId?: string
+  layoutId?: string
+  layoutVersion?: number
+  serverTime?: string
+  canvasWidth?: number
+  canvasHeight?: number
+  elements?: ShowtimeSeatMapElementResponse[]
+  seats?: ShowtimeSeatMapSeatResponse[]
+  matrix?: ShowtimeSeatMapMatrixResponse
 }

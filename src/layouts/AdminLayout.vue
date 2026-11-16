@@ -133,12 +133,16 @@ async function handleLogout() {
 
             <div v-if="pageLoading.navigationError.value" class="admin-layout__error" role="alert">
               <p>{{ pageLoading.navigationError.value }}</p>
-              <AppButton variant="secondary" @click="pageLoading.retryNavigation">Thử lại</AppButton>
+              <AppButton variant="secondary" @click="pageLoading.retryNavigation"
+                >Thử lại</AppButton
+              >
             </div>
 
             <AppLoadingState
               v-if="pageLoading.loading.value"
-              :title="pageLoading.navigating.value ? 'Đang mở trang quản trị' : 'Đang tải dữ liệu trang'"
+              :title="
+                pageLoading.navigating.value ? 'Đang mở trang quản trị' : 'Đang tải dữ liệu trang'
+              "
               description="Vui lòng chờ trong giây lát. Nội dung sẽ hiển thị khi tải xong."
             />
             <div v-show="!pageLoading.loading.value" :aria-busy="pageLoading.loading.value">

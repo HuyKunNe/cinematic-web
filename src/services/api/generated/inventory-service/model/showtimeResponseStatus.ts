@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ShowtimeResponseStatus = typeof ShowtimeResponseStatus[keyof typeof ShowtimeResponseStatus];
-
+export type ShowtimeResponseStatus =
+  (typeof ShowtimeResponseStatus)[keyof typeof ShowtimeResponseStatus]
 
 export const ShowtimeResponseStatus = {
   SCHEDULED: 'SCHEDULED',
@@ -15,4 +15,4 @@ export const ShowtimeResponseStatus = {
   CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED',
   COMPLETED: 'COMPLETED',
-} as const;
+} as const

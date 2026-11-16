@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type BookingResponseStatus = typeof BookingResponseStatus[keyof typeof BookingResponseStatus];
-
+export type BookingResponseStatus =
+  (typeof BookingResponseStatus)[keyof typeof BookingResponseStatus]
 
 export const BookingResponseStatus = {
   PENDING: 'PENDING',
@@ -17,4 +17,4 @@ export const BookingResponseStatus = {
   PAYMENT_FAILED: 'PAYMENT_FAILED',
   CANCELLED: 'CANCELLED',
   EXPIRED: 'EXPIRED',
-} as const;
+} as const

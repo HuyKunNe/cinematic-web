@@ -5,17 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { RoomLayoutResponseStatus } from './roomLayoutResponseStatus';
+import type { RoomLayoutResponseStatus } from './roomLayoutResponseStatus'
 
 export interface RoomLayoutResponse {
-  id?: string;
-  roomId?: string;
-  layoutVersion?: number;
-  status?: RoomLayoutResponseStatus;
-  canvasWidth?: number;
-  canvasHeight?: number;
-  publishedAt?: string;
-  version?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  id?: string
+  roomId?: string
+  layoutVersion?: number
+  status?: RoomLayoutResponseStatus
+  canvasWidth?: number
+  canvasHeight?: number
+  publishedAt?: string
+  version?: number
+  createdAt?: string
+  updatedAt?: string
 }

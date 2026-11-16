@@ -72,9 +72,14 @@ const contentFormats = ref<AdminRoomContentFormat[]>([CreateRoomRequestContentFo
 const contentFormatsError = ref('')
 const formatsVersion = ref<number | null>(null)
 const reloadRequired = ref(false)
-const formatOptions = computed(() => props.roomId
-  ? (formatsDetail.data.value?.supportedFormatOptions ?? []).map((value) => ({ value, label: value }))
-  : adminRoomContentFormatOptions)
+const formatOptions = computed(() =>
+  props.roomId
+    ? (formatsDetail.data.value?.supportedFormatOptions ?? []).map((value) => ({
+        value,
+        label: value,
+      }))
+    : adminRoomContentFormatOptions,
+)
 const loading = computed(() => detail.isFetching.value || formatsDetail.isFetching.value)
 const loadError = computed(() => detail.error.value ?? formatsDetail.error.value)
 const fields: AdminRoomField[] = ['name', 'roomType']
@@ -134,8 +139,14 @@ async function focusName() {
 }
 
 watch(
-  [detail.data, detail.isFetching, detail.isSuccess,
-    formatsDetail.data, formatsDetail.isFetching, formatsDetail.isSuccess],
+  [
+    detail.data,
+    detail.isFetching,
+    detail.isSuccess,
+    formatsDetail.data,
+    formatsDetail.isFetching,
+    formatsDetail.isSuccess,
+  ],
   ([room, fetching, success, formats, fetchingFormats, formatsSuccess]) => {
     if (
       ready.value ||
@@ -160,8 +171,12 @@ watch(
 
     const selected = adminRoomContentFormatsSchema.safeParse(formats.formats)
     const supported = adminRoomContentFormatsSchema.safeParse(formats.supportedFormatOptions)
-    if (!selected.success || !supported.success ||
-      selected.data.some((format) => !supported.data.includes(format))) return
+    if (
+      !selected.success ||
+      !supported.success ||
+      selected.data.some((format) => !supported.data.includes(format))
+    )
+      return
 
     resetForm({ values: createAdminRoomValues(room) })
     contentFormats.value = [...selected.data]
@@ -224,8 +239,13 @@ const save = handleSubmit(async (values) => {
   try {
     if (props.roomId) {
       const formats = adminRoomContentFormatsSchema.safeParse(contentFormats.value)
-      if (!formats.success || formatsVersion.value === null ||
-        contentFormats.value.some((format) => !formatOptions.value.some((option) => option.value === format))) {
+      if (
+        !formats.success ||
+        formatsVersion.value === null ||
+        contentFormats.value.some(
+          (format) => !formatOptions.value.some((option) => option.value === format),
+        )
+      ) {
         contentFormatsError.value = 'Chọn định dạng hợp lệ hoặc tải lại thông tin phòng.'
         await focusError()
         return
@@ -267,9 +287,11 @@ const save = handleSubmit(async (values) => {
     if (error instanceof AdminRoomPartialSaveError) {
       formatsVersion.value = error.savedRoom.version ?? null
     }
-    reloadRequired.value = error instanceof AdminRoomSaveConflictError ||
+    reloadRequired.value =
+      error instanceof AdminRoomSaveConflictError ||
       (props.roomId !== null && formatsVersion.value === null) ||
-      (isAdminRoomApiError(originalError) && originalError.code === 'INVENTORY_ROOM_VERSION_CONFLICT')
+      (isAdminRoomApiError(originalError) &&
+        originalError.code === 'INVENTORY_ROOM_VERSION_CONFLICT')
 
     if (isAdminRoomApiError(error)) {
       for (const item of error.fieldErrors) {
@@ -279,7 +301,8 @@ const save = handleSubmit(async (values) => {
     }
 
     if (!Object.values(serverErrors.value).some(Boolean)) {
-      requestError.value = adminRoomErrorMessage(error, 'Không thể lưu phòng.') +
+      requestError.value =
+        adminRoomErrorMessage(error, 'Không thể lưu phòng.') +
         (reloadRequired.value ? ' Tải lại thông tin để kiểm tra trước khi lưu tiếp.' : '')
     }
 
@@ -357,7 +380,9 @@ function submit(event: Event) {
           </template>
           <template v-else-if="detail.isSuccess.value && formatsDetail.isSuccess.value">
             <p class="admin-rooms__error" role="alert">Không nhận được thông tin phòng hợp lệ.</p>
-            <AppButton variant="secondary" :disabled="!canManage" @click="reload">Tải lại</AppButton>
+            <AppButton variant="secondary" :disabled="!canManage" @click="reload"
+              >Tải lại</AppButton
+            >
           </template>
         </div>
 
@@ -441,7 +466,9 @@ function submit(event: Event) {
                 class="admin-room-form__formats"
                 tabindex="-1"
                 :aria-invalid="Boolean(contentFormatsError)"
-                :aria-describedby="contentFormatsError ? 'admin-room-content-formats-error' : undefined"
+                :aria-describedby="
+                  contentFormatsError ? 'admin-room-content-formats-error' : undefined
+                "
               >
                 <legend>Định dạng phòng hỗ trợ{{ roomId ? '' : ' *' }}</legend>
 
@@ -454,13 +481,21 @@ function submit(event: Event) {
                   <span>{{ format.label }}</span>
                 </label>
 
-                <p v-if="!formatOptions.length" class="admin-rooms__muted">Chưa có định dạng có thể chọn.</p>
-                <p v-if="contentFormatsError" id="admin-room-content-formats-error" class="admin-rooms__error" role="alert">
+                <p v-if="!formatOptions.length" class="admin-rooms__muted">
+                  Chưa có định dạng có thể chọn.
+                </p>
+                <p
+                  v-if="contentFormatsError"
+                  id="admin-room-content-formats-error"
+                  class="admin-rooms__error"
+                  role="alert"
+                >
                   {{ contentFormatsError }}
                 </p>
               </fieldset>
               <p v-if="roomId" class="admin-rooms__muted">
-                Bỏ chọn tất cả để lưu phòng chưa cấu hình định dạng. Không thể bỏ định dạng đang được suất chiếu sử dụng.
+                Bỏ chọn tất cả để lưu phòng chưa cấu hình định dạng. Không thể bỏ định dạng đang
+                được suất chiếu sử dụng.
               </p>
             </fieldset>
 
@@ -513,7 +548,12 @@ function submit(event: Event) {
             {{ requestError }}
           </p>
 
-          <AppButton v-if="reloadRequired" variant="secondary" :disabled="busy || !canManage" @click="reload">
+          <AppButton
+            v-if="reloadRequired"
+            variant="secondary"
+            :disabled="busy || !canManage"
+            @click="reload"
+          >
             Tải lại thông tin
           </AppButton>
 

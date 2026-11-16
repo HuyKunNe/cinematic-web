@@ -8,32 +8,26 @@
 import type {
   ConfirmEmailVerificationRequest,
   RegisterUserRequest,
-  RegistrationAcceptedResponse
-} from '../model';
+  RegistrationAcceptedResponse,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const register = (
-    registerUserRequest: RegisterUserRequest,
- ) => {
-      return apiRequest<RegistrationAcceptedResponse>(
-      {url: `/api/v1/auth/registrations`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: registerUserRequest
-    },
-      );
-    }
-  export const confirmEmail = (
-    confirmEmailVerificationRequest: ConfirmEmailVerificationRequest,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/auth/email-verifications/confirm`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: confirmEmailVerificationRequest
-    },
-      );
-    }
-  export type RegisterResult = NonNullable<Awaited<ReturnType<typeof register>>>
+export const register = (registerUserRequest: RegisterUserRequest) => {
+  return apiRequest<RegistrationAcceptedResponse>({
+    url: `/api/v1/auth/registrations`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: registerUserRequest,
+  })
+}
+export const confirmEmail = (confirmEmailVerificationRequest: ConfirmEmailVerificationRequest) => {
+  return apiRequest<void>({
+    url: `/api/v1/auth/email-verifications/confirm`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: confirmEmailVerificationRequest,
+  })
+}
+export type RegisterResult = NonNullable<Awaited<ReturnType<typeof register>>>
 export type ConfirmEmailResult = NonNullable<Awaited<ReturnType<typeof confirmEmail>>>

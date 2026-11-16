@@ -7,5 +7,5 @@
  */
 
 export type GetActiveRoomsParams = {
-cinemaId: string;
-};
+  cinemaId: string
+}

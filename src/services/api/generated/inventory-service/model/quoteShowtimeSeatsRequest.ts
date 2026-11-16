@@ -5,12 +5,12 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { SeatSelection } from './seatSelection';
+import type { SeatSelection } from './seatSelection'
 
 export interface QuoteShowtimeSeatsRequest {
   /**
-     * @minItems 0
-     * @maxItems 100
-     */
-  seats: SeatSelection[];
+   * @minItems 0
+   * @maxItems 100
+   */
+  seats: SeatSelection[]
 }

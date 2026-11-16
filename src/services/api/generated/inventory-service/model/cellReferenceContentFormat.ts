@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CellReferenceContentFormat = typeof CellReferenceContentFormat[keyof typeof CellReferenceContentFormat];
-
+export type CellReferenceContentFormat =
+  (typeof CellReferenceContentFormat)[keyof typeof CellReferenceContentFormat]
 
 export const CellReferenceContentFormat = {
   '2D': '2D',
   '3D': '3D',
-} as const;
+} as const

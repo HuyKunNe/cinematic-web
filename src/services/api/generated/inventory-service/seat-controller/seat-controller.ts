@@ -15,89 +15,66 @@ import type {
   SeatActiveStateResponse,
   SeatResponse,
   UpdateSeatActiveRequest,
-  UpdateSeatRequest
-} from '../model';
+  UpdateSeatRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getSeatById = (
-    seatId: string,
- ) => {
-      return apiRequest<SeatResponse>(
-      {url: `/api/v1/seats/${seatId}`, method: 'GET'
-    },
-      );
-    }
-  export const updateSeat = (
-    seatId: string,
-    updateSeatRequest: UpdateSeatRequest,
- ) => {
-      return apiRequest<SeatResponse>(
-      {url: `/api/v1/seats/${seatId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateSeatRequest
-    },
-      );
-    }
-  export const getActiveSeats = (
-    params: GetActiveSeatsParams,
- ) => {
-      return apiRequest<SeatResponse[]>(
-      {url: `/api/v1/seats`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const createSeat = (
-    createSeatRequest: CreateSeatRequest,
-    params: CreateSeatParams,
- ) => {
-      return apiRequest<SeatResponse>(
-      {url: `/api/v1/seats`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createSeatRequest,
-        params
-    },
-      );
-    }
-  export const createSeatRange = (
-    createSeatRangeRequest: CreateSeatRangeRequest,
-    params: CreateSeatRangeParams,
- ) => {
-      return apiRequest<SeatResponse[]>(
-      {url: `/api/v1/seats/range`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createSeatRangeRequest,
-        params
-    },
-      );
-    }
-  export const updateSeatActiveState = (
-    seatId: string,
-    updateSeatActiveRequest: UpdateSeatActiveRequest,
- ) => {
-      return apiRequest<SeatActiveStateResponse>(
-      {url: `/api/v1/seats/${seatId}/active`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: updateSeatActiveRequest
-    },
-      );
-    }
-  export const getManagedSeats = (
-    params: GetManagedSeatsParams,
- ) => {
-      return apiRequest<SeatResponse[]>(
-      {url: `/api/v1/seats/management`, method: 'GET',
-        params
-    },
-      );
-    }
-  export type GetSeatByIdResult = NonNullable<Awaited<ReturnType<typeof getSeatById>>>
+export const getSeatById = (seatId: string) => {
+  return apiRequest<SeatResponse>({ url: `/api/v1/seats/${seatId}`, method: 'GET' })
+}
+export const updateSeat = (seatId: string, updateSeatRequest: UpdateSeatRequest) => {
+  return apiRequest<SeatResponse>({
+    url: `/api/v1/seats/${seatId}`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateSeatRequest,
+  })
+}
+export const getActiveSeats = (params: GetActiveSeatsParams) => {
+  return apiRequest<SeatResponse[]>({ url: `/api/v1/seats`, method: 'GET', params })
+}
+export const createSeat = (createSeatRequest: CreateSeatRequest, params: CreateSeatParams) => {
+  return apiRequest<SeatResponse>({
+    url: `/api/v1/seats`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createSeatRequest,
+    params,
+  })
+}
+export const createSeatRange = (
+  createSeatRangeRequest: CreateSeatRangeRequest,
+  params: CreateSeatRangeParams,
+) => {
+  return apiRequest<SeatResponse[]>({
+    url: `/api/v1/seats/range`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createSeatRangeRequest,
+    params,
+  })
+}
+export const updateSeatActiveState = (
+  seatId: string,
+  updateSeatActiveRequest: UpdateSeatActiveRequest,
+) => {
+  return apiRequest<SeatActiveStateResponse>({
+    url: `/api/v1/seats/${seatId}/active`,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateSeatActiveRequest,
+  })
+}
+export const getManagedSeats = (params: GetManagedSeatsParams) => {
+  return apiRequest<SeatResponse[]>({ url: `/api/v1/seats/management`, method: 'GET', params })
+}
+export type GetSeatByIdResult = NonNullable<Awaited<ReturnType<typeof getSeatById>>>
 export type UpdateSeatResult = NonNullable<Awaited<ReturnType<typeof updateSeat>>>
 export type GetActiveSeatsResult = NonNullable<Awaited<ReturnType<typeof getActiveSeats>>>
 export type CreateSeatResult = NonNullable<Awaited<ReturnType<typeof createSeat>>>
 export type CreateSeatRangeResult = NonNullable<Awaited<ReturnType<typeof createSeatRange>>>
-export type UpdateSeatActiveStateResult = NonNullable<Awaited<ReturnType<typeof updateSeatActiveState>>>
+export type UpdateSeatActiveStateResult = NonNullable<
+  Awaited<ReturnType<typeof updateSeatActiveState>>
+>
 export type GetManagedSeatsResult = NonNullable<Awaited<ReturnType<typeof getManagedSeats>>>

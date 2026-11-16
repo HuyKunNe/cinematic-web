@@ -5,17 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialAuditRecordResponseAction } from './financialAuditRecordResponseAction';
-import type { FinancialAuditRecordResponseActorType } from './financialAuditRecordResponseActorType';
+import type { FinancialAuditRecordResponseAction } from './financialAuditRecordResponseAction'
+import type { FinancialAuditRecordResponseActorType } from './financialAuditRecordResponseActorType'
 
 export interface FinancialAuditRecordResponse {
-  id?: string;
-  paymentId?: string;
-  action?: FinancialAuditRecordResponseAction;
-  actorType?: FinancialAuditRecordResponseActorType;
-  actorId?: string;
-  reason?: string;
-  metadata?: string;
-  correlationId?: string;
-  occurredAt?: string;
+  id?: string
+  paymentId?: string
+  action?: FinancialAuditRecordResponseAction
+  actorType?: FinancialAuditRecordResponseActorType
+  actorId?: string
+  reason?: string
+  metadata?: string
+  correlationId?: string
+  occurredAt?: string
 }

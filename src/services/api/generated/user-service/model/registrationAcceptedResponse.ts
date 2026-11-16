@@ -7,5 +7,5 @@
  */
 
 export interface RegistrationAcceptedResponse {
-  message?: string;
+  message?: string
 }

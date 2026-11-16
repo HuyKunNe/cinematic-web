@@ -27,6 +27,7 @@ const {
   showtimesQuery,
   roomsQuery,
   showtimes,
+  showtimeGroups,
   checkingId,
   navigationError,
   canBook,
@@ -48,6 +49,10 @@ function changeCinema(event: Event) {
     locationQuery.isError.value
   )
     return
+  if ((event.target as HTMLSelectElement).value === 'all') {
+    void updateFilters({ cinema: 'all' })
+    return
+  }
   const cinema = cinemaOptions.value.find(
     (item) => item.id === (event.target as HTMLSelectElement).value,
   )
@@ -96,7 +101,7 @@ function retryRooms() {
         <select
           v-if="selectedCity"
           class="lumiere-movie-cinema"
-          :value="selectedCinema?.id ?? ''"
+          :value="selectedCinema?.id ?? 'all'"
           aria-label="Chọn rạp chiếu"
           :disabled="
             !!checkingId ||
@@ -106,7 +111,7 @@ function retryRooms() {
           "
           @change="changeCinema"
         >
-          <option value="">Chọn rạp của bạn</option>
+          <option value="all">Tất cả rạp tại {{ selectedCity.name }}</option>
           <option v-for="cinema in cinemaOptions" :key="cinema.id" :value="cinema.id">
             {{ cinema.name }}
           </option>
@@ -131,7 +136,7 @@ function retryRooms() {
         <select
           v-model="selectedFormat"
           class="lumiere-movie-cinema"
-          :disabled="!!checkingId || updatingFilters || !selectedCinema"
+          :disabled="!!checkingId || updatingFilters || !selectedCity"
         >
           <option value="">Tất cả định dạng</option>
           <option v-for="format in formats" :key="format" :value="format">{{ format }}</option>
@@ -177,7 +182,7 @@ function retryRooms() {
     />
 
     <AppEmptyState
-      v-else-if="!selectedCinema"
+      v-else-if="!selectedCity"
       title="Chọn địa điểm xem phim"
       description="Chọn thành phố và rạp để xem các suất đang mở bán."
     />
@@ -191,15 +196,11 @@ function retryRooms() {
       Vui lòng chọn ngày hôm nay hoặc một ngày tiếp theo.
     </p>
 
-    <article v-else class="movie-showtimes__panel">
-      <header class="movie-showtimes__cinema">
-        <p class="movie-detail__eyebrow">{{ selectedCity?.name }}</p>
-        <h3>{{ selectedCinema.name }}</h3>
-        <p v-if="selectedCinema.address">{{ selectedCinema.address }}</p>
-      </header>
-
+    <div v-else class="movie-showtimes__results">
       <p
-        v-if="showtimesQuery.isPending.value || showtimesQuery.isFetching.value"
+        v-if="
+          (showtimesQuery.isPending.value || showtimesQuery.isFetching.value) && !showtimes.length
+        "
         id="movie-showtimes-feedback"
         class="movie-detail__notice"
         role="status"
@@ -208,7 +209,7 @@ function retryRooms() {
       </p>
 
       <AppErrorState
-        v-else-if="showtimesQuery.isError.value"
+        v-else-if="showtimesQuery.isError.value && !showtimes.length"
         title="Không thể tải suất chiếu"
         description="Vui lòng kiểm tra kết nối và thử lại."
         show-retry
@@ -232,6 +233,20 @@ function retryRooms() {
       </template>
 
       <template v-else>
+        <div v-if="showtimesQuery.isError.value" class="movie-showtimes__room-notice" role="alert">
+          <p>Một số rạp chưa tải được lịch chiếu. Các suất đã tải vẫn được hiển thị.</p>
+          <AppButton
+            variant="ghost"
+            size="sm"
+            :loading="showtimesQuery.isFetching.value"
+            :disabled="Boolean(checkingId)"
+            @click="retryShowtimes"
+            >Tải lại lịch</AppButton
+          >
+        </div>
+        <p v-else-if="showtimesQuery.isFetching.value" class="movie-detail__notice" role="status">
+          {{ checkingId ? 'Đang kiểm tra lại suất chiếu…' : 'Đang cập nhật lịch chiếu…' }}
+        </p>
         <div v-if="roomsQuery.isError.value" class="movie-showtimes__room-notice" role="status">
           <p>Chưa thể cập nhật loại phòng. Bạn vẫn có thể chọn suất theo giờ chiếu.</p>
 
@@ -246,25 +261,35 @@ function retryRooms() {
           </AppButton>
         </div>
 
-        <div class="movie-showtimes__list" aria-label="Các suất đang mở bán">
-          <button
-            v-for="showtime in showtimes"
-            :key="showtime.id"
-            class="movie-showtimes__slot"
-            type="button"
-            :disabled="!canBook"
-            @click="selectShowtime(showtime.id)"
-          >
-            <strong>{{ formatCinemaTime(showtime.startsAt) }}</strong>
-            <span>{{ roomCaption(showtime) }}</span>
-          </button>
-        </div>
-
+        <article
+          v-for="group in showtimeGroups"
+          :key="group.cinema.id"
+          class="movie-showtimes__panel"
+        >
+          <header class="movie-showtimes__cinema">
+            <p class="movie-detail__eyebrow">{{ group.cinema.city }}</p>
+            <h3>{{ group.cinema.name }}</h3>
+            <p v-if="group.cinema.address">{{ group.cinema.address }}</p>
+          </header>
+          <div class="movie-showtimes__list" aria-label="Các suất đang mở bán">
+            <button
+              v-for="showtime in group.slots"
+              :key="showtime.id"
+              class="movie-showtimes__slot"
+              type="button"
+              :disabled="!canBook"
+              @click="selectShowtime(showtime.id)"
+            >
+              <strong>{{ formatCinemaTime(showtime.startsAt) }}</strong>
+              <span>{{ roomCaption(showtime) }}</span>
+            </button>
+          </div>
+        </article>
         <p id="movie-showtimes-feedback" class="movie-detail__notice">
           Chọn giờ chiếu phù hợp để tiếp tục đặt vé.
         </p>
       </template>
-    </article>
+    </div>
 
     <p v-if="navigationError" class="movie-showtimes__error" role="alert">
       {{ navigationError }}

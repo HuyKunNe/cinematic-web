@@ -8,5 +8,5 @@
 
 export interface PublishPricingPolicyRequest {
   /** @minimum 0 */
-  expectedVersion: number;
+  expectedVersion: number
 }

@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SaveMovieScreeningVersionRequestProjectionTechnology = typeof SaveMovieScreeningVersionRequestProjectionTechnology[keyof typeof SaveMovieScreeningVersionRequestProjectionTechnology];
-
+export type SaveMovieScreeningVersionRequestProjectionTechnology =
+  (typeof SaveMovieScreeningVersionRequestProjectionTechnology)[keyof typeof SaveMovieScreeningVersionRequestProjectionTechnology]
 
 export const SaveMovieScreeningVersionRequestProjectionTechnology = {
   STANDARD: 'STANDARD',
   IMAX: 'IMAX',
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
-} as const;
+} as const

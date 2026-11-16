@@ -5,21 +5,21 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CinemaPricingPolicyVersionResponseDayGroup } from './cinemaPricingPolicyVersionResponseDayGroup';
-import type { CinemaPricingPolicyVersionResponseStatus } from './cinemaPricingPolicyVersionResponseStatus';
+import type { CinemaPricingPolicyVersionResponseDayGroup } from './cinemaPricingPolicyVersionResponseDayGroup'
+import type { CinemaPricingPolicyVersionResponseStatus } from './cinemaPricingPolicyVersionResponseStatus'
 
 export interface CinemaPricingPolicyVersionResponse {
-  id?: string;
-  policyId?: string;
-  cinemaIds?: string[];
-  revision?: number;
-  name?: string;
-  description?: string;
-  dayGroup?: CinemaPricingPolicyVersionResponseDayGroup;
-  status?: CinemaPricingPolicyVersionResponseStatus;
-  version?: number;
-  createdAt?: string;
-  updatedAt?: string;
-  publishedAt?: string;
-  publishedBy?: string;
+  id?: string
+  policyId?: string
+  cinemaIds?: string[]
+  revision?: number
+  name?: string
+  description?: string
+  dayGroup?: CinemaPricingPolicyVersionResponseDayGroup
+  status?: CinemaPricingPolicyVersionResponseStatus
+  version?: number
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
+  publishedBy?: string
 }

@@ -5,25 +5,25 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { GenreResponse } from './genreResponse';
-import type { MovieResponseAgeRating } from './movieResponseAgeRating';
-import type { MovieResponseStatus } from './movieResponseStatus';
-import type { MovieScreeningVersionResponse } from './movieScreeningVersionResponse';
+import type { GenreResponse } from './genreResponse'
+import type { MovieResponseAgeRating } from './movieResponseAgeRating'
+import type { MovieResponseStatus } from './movieResponseStatus'
+import type { MovieScreeningVersionResponse } from './movieScreeningVersionResponse'
 
 export interface MovieResponse {
-  id?: string;
-  title?: string;
-  description?: string;
-  durationMinutes?: number;
-  releaseDate?: string;
-  posterUrl?: string;
-  trailerUrl?: string;
-  status?: MovieResponseStatus;
-  genres?: GenreResponse[];
-  version?: number;
-  createdAt?: string;
-  updatedAt?: string;
-  backdropUrl?: string;
-  ageRating?: MovieResponseAgeRating;
-  screeningVersions?: MovieScreeningVersionResponse[];
+  id?: string
+  title?: string
+  description?: string
+  durationMinutes?: number
+  releaseDate?: string
+  posterUrl?: string
+  trailerUrl?: string
+  status?: MovieResponseStatus
+  genres?: GenreResponse[]
+  version?: number
+  createdAt?: string
+  updatedAt?: string
+  backdropUrl?: string
+  ageRating?: MovieResponseAgeRating
+  screeningVersions?: MovieScreeningVersionResponse[]
 }

@@ -5,17 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { UpdateShowtimeRequestStatus } from './updateShowtimeRequestStatus';
+import type { UpdateShowtimeRequestStatus } from './updateShowtimeRequestStatus'
 
 export interface UpdateShowtimeRequest {
-  startsAt: string;
-  endsAt: string;
-  status?: UpdateShowtimeRequestStatus;
+  startsAt: string
+  endsAt: string
+  status?: UpdateShowtimeRequestStatus
   /** @minimum 0 */
-  expectedVersion: number;
+  expectedVersion: number
   /**
-     * @minimum 0
-     * @maximum 120
-     */
-  breakMinutes: number;
+   * @minimum 0
+   * @maximum 120
+   */
+  breakMinutes: number
 }

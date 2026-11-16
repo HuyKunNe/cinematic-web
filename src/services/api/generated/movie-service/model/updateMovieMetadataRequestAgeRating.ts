@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type UpdateMovieMetadataRequestAgeRating = typeof UpdateMovieMetadataRequestAgeRating[keyof typeof UpdateMovieMetadataRequestAgeRating];
-
+export type UpdateMovieMetadataRequestAgeRating =
+  (typeof UpdateMovieMetadataRequestAgeRating)[keyof typeof UpdateMovieMetadataRequestAgeRating]
 
 export const UpdateMovieMetadataRequestAgeRating = {
   P: 'P',
@@ -15,4 +15,4 @@ export const UpdateMovieMetadataRequestAgeRating = {
   T13: 'T13',
   T16: 'T16',
   T18: 'T18',
-} as const;
+} as const

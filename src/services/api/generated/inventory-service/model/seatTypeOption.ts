@@ -5,11 +5,11 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { SeatTypeOptionSeatType } from './seatTypeOptionSeatType';
-import type { SeatTypeOptionUnit } from './seatTypeOptionUnit';
+import type { SeatTypeOptionSeatType } from './seatTypeOptionSeatType'
+import type { SeatTypeOptionUnit } from './seatTypeOptionUnit'
 
 export interface SeatTypeOption {
-  seatType?: SeatTypeOptionSeatType;
-  unit?: SeatTypeOptionUnit;
-  capacity?: number;
+  seatType?: SeatTypeOptionSeatType
+  unit?: SeatTypeOptionUnit
+  capacity?: number
 }

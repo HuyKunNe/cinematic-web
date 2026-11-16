@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ShowtimeSeatMapSeatResponseSeatType = typeof ShowtimeSeatMapSeatResponseSeatType[keyof typeof ShowtimeSeatMapSeatResponseSeatType];
-
+export type ShowtimeSeatMapSeatResponseSeatType =
+  (typeof ShowtimeSeatMapSeatResponseSeatType)[keyof typeof ShowtimeSeatMapSeatResponseSeatType]
 
 export const ShowtimeSeatMapSeatResponseSeatType = {
   STANDARD: 'STANDARD',
   VIP: 'VIP',
   COUPLE: 'COUPLE',
   ACCESSIBLE: 'ACCESSIBLE',
-} as const;
+} as const

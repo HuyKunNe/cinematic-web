@@ -6,8 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type RoomResponseRoomType = typeof RoomResponseRoomType[keyof typeof RoomResponseRoomType];
-
+export type RoomResponseRoomType = (typeof RoomResponseRoomType)[keyof typeof RoomResponseRoomType]
 
 export const RoomResponseRoomType = {
   STANDARD: 'STANDARD',
@@ -15,4 +14,4 @@ export const RoomResponseRoomType = {
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
   VIP: 'VIP',
-} as const;
+} as const

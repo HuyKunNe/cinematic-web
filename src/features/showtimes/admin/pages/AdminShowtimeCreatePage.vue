@@ -116,9 +116,14 @@ const pricing = useAdminShowtimePricing({
 })
 const holiday = pricing.holiday
 const pricingDayLabel = pricing.dayLabel
-const pricingHint = computed(() => pricingVersions.isError.value
-  ? showtimeErrorMessage(pricingVersions.error.value, 'Không thể xác định bảng giá tự động. Hãy tải lại lựa chọn.')
-  : pricing.hint.value)
+const pricingHint = computed(() =>
+  pricingVersions.isError.value
+    ? showtimeErrorMessage(
+        pricingVersions.error.value,
+        'Không thể xác định bảng giá tự động. Hãy tải lại lựa chọn.',
+      )
+    : pricing.hint.value,
+)
 const selectedPricingVersion = computed(() => {
   const assigned = pricing.assignedVersion.value
   return assigned?.id === form.pricingPolicyVersionId ? assigned : undefined
@@ -354,12 +359,7 @@ const choiceFields = computed(() =>
       empty: versionEmptyMessage.value,
     },
   ].sort((first, second) => {
-    const order = [
-      'cinemaId',
-      'roomId',
-      'movieId',
-      'movieScreeningVersionId',
-    ]
+    const order = ['cinemaId', 'roomId', 'movieId', 'movieScreeningVersionId']
     return order.indexOf(first.key) - order.indexOf(second.key)
   }),
 )
@@ -408,7 +408,9 @@ watch(
 )
 
 const dirty = computed(
-  () => created.value === null && (JSON.stringify(form) !== initialKey || slots.value.length > 1 || holiday.value),
+  () =>
+    created.value === null &&
+    (JSON.stringify(form) !== initialKey || slots.value.length > 1 || holiday.value),
 )
 
 function preventUnload(event: BeforeUnloadEvent): void {
@@ -709,14 +711,22 @@ async function submit(): Promise<void> {
                   <span class="showtime-create__badge">{{ pricingDayLabel }}</span>
                 </div>
                 <label class="showtime-create__holiday">
-                  <input v-model="holiday" type="checkbox" :disabled="locked || !form.date" aria-describedby="showtime-holiday-help" />
+                  <input
+                    v-model="holiday"
+                    type="checkbox"
+                    :disabled="locked || !form.date"
+                    aria-describedby="showtime-holiday-help"
+                  />
                   Ngày lễ/Tết
                 </label>
                 <p id="showtime-holiday-help" class="showtime-create__hint">
-                  Thứ Sáu, Thứ Bảy, Chủ nhật áp dụng bảng giá cuối tuần; Thứ Hai–Thứ Năm áp dụng bảng giá ngày thường. Ngày lễ/Tết được ưu tiên khi đánh dấu.
+                  Thứ Sáu, Thứ Bảy, Chủ nhật áp dụng bảng giá cuối tuần; Thứ Hai–Thứ Năm áp dụng
+                  bảng giá ngày thường. Ngày lễ/Tết được ưu tiên khi đánh dấu.
                 </p>
                 <p class="showtime-create__hint" role="status">
-                  <strong v-if="selectedPricingVersion">Bảng giá tự động: {{ showtimePricingVersionLabel(selectedPricingVersion) }}. </strong>
+                  <strong v-if="selectedPricingVersion"
+                    >Bảng giá tự động: {{ showtimePricingVersionLabel(selectedPricingVersion) }}.
+                  </strong>
                   {{ pricingHint }}
                 </p>
               </div>
@@ -834,7 +844,9 @@ async function submit(): Promise<void> {
                 {{
                   created?.pricingPolicyVersionId
                     ? 'Đã gán bảng giá'
-                    : selectedPricingVersion ? 'Tự động gán bảng giá' : 'Chưa xác định bảng giá'
+                    : selectedPricingVersion
+                      ? 'Tự động gán bảng giá'
+                      : 'Chưa xác định bảng giá'
                 }}
               </span>
             </header>

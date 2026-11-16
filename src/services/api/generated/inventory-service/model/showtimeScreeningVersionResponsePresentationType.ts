@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ShowtimeScreeningVersionResponsePresentationType = typeof ShowtimeScreeningVersionResponsePresentationType[keyof typeof ShowtimeScreeningVersionResponsePresentationType];
-
+export type ShowtimeScreeningVersionResponsePresentationType =
+  (typeof ShowtimeScreeningVersionResponsePresentationType)[keyof typeof ShowtimeScreeningVersionResponsePresentationType]
 
 export const ShowtimeScreeningVersionResponsePresentationType = {
   SUBTITLED: 'SUBTITLED',
   DUBBED: 'DUBBED',
   NO_SUBTITLES: 'NO_SUBTITLES',
-} as const;
+} as const

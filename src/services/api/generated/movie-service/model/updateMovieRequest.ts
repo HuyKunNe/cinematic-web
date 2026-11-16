@@ -5,36 +5,36 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { SaveMovieScreeningVersionRequest } from './saveMovieScreeningVersionRequest';
-import type { UpdateMovieRequestStatus } from './updateMovieRequestStatus';
+import type { SaveMovieScreeningVersionRequest } from './saveMovieScreeningVersionRequest'
+import type { UpdateMovieRequestStatus } from './updateMovieRequestStatus'
 
 export interface UpdateMovieRequest {
   /**
-     * @minLength 0
-     * @maxLength 255
-     */
-  title: string;
+   * @minLength 0
+   * @maxLength 255
+   */
+  title: string
   /**
-     * @minLength 0
-     * @maxLength 5000
-     */
-  description?: string;
+   * @minLength 0
+   * @maxLength 5000
+   */
+  description?: string
   /** @minimum 1 */
-  durationMinutes: number;
-  releaseDate?: string;
+  durationMinutes: number
+  releaseDate?: string
   /**
-     * @minLength 0
-     * @maxLength 500
-     */
-  posterUrl?: string;
+   * @minLength 0
+   * @maxLength 500
+   */
+  posterUrl?: string
   /**
-     * @minLength 0
-     * @maxLength 500
-     */
-  trailerUrl?: string;
-  status: UpdateMovieRequestStatus;
+   * @minLength 0
+   * @maxLength 500
+   */
+  trailerUrl?: string
+  status: UpdateMovieRequestStatus
   /** @minItems 1 */
-  genreIds: string[];
+  genreIds: string[]
   /** @minItems 1 */
-  screeningVersions: SaveMovieScreeningVersionRequest[];
+  screeningVersions: SaveMovieScreeningVersionRequest[]
 }

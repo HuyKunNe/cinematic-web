@@ -5,10 +5,10 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { PublishedRoomMatrixResponse } from './publishedRoomMatrixResponse';
-import type { RoomLayoutResponse } from './roomLayoutResponse';
+import type { PublishedRoomMatrixResponse } from './publishedRoomMatrixResponse'
+import type { RoomLayoutResponse } from './roomLayoutResponse'
 
 export interface RoomPublishedSeatMapResponse {
-  layout?: RoomLayoutResponse;
-  matrix?: PublishedRoomMatrixResponse;
+  layout?: RoomLayoutResponse
+  matrix?: PublishedRoomMatrixResponse
 }

@@ -7,12 +7,12 @@
  */
 
 export interface ReplaceCinemaAmenitiesRequest {
-  expectedVersion: number;
+  expectedVersion: number
   /**
-     * @minItems 0
-     * @maxItems 30
-     * @items.minLength 0
-     * @items.maxLength 100
-     */
-  amenities: string[];
+   * @minItems 0
+   * @maxItems 30
+   * @items.minLength 0
+   * @items.maxLength 100
+   */
+  amenities: string[]
 }

@@ -5,33 +5,28 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  CinemaAmenitiesResponse,
-  ReplaceCinemaAmenitiesRequest
-} from '../model';
+import type { CinemaAmenitiesResponse, ReplaceCinemaAmenitiesRequest } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const getCinemaAmenities = (
-    cinemaId: string,
- ) => {
-      return apiRequest<CinemaAmenitiesResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/amenities`, method: 'GET'
-    },
-      );
-    }
-  export const replaceCinemaAmenities = (
-    cinemaId: string,
-    replaceCinemaAmenitiesRequest: ReplaceCinemaAmenitiesRequest,
- ) => {
-      return apiRequest<CinemaAmenitiesResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/amenities`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: replaceCinemaAmenitiesRequest
-    },
-      );
-    }
-  export type GetCinemaAmenitiesResult = NonNullable<Awaited<ReturnType<typeof getCinemaAmenities>>>
-export type ReplaceCinemaAmenitiesResult = NonNullable<Awaited<ReturnType<typeof replaceCinemaAmenities>>>
+export const getCinemaAmenities = (cinemaId: string) => {
+  return apiRequest<CinemaAmenitiesResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/amenities`,
+    method: 'GET',
+  })
+}
+export const replaceCinemaAmenities = (
+  cinemaId: string,
+  replaceCinemaAmenitiesRequest: ReplaceCinemaAmenitiesRequest,
+) => {
+  return apiRequest<CinemaAmenitiesResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/amenities`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: replaceCinemaAmenitiesRequest,
+  })
+}
+export type GetCinemaAmenitiesResult = NonNullable<Awaited<ReturnType<typeof getCinemaAmenities>>>
+export type ReplaceCinemaAmenitiesResult = NonNullable<
+  Awaited<ReturnType<typeof replaceCinemaAmenities>>
+>

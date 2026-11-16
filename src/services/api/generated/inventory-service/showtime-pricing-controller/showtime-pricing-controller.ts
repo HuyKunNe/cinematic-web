@@ -5,24 +5,21 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  ReplaceShowtimePricingRequest,
-  ShowtimeResponse
-} from '../model';
+import type { ReplaceShowtimePricingRequest, ShowtimeResponse } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const replaceShowtimePricing = (
-    showtimeId: string,
-    replaceShowtimePricingRequest: ReplaceShowtimePricingRequest,
- ) => {
-      return apiRequest<ShowtimeResponse>(
-      {url: `/api/v1/showtimes/${showtimeId}/pricing`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: replaceShowtimePricingRequest
-    },
-      );
-    }
-  export type ReplaceShowtimePricingResult = NonNullable<Awaited<ReturnType<typeof replaceShowtimePricing>>>
+export const replaceShowtimePricing = (
+  showtimeId: string,
+  replaceShowtimePricingRequest: ReplaceShowtimePricingRequest,
+) => {
+  return apiRequest<ShowtimeResponse>({
+    url: `/api/v1/showtimes/${showtimeId}/pricing`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: replaceShowtimePricingRequest,
+  })
+}
+export type ReplaceShowtimePricingResult = NonNullable<
+  Awaited<ReturnType<typeof replaceShowtimePricing>>
+>

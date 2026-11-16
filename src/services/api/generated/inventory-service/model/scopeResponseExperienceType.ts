@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ScopeResponseExperienceType = typeof ScopeResponseExperienceType[keyof typeof ScopeResponseExperienceType];
-
+export type ScopeResponseExperienceType =
+  (typeof ScopeResponseExperienceType)[keyof typeof ScopeResponseExperienceType]
 
 export const ScopeResponseExperienceType = {
   STANDARD: 'STANDARD',
@@ -15,4 +15,4 @@ export const ScopeResponseExperienceType = {
   IMAX: 'IMAX',
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
-} as const;
+} as const

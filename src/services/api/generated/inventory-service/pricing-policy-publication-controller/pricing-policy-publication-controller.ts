@@ -8,35 +8,37 @@
 import type {
   CinemaPricingPolicyVersionResponse,
   FareMatrixValidationResponse,
-  PublishPricingPolicyRequest
-} from '../model';
+  PublishPricingPolicyRequest,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const publishPricingPolicyVersion = (
-    cinemaId: string,
-    policyId: string,
-    versionId: string,
-    publishPricingPolicyRequest: PublishPricingPolicyRequest,
- ) => {
-      return apiRequest<CinemaPricingPolicyVersionResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/publish`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: publishPricingPolicyRequest
-    },
-      );
-    }
-  export const validatePricingPolicyFareMatrix = (
-    cinemaId: string,
-    policyId: string,
-    versionId: string,
- ) => {
-      return apiRequest<FareMatrixValidationResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/fare-matrix/validation`, method: 'GET'
-    },
-      );
-    }
-  export type PublishPricingPolicyVersionResult = NonNullable<Awaited<ReturnType<typeof publishPricingPolicyVersion>>>
-export type ValidatePricingPolicyFareMatrixResult = NonNullable<Awaited<ReturnType<typeof validatePricingPolicyFareMatrix>>>
+export const publishPricingPolicyVersion = (
+  cinemaId: string,
+  policyId: string,
+  versionId: string,
+  publishPricingPolicyRequest: PublishPricingPolicyRequest,
+) => {
+  return apiRequest<CinemaPricingPolicyVersionResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/publish`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: publishPricingPolicyRequest,
+  })
+}
+export const validatePricingPolicyFareMatrix = (
+  cinemaId: string,
+  policyId: string,
+  versionId: string,
+) => {
+  return apiRequest<FareMatrixValidationResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${versionId}/fare-matrix/validation`,
+    method: 'GET',
+  })
+}
+export type PublishPricingPolicyVersionResult = NonNullable<
+  Awaited<ReturnType<typeof publishPricingPolicyVersion>>
+>
+export type ValidatePricingPolicyFareMatrixResult = NonNullable<
+  Awaited<ReturnType<typeof validatePricingPolicyFareMatrix>>
+>

@@ -107,7 +107,8 @@
   align-items: center;
 }
 
-[data-reference='admin-showtime-form'].showtime-batch :is(.showtime-create__panel-heading, .showtime-create__panel-body) {
+[data-reference='admin-showtime-form'].showtime-batch
+  :is(.showtime-create__panel-heading, .showtime-create__panel-body) {
   padding: var(--showtime-compact-padding);
 }
 
@@ -217,7 +218,9 @@
   font-size: var(--font-size-sm);
 }
 
-[data-reference='admin-showtime-form'] :is(.showtime-batch__empty, .showtime-batch__add-time, .showtime-batch__status) svg {
+[data-reference='admin-showtime-form']
+  :is(.showtime-batch__empty, .showtime-batch__add-time, .showtime-batch__status)
+  svg {
   width: var(--showtime-common-icon-size);
   height: var(--showtime-common-icon-size);
   flex-shrink: 0;
@@ -487,7 +490,14 @@
   font-weight: var(--font-weight-semibold);
 }
 
-[data-reference='admin-showtime-form'] :is(.showtime-create__slots-heading, .showtime-create__add-slot, .showtime-create__slot-remove, .admin-reference__field) svg {
+[data-reference='admin-showtime-form']
+  :is(
+    .showtime-create__slots-heading,
+    .showtime-create__add-slot,
+    .showtime-create__slot-remove,
+    .admin-reference__field
+  )
+  svg {
   width: var(--icon-size-sm);
   height: var(--icon-size-sm);
 }
@@ -535,7 +545,8 @@
   font-weight: var(--font-weight-semibold);
 }
 
-[data-reference='admin-showtime-form'] :is(.showtime-create__slot-end, .showtime-create__slot-ready) {
+[data-reference='admin-showtime-form']
+  :is(.showtime-create__slot-end, .showtime-create__slot-ready) {
   display: grid;
   align-content: center;
   gap: var(--space-2);
@@ -544,7 +555,9 @@
   font-size: var(--font-size-xs);
 }
 
-[data-reference='admin-showtime-form'] :is(.showtime-create__slot-end, .showtime-create__slot-ready) strong {
+[data-reference='admin-showtime-form']
+  :is(.showtime-create__slot-end, .showtime-create__slot-ready)
+  strong {
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -790,7 +803,8 @@
     grid-row: 2;
   }
 
-  [data-reference='admin-showtime-form'] :is(.showtime-create__slot-end, .showtime-create__slot-ready) {
+  [data-reference='admin-showtime-form']
+    :is(.showtime-create__slot-end, .showtime-create__slot-ready) {
     grid-column: 1 / -1;
     display: flex;
     justify-content: space-between;

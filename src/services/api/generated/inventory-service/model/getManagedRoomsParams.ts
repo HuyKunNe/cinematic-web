@@ -7,6 +7,6 @@
  */
 
 export type GetManagedRoomsParams = {
-cinemaId: string;
-active?: boolean;
-};
+  cinemaId: string
+  active?: boolean
+}

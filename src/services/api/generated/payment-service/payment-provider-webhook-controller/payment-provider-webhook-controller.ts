@@ -5,19 +5,19 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const handlePaymentProviderWebhook = (
-    provider: string,
-    handlePaymentProviderWebhookBody: string,
- ) => {
-      return apiRequest<string>(
-      {url: `/api/v1/payments/webhooks/${provider}`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: handlePaymentProviderWebhookBody
-    },
-      );
-    }
-  export type HandlePaymentProviderWebhookResult = NonNullable<Awaited<ReturnType<typeof handlePaymentProviderWebhook>>>
+export const handlePaymentProviderWebhook = (
+  provider: string,
+  handlePaymentProviderWebhookBody: string,
+) => {
+  return apiRequest<string>({
+    url: `/api/v1/payments/webhooks/${provider}`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: handlePaymentProviderWebhookBody,
+  })
+}
+export type HandlePaymentProviderWebhookResult = NonNullable<
+  Awaited<ReturnType<typeof handlePaymentProviderWebhook>>
+>

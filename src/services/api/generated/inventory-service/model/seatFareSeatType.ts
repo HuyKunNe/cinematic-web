@@ -6,12 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SeatFareSeatType = typeof SeatFareSeatType[keyof typeof SeatFareSeatType];
-
+export type SeatFareSeatType = (typeof SeatFareSeatType)[keyof typeof SeatFareSeatType]
 
 export const SeatFareSeatType = {
   STANDARD: 'STANDARD',
   VIP: 'VIP',
   COUPLE: 'COUPLE',
   ACCESSIBLE: 'ACCESSIBLE',
-} as const;
+} as const

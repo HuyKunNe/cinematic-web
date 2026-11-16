@@ -5,26 +5,23 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  CinemaPricingPolicyVersionResponse,
-  CreatePricingPolicyDraftRequest
-} from '../model';
+import type { CinemaPricingPolicyVersionResponse, CreatePricingPolicyDraftRequest } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const createPricingPolicyDraftFromPublished = (
-    cinemaId: string,
-    policyId: string,
-    sourceVersionId: string,
-    createPricingPolicyDraftRequest: CreatePricingPolicyDraftRequest,
- ) => {
-      return apiRequest<CinemaPricingPolicyVersionResponse>(
-      {url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${sourceVersionId}/draft`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createPricingPolicyDraftRequest
-    },
-      );
-    }
-  export type CreatePricingPolicyDraftFromPublishedResult = NonNullable<Awaited<ReturnType<typeof createPricingPolicyDraftFromPublished>>>
+export const createPricingPolicyDraftFromPublished = (
+  cinemaId: string,
+  policyId: string,
+  sourceVersionId: string,
+  createPricingPolicyDraftRequest: CreatePricingPolicyDraftRequest,
+) => {
+  return apiRequest<CinemaPricingPolicyVersionResponse>({
+    url: `/api/v1/cinemas/${cinemaId}/pricing-policies/${policyId}/versions/${sourceVersionId}/draft`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createPricingPolicyDraftRequest,
+  })
+}
+export type CreatePricingPolicyDraftFromPublishedResult = NonNullable<
+  Awaited<ReturnType<typeof createPricingPolicyDraftFromPublished>>
+>

@@ -7,9 +7,9 @@
  */
 
 export interface TimeBandResponse {
-  id?: string;
-  name?: string;
-  startMinute?: number;
-  endMinute?: number;
-  sortOrder?: number;
+  id?: string
+  name?: string
+  startMinute?: number
+  endMinute?: number
+  sortOrder?: number
 }

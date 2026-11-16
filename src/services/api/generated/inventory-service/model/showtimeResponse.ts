@@ -5,26 +5,26 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ShowtimeResponseStatus } from './showtimeResponseStatus';
-import type { ShowtimeSchedulingResponse } from './showtimeSchedulingResponse';
-import type { ShowtimeScreeningVersionResponse } from './showtimeScreeningVersionResponse';
+import type { ShowtimeResponseStatus } from './showtimeResponseStatus'
+import type { ShowtimeSchedulingResponse } from './showtimeSchedulingResponse'
+import type { ShowtimeScreeningVersionResponse } from './showtimeScreeningVersionResponse'
 
 export interface ShowtimeResponse {
-  id?: string;
-  movieId?: string;
-  roomId?: string;
-  roomName?: string;
-  cinemaId?: string;
-  cinemaName?: string;
-  startsAt?: string;
-  endsAt?: string;
-  status?: ShowtimeResponseStatus;
-  createdAt?: string;
-  updatedAt?: string;
-  roomLayoutId?: string;
-  screeningVersion?: ShowtimeScreeningVersionResponse;
-  scheduling?: ShowtimeSchedulingResponse;
-  version?: number;
-  pricingPolicyId?: string;
-  pricingPolicyVersionId?: string;
+  id?: string
+  movieId?: string
+  roomId?: string
+  roomName?: string
+  cinemaId?: string
+  cinemaName?: string
+  startsAt?: string
+  endsAt?: string
+  status?: ShowtimeResponseStatus
+  createdAt?: string
+  updatedAt?: string
+  roomLayoutId?: string
+  screeningVersion?: ShowtimeScreeningVersionResponse
+  scheduling?: ShowtimeSchedulingResponse
+  version?: number
+  pricingPolicyId?: string
+  pricingPolicyVersionId?: string
 }

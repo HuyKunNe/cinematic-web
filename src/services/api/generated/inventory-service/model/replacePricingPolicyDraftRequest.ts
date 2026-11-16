@@ -5,22 +5,22 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { ReplacePricingPolicyDraftRequestDayGroup } from './replacePricingPolicyDraftRequestDayGroup';
+import type { ReplacePricingPolicyDraftRequestDayGroup } from './replacePricingPolicyDraftRequestDayGroup'
 
 export interface ReplacePricingPolicyDraftRequest {
   /** @minimum 0 */
-  expectedVersion: number;
+  expectedVersion: number
   /**
-     * @minLength 0
-     * @maxLength 120
-     */
-  name: string;
+   * @minLength 0
+   * @maxLength 120
+   */
+  name: string
   /**
-     * @minLength 0
-     * @maxLength 1000
-     */
-  description?: string;
-  dayGroup: ReplacePricingPolicyDraftRequestDayGroup;
+   * @minLength 0
+   * @maxLength 1000
+   */
+  description?: string
+  dayGroup: ReplacePricingPolicyDraftRequestDayGroup
   /** @minItems 1 */
-  cinemaIds: string[];
+  cinemaIds: string[]
 }

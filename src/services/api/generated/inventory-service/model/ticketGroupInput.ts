@@ -7,18 +7,18 @@
  */
 
 export interface TicketGroupInput {
-  id?: string;
+  id?: string
   /**
-     * @minLength 0
-     * @maxLength 120
-     */
-  name: string;
+   * @minLength 0
+   * @maxLength 120
+   */
+  name: string
   /**
-     * @minLength 0
-     * @maxLength 1000
-     */
-  eligibilityDescription?: string;
-  defaultGroup: boolean;
+   * @minLength 0
+   * @maxLength 1000
+   */
+  eligibilityDescription?: string
+  defaultGroup: boolean
   /** @minimum 0 */
-  sortOrder: number;
+  sortOrder: number
 }

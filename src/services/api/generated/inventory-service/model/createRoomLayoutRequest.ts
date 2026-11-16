@@ -5,13 +5,13 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { RoomLayoutMatrixInput } from './roomLayoutMatrixInput';
+import type { RoomLayoutMatrixInput } from './roomLayoutMatrixInput'
 
 export interface CreateRoomLayoutRequest {
-  roomId: string;
+  roomId: string
   /** @minimum 0 */
-  canvasWidth?: number;
+  canvasWidth?: number
   /** @minimum 0 */
-  canvasHeight?: number;
-  matrix?: RoomLayoutMatrixInput;
+  canvasHeight?: number
+  matrix?: RoomLayoutMatrixInput
 }

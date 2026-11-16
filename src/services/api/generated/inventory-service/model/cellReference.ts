@@ -5,14 +5,14 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CellReferenceContentFormat } from './cellReferenceContentFormat';
-import type { CellReferenceExperienceType } from './cellReferenceExperienceType';
-import type { CellReferenceSeatType } from './cellReferenceSeatType';
+import type { CellReferenceContentFormat } from './cellReferenceContentFormat'
+import type { CellReferenceExperienceType } from './cellReferenceExperienceType'
+import type { CellReferenceSeatType } from './cellReferenceSeatType'
 
 export interface CellReference {
-  experienceType?: CellReferenceExperienceType;
-  contentFormat?: CellReferenceContentFormat;
-  timeBandId?: string;
-  ticketGroupId?: string;
-  seatType?: CellReferenceSeatType;
+  experienceType?: CellReferenceExperienceType
+  contentFormat?: CellReferenceContentFormat
+  timeBandId?: string
+  ticketGroupId?: string
+  seatType?: CellReferenceSeatType
 }

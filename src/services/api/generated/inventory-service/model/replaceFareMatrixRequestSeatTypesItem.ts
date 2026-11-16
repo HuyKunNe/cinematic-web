@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ReplaceFareMatrixRequestSeatTypesItem = typeof ReplaceFareMatrixRequestSeatTypesItem[keyof typeof ReplaceFareMatrixRequestSeatTypesItem];
-
+export type ReplaceFareMatrixRequestSeatTypesItem =
+  (typeof ReplaceFareMatrixRequestSeatTypesItem)[keyof typeof ReplaceFareMatrixRequestSeatTypesItem]
 
 export const ReplaceFareMatrixRequestSeatTypesItem = {
   STANDARD: 'STANDARD',
   VIP: 'VIP',
   COUPLE: 'COUPLE',
   ACCESSIBLE: 'ACCESSIBLE',
-} as const;
+} as const

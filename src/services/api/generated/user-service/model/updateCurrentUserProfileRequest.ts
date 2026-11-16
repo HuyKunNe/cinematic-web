@@ -8,18 +8,18 @@
 
 export interface UpdateCurrentUserProfileRequest {
   /**
-     * @minLength 0
-     * @maxLength 100
-     */
-  firstName?: string;
+   * @minLength 0
+   * @maxLength 100
+   */
+  firstName?: string
   /**
-     * @minLength 0
-     * @maxLength 100
-     */
-  lastName?: string;
+   * @minLength 0
+   * @maxLength 100
+   */
+  lastName?: string
   /**
-     * @minLength 0
-     * @maxLength 32
-     */
-  phoneNumber?: string;
+   * @minLength 0
+   * @maxLength 32
+   */
+  phoneNumber?: string
 }

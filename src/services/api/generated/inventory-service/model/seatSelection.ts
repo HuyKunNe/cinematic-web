@@ -8,9 +8,9 @@
 
 export interface SeatSelection {
   /**
-     * @minLength 0
-     * @maxLength 20
-     */
-  seatNumber: string;
-  ticketGroupId?: string;
+   * @minLength 0
+   * @maxLength 20
+   */
+  seatNumber: string
+  ticketGroupId?: string
 }

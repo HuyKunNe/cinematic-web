@@ -7,10 +7,10 @@
  */
 
 export interface GenreResponse {
-  id?: string;
-  name?: string;
-  description?: string;
-  version?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  id?: string
+  name?: string
+  description?: string
+  version?: number
+  createdAt?: string
+  updatedAt?: string
 }

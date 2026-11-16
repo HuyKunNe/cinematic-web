@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type BookingResponsePaymentProvider = typeof BookingResponsePaymentProvider[keyof typeof BookingResponsePaymentProvider];
-
+export type BookingResponsePaymentProvider =
+  (typeof BookingResponsePaymentProvider)[keyof typeof BookingResponsePaymentProvider]
 
 export const BookingResponsePaymentProvider = {
   VNPAY: 'VNPAY',
   MOMO: 'MOMO',
-} as const;
+} as const

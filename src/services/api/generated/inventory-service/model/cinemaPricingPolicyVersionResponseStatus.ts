@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CinemaPricingPolicyVersionResponseStatus = typeof CinemaPricingPolicyVersionResponseStatus[keyof typeof CinemaPricingPolicyVersionResponseStatus];
-
+export type CinemaPricingPolicyVersionResponseStatus =
+  (typeof CinemaPricingPolicyVersionResponseStatus)[keyof typeof CinemaPricingPolicyVersionResponseStatus]
 
 export const CinemaPricingPolicyVersionResponseStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED',
   RETIRED: 'RETIRED',
-} as const;
+} as const

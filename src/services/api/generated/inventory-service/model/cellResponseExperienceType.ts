@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CellResponseExperienceType = typeof CellResponseExperienceType[keyof typeof CellResponseExperienceType];
-
+export type CellResponseExperienceType =
+  (typeof CellResponseExperienceType)[keyof typeof CellResponseExperienceType]
 
 export const CellResponseExperienceType = {
   STANDARD: 'STANDARD',
@@ -15,4 +15,4 @@ export const CellResponseExperienceType = {
   IMAX: 'IMAX',
   FOUR_DX: 'FOUR_DX',
   SCREEN_X: 'SCREEN_X',
-} as const;
+} as const

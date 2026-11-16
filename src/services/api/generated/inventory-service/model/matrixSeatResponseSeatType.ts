@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type MatrixSeatResponseSeatType = typeof MatrixSeatResponseSeatType[keyof typeof MatrixSeatResponseSeatType];
-
+export type MatrixSeatResponseSeatType =
+  (typeof MatrixSeatResponseSeatType)[keyof typeof MatrixSeatResponseSeatType]
 
 export const MatrixSeatResponseSeatType = {
   STANDARD: 'STANDARD',
   VIP: 'VIP',
   COUPLE: 'COUPLE',
   ACCESSIBLE: 'ACCESSIBLE',
-} as const;
+} as const

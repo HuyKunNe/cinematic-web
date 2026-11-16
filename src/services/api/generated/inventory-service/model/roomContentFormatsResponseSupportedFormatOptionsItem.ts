@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type RoomContentFormatsResponseSupportedFormatOptionsItem = typeof RoomContentFormatsResponseSupportedFormatOptionsItem[keyof typeof RoomContentFormatsResponseSupportedFormatOptionsItem];
-
+export type RoomContentFormatsResponseSupportedFormatOptionsItem =
+  (typeof RoomContentFormatsResponseSupportedFormatOptionsItem)[keyof typeof RoomContentFormatsResponseSupportedFormatOptionsItem]
 
 export const RoomContentFormatsResponseSupportedFormatOptionsItem = {
   '2D': '2D',
   '3D': '3D',
-} as const;
+} as const

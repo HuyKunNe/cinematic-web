@@ -111,9 +111,7 @@ export type AdminMovieScreeningRow = z.infer<typeof screeningRowSchema>
 let nextRowKey = 0
 
 export function createAdminMovieScreeningRow(
-  selection: Partial<
-    Pick<AdminMovieScreeningRow, 'contentFormat' | 'projectionTechnology'>
-  > = {},
+  selection: Partial<Pick<AdminMovieScreeningRow, 'contentFormat' | 'projectionTechnology'>> = {},
 ): AdminMovieScreeningRow {
   nextRowKey += 1
 

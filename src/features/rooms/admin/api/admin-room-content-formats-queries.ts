@@ -1,9 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { getRoomContentFormats } from '@/services/api/generated/inventory-service/room-content-formats-controller/room-content-formats-controller'
-import type {
-  RoomContentFormatsResponse,
-} from '@/services/api/generated/inventory-service/model'
+import type { RoomContentFormatsResponse } from '@/services/api/generated/inventory-service/model'
 import type { ApiError } from '@/services/http/api-error'
 
 export const adminRoomContentFormatKeys = {

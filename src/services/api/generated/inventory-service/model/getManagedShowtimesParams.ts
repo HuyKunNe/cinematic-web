@@ -5,15 +5,15 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { GetManagedShowtimesStatus } from './getManagedShowtimesStatus';
+import type { GetManagedShowtimesStatus } from './getManagedShowtimesStatus'
 
 export type GetManagedShowtimesParams = {
-from: string;
-to: string;
-cinemaId?: string;
-movieId?: string;
-roomId?: string;
-status?: GetManagedShowtimesStatus;
-page?: number;
-size?: number;
-};
+  from: string
+  to: string
+  cinemaId?: string
+  movieId?: string
+  roomId?: string
+  status?: GetManagedShowtimesStatus
+  page?: number
+  size?: number
+}

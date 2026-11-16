@@ -5,62 +5,36 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type {
-  CreateGenreRequest,
-  GenreResponse,
-  UpdateGenreRequest
-} from '../model';
+import type { CreateGenreRequest, GenreResponse, UpdateGenreRequest } from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const findGenreById = (
-    id: string,
- ) => {
-      return apiRequest<GenreResponse>(
-      {url: `/api/v1/genres/${id}`, method: 'GET'
-    },
-      );
-    }
-  export const updateGenre = (
-    id: string,
-    updateGenreRequest: UpdateGenreRequest,
- ) => {
-      return apiRequest<GenreResponse>(
-      {url: `/api/v1/genres/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateGenreRequest
-    },
-      );
-    }
-  export const deleteGenre = (
-    id: string,
- ) => {
-      return apiRequest<void>(
-      {url: `/api/v1/genres/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  export const findAll = (
-
- ) => {
-      return apiRequest<GenreResponse[]>(
-      {url: `/api/v1/genres`, method: 'GET'
-    },
-      );
-    }
-  export const createGenre = (
-    createGenreRequest: CreateGenreRequest,
- ) => {
-      return apiRequest<GenreResponse>(
-      {url: `/api/v1/genres`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createGenreRequest
-    },
-      );
-    }
-  export type FindGenreByIdResult = NonNullable<Awaited<ReturnType<typeof findGenreById>>>
+export const findGenreById = (id: string) => {
+  return apiRequest<GenreResponse>({ url: `/api/v1/genres/${id}`, method: 'GET' })
+}
+export const updateGenre = (id: string, updateGenreRequest: UpdateGenreRequest) => {
+  return apiRequest<GenreResponse>({
+    url: `/api/v1/genres/${id}`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: updateGenreRequest,
+  })
+}
+export const deleteGenre = (id: string) => {
+  return apiRequest<void>({ url: `/api/v1/genres/${id}`, method: 'DELETE' })
+}
+export const findAll = () => {
+  return apiRequest<GenreResponse[]>({ url: `/api/v1/genres`, method: 'GET' })
+}
+export const createGenre = (createGenreRequest: CreateGenreRequest) => {
+  return apiRequest<GenreResponse>({
+    url: `/api/v1/genres`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: createGenreRequest,
+  })
+}
+export type FindGenreByIdResult = NonNullable<Awaited<ReturnType<typeof findGenreById>>>
 export type UpdateGenreResult = NonNullable<Awaited<ReturnType<typeof updateGenre>>>
 export type DeleteGenreResult = NonNullable<Awaited<ReturnType<typeof deleteGenre>>>
 export type FindAllResult = NonNullable<Awaited<ReturnType<typeof findAll>>>

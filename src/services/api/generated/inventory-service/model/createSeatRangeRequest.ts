@@ -5,23 +5,23 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CreateSeatRangeRequestSeatType } from './createSeatRangeRequestSeatType';
+import type { CreateSeatRangeRequestSeatType } from './createSeatRangeRequestSeatType'
 
 export interface CreateSeatRangeRequest {
   /**
-     * @minLength 0
-     * @maxLength 10
-     */
-  rowLabel: string;
+   * @minLength 0
+   * @maxLength 10
+   */
+  rowLabel: string
   /**
-     * @minimum 1
-     * @maximum 999
-     */
-  startNumber: number;
+   * @minimum 1
+   * @maximum 999
+   */
+  startNumber: number
   /**
-     * @minimum 1
-     * @maximum 999
-     */
-  endNumber: number;
-  seatType: CreateSeatRangeRequestSeatType;
+   * @minimum 1
+   * @maximum 999
+   */
+  endNumber: number
+  seatType: CreateSeatRangeRequestSeatType
 }

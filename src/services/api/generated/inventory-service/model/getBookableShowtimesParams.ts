@@ -7,8 +7,8 @@
  */
 
 export type GetBookableShowtimesParams = {
-cinemaId: string;
-from: string;
-to: string;
-movieId?: string;
-};
+  cinemaId: string
+  from: string
+  to: string
+  movieId?: string
+}

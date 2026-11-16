@@ -196,16 +196,16 @@ body:has(.admin-layout.is-admin-role) {
   letter-spacing: var(--admin-ui-heading-tracking);
 }
 
-.admin-layout.is-admin-role :is(
-  .admin-reference, .admin-rooms, .admin-cinemas, .movie-admin, .admin-dashboard
-) {
+.admin-layout.is-admin-role
+  :is(.admin-reference, .admin-rooms, .admin-cinemas, .movie-admin, .admin-dashboard) {
   gap: var(--admin-ui-section-gap);
 }
 
 /* Match the reference's understated table headers and compact rows. */
-.admin-layout.is-admin-role :is(
-  .admin-reference__table, .admin-rooms__table, .movie-admin__table, .admin-dashboard table
-) thead th {
+.admin-layout.is-admin-role
+  :is(.admin-reference__table, .admin-rooms__table, .movie-admin__table, .admin-dashboard table)
+  thead
+  th {
   padding-block: var(--admin-ui-table-head-padding);
   background: var(--admin-ui-soft);
   color: var(--color-text-muted);
@@ -215,17 +215,19 @@ body:has(.admin-layout.is-admin-role) {
   text-transform: none;
 }
 
-.admin-layout.is-admin-role :is(
-  .admin-reference__table, .admin-rooms__table, .movie-admin__table, .admin-dashboard table
-) tbody :is(td, th) {
+.admin-layout.is-admin-role
+  :is(.admin-reference__table, .admin-rooms__table, .movie-admin__table, .admin-dashboard table)
+  tbody
+  :is(td, th) {
   padding-block: var(--admin-ui-table-cell-padding);
   border-color: var(--admin-ui-row-line);
   font-size: var(--admin-ui-copy-size);
 }
 
-.admin-layout.is-admin-role :is(
-  .admin-reference__table, .admin-rooms__table, .movie-admin__table, .admin-dashboard table
-) tbody tr:hover {
+.admin-layout.is-admin-role
+  :is(.admin-reference__table, .admin-rooms__table, .movie-admin__table, .admin-dashboard table)
+  tbody
+  tr:hover {
   background: var(--admin-ui-soft);
 }
 
@@ -235,43 +237,45 @@ body:has(.admin-layout.is-admin-role) :is(input, select, textarea) {
   accent-color: var(--admin-shell-accent);
 }
 
-body:has(.admin-layout.is-admin-role) :is(
-  .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog,
-  .admin-cinema-menu, .admin-room-menu, .admin-reference-autocomplete,
-  .app-autocomplete__content, .app-creatable-autocomplete__content
-) {
+body:has(.admin-layout.is-admin-role)
+  :is(
+    .admin-movie-dialog,
+    .admin-cinema-dialog,
+    .admin-room-dialog,
+    .admin-cinema-menu,
+    .admin-room-menu,
+    .admin-reference-autocomplete,
+    .app-autocomplete__content,
+    .app-creatable-autocomplete__content
+  ) {
   color: var(--color-text-primary);
   font-size: var(--admin-ui-copy-size);
   --radius-sm: var(--admin-shell-radius);
   --radius-md: var(--admin-shell-radius);
 }
 
-body:has(.admin-layout.is-admin-role) :is(
-  .admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog
-) {
+body:has(.admin-layout.is-admin-role)
+  :is(.admin-movie-dialog, .admin-cinema-dialog, .admin-room-dialog) {
   border-radius: var(--admin-ui-dialog-radius);
   box-shadow: var(--admin-ui-dialog-shadow);
 }
 
-body:has(.admin-layout.is-admin-role) :is(
-  .admin-movie-dialog__title, .admin-cinema-dialog__title, .admin-room-dialog__title
-) {
+body:has(.admin-layout.is-admin-role)
+  :is(.admin-movie-dialog__title, .admin-cinema-dialog__title, .admin-room-dialog__title) {
   font-family: var(--font-family-base);
   font-size: var(--admin-ui-dialog-title-size);
   line-height: var(--line-height-heading);
 }
 
-body:has(.admin-layout.is-admin-role) :is(
-  .app-button, .movie-admin__button, .admin-reference__link-button
-) {
+body:has(.admin-layout.is-admin-role)
+  :is(.app-button, .movie-admin__button, .admin-reference__link-button) {
   border-radius: var(--admin-shell-radius);
   font-size: var(--admin-ui-copy-size);
   font-weight: var(--font-weight-semibold);
 }
 
-body:has(.admin-layout.is-admin-role) :is(
-  .movie-admin__button.is-primary, .admin-reference__link-button.is-primary
-) {
+body:has(.admin-layout.is-admin-role)
+  :is(.movie-admin__button.is-primary, .admin-reference__link-button.is-primary) {
   color: var(--admin-shell-paper);
 }
 
@@ -411,24 +415,25 @@ body:has(.admin-layout.is-admin-role) :is(input, select, textarea, button):disab
   white-space: nowrap;
 }
 
-.admin-layout.is-admin-role .admin-status:is(
-  [data-status='OPEN_FOR_BOOKING'], [data-status='CONFIRMED']
-) {
+.admin-layout.is-admin-role
+  .admin-status:is([data-status='OPEN_FOR_BOOKING'], [data-status='CONFIRMED']) {
   background: var(--admin-ui-success-soft);
   color: var(--admin-ui-success);
 }
 
-.admin-layout.is-admin-role .admin-status:is(
-  [data-status='SCHEDULED'], [data-status='PENDING'], [data-status='RESERVED']
-) {
+.admin-layout.is-admin-role
+  .admin-status:is([data-status='SCHEDULED'], [data-status='PENDING'], [data-status='RESERVED']) {
   background: var(--admin-ui-warning-soft);
   color: var(--admin-ui-warning);
 }
 
-.admin-layout.is-admin-role .admin-status:is(
-  [data-status='CANCELLED'], [data-status='REJECTED'],
-  [data-status='EXPIRED'], [data-status='PAYMENT_FAILED']
-) {
+.admin-layout.is-admin-role
+  .admin-status:is(
+    [data-status='CANCELLED'],
+    [data-status='REJECTED'],
+    [data-status='EXPIRED'],
+    [data-status='PAYMENT_FAILED']
+  ) {
   background: var(--admin-ui-error-soft);
   color: var(--admin-ui-error);
 }
@@ -492,19 +497,26 @@ body:has(.admin-layout.is-admin-role) .price-dialog.pricing-setup {
     --admin-header-height: var(--admin-ui-mobile-header);
   }
 
-  .admin-layout.is-admin-role :is(
-    .movie-admin__heading, .admin-dashboard__heading,
-    .admin-reference__heading, .admin-rooms__heading, .admin-cinemas__heading
-  ) {
+  .admin-layout.is-admin-role
+    :is(
+      .movie-admin__heading,
+      .admin-dashboard__heading,
+      .admin-reference__heading,
+      .admin-rooms__heading,
+      .admin-cinemas__heading
+    ) {
     align-items: flex-start;
     flex-direction: column;
     gap: var(--space-4);
   }
 
-  .admin-layout.is-admin-role :is(
-    .admin-reference__table-footer, .admin-rooms__table-footer,
-    .admin-cinemas__table-footer, .movie-admin__pagination
-  ) {
+  .admin-layout.is-admin-role
+    :is(
+      .admin-reference__table-footer,
+      .admin-rooms__table-footer,
+      .admin-cinemas__table-footer,
+      .movie-admin__pagination
+    ) {
     flex-wrap: wrap;
   }
 }

@@ -8,29 +8,25 @@
 import type {
   ApiResponseBookingResponse,
   ApiResponsePageResponseBookingResponse,
-  ListBookingsForAdminParams
-} from '../model';
+  ListBookingsForAdminParams,
+} from '../model'
 
-import { apiRequest } from '../../../../http/axios-instance';
+import { apiRequest } from '../../../../http/axios-instance'
 
-
-
-  export const listBookingsForAdmin = (
-    params?: ListBookingsForAdminParams,
- ) => {
-      return apiRequest<ApiResponsePageResponseBookingResponse>(
-      {url: `/api/v1/bookings/management`, method: 'GET',
-        params
-    },
-      );
-    }
-  export const getBookingForAdmin = (
-    bookingId: string,
- ) => {
-      return apiRequest<ApiResponseBookingResponse>(
-      {url: `/api/v1/bookings/management/${bookingId}`, method: 'GET'
-    },
-      );
-    }
-  export type ListBookingsForAdminResult = NonNullable<Awaited<ReturnType<typeof listBookingsForAdmin>>>
+export const listBookingsForAdmin = (params?: ListBookingsForAdminParams) => {
+  return apiRequest<ApiResponsePageResponseBookingResponse>({
+    url: `/api/v1/bookings/management`,
+    method: 'GET',
+    params,
+  })
+}
+export const getBookingForAdmin = (bookingId: string) => {
+  return apiRequest<ApiResponseBookingResponse>({
+    url: `/api/v1/bookings/management/${bookingId}`,
+    method: 'GET',
+  })
+}
+export type ListBookingsForAdminResult = NonNullable<
+  Awaited<ReturnType<typeof listBookingsForAdmin>>
+>
 export type GetBookingForAdminResult = NonNullable<Awaited<ReturnType<typeof getBookingForAdmin>>>

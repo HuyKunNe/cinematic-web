@@ -8,7 +8,7 @@
 
 export interface ChangeCurrentUserPasswordRequest {
   /** @minLength 1 */
-  currentPassword: string;
+  currentPassword: string
   /** @minLength 1 */
-  newPassword: string;
+  newPassword: string
 }

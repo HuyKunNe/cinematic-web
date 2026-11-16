@@ -6,11 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CellResponseState = typeof CellResponseState[keyof typeof CellResponseState];
-
+export type CellResponseState = (typeof CellResponseState)[keyof typeof CellResponseState]
 
 export const CellResponseState = {
   UNCONFIGURED: 'UNCONFIGURED',
   PRICED: 'PRICED',
   NOT_APPLICABLE: 'NOT_APPLICABLE',
-} as const;
+} as const

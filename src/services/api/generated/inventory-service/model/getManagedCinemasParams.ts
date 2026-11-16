@@ -7,6 +7,6 @@
  */
 
 export type GetManagedCinemasParams = {
-city?: string;
-active?: boolean;
-};
+  city?: string
+  active?: boolean
+}

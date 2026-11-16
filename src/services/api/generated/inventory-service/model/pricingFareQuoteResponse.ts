@@ -5,17 +5,17 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { CellResponse } from './cellResponse';
-import type { PricingFareQuoteResponseDayGroup } from './pricingFareQuoteResponseDayGroup';
+import type { CellResponse } from './cellResponse'
+import type { PricingFareQuoteResponseDayGroup } from './pricingFareQuoteResponseDayGroup'
 
 export interface PricingFareQuoteResponse {
-  policyId?: string;
-  policyVersionId?: string;
-  revision?: number;
-  cinemaId?: string;
-  cinemaTimeZone?: string;
-  localStartsAt?: string;
-  dayGroup?: PricingFareQuoteResponseDayGroup;
-  capacityPerUnit?: number;
-  fare?: CellResponse;
+  policyId?: string
+  policyVersionId?: string
+  revision?: number
+  cinemaId?: string
+  cinemaTimeZone?: string
+  localStartsAt?: string
+  dayGroup?: PricingFareQuoteResponseDayGroup
+  capacityPerUnit?: number
+  fare?: CellResponse
 }

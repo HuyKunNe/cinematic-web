@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type QuotePricingFareRequestContentFormat = typeof QuotePricingFareRequestContentFormat[keyof typeof QuotePricingFareRequestContentFormat];
-
+export type QuotePricingFareRequestContentFormat =
+  (typeof QuotePricingFareRequestContentFormat)[keyof typeof QuotePricingFareRequestContentFormat]
 
 export const QuotePricingFareRequestContentFormat = {
   '2D': '2D',
   '3D': '3D',
-} as const;
+} as const

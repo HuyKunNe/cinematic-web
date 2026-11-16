@@ -739,11 +739,17 @@ async function saveDraft() {
 async function deleteSelectedDraft() {
   const target = deleteTarget.value
   if (
-    !ready.value || busy.value || reloadRequired.value || !target ||
-    target.status !== 'DRAFT' || target.id !== loadedLayout.value?.id ||
-    target.roomId !== roomId.value || typeof target.id !== 'string' ||
+    !ready.value ||
+    busy.value ||
+    reloadRequired.value ||
+    !target ||
+    target.status !== 'DRAFT' ||
+    target.id !== loadedLayout.value?.id ||
+    target.roomId !== roomId.value ||
+    typeof target.id !== 'string' ||
     typeof target.version !== 'number'
-  ) return
+  )
+    return
 
   const requestedRoom = roomId.value
   const token = scope
@@ -752,7 +758,9 @@ async function deleteSelectedDraft() {
   notice.value = ''
   try {
     await deleteDraft.mutateAsync({
-      roomId: requestedRoom, layoutId: target.id, expectedVersion: target.version,
+      roomId: requestedRoom,
+      layoutId: target.id,
+      expectedVersion: target.version,
     })
     if (token !== scope || requestedRoom !== roomId.value) return
 
@@ -768,7 +776,8 @@ async function deleteSelectedDraft() {
       await router.replace({ path: route.path, hash: route.hash, query })
       await versions.refetch({ throwOnError: true })
     } catch {
-      errorMessage.value = 'Đã xóa bản nháp nhưng chưa cập nhật được trang. Tải lại để xem danh sách mới.'
+      errorMessage.value =
+        'Đã xóa bản nháp nhưng chưa cập nhật được trang. Tải lại để xem danh sách mới.'
     } finally {
       clearingDeletedLocation.value = false
     }
@@ -777,7 +786,8 @@ async function deleteSelectedDraft() {
     reloadRequired.value = true
     creationBlocked.value = uncertainWrite(error)
     errorMessage.value = adminRoomErrorMessage(error, 'Không thể xóa bản nháp sơ đồ.')
-    notice.value = 'Nội dung đang nhập được giữ nguyên. Tải lại để kiểm tra trước khi thao tác tiếp.'
+    notice.value =
+      'Nội dung đang nhập được giữ nguyên. Tải lại để kiểm tra trước khi thao tác tiếp.'
   } finally {
     deleteTarget.value = null
     deleting.value = false
@@ -1026,10 +1036,14 @@ onBeforeRouteUpdate((to, from) => {
   const target = readRoomLayoutLocation(to.query.layoutId)
 
   if (
-    clearingDeletedLocation.value && to.path === from.path && to.hash === from.hash &&
-    !target.invalid && !target.id &&
+    clearingDeletedLocation.value &&
+    to.path === from.path &&
+    to.hash === from.hash &&
+    !target.invalid &&
+    !target.id &&
     layoutIndependentQueryKey(to.query) === layoutIndependentQueryKey(from.query)
-  ) return true
+  )
+    return true
 
   const onlySynchronizingCurrentLayout =
     to.name === from.name &&
