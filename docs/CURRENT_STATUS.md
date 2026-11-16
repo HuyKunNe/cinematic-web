@@ -1,5 +1,21 @@
 # Current Status
 
+## USER experiences — 2026-11-16
+
+Added `/experiences`, linked from desktop/mobile primary navigation, footer and
+cinema detail. Follows Lumière's numbered experience tile grid (3/2/1 columns).
+Available room types, formats and cinema links are derived from active cinemas
+and their active-room APIs, reusing existing room query keys. No mock cinema,
+availability, pricing or unsupported bed-room type is introduced. Descriptions
+avoid unverified equipment/amenity claims.
+
+Includes initial loading, cinema-catalog errors, partial room-query errors with
+retry, empty data and retained successful results. Existing APIs require one room
+request per cinema; there is no new endpoint. Manual checks: `/experiences`,
+navigation on desktop/mobile, card cinema links → detail → schedule, empty room
+data and partial failures. No tests/lint/typecheck/build or browser verification
+performed; no BE/generated/reference changes, commits or pushes.
+
 ## USER support pages — 2026-11-16
 
 Added `/support`, `/support/guide`, `/support/contact` with Lumière's support

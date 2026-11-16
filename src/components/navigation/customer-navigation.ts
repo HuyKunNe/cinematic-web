@@ -15,6 +15,7 @@ export const CUSTOMER_PRIMARY_NAVIGATION = [
   { label: 'Lịch chiếu', routeName: ROUTE_NAMES.SHOWTIMES },
   { label: 'Phim', routeName: ROUTE_NAMES.MOVIES },
   { label: 'Rạp', routeName: ROUTE_NAMES.CINEMAS },
+  { label: 'Trải nghiệm', routeName: ROUTE_NAMES.EXPERIENCES },
   { label: 'Ưu đãi', routeName: ROUTE_NAMES.PROMOTIONS },
   { label: 'Vé của tôi', routeName: ROUTE_NAMES.ACCOUNT_BOOKINGS },
 ] as const satisfies readonly CustomerNavigationItem[]

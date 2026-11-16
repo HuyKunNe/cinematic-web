@@ -80,6 +80,12 @@ const routes: RouteRecordRaw[] = [
     meta: { layout: 'customer', title: 'Lịch chiếu' },
   },
   {
+    path: ROUTE_PATHS.EXPERIENCES,
+    name: ROUTE_NAMES.EXPERIENCES,
+    component: () => import('../features/cinemas/pages/ExperiencesPage.vue'),
+    meta: { layout: 'customer', title: 'Trải nghiệm điện ảnh' },
+  },
+  {
     path: ROUTE_PATHS.PROMOTIONS,
     name: ROUTE_NAMES.PROMOTIONS,
     component: loadOffersPage,

@@ -175,6 +175,7 @@ const emailUrl = computed(() =>
               </li>
             </ul>
             <p v-else>Thông tin phòng đang được cập nhật.</p>
+            <AppLink :to="{ name: ROUTE_NAMES.EXPERIENCES }">Khám phá các trải nghiệm →</AppLink>
           </section>
         </div>
         <CinemaSchedule :key="cinemaId" :cinema-id="cinemaId" embedded />
