@@ -184,7 +184,9 @@ watch(
 )
 watch(() => props.seatNumbers.slice().sort().join('|'), invalidateReview)
 const blocked = computed(() => sending.value || !!checkpoint.value || resolved.value)
-const processing = computed(() => !!props.page && (checking.value || sending.value || (resolved.value && !error.value)))
+const processing = computed(
+  () => !!props.page && (checking.value || sending.value || (resolved.value && !error.value)),
+)
 watch(processing, (value) => emit('processing', value), { immediate: true, flush: 'sync' })
 onBeforeRouteLeave(() => !sending.value || resolved.value)
 onBeforeRouteUpdate(() => !sending.value || resolved.value)
@@ -377,6 +379,14 @@ defineExpose({ continueBooking })
 .booking-checkout__providers label[data-selected='true'] {
   border-color: var(--color-primary);
   background: var(--booking-checkout-option-selected);
+}
+.booking-checkout__providers label:has(input:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+.booking-checkout__providers label:has(input:disabled) {
+  cursor: default;
+  opacity: var(--opacity-disabled);
 }
 .booking-checkout__providers label > svg {
   width: var(--booking-checkout-option-icon);

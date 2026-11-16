@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ROUTE_NAMES } from '@/router/route-constants'
+import { Check } from 'lucide-vue-next'
 defineProps<{ current: 'showtime' | 'seats' | 'checkout' | 'order' }>()
 </script>
 <template>
@@ -7,23 +8,39 @@ defineProps<{ current: 'showtime' | 'seats' | 'checkout' | 'order' }>()
     <li
       :aria-current="current === 'showtime' ? 'step' : undefined"
       :data-active="current === 'showtime'"
+      :data-complete="current !== 'showtime'"
     >
-      <span>1</span
+      <span
+        ><Check v-if="current !== 'showtime'" aria-hidden="true" /><template v-else
+          >1</template
+        ></span
       ><RouterLink v-if="current !== 'showtime'" :to="{ name: ROUTE_NAMES.BOOKING_START }"
         >Chọn suất</RouterLink
       ><strong v-else>Chọn suất</strong>
     </li>
-    <li :aria-current="current === 'seats' ? 'step' : undefined" :data-active="current === 'seats'">
-      <span>2</span><strong>Chọn ghế &amp; báo giá</strong>
+    <li
+      :aria-current="current === 'seats' ? 'step' : undefined"
+      :data-active="current === 'seats'"
+      :data-complete="current === 'checkout' || current === 'order'"
+    >
+      <span
+        ><Check v-if="current === 'checkout' || current === 'order'" aria-hidden="true" /><template
+          v-else
+          >2</template
+        ></span
+      ><strong>Chọn ghế</strong>
     </li>
     <li
       :aria-current="current === 'checkout' ? 'step' : undefined"
       :data-active="current === 'checkout'"
+      :data-complete="current === 'order'"
     >
-      <span>3</span><strong>Thanh toán</strong>
+      <span
+        ><Check v-if="current === 'order'" aria-hidden="true" /><template v-else>3</template></span
+      ><strong>Thanh toán</strong>
     </li>
     <li :aria-current="current === 'order' ? 'step' : undefined" :data-active="current === 'order'">
-      <span>4</span><strong>Kết quả</strong>
+      <span>4</span><strong>Nhận vé</strong>
     </li>
   </ol>
 </template>

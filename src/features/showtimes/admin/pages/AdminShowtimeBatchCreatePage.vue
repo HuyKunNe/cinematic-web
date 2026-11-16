@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { watchDebounced } from '@vueuse/core'
 import { onBeforeRouteLeave, RouterLink, useRoute } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppTimePicker from '@/components/ui/AppTimePicker.vue'
 import AppToast from '@/components/ui/AppToast.vue'
+import AppLoadingState from '@/components/ui/AppLoadingState.vue'
 import AdminShowtimeMovieSelect from '../components/AdminShowtimeMovieSelect.vue'
 import { CalendarDays, MapPin, Plus, CircleCheck } from 'lucide-vue-next'
 import { APP_PERMISSIONS } from '@/config/authorization'
@@ -74,6 +74,19 @@ function editFirstInvalid() {
   if (first) editSlot(first.key)
 }
 const sending = batch.sending
+const initialLoading = computed(
+  () =>
+    (cinemas.isPending.value && cinemas.isFetching.value) ||
+    (movies.isPending.value && movies.isFetching.value),
+)
+const processing = computed(() => checking.value || sending.value || initialLoading.value)
+const loadingTitle = computed(() =>
+  sending.value
+    ? 'Đang tạo đợt suất chiếu'
+    : checking.value
+      ? 'Đang kiểm tra lịch chiếu'
+      : 'Đang tải dữ liệu tạo suất chiếu',
+)
 const toastOpen = ref(false)
 const toastMessage = ref('')
 const toastVariant = ref<'success' | 'error' | 'info'>('info')
@@ -108,22 +121,11 @@ const validationNotice = computed(() => {
   if (createdCount.value || uncertain.value || checking.value) return ''
   if (preview.value.length > batch.limit)
     return `Mỗi đợt tối đa ${batch.limit} suất. Hãy giảm số phòng hoặc khung giờ.`
-  if (
-    !batch.roomContexts.ready.value ||
-    !selectedRooms.value.some((room) => room.times.some((slot) => slot.time))
-  )
-    return ''
+  if (!batch.roomContexts.ready.value) return ''
   return invalidCount.value
     ? `${invalidCount.value} suất cần sửa. Kiểm tra chi tiết trong bảng trước khi tạo đợt.`
     : ''
 })
-watchDebounced(
-  validationNotice,
-  (message) => {
-    if (message) void notify(message)
-  },
-  { debounce: 800 },
-)
 async function recheck() {
   await batch.recheck()
   if (!error.value) {
@@ -200,10 +202,22 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
       <p v-if="!canReadLayout" class="showtime-create__error" role="alert">
         Cần quyền đọc cấu hình phòng để xác nhận sơ đồ ghế.
       </p>
+      <AppLoadingState
+        v-if="processing"
+        :title="loadingTitle"
+        :description="
+          sending
+            ? 'Đang gửi yêu cầu và chờ phản hồi từ hệ thống. Vui lòng giữ trang mở để nhận kết quả.'
+            : checking
+              ? 'Đang đối chiếu lịch, sơ đồ phòng và cấu hình giá trước khi tiếp tục.'
+              : 'Đang tải danh sách phim và rạp. Vui lòng chờ trong giây lát.'
+        "
+      />
       <form
+        v-show="!processing"
         class="showtime-batch__form"
         novalidate
-        :aria-busy="checking"
+        :aria-busy="processing"
         @submit.prevent="batch.save"
       >
         <section class="admin-reference__panel" aria-labelledby="batch-common-title">
@@ -218,13 +232,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
           </header>
           <div class="showtime-create__panel-body showtime-batch__common">
             <fieldset class="showtime-batch__selection" :disabled="locked">
-              <legend class="admin-visually-hidden">Phim và rạp</legend>
-              <AdminShowtimeMovieSelect
-                v-model="movieId"
-                :options="movies.data.value ?? []"
-                :disabled="locked || movies.isError.value"
-                :loading="movies.isFetching.value"
-              />
               <label class="admin-reference__field"
                 ><span class="showtime-batch__field-label"
                   ><MapPin aria-hidden="true" /> Rạp <span aria-hidden="true">*</span></span
@@ -244,6 +251,13 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
                   </option>
                 </select></label
               >
+              <legend class="admin-visually-hidden">Phim và rạp</legend>
+              <AdminShowtimeMovieSelect
+                v-model="movieId"
+                :options="movies.data.value ?? []"
+                :disabled="locked || movies.isError.value"
+                :loading="movies.isFetching.value"
+              />
             </fieldset>
             <fieldset class="showtime-batch__schedule" :disabled="locked">
               <legend class="admin-visually-hidden">Ngày chiếu và bảng giá</legend>
@@ -543,7 +557,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', preventUnload))
             v-else-if="!createdCount"
             type="submit"
             :disabled="!canSave"
-            :loading="checking"
+            :loading="checking || sending"
             >Tạo {{ preview.length }} suất chiếu</AppButton
           >
           <RouterLink

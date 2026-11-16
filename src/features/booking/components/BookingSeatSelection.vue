@@ -6,6 +6,8 @@ import type { RouteLocationRaw } from 'vue-router'
 import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import BookingCheckout from './BookingCheckout.vue'
 import BookingSeatMatrix from './BookingSeatMatrix.vue'
+import BookingSummaryIdentity from './BookingSummaryIdentity.vue'
+import BookingMobileRecap from './BookingMobileRecap.vue'
 import { useBookingSeatsQuery, type BookingContext } from '../api/booking-queries'
 import { MAX_QUOTED_SEATS } from '../api/booking-seat-quote'
 import { useBookingSelection } from '../composables/use-booking-selection'
@@ -91,12 +93,6 @@ const totalLabel = computed(() =>
   estimatedTotalMinor.value === null ? '\u2014' : formatBookingMoney(estimatedTotalMinor.value),
 )
 
-const posterFailed = ref(false)
-const poster = computed(() =>
-  posterFailed.value || !props.context.movie.posterUrl
-    ? '/customer/movie-placeholder.svg'
-    : props.context.movie.posterUrl,
-)
 const showDate = computed(() => {
   const date = props.context.showtime.startsAt
   return date ? formatCinemaDateKey(getCinemaDateKey(date)) : ''
@@ -284,37 +280,12 @@ watch(
       <AppLink :to="changeShowtimeTo" variant="muted">← Đổi suất chiếu</AppLink>
     </section>
 
-    <aside class="booking-panel booking-summary" aria-labelledby="booking-summary-title">
-      <h2 id="booking-summary-title" class="lumiere-seat-booking__summary-title">
-        CUỘC HẸN CỦA BẠN
-      </h2>
-      <div class="lumiere-seat-booking__film">
-        <img
-          :src="poster"
-          :alt="context.movie.title || 'Poster phim'"
-          @error="posterFailed = true"
-        />
-        <div>
-          <span v-if="context.movie.ageRating" class="lumiere-seat-booking__age">{{
-            context.movie.ageRating
-          }}</span>
-          <h3>{{ context.movie.title }}</h3>
-          <p v-if="context.movie.durationMinutes">{{ context.movie.durationMinutes }} phút</p>
-          <p v-if="context.showtime.screeningVersion?.contentFormat">
-            {{ context.showtime.screeningVersion.contentFormat
-            }}<template v-if="context.showtime.screeningVersion.audioLanguage">
-              · {{ context.showtime.screeningVersion.audioLanguage }}</template
-            >
-          </p>
-        </div>
-      </div>
-      <div class="lumiere-seat-booking__location">
-        <strong>{{ context.cinema.name }}</strong>
-        <p>{{ context.room.name }}</p>
-        <p>
-          <strong>{{ showTime }}</strong> · {{ showDate }}
-        </p>
-      </div>
+    <aside
+      id="booking-seat-summary"
+      class="booking-panel booking-summary booking-journey__summary"
+      aria-label="Tóm tắt đặt vé"
+    >
+      <BookingSummaryIdentity :context="context" />
       <div class="lumiere-seat-booking__recap" aria-live="polite">
         <span>Ghế đã chọn</span>
         <strong>{{
@@ -360,73 +331,31 @@ watch(
         Ghế chỉ được giữ sau khi yêu cầu đặt vé được xác nhận.
       </p>
     </aside>
-    <div class="booking-mobile-recap" aria-label="Tóm tắt lựa chọn">
-      <div>
-        <strong>{{ context.movie.title }}</strong>
-        <span>{{ context.cinema.name }} · {{ showTime }} · {{ showDate }}</span>
-        <span>Ghế: {{ chosenSeats.map((seat) => seat.seatNumber).join(', ') || 'Chưa chọn' }}</span>
-      </div>
-      <div>
-        <strong>{{ totalLabel }}</strong>
-        <AppButton
-          size="sm"
-          :disabled="
-            !ready || !chosenSeats.length || !!selectionError || estimatedTotalMinor === null
-          "
-          @click="checkout?.continueBooking()"
-          >Tiếp tục</AppButton
-        >
-      </div>
-    </div>
+    <BookingMobileRecap
+      :title="context.movie.title || 'Thông tin đặt vé'"
+      :location="[context.cinema.name, showTime, showDate].filter(Boolean).join(' · ')"
+      :seat-numbers="chosenSeats.map((seat) => seat.seatNumber)"
+      :total="totalLabel"
+      summary-id="booking-seat-summary"
+    >
+      <AppButton
+        size="sm"
+        :disabled="
+          !ready || !chosenSeats.length || !!selectionError || estimatedTotalMinor === null
+        "
+        @click="checkout?.continueBooking()"
+        >Tiếp tục</AppButton
+      >
+    </BookingMobileRecap>
   </div>
 </template>
 
 <style scoped>
 @reference '../../../styles/main.css';
-.booking-mobile-recap {
-  display: none;
-}
 @variant lumiere-mobile {
   .lumiere-seat-booking {
     --booking-mobile-recap-space: 10rem;
-    padding-bottom: var(--booking-mobile-recap-space);
-  }
-  .booking-mobile-recap {
-    position: fixed;
-    inset-inline: 0;
-    bottom: 0;
-    z-index: calc(var(--z-header) - 1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-3) var(--space-4);
-    padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
-    background: var(--color-surface);
-    border-top: var(--border-width-thin) solid var(--color-border);
-    box-shadow: var(--shadow-raised);
-  }
-  .booking-mobile-recap > div {
-    min-width: 0;
-    display: grid;
-    gap: var(--space-1);
-  }
-  .booking-mobile-recap > div:last-child {
-    flex-shrink: 0;
-    text-align: right;
-  }
-  .booking-mobile-recap strong {
-    font-size: var(--font-size-sm);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  .booking-mobile-recap span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
+    padding-bottom: calc(var(--booking-mobile-recap-space) + env(safe-area-inset-bottom));
   }
 }
 </style>

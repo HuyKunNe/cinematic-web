@@ -1,5 +1,60 @@
 # Luồng đặt vé USER
 
+## Đối chiếu toàn luồng với Lumière — 2026-11-16
+
+Nguồn: `design/reference/lumiere-cinema/index.html`, `assets/js/app.js`
+(bookingProgress, seatPage, checkoutPage, mobileRecap, resultPage, ticketPage),
+`assets/css/styles.css` và thư mục ảnh SVG/video đi kèm. Ảnh phim thực tế tiếp
+tục lấy từ API; không mang poster, QR hoặc dữ liệu giao dịch minh họa vào sản phẩm.
+
+| Màn hình reference      | Route FE                           | Dữ liệu và thao tác hiện có                                                               |
+| ----------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------- |
+| Chọn phim/rạp/ngày/suất | `/booking`                         | QuickBooking dùng danh mục và lịch chiếu thật, mở suất đã chọn                            |
+| `#/booking/seats`       | `/booking/:showtimeId`             | Sơ đồ phòng, trạng thái/giá từ seat-map; chọn ghế tính tổng tại chỗ; Tiếp tục mở checkout |
+| `#/booking/checkout`    | `/booking/checkout?showtimeId=...` | Kiểm tra lại báo giá; chọn provider thật và xác nhận; POST booking bằng clientRequestId   |
+| Checkout đơn đã tạo     | `/booking/checkout/:bookingId`     | Đọc đơn theo chủ sở hữu; mở phiên thanh toán hiện có khi được xác nhận                    |
+| Processing trong result | `/booking/processing/:bookingId`   | Chờ trạng thái booking/payment thật; URI hợp lệ mới chuyển cổng                           |
+| `#/result/{code}`       | `/booking/result/:bookingId`       | Thành công, thất bại, hết hạn hoặc chưa xác định theo API; không suy thành công từ URL    |
+| `#/ticket/{code}`       | `/booking/ticket/:bookingId`       | Chỉ booking CONFIRMED được xem/in thông tin vé                                            |
+
+Lượt này hợp nhất thông tin phim/rạp/suất của sidebar bằng BookingSummaryIdentity;
+dùng cùng chiều rộng, khoảng cách, poster và padding với checkout. Thanh tiến
+trình có đường nối, dấu hoàn tất và bố cục dọc từng mục trên mobile theo reference.
+BookingMobileRecap dùng chung giữa ghế và checkout, có Xem tóm tắt cuộn đến đơn,
+tôn trọng reduced motion và safe area. Thanh điều hướng mobile của site được ẩn
+khi recap booking hiện để không che thao tác. Các lựa chọn payment có focus cho
+cả thẻ và trạng thái disabled. Không đổi mutation, quote, quyền hoặc polling.
+
+Khác reference có chủ đích do contract/yêu cầu đã chốt:
+
+- Không có bước bắp nước, voucher, form người nhận vé hoặc QR giả vì generated
+  client chưa cung cấp contract tương ứng. Cần BE cung cấp danh mục/giá và lưu
+  các dòng hàng, áp dụng ưu đãi, thông tin nhận vé, mã vé/QR trước khi triển khai.
+- Tiếp tục từ ghế đi thẳng checkout, không modal; báo giá ở trên sơ đồ, không
+  khối Vé của bạn riêng. Không giới hạn 8 khách hoặc đặt đồng hồ 10 phút của demo.
+- Tiến trình dùng Chọn suất → Chọn ghế → Thanh toán → Nhận vé, thay bước đồ ăn
+  chưa được hỗ trợ. Các route booking có đơn vẫn yêu cầu đăng nhập và chủ sở hữu.
+- Provider là VNPAY/MOMO theo DTO, không tự quy đổi thành ba loại thẻ của demo.
+  Mock chỉ là lựa chọn dev đã có, nhận kết quả thật từ provider mặc định của BE.
+
+Kiểm tra thủ công trên máy:
+
+1. Chạy `npm run dev` với các service/API theo cấu hình hiện tại; mở `/booking`,
+   chọn phim/rạp/ngày/suất có bán vé và đăng nhập khi được yêu cầu.
+2. Tại ghế: kiểm tra sơ đồ đúng phòng, chú giải/giá, ghế đã bán/giữ, ghế đôi,
+   quy tắc không lẻ ghế, tổng đổi ngay khi chọn và lựa chọn được giữ khi quay lại.
+3. Nhấn Tiếp tục: đi checkout không modal; xem ghế/giá nhóm, chọn provider,
+   xác nhận rồi thanh toán. Giá thay đổi phải yêu cầu kiểm tra lại, không tự chấp nhận.
+4. Quan sát processing, kiểm tra lại khi lỗi mạng; không tạo đơn mới để retry
+   một kết quả chưa xác định. Chờ kết quả thật; chỉ CONFIRMED được xem/in vé.
+5. Kiểm tra desktop/tablet và mobile 390px/760px, phim tên dài, nhiều ghế,
+   Xem tóm tắt, thanh tổng tiền không chồng điều hướng, Tab/focus, reduced motion.
+
+Đã đọc và đối chiếu code; kiểm tra cú pháp Vue và git diff. Không chạy test,
+lint, typecheck, build hoặc giao dịch. Browser access host không khả dụng trong
+phiên này nên chưa xác minh giao diện/runtime. Không sửa BE, MySQL, generated
+client, reference gốc; không commit/push.
+
 ## Processing sau nút Thanh toán — 2026-11-13
 
 Ngay khi xác nhận thanh toán, checkout chuyển sang view processing toàn trang:
@@ -147,11 +202,11 @@ snapshot/QR mới được thêm hoặc giả lập trong lượt sửa này.
 
 ## Đối chiếu riêng ba màn hình Lumière — 2026-11-12
 
-| FE | Reference | Cấu trúc đã điều chỉnh |
-| --- | --- | --- |
+| FE                             | Reference            | Cấu trúc đã điều chỉnh                                                                                                                                                                         |
+| ------------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/booking/checkout/:bookingId` | `#/booking/checkout` | Tiến trình; tiêu đề Bước 03 trong cột trái; danh sách vé/giá; khối phương thức và xác nhận thanh toán. Cột phải có poster/phim, rạp/phòng/suất, ghế/capacity, tiền vé/tổng và đồng hồ giữ ghế. |
-| `/booking/result/:bookingId` | `#/result/{code}` | Không có thanh tiến trình; nội dung kết quả căn giữa; bỏ panel bao quanh thông báo chưa thành công; thẻ vé cho CONFIRMED; Xem vé/In/điều hướng. |
-| `/booking/ticket/:bookingId` | `#/ticket/{code}` | Tiêu đề trang riêng “Cuộc hẹn đã sẵn sàng”; thẻ vé; hai cột thông tin suất/vé và thanh toán phía dưới; hàng hành động cuối. |
+| `/booking/result/:bookingId`   | `#/result/{code}`    | Không có thanh tiến trình; nội dung kết quả căn giữa; bỏ panel bao quanh thông báo chưa thành công; thẻ vé cho CONFIRMED; Xem vé/In/điều hướng.                                                |
+| `/booking/ticket/:bookingId`   | `#/ticket/{code}`    | Tiêu đề trang riêng “Cuộc hẹn đã sẵn sàng”; thẻ vé; hai cột thông tin suất/vé và thanh toán phía dưới; hàng hành động cuối.                                                                    |
 
 BookingJourneySummary và BookingSavedSeats là component trình bày, dùng dữ liệu
 thật và query context hiện có. Không thay contract hoặc logic giữ ghế/thanh toán.

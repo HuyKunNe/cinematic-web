@@ -16,6 +16,9 @@ import {
 import AdminHeader from '../components/navigation/AdminHeader.vue'
 import AdminSidebar from '../components/navigation/AdminSidebar.vue'
 import Breadcrumbs from '../components/navigation/Breadcrumbs.vue'
+import AppLoadingState from '../components/ui/AppLoadingState.vue'
+import AppButton from '../components/ui/AppButton.vue'
+import { useAdminPageLoading } from './composables/use-admin-page-loading'
 import { APP_ROLES } from '../config/authorization'
 import { ADMIN_MEDIA_QUERIES } from '../config/admin-responsive'
 import { restoreAuthSession, signOut } from '../features/auth'
@@ -25,6 +28,7 @@ import { ROUTE_NAMES } from '../router/route-constants'
 const auth = useAuthStore()
 const route = useRoute()
 const queryClient = useQueryClient()
+const pageLoading = useAdminPageLoading()
 
 const isDrawer = useMediaQuery(ADMIN_MEDIA_QUERIES.drawer)
 const sidebarCollapsed = useStorage('cinematic:admin:sidebar-collapsed', false)
@@ -127,7 +131,19 @@ async function handleLogout() {
               {{ logoutError }}
             </p>
 
-            <slot />
+            <div v-if="pageLoading.navigationError.value" class="admin-layout__error" role="alert">
+              <p>{{ pageLoading.navigationError.value }}</p>
+              <AppButton variant="secondary" @click="pageLoading.retryNavigation">Thử lại</AppButton>
+            </div>
+
+            <AppLoadingState
+              v-if="pageLoading.loading.value"
+              :title="pageLoading.navigating.value ? 'Đang mở trang quản trị' : 'Đang tải dữ liệu trang'"
+              description="Vui lòng chờ trong giây lát. Nội dung sẽ hiển thị khi tải xong."
+            />
+            <div v-show="!pageLoading.loading.value" :aria-busy="pageLoading.loading.value">
+              <slot />
+            </div>
           </div>
         </main>
       </div>

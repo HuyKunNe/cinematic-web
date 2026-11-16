@@ -193,7 +193,15 @@ watch(
           >
         </div>
         <template v-if="processing">
-          <BookingProcessing :booking-id="booking.id"><BookingPayment :key="booking.id" processing :booking="booking" :disabled="query.isFetching.value || query.isError.value" @payment-status="paymentStatus = $event" @refresh="query.refetch()" /></BookingProcessing>
+          <BookingProcessing :booking-id="booking.id"
+            ><BookingPayment
+              :key="booking.id"
+              processing
+              :booking="booking"
+              :disabled="query.isFetching.value || query.isError.value"
+              @payment-status="paymentStatus = $event"
+              @refresh="query.refetch()"
+          /></BookingProcessing>
         </template>
         <template v-else-if="checkout">
           <div class="booking-journey__layout">
@@ -251,7 +259,9 @@ watch(
                 v-else-if="['PENDING', 'RESERVED'].includes(booking.status)"
                 aria-hidden="true" /><CircleAlert v-else aria-hidden="true"
             /></span>
-            <p class="lumiere-eyebrow">{{ ticket ? 'THÔNG TIN VÉ' : 'KẾT QUẢ ĐẶT VÉ' }}</p>
+            <p class="lumiere-eyebrow">
+              {{ booking.status === 'CONFIRMED' ? 'CUỘC HẸN ĐÃ SẴN SÀNG' : 'KẾT QUẢ ĐẶT VÉ' }}
+            </p>
             <h1>{{ resultTitle }}</h1>
             <p role="status">{{ description }}</p>
           </header>

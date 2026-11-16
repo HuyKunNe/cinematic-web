@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppLoadingState from '@/components/ui/AppLoadingState.vue'
 import { RouterLink } from 'vue-router'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { APP_ROLES } from '@/config/authorization'
 import { useAuthStore } from '@/stores/auth.store'
 import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
+import { useAdminBookingShowtimes } from '../api/admin-booking-showtimes'
 import {
   adminBookingErrorMessage,
   adminBookingStatusLabels,
@@ -36,6 +38,8 @@ const result = computed(() =>
 )
 
 const rows = computed(() => result.value?.content ?? [])
+const showtimes = useAdminBookingShowtimes(rows, canView, () => auth.subject ?? '')
+const showtimeLabels = showtimes.labels
 const statusOptions = Object.entries(adminBookingStatusLabels)
 
 const rangeLabel = computed(() => {
@@ -57,6 +61,11 @@ function createdAtLabel(value: string): string {
   return `${formatCinemaDateKey(getCinemaDateKey(value))} · ${formatCinemaTime(value)}`
 }
 
+function showtimeDateLabel(showtimeId: string): string {
+  const startsAt = showtimeLabels.value.get(showtimeId)?.data?.startsAt
+  return startsAt ? createdAtLabel(startsAt) : ''
+}
+
 function amountLabel(booking: AdminBookingListItem): string {
   if (booking.totalAmount === null || booking.currency === null) {
     return 'Chưa xác định'
@@ -76,6 +85,7 @@ function seatsLabel(booking: AdminBookingListItem): string {
 
 function refresh(): void {
   if (!canView.value || query.isFetching.value) return
+  showtimes.refresh()
   void query.refetch()
 }
 </script>
@@ -161,8 +171,8 @@ function refresh(): void {
             <thead>
               <tr>
                 <th scope="col">Mã đơn / Ngày tạo</th>
-                <th scope="col">Mã người đặt</th>
-                <th scope="col">Mã suất chiếu</th>
+                <th scope="col">Người đặt</th>
+                <th scope="col">Phim / Suất chiếu</th>
                 <th scope="col">Ghế</th>
                 <th scope="col">Tổng tiền</th>
                 <th scope="col">Trạng thái</th>
@@ -170,8 +180,11 @@ function refresh(): void {
             </thead>
             <tbody>
               <tr v-if="query.isFetching.value || query.isPending.value">
-                <td colspan="6" class="admin-reference__empty" role="status">
-                  Đang tải danh sách đơn…
+                <td colspan="6" class="admin-reference__empty">
+                  <AppLoadingState
+                    title="Đang tải đơn đặt vé"
+                    description="Đang lấy danh sách theo bộ lọc và trang đã chọn."
+                  />
                 </td>
               </tr>
 
@@ -217,10 +230,36 @@ function refresh(): void {
                   </small>
                 </td>
                 <td>
-                  <span class="admin-bookings__id">{{ booking.userId }}</span>
+                  <span title="API hiện chỉ trả userId, chưa cung cấp tên người đặt"
+                    >Chưa có tên người đặt</span
+                  >
+                  <small class="admin-bookings__meta admin-bookings__id">{{
+                    booking.userId
+                  }}</small>
                 </td>
                 <td>
-                  <span class="admin-bookings__id">{{ booking.showtimeId }}</span>
+                  <template v-if="showtimeLabels.get(booking.showtimeId)?.data">
+                    <strong class="admin-bookings__seats">{{
+                      showtimeLabels.get(booking.showtimeId)?.data?.title
+                    }}</strong>
+                    <small class="admin-bookings__meta">{{
+                      showtimeDateLabel(booking.showtimeId)
+                    }}</small>
+                  </template>
+                  <span v-else class="admin-bookings__meta" role="status">
+                    {{
+                      showtimeLabels.get(booking.showtimeId)?.loading
+                        ? 'Đang tải phim / suất chiếu…'
+                        : 'Chưa tải được phim / suất chiếu'
+                    }}
+                  </span>
+                  <AppButton
+                    v-if="showtimeLabels.get(booking.showtimeId)?.error"
+                    variant="ghost"
+                    size="sm"
+                    @click="showtimes.refresh()"
+                    >Thử lại</AppButton
+                  >
                 </td>
                 <td>
                   <span class="admin-bookings__seats">

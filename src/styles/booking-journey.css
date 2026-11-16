@@ -1,6 +1,7 @@
 @reference './main.css';
 
-.booking-journey {
+.booking-journey,
+.booking-page {
   --journey-summary-width: 20.9375rem;
   --journey-layout-gap: 2.1875rem;
   --journey-ticket-poster: 6.875rem;
@@ -19,9 +20,11 @@
   --journey-result-bottom: 5.625rem;
   --journey-checkout-title: 1.75rem;
   --journey-summary-poster: 4.75rem;
-  --journey-panel-padding: 1.75rem;
+  --journey-panel-padding: 1.4375rem;
   --journey-summary-padding: 1.4375rem;
   --journey-result-gap: 2.1875rem;
+}
+.booking-journey {
   padding-block: var(--lumiere-page-space);
 }
 .booking-journey > .app-container {
@@ -379,6 +382,9 @@
   grid-template-columns: var(--journey-summary-poster) minmax(0, 1fr);
   gap: var(--space-4);
 }
+.booking-journey__summary-film > div {
+  min-width: 0;
+}
 .booking-journey__summary-film > img {
   width: 100%;
   aspect-ratio: var(--lumiere-poster-ratio);
@@ -389,6 +395,7 @@
   font-size: var(--font-size-lg);
   line-height: var(--line-height-heading);
   margin: var(--space-2) 0 0;
+  overflow-wrap: anywhere;
 }
 .booking-journey__summary-film p {
   color: var(--color-text-secondary);
@@ -517,10 +524,11 @@
   .booking-journey__layout:has(.booking-checkout-recap) {
     padding-bottom: var(--journey-mobile-recap-space);
   }
-  .customer-layout:has(.booking-checkout-recap) > .mobile-bottom-nav {
+  .customer-layout:has(.booking-checkout-recap, .booking-mobile-recap) > .mobile-bottom-nav {
     display: none;
   }
-  #booking-checkout-summary {
+  #booking-checkout-summary,
+  #booking-seat-summary {
     scroll-margin-top: calc(var(--header-height-mobile) + var(--space-4));
   }
   .booking-journey__ticket-details {
@@ -536,6 +544,9 @@
   .booking-journey__summary-title,
   .booking-journey__summary > .booking-note,
   .booking-journey__summary-note,
+  .booking-journey__summary > .booking-checkout,
+  .booking-journey__summary > .booking-error,
+  .booking-journey__summary > .lumiere-seat-booking__summary-note,
   .booking-journey__clock {
     grid-column: 1 / -1;
   }

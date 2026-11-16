@@ -134,3 +134,5 @@ onBeforeUnmount(() => {
     </AppContainer>
   </div>
 </template>
+
+<style src="../../../styles/booking-journey.css"></style>
