@@ -86,6 +86,12 @@ const routes: RouteRecordRaw[] = [
     meta: { layout: 'customer', title: 'Trải nghiệm điện ảnh' },
   },
   {
+    path: ROUTE_PATHS.SEARCH,
+    name: ROUTE_NAMES.SEARCH,
+    component: () => import('../features/movies/pages/SearchPage.vue'),
+    meta: { layout: 'customer', title: 'Tìm kiếm phim và rạp' },
+  },
+  {
     path: ROUTE_PATHS.PROMOTIONS,
     name: ROUTE_NAMES.PROMOTIONS,
     component: loadOffersPage,

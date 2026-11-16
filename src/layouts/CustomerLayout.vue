@@ -83,9 +83,9 @@ async function openMovieSearch() {
   locationOpen.value = false
 
   try {
-    if (route.name !== ROUTE_NAMES.MOVIES) {
+    if (route.name !== ROUTE_NAMES.SEARCH) {
       const failure = await router.push({
-        name: ROUTE_NAMES.MOVIES,
+        name: ROUTE_NAMES.SEARCH,
       })
 
       if (failure) {
@@ -109,8 +109,8 @@ async function openMovieSearch() {
 }
 
 function focusMovieSearch() {
-  if (route.name !== ROUTE_NAMES.MOVIES) return
-  const input = document.getElementById('movies-search-input')
+  if (route.name !== ROUTE_NAMES.SEARCH) return
+  const input = document.getElementById('customer-search-input')
   if (!(input instanceof HTMLInputElement)) {
     searchError.value = 'Chưa thể mở ô tìm phim. Vui lòng tải lại trang và thử lại.'
     return
@@ -140,7 +140,7 @@ watch(
   () => {
     locationOpen.value = false
     searchError.value = ''
-    if (route.name !== ROUTE_NAMES.MOVIES) searchFocusPending.value = false
+    if (route.name !== ROUTE_NAMES.SEARCH) searchFocusPending.value = false
   },
 )
 </script>

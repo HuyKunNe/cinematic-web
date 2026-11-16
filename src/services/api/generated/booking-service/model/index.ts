@@ -17,6 +17,8 @@ export * from './createBookingRequest';
 export * from './createBookingRequestPaymentProvider';
 export * from './errorBody';
 export * from './findAllBookingsParams';
+export * from './findAllBookingsStatus';
+export * from './findAllBookingsStatusItem';
 export * from './listBookingsForAdminParams';
 export * from './listBookingsForAdminStatus';
 export * from './pageInfo';

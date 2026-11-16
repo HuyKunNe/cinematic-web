@@ -18,6 +18,7 @@ import CustomerBrand from './CustomerBrand.vue'
         ><RouterLink :to="{ name: ROUTE_NAMES.MOVIES }">Phim</RouterLink
         ><RouterLink :to="{ name: ROUTE_NAMES.CINEMAS }">Rạp</RouterLink
         ><RouterLink :to="{ name: ROUTE_NAMES.EXPERIENCES }">Trải nghiệm</RouterLink
+        ><RouterLink :to="{ name: ROUTE_NAMES.SEARCH }">Tìm kiếm</RouterLink
         ><RouterLink :to="{ name: ROUTE_NAMES.PROMOTIONS }">Ưu đãi</RouterLink>
       </div>
       <div>

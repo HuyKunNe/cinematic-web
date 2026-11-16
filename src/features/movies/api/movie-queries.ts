@@ -26,9 +26,10 @@ function mapMovieCatalog(response: MovieResponse[]): CatalogMovie[] {
   return movies
 }
 
-export function useMoviesQuery() {
+export function useMoviesQuery(enabled: MaybeRefOrGetter<boolean> = true) {
   return useQuery({
     queryKey: moviesQueryKeys.catalog,
+    enabled: computed(() => toValue(enabled)),
     queryFn: () => findAllMovies(),
     select: mapMovieCatalog,
   })

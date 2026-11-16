@@ -1,5 +1,24 @@
 # Current Status
 
+## USER global search — 2026-11-16
+
+Added `/search?q=...` matching Lumière's search heading, keyword form and separate
+movie/cinema results. Reuses the existing public movie catalogue mapper/query,
+CatalogMovieCard, cinema catalogue and AppPagination; matching accepts Vietnamese
+with or without accents. Search covers the available system catalogue rather than
+the currently selected cinema, and cinema matches include city/address.
+
+Query and independent result pages are URL-backed (`q`, `page`, `cinemaPage`) for
+Back/Forward. Movie query accepts an optional enabled flag (existing callers keep
+the default); blank search does not trigger it. Header search now opens/focuses
+the new search form after page loading; footer links to search. Includes partial
+API failures with retry, empty state, mobile layout and no fabricated results.
+
+Manual checks: header search, submit accented/unaccented keywords, movie/cinema
+detail links, independent pagination, Back/Forward, reload shared URL, clear query,
+API failures and mobile focus. No tests/lint/typecheck/build or browser verification
+performed; existing generated-client changes were preserved without edits.
+
 ## USER experiences — 2026-11-16
 
 Added `/experiences`, linked from desktop/mobile primary navigation, footer and
