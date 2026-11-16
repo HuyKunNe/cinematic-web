@@ -8,7 +8,8 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 
 const route = useRoute()
 const loading = ref(false)
-const errorMessage = ref('Không thể mở trang đăng nhập. Vui lòng thử lại.')
+const errorMessage = ref(route.query.authError === 'signin_redirect_failed'
+  ? 'Không thể mở trang đăng nhập. Vui lòng thử lại.' : '')
 
 async function handleSignIn() {
   if (loading.value) return
@@ -31,9 +32,7 @@ async function handleSignIn() {
       <div class="login-page__card">
         <p class="login-page__eyebrow">Tài khoản Cinematic</p>
         <h1>Chào bạn trở lại</h1>
-        <p class="login-page__description">
-          Đăng nhập để quản lý vé và tiếp tục đặt chỗ.
-        </p>
+        <p class="login-page__description">Đăng nhập để quản lý vé và tiếp tục đặt chỗ.</p>
 
         <p v-if="errorMessage" class="login-page__error" role="alert">
           {{ errorMessage }}
@@ -50,9 +49,7 @@ async function handleSignIn() {
         </button>
 
         <div class="login-page__links">
-          <AppLink :to="{ name: ROUTE_NAMES.REGISTER }">
-            Chưa có tài khoản? Đăng ký
-          </AppLink>
+          <AppLink :to="{ name: ROUTE_NAMES.REGISTER }"> Chưa có tài khoản? Đăng ký </AppLink>
         </div>
       </div>
     </section>

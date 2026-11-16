@@ -68,6 +68,12 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: ROUTE_PATHS.CINEMA_DETAIL,
+    name: ROUTE_NAMES.CINEMA_DETAIL,
+    component: () => import('../features/cinemas/pages/CinemaDetailPage.vue'),
+    meta: { layout: 'customer', title: 'Chi tiết rạp' },
+  },
+  {
     path: ROUTE_PATHS.SHOWTIMES,
     name: ROUTE_NAMES.SHOWTIMES,
     component: loadShowtimesPage,

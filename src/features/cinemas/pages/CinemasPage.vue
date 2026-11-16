@@ -188,7 +188,13 @@ function retry() {
                   'is-selected': selectedCinema?.id === cinema.id,
                 }"
               >
-                <div class="customer-cinemas__visual"><img src="/customer/cinema-placeholder.svg" alt="Không gian điện ảnh minh họa" loading="lazy" /></div>
+                <div class="customer-cinemas__visual">
+                  <img
+                    src="/customer/cinema-placeholder.svg"
+                    alt="Không gian điện ảnh minh họa"
+                    loading="lazy"
+                  />
+                </div>
                 <div class="customer-cinemas__card-heading">
                   <p class="customer-cinemas__city">
                     {{ cinema.city }}
@@ -205,6 +211,11 @@ function retry() {
                 </p>
 
                 <div class="customer-cinemas__actions">
+                  <AppLink
+                    :to="{ name: ROUTE_NAMES.CINEMA_DETAIL, params: { cinemaId: cinema.id } }"
+                    :aria-label="`Xem chi tiết ${cinema.name}`"
+                    >Xem chi tiết →</AppLink
+                  >
                   <AppButton
                     variant="ghost"
                     :disabled="!canSelect"

@@ -1,5 +1,26 @@
 # Current Status
 
+## USER cinema detail — 2026-11-16
+
+Added `/cinemas/:cinemaId`, linked from the cinema list, following Lumière's
+cinemaDetail cover, information panels and movie-grouped schedule. Cinema,
+amenities, active rooms and bookable schedules use existing generated APIs.
+The cover uses the existing illustration because CinemaResponse has no cover
+image. Missing contact/directions data is not invented. Includes invalid/inactive
+cinema, loading, retry, empty schedules and mobile layouts.
+
+CustomerSchedule is extracted from ShowtimesPage and reused through the home
+feature's public export; the normal schedule keeps its filters, while cinema
+detail pins the cinema and shows the date strip. Choosing a slot rechecks current
+availability before the existing booking route. Login error initialization now
+respects the explicit sign-in redirect failure flag used by the route guard.
+
+Manual checks: cinema list → detail → change date → select a slot; verify the
+cinema remains pinned even if the header city changes; check inactive/invalid IDs,
+API errors, empty amenities/rooms, mobile and keyboard focus. Existing login
+redirect failure should still show its error and retry. No test/lint/typecheck/
+build or browser/runtime verification performed; no BE/generated/reference edits.
+
 ## USER payment processing screen — 2026-11-13
 
 Pay now switches draft checkout into the reference processing view immediately

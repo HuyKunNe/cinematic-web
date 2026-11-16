@@ -15,7 +15,12 @@ import {
   useCustomerPaymentQuery,
 } from '../api/customer-payment'
 
-const props = defineProps<{ booking: CustomerBooking; disabled: boolean; resultOnly?: boolean; processing?: boolean }>()
+const props = defineProps<{
+  booking: CustomerBooking
+  disabled: boolean
+  resultOnly?: boolean
+  processing?: boolean
+}>()
 const emit = defineEmits<{
   refresh: []
   paymentStatus: [status: PaymentCheckoutResponseStatus | undefined]
@@ -94,15 +99,21 @@ const canPay = computed(
       now.value.getTime() &&
     !!validLink.value,
 )
-const processingNeedsAction = computed(() => !!props.processing && (query.isError.value || !!handoffError.value ||
-  (payment.value?.status === 'PENDING_PROVIDER' && (!hasPaymentIntent.value || !validLink.value))))
+const processingNeedsAction = computed(
+  () =>
+    !!props.processing &&
+    (query.isError.value ||
+      !!handoffError.value ||
+      (payment.value?.status === 'PENDING_PROVIDER' &&
+        (!hasPaymentIntent.value || !validLink.value))),
+)
 const message = computed(() => {
   if (props.booking.status === 'PENDING')
     return 'Đang chờ xác nhận giữ ghế trước khi chuẩn bị thanh toán.'
   if (payment.value?.status === 'RECONCILIATION_REQUIRED')
     return 'Chưa xác định được kết quả. Không thanh toán lại hoặc tạo đơn mới; hãy kiểm tra trạng thái đơn.'
   if (payment.value?.status === 'SUCCEEDED' && props.booking.status !== 'CONFIRMED')
-    return props.booking.status === 'RESERVED' || props.booking.status === 'PENDING'
+    return props.booking.status === 'RESERVED'
       ? 'Thanh toán đã thành công. Đang chờ hệ thống xác nhận đơn đặt vé; chưa phát hành vé tại bước này.'
       : 'Đã ghi nhận thanh toán nhưng đơn chưa được xác nhận. Vui lòng liên hệ rạp để kiểm tra.'
   if (['CANCELLED', 'EXPIRED', 'REJECTED'].includes(props.booking.status))
@@ -152,11 +163,18 @@ watch(
 </script>
 
 <template>
-  <section class="booking-payment" :class="{ 'booking-payment--processing': processing }" aria-labelledby="booking-payment-title">
+  <section
+    class="booking-payment"
+    :class="{ 'booking-payment--processing': processing }"
+    aria-labelledby="booking-payment-title"
+  >
     <h3 id="booking-payment-title" :class="{ 'sr-only': resultOnly || processing }">
       {{ resultOnly ? 'Trạng thái thanh toán' : 'Phương thức thanh toán' }}
     </h3>
-    <div v-if="booking.paymentProvider && !resultOnly && !processing" class="booking-payment__provider">
+    <div
+      v-if="booking.paymentProvider && !resultOnly && !processing"
+      class="booking-payment__provider"
+    >
       <Wallet v-if="booking.paymentProvider === 'MOMO'" aria-hidden="true" /><CreditCard
         v-else
         aria-hidden="true"
@@ -181,7 +199,10 @@ watch(
     <p v-if="query.isError.value" class="booking-error" role="alert">
       Chưa thể kiểm tra thanh toán. Vui lòng thử lại; không tạo thêm một đơn để thanh toán lại.
     </p>
-    <label v-if="booking.status === 'RESERVED' && !resultOnly && (!processing || processingNeedsAction)" class="booking-payment__consent">
+    <label
+      v-if="booking.status === 'RESERVED' && !resultOnly && (!processing || processingNeedsAction)"
+      class="booking-payment__consent"
+    >
       <input v-model="agreed" type="checkbox" :disabled="disabled" />
       <span
         >Tôi đã kiểm tra phim, suất chiếu, ghế, điều kiện độ tuổi và tổng tiền trước khi thanh
@@ -291,6 +312,14 @@ watch(
   outline: var(--focus-ring-width) solid var(--color-focus);
   outline-offset: var(--space-1);
 }
-.booking-payment.booking-payment--processing { max-width: var(--journey-copy-width); margin: var(--space-5) auto 0; padding: 0; border: 0; text-align: center; }
-.booking-payment--processing .booking-payment__actions { justify-content: center; }
+.booking-payment.booking-payment--processing {
+  max-width: var(--journey-copy-width);
+  margin: var(--space-5) auto 0;
+  padding: 0;
+  border: 0;
+  text-align: center;
+}
+.booking-payment--processing .booking-payment__actions {
+  justify-content: center;
+}
 </style>
