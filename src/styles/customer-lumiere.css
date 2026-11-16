@@ -1,5 +1,15 @@
 @reference './main.css';
 
+/* Toasts are teleported outside the customer layout; use its actual header offset. */
+body:has(.customer-layout) .app-toast__viewport {
+  top: calc(var(--header-height) + var(--space-4));
+}
+@variant lumiere-mobile {
+  body:has(.customer-layout) .app-toast__viewport {
+    top: calc(var(--header-height-mobile) + var(--space-4));
+  }
+}
+
 /* Lumière reference tokens. Activated only while the customer layout is mounted. */
 body:has(.customer-layout),
 .customer-layout {

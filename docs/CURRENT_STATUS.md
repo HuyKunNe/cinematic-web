@@ -1,5 +1,21 @@
 # Current Status
 
+## USER not-found and profile feedback — 2026-11-16
+
+Catch-all customer route now renders Lumière's dedicated 404 screen with home
+and support actions; auth/permission PlaceholderPage usages remain unchanged.
+Profile save success now uses the existing four-second success toast after a
+successful real response, rather than a persistent form paragraph. Field/API
+errors remain inline for correction; reset/new submission dismisses old success.
+Customer-only viewport styling positions teleported toasts below desktop/mobile
+headers without changing Admin toast placement.
+
+Manual checks: unknown URL → home/support; desktop/mobile 404; valid profile edit
+→ successful save toast → expiry; reset/new save; API failure and validation should
+not report success; header offset and keyboard dismissal. No tests/lint/typecheck/
+build or browser verification performed. Existing booking/generated changes were
+preserved; no BE/MySQL/reference edits or commits/pushes.
+
 ## USER screenings in progress — 2026-11-16
 
 Current BE periods still use the stored showtime end, so labels now say Not Ended
