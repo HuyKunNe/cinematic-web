@@ -2,7 +2,14 @@
 import { computed, ref, watch } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { useQueryClient } from '@tanstack/vue-query'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, RouterLink, useRoute } from 'vue-router'
+import {
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+  RouterLink,
+  useRoute,
+  useRouter,
+  type LocationQueryRaw,
+} from 'vue-router'
 import {
   AlertDialogRoot,
   AlertDialogPortal,
@@ -11,6 +18,10 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogCancel,
+  TabsRoot,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from 'reka-ui'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppButton from '@/components/ui/AppButton.vue'
@@ -31,10 +42,13 @@ import {
   cancelCustomerBooking,
   useCustomerBookingQuery,
   useCustomerBookingsQuery,
+  customerBookingListTabs,
+  type CustomerBookingListTab,
   type CustomerBooking,
 } from '../api/customer-bookings'
 
 const route = useRoute()
+const router = useRouter()
 const auth = useAuthStore()
 const queries = useQueryClient()
 const id = computed(() =>
@@ -47,8 +61,49 @@ const id = computed(() =>
 const isCheckout = computed(() => route.name === ROUTE_NAMES.BOOKING_CHECKOUT)
 const isResult = computed(() => route.name === ROUTE_NAMES.BOOKING_RESULT)
 const validId = computed(() => customerBookingId.safeParse(id.value).success)
-const page = ref(0)
-const list = useCustomerBookingsQuery(page, () => !id.value)
+const listNavigationError = ref('')
+const listNavigating = ref(false)
+const activeTab = computed<CustomerBookingListTab>(() =>
+  route.query.tab === 'confirmed' || route.query.tab === 'unfinished' ? route.query.tab : 'all',
+)
+const page = computed({
+  get: () => {
+    const value = typeof route.query.page === 'string' ? Number(route.query.page) : 1
+    return Number.isSafeInteger(value) && value > 0 && value <= 2147483647 ? value - 1 : 0
+  },
+  set: (value: number) => {
+    void updateListLocation({ page: value ? String(value + 1) : undefined })
+  },
+})
+const list = useCustomerBookingsQuery(
+  page,
+  () => !id.value,
+  () => customerBookingListTabs[activeTab.value].statuses,
+)
+async function updateListLocation(query: LocationQueryRaw) {
+  if (listNavigating.value) return
+  listNavigating.value = true
+  listNavigationError.value = ''
+  try {
+    const failure = await router.push({
+      name: ROUTE_NAMES.ACCOUNT_BOOKINGS,
+      query: { ...route.query, ...query },
+    })
+    if (failure) listNavigationError.value = 'Chưa thể cập nhật danh sách vé. Vui lòng thử lại.'
+  } catch {
+    listNavigationError.value = 'Chưa thể cập nhật danh sách vé. Vui lòng thử lại.'
+  } finally {
+    listNavigating.value = false
+  }
+}
+function changeTab(value: string | number) {
+  if (
+    value === activeTab.value ||
+    !(value === 'all' || value === 'confirmed' || value === 'unfinished')
+  )
+    return
+  void updateListLocation({ tab: value === 'all' ? undefined : value, page: undefined })
+}
 const detail = useCustomerBookingQuery(id)
 const booking = computed(() =>
   auth.isAuthenticated && detail.data.value?.userId === auth.subject
@@ -421,61 +476,99 @@ async function cancel() {
       <div v-else class="lumiere-account-layout">
         <CustomerAccountNav />
         <section class="customer-bookings__browser" aria-label="Danh sách đơn đặt vé">
-          <p v-if="list.isPending.value" class="booking-note" role="status">
-            Đang tải đơn của bạn…
-          </p>
-          <div v-else-if="list.isError.value" class="booking-panel">
-            <p class="booking-error" role="alert">{{ customerBookingError(list.error.value) }}</p>
-            <AppButton :loading="list.isFetching.value" @click="list.refetch()">Thử lại</AppButton>
-          </div>
-          <template v-else-if="list.data.value">
-            <div class="customer-bookings__list-toolbar">
-              <h2 class="customer-bookings__list-label">
-                Tất cả giao dịch <span>{{ list.data.value.page.totalElements }}</span>
-              </h2>
-              <AppButton
-                variant="ghost"
-                size="sm"
-                :loading="list.isFetching.value"
-                @click="list.refetch()"
-                >Làm mới</AppButton
+          <TabsRoot :model-value="activeTab" @update:model-value="changeTab">
+            <TabsList class="customer-bookings__tabs" aria-label="Nhóm giao dịch">
+              <TabsTrigger
+                v-for="(tab, key) in customerBookingListTabs"
+                :key="key"
+                :value="key"
+                :disabled="listNavigating"
+                >{{ tab.label }}</TabsTrigger
               >
-            </div>
-            <div v-if="!list.data.value.content.length" class="customer-bookings__empty">
-              <Ticket aria-hidden="true" />
-              <h2>Chưa có đơn trong mục này</h2>
-              <p>Chọn một bộ phim để bắt đầu cuộc hẹn mới.</p>
-              <RouterLink
-                class="customer-bookings__order-link"
-                :to="{ name: ROUTE_NAMES.BOOKING_START }"
-                >Xem lịch chiếu →</RouterLink
-              >
-              <AppButton v-if="page" variant="ghost" @click="page = 0">Về trang đầu</AppButton>
-            </div>
-            <div
-              id="customer-booking-orders"
-              class="customer-bookings__list"
-              :aria-busy="list.isFetching.value"
-            >
-              <BookingTicketCard
-                v-for="item in list.data.value.content"
-                :key="item.id"
-                :booking="item"
-              />
-            </div>
-            <AppPagination
-              :page="page + 1"
-              :total="list.data.value.page.totalElements"
-              :page-size="list.data.value.page.size"
-              :disabled="list.isFetching.value"
-              controls="customer-booking-orders"
-              @update:page="page = $event - 1"
-            />
-            <p class="customer-bookings__list-note">
-              Trạng thái đơn được cập nhật từ hệ thống. Thông tin phim và rạp hiển thị theo danh mục
-              hiện tại; giá vé theo đơn đã lưu.
-            </p>
-          </template>
+            </TabsList>
+            <TabsContent :value="activeTab">
+              <p v-if="listNavigationError" class="booking-error" role="alert">
+                {{ listNavigationError }}
+              </p>
+              <p v-if="list.isPending.value" class="booking-note" role="status">
+                Đang tải đơn của bạn…
+              </p>
+              <div v-else-if="list.isError.value" class="booking-panel">
+                <p class="booking-error" role="alert">
+                  {{ customerBookingError(list.error.value) }}
+                </p>
+                <AppButton :loading="list.isFetching.value" @click="list.refetch()"
+                  >Thử lại</AppButton
+                >
+              </div>
+              <template v-else-if="list.data.value">
+                <div class="customer-bookings__list-toolbar">
+                  <h2 class="customer-bookings__list-label">
+                    {{
+                      activeTab === 'all'
+                        ? 'Tất cả giao dịch'
+                        : customerBookingListTabs[activeTab].label
+                    }}
+                    <span>{{ list.data.value.page.totalElements }}</span>
+                  </h2>
+                  <AppButton
+                    variant="ghost"
+                    size="sm"
+                    :loading="list.isFetching.value"
+                    @click="list.refetch()"
+                    >Làm mới</AppButton
+                  >
+                </div>
+                <div v-if="!list.data.value.content.length" class="customer-bookings__empty">
+                  <Ticket aria-hidden="true" />
+                  <h2>Chưa có đơn trong mục này</h2>
+                  <p>
+                    {{
+                      activeTab === 'all'
+                        ? 'Chọn một bộ phim để bắt đầu cuộc hẹn mới.'
+                        : 'Thử xem tất cả giao dịch hoặc chọn một cuộc hẹn mới.'
+                    }}
+                  </p>
+                  <AppButton
+                    v-if="activeTab !== 'all'"
+                    variant="ghost"
+                    :disabled="listNavigating"
+                    @click="changeTab('all')"
+                    >Xem tất cả giao dịch</AppButton
+                  >
+                  <RouterLink
+                    class="customer-bookings__order-link"
+                    :to="{ name: ROUTE_NAMES.BOOKING_START }"
+                    >Xem lịch chiếu →</RouterLink
+                  >
+                  <AppButton v-if="page" variant="ghost" @click="page = 0">Về trang đầu</AppButton>
+                </div>
+                <div
+                  id="customer-booking-orders"
+                  class="customer-bookings__list"
+                  :aria-busy="list.isFetching.value"
+                >
+                  <BookingTicketCard
+                    v-for="item in list.data.value.content"
+                    :key="item.id"
+                    :booking="item"
+                  />
+                </div>
+                <AppPagination
+                  :page="page + 1"
+                  :total="list.data.value.page.totalElements"
+                  :page-size="list.data.value.page.size"
+                  :disabled="list.isFetching.value || listNavigating"
+                  controls="customer-booking-orders"
+                  @update:page="page = $event - 1"
+                />
+                <p class="customer-bookings__list-note">
+                  Trạng thái đơn được cập nhật từ hệ thống. Thông tin phim và rạp hiển thị theo danh
+                  mục hiện tại; giá vé theo đơn đã lưu.
+                </p>
+              </template>
+            </TabsContent>
+          </TabsRoot>
         </section>
       </div>
       <AlertDialogRoot :open="confirming" @update:open="!cancelling && (confirming = $event)"

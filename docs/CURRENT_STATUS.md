@@ -1,5 +1,25 @@
 # Current Status
 
+## USER booking status tabs — 2026-11-16
+
+The regenerated customer booking list now supports repeated status parameters.
+Integrated this contract after checking BookingController and the repository-backed
+status filter before pagination. Added Reka tabs: All, Confirmed and Unfinished
+(all current booking statuses other than CONFIRMED). No per-page client filtering
+or fabricated counts. Query keys include normalized status sets; response validation
+checks owner, requested page and selected statuses.
+
+Selection and page are URL-backed on `/account/bookings?tab=confirmed` or
+`?tab=unfinished&page=2`; changing tab resets page. Includes error/retry, empty
+filtered results, an All action and keyboard/mobile tab navigation. Existing
+detail/payment/cancel flows are retained. Reference's Upcoming/Past labels remain
+deferred: status filtering alone cannot classify by showtime/check-in correctly.
+
+Manual checks: all/confirmed/unfinished, repeated status query parameters and
+server totals, pagination reset, Back/Forward, filtered empty results, account
+switch and cancellation then list refresh. No tests/lint/typecheck/build or browser
+verification performed; no generated/BE edits, database changes or commits/pushes.
+
 ## USER global search — 2026-11-16
 
 Added `/search?q=...` matching Lumière's search heading, keyword form and separate

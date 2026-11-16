@@ -11,6 +11,20 @@ import {
 import type { CreateBookingRequest } from '@/services/api/generated/booking-service/model/createBookingRequest'
 import { BookingResponseStatus } from '@/services/api/generated/booking-service/model/bookingResponseStatus'
 import { BookingResponsePaymentProvider } from '@/services/api/generated/booking-service/model/bookingResponsePaymentProvider'
+import { FindAllBookingsStatusItem } from '@/services/api/generated/booking-service/model/findAllBookingsStatusItem'
+import type { FindAllBookingsParams } from '@/services/api/generated/booking-service/model/findAllBookingsParams'
+
+export const customerBookingListTabs = {
+  all: { label: 'Tất cả', statuses: [] as FindAllBookingsStatusItem[] },
+  confirmed: { label: 'Đã xác nhận', statuses: [FindAllBookingsStatusItem.CONFIRMED] },
+  unfinished: {
+    label: 'Chưa hoàn tất',
+    statuses: Object.values(FindAllBookingsStatusItem).filter(
+      (status) => status !== FindAllBookingsStatusItem.CONFIRMED,
+    ),
+  },
+}
+export type CustomerBookingListTab = keyof typeof customerBookingListTabs
 
 const uuid = z.string().uuid()
 export const customerBookingId = z
@@ -162,13 +176,24 @@ export function useCustomerBookingQuery(id: MaybeRefOrGetter<string>) {
 export function useCustomerBookingsQuery(
   page: MaybeRefOrGetter<number>,
   enabled: MaybeRefOrGetter<boolean>,
+  statuses: MaybeRefOrGetter<FindAllBookingsStatusItem[]> = [],
 ) {
   const auth = useAuthStore()
+  const statusKey = computed(() => [...new Set(toValue(statuses))].sort())
   return useQuery({
-    queryKey: computed(() => ['customer-bookings', auth.subject, 'list', toValue(page)] as const),
+    queryKey: computed(
+      () => ['customer-bookings', auth.subject, 'list', toValue(page), statusKey.value] as const,
+    ),
     enabled: computed(() => auth.isAuthenticated && !!auth.subject && toValue(enabled)),
     queryFn: async ({ queryKey }) => {
       if (!auth.isAuthenticated || auth.subject !== queryKey[1]) throw new Error('Session changed')
+      const requestedPage = z.number().int().nonnegative().parse(queryKey[3])
+      const requestedStatuses = z.array(z.nativeEnum(FindAllBookingsStatusItem)).parse(queryKey[4])
+      const request = {
+        page: requestedPage,
+        size: 10,
+        ...(requestedStatuses.length ? { status: requestedStatuses } : {}),
+      } satisfies FindAllBookingsParams
       const response = z
         .object({
           success: z.literal(true),
@@ -183,12 +208,16 @@ export function useCustomerBookingsQuery(
             }),
           }),
         })
-        .parse(await findAllBookings({ page: queryKey[3], size: 10 })).data
+        .parse(await findAllBookings(request)).data
       if (
         !auth.isAuthenticated ||
         auth.subject !== queryKey[1] ||
         response.page.page !== queryKey[3] ||
-        response.content.some((booking) => booking.userId !== queryKey[1])
+        response.content.some(
+          (booking) =>
+            booking.userId !== queryKey[1] ||
+            (requestedStatuses.length > 0 && !requestedStatuses.includes(booking.status)),
+        )
       )
         throw new Error('Booking list mismatch')
       return response

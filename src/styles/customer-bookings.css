@@ -451,6 +451,39 @@
     border-top: var(--border-width-thin) solid var(--color-border);
   }
 }
+
+.customer-bookings__tabs {
+  --customer-tickets-tab-size: 0.8125rem;
+  display: flex;
+  gap: var(--space-6);
+  overflow-x: auto;
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+  margin-bottom: var(--space-6);
+}
+.customer-bookings__tabs button {
+  flex-shrink: 0;
+  padding: var(--space-3) 0;
+  border: 0;
+  border-bottom: var(--border-width-strong) solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--customer-tickets-tab-size);
+  cursor: pointer;
+}
+.customer-bookings__tabs button[data-state='active'] {
+  color: var(--color-primary-hover);
+  border-bottom-color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+.customer-bookings__tabs button:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+.customer-bookings--list .customer-bookings__list-toolbar,
+.customer-bookings--list .customer-bookings__list-label {
+  border-bottom: 0;
+}
 @variant lumiere-mobile {
   .customer-bookings--list {
     --customer-tickets-title-size: 1.1875rem;
