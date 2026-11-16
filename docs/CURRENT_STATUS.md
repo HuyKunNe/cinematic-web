@@ -1,5 +1,27 @@
 # Current Status
 
+## USER movie-detail schedule filters — 2026-11-16
+
+Movie detail now has the reference format selector alongside cinema/date, within
+the reference-style filter bar. Uses generated screening-version content-format
+values, derives available options from returned bookable showtimes and provides
+an All Formats action when the selected format has no matching slot. Slot captions
+include actual format, audio language, presentation and existing room details.
+
+Date, cinema and format use URL query parameters (`date`, `cinema`, `format`) for
+reload/sharing and Back/Forward. Active cinema links are resolved from the public
+catalogue and synchronized with location selection; changing header city releases
+an incompatible pinned cinema. Re-selecting the same filter avoids duplicate
+navigation errors. Selection still rechecks availability and the selected format
+before continuing through the existing booking/auth flow.
+
+The view still shows the selected cinema rather than aggregating all cinemas in
+the city; no new endpoint or fabricated showtime state was introduced. Manual
+checks: valid shared URL, date/format/cinema changes, Back/Forward, header city,
+empty format, repeated day selection, API errors and booking recheck. No tests,
+lint/typecheck/build or browser verification performed; no BE/generated/reference
+edits, database changes, commits or pushes.
+
 ## USER trailer dialog — 2026-11-16
 
 Hero, shared movie cards (home/catalog/search) and movie detail now use one Reka

@@ -48,7 +48,7 @@ const selectionKey = computed(() => {
 })
 
 const changeShowtimeRoute = computed(() => ({
-  name: ROUTE_NAMES.BOOKING_START,
+  name: ROUTE_NAMES.SHOWTIMES,
   query: {
     movieId: context.value?.showtime.movieId,
   },
@@ -76,7 +76,7 @@ onBeforeUnmount(() => {
       <nav class="booking-start__breadcrumb" aria-label="Đường dẫn trang">
         <AppLink :to="{ name: ROUTE_NAMES.HOME }" variant="muted"> Trang chủ </AppLink>
         <span aria-hidden="true">/</span>
-        <AppLink :to="changeShowtimeRoute" variant="muted"> Đặt vé </AppLink>
+        <AppLink :to="changeShowtimeRoute" variant="muted"> Lịch chiếu </AppLink>
         <span aria-hidden="true">/</span>
         <span aria-current="page">Chọn ghế</span>
       </nav>

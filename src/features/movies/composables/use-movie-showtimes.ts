@@ -7,13 +7,14 @@ import {
   watch,
   type MaybeRefOrGetter,
 } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter, type LocationQueryRaw } from 'vue-router'
 import { useCinemaLocation, useCinemaRoomsQuery } from '@/features/cinemas'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { getCinemaDateKey, getCinemaDayRange } from '@/utils/cinema-time'
 import type { GetBookableShowtimesParams } from '@/services/api/generated/inventory-service/model/getBookableShowtimesParams'
 import type { ShowtimeResponse } from '@/services/api/generated/inventory-service/model/showtimeResponse'
 import type { RoomResponseRoomType } from '@/services/api/generated/inventory-service/model/roomResponseRoomType'
+import { ShowtimeScreeningVersionResponseContentFormat } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponseContentFormat'
 import { useMovieBookableShowtimes } from '../api/movie-showtime.queries'
 
 type BookableShowtime = ShowtimeResponse & {
@@ -31,20 +32,72 @@ const roomTypeLabels: Record<RoomResponseRoomType, string> = {
 
 export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
   const router = useRouter()
+  const route = useRoute()
 
   const {
     query: locationQuery,
-    selectedCinema,
-    selectedCity,
+    selectedCinema: locationCinema,
+    selectedCity: locationCity,
+    cinemas,
+    cities,
+    selectCinemaById,
     locationDescription,
   } = useCinemaLocation()
 
   const now = ref(Date.now())
   const today = computed(() => getCinemaDateKey(new Date(now.value).toISOString()))
 
-  const selectedDate = ref(today.value)
   const checkingId = ref('')
   const navigationError = ref('')
+  const updatingFilters = ref(false)
+  const requestedCinemaId = computed(() =>
+    typeof route.query.cinema === 'string' ? route.query.cinema.toLowerCase() : '',
+  )
+  const selectedCinema = computed(() =>
+    requestedCinemaId.value
+      ? cinemas.value.find((cinema) => cinema.id === requestedCinemaId.value)
+      : locationCinema.value,
+  )
+  const selectedCity = computed(() =>
+    selectedCinema.value
+      ? cities.value.find((city) => city.key === selectedCinema.value?.cityKey)
+      : locationCity.value,
+  )
+  const selectedDate = computed({
+    get: () => (typeof route.query.date === 'string' ? route.query.date : today.value),
+    set: (date: string) => {
+      void updateFilters({ date })
+    },
+  })
+  const selectedFormat = computed({
+    get: () =>
+      Object.values(ShowtimeScreeningVersionResponseContentFormat).find(
+        (format) => route.query.format === format,
+      ) ?? '',
+    set: (format: string) => {
+      void updateFilters({ format: format || undefined })
+    },
+  })
+
+  async function updateFilters(query: LocationQueryRaw) {
+    if (checkingId.value || updatingFilters.value) return
+    const target = {
+      path: route.path,
+      query: { ...route.query, cinema: selectedCinema.value?.id, ...query },
+      hash: route.hash,
+    }
+    if (router.resolve(target).fullPath === route.fullPath) return
+    updatingFilters.value = true
+    navigationError.value = ''
+    try {
+      const failure = await router.push(target)
+      if (failure) navigationError.value = 'Chưa thể cập nhật bộ lọc lịch chiếu. Vui lòng thử lại.'
+    } catch {
+      navigationError.value = 'Chưa thể cập nhật bộ lọc lịch chiếu. Vui lòng thử lại.'
+    } finally {
+      updatingFilters.value = false
+    }
+  }
 
   let timer: number | undefined
   let disposed = false
@@ -78,7 +131,9 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
     }
   })
 
-  const scopeKey = computed(() => [toValue(movieId), cinemaId.value, selectedDate.value].join('|'))
+  const scopeKey = computed(() =>
+    [toValue(movieId), cinemaId.value, selectedDate.value, selectedFormat.value].join('|'),
+  )
 
   const showtimesQuery = useMovieBookableShowtimes(request)
   const roomsQuery = useCinemaRoomsQuery(cinemaId)
@@ -125,13 +180,29 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
       )
   }
 
-  const showtimes = computed(() => filterShowtimes(showtimesQuery.data.value ?? []))
+  const allShowtimes = computed(() => filterShowtimes(showtimesQuery.data.value ?? []))
+  const formats = computed(() =>
+    [
+      ...new Set(
+        allShowtimes.value.flatMap((item) =>
+          item.screeningVersion?.contentFormat ? [item.screeningVersion.contentFormat] : [],
+        ),
+      ),
+    ].sort(),
+  )
+  const showtimes = computed(() =>
+    allShowtimes.value.filter(
+      (item) =>
+        !selectedFormat.value || item.screeningVersion?.contentFormat === selectedFormat.value,
+    ),
+  )
 
   const canBook = computed(
     () =>
       Boolean(request.value) &&
       showtimesQuery.isSuccess.value &&
       !showtimesQuery.isFetching.value &&
+      !updatingFilters.value &&
       !checkingId.value,
   )
 
@@ -146,7 +217,16 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
 
     const roomName = showtime.roomName?.trim() || room?.name?.trim()
 
-    return [typeLabel, roomName].filter(Boolean).join(' · ')
+    const version = showtime.screeningVersion
+    const presentation =
+      version?.presentationType === 'SUBTITLED'
+        ? 'Phụ đề'
+        : version?.presentationType === 'DUBBED'
+          ? 'Lồng tiếng'
+          : ''
+    return [version?.contentFormat, version?.audioLanguage, presentation, typeLabel, roomName]
+      .filter(Boolean)
+      .join(' · ')
   }
 
   watch(
@@ -162,6 +242,30 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
       selectedDate.value = value
     }
   })
+
+  watch(
+    [requestedCinemaId, () => locationQuery.isSuccess.value],
+    ([id, ready]) => {
+      if (!id || !ready) return
+      const cinema = cinemas.value.find((item) => item.id === id)
+      if (cinema) selectCinemaById(cinema.id, cinema.cityKey)
+    },
+    { immediate: true },
+  )
+
+  watch(
+    () => locationCity.value?.key,
+    (city, previous) => {
+      if (
+        city &&
+        previous &&
+        city !== previous &&
+        requestedCinemaId.value &&
+        selectedCinema.value?.cityKey !== city
+      )
+        void updateFilters({ cinema: undefined })
+    },
+  )
 
   function updateClock() {
     now.value = Date.now()
@@ -204,11 +308,19 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
       }
 
       const stillBookable = filterShowtimes(result.data ?? []).some(
-        (item) => item.id === showtimeId,
+        (item) =>
+          item.id === showtimeId &&
+          (!selectedFormat.value || item.screeningVersion?.contentFormat === selectedFormat.value),
       )
 
       if (!stillBookable) {
         navigationError.value = 'Suất này không còn mở bán. Vui lòng chọn suất khác.'
+        return
+      }
+
+      const cinema = selectedCinema.value
+      if (!cinema || !selectCinemaById(cinema.id, cinema.cityKey)) {
+        navigationError.value = 'Chưa thể chọn rạp của suất chiếu. Vui lòng thử lại.'
         return
       }
 
@@ -246,6 +358,10 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
     locationDescription,
     today,
     selectedDate,
+    selectedFormat,
+    formats,
+    updatingFilters,
+    updateFilters,
     dateValid,
     showtimesQuery,
     roomsQuery,

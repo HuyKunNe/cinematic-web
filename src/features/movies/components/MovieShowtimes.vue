@@ -19,6 +19,10 @@ const {
   locationDescription,
   today,
   selectedDate,
+  selectedFormat,
+  formats,
+  updatingFilters,
+  updateFilters,
   dateValid,
   showtimesQuery,
   roomsQuery,
@@ -37,11 +41,18 @@ const cinemaOptions = computed(() =>
   cinemas.value.filter((cinema) => cinema.cityKey === selectedCity.value?.key),
 )
 function changeCinema(event: Event) {
-  if (checkingId.value || locationQuery.isFetching.value || locationQuery.isError.value) return
+  if (
+    checkingId.value ||
+    updatingFilters.value ||
+    locationQuery.isFetching.value ||
+    locationQuery.isError.value
+  )
+    return
   const cinema = cinemaOptions.value.find(
     (item) => item.id === (event.target as HTMLSelectElement).value,
   )
-  if (cinema) selectCinemaById(cinema.id, cinema.cityKey)
+  if (cinema && selectCinemaById(cinema.id, cinema.cityKey))
+    void updateFilters({ cinema: cinema.id })
 }
 
 function openLocation(event: MouseEvent) {
@@ -69,11 +80,15 @@ function retryRooms() {
     tabindex="-1"
   >
     <div class="movie-showtimes__heading">
-      <p class="movie-detail__eyebrow">Lịch chiếu</p>
-      <h2 id="movie-showtimes-title">Chọn rạp và suất chiếu</h2>
+      <p class="movie-detail__eyebrow">CHỌN MỘT CUỘC HẸN</p>
+      <h2 id="movie-showtimes-title">Lịch chiếu</h2>
     </div>
 
-    <AppDateStrip v-model="selectedDate" :start-date="today" :disabled="!!checkingId" />
+    <AppDateStrip
+      v-model="selectedDate"
+      :start-date="today"
+      :disabled="!!checkingId || updatingFilters"
+    />
     <div class="movie-showtimes__controls">
       <div class="movie-showtimes__location">
         <span class="movie-showtimes__label">Rạp chiếu</span>
@@ -83,7 +98,12 @@ function retryRooms() {
           class="lumiere-movie-cinema"
           :value="selectedCinema?.id ?? ''"
           aria-label="Chọn rạp chiếu"
-          :disabled="!!checkingId || locationQuery.isFetching.value || locationQuery.isError.value"
+          :disabled="
+            !!checkingId ||
+            updatingFilters ||
+            locationQuery.isFetching.value ||
+            locationQuery.isError.value
+          "
           @change="changeCinema"
         >
           <option value="">Chọn rạp của bạn</option>
@@ -107,13 +127,31 @@ function retryRooms() {
       </div>
 
       <label class="movie-showtimes__date">
+        <span class="movie-showtimes__label">Định dạng phim</span>
+        <select
+          v-model="selectedFormat"
+          class="lumiere-movie-cinema"
+          :disabled="!!checkingId || updatingFilters || !selectedCinema"
+        >
+          <option value="">Tất cả định dạng</option>
+          <option v-for="format in formats" :key="format" :value="format">{{ format }}</option>
+          <option
+            v-if="selectedFormat && !formats.some((format) => format === selectedFormat)"
+            :value="selectedFormat"
+          >
+            {{ selectedFormat }} · Chưa có suất phù hợp
+          </option>
+        </select>
+      </label>
+
+      <label class="movie-showtimes__date">
         <span class="movie-showtimes__label">Ngày chiếu</span>
 
         <input
           v-model="selectedDate"
           type="date"
           :min="today"
-          :disabled="Boolean(checkingId)"
+          :disabled="Boolean(checkingId) || updatingFilters"
           :aria-invalid="!dateValid || undefined"
           aria-describedby="movie-showtimes-feedback"
         />
@@ -178,11 +216,20 @@ function retryRooms() {
         @retry="retryShowtimes"
       />
 
-      <AppEmptyState
-        v-else-if="!showtimes.length"
-        title="Chưa có suất mở bán trong ngày này"
-        description="Bạn có thể chọn ngày khác hoặc đổi thành phố và rạp."
-      />
+      <template v-else-if="!showtimes.length">
+        <AppEmptyState
+          title="Chưa có suất mở bán trong ngày này"
+          description="Bạn có thể chọn ngày khác, đổi định dạng hoặc đổi thành phố và rạp."
+        />
+
+        <AppButton
+          v-if="selectedFormat"
+          variant="ghost"
+          :disabled="updatingFilters"
+          @click="selectedFormat = ''"
+          >Xem tất cả định dạng</AppButton
+        >
+      </template>
 
       <template v-else>
         <div v-if="roomsQuery.isError.value" class="movie-showtimes__room-notice" role="status">
