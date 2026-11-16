@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, type LocationQueryRaw } from 'vue-router'
 import { TabsRoot, TabsList, TabsTrigger, TabsContent } from 'reka-ui'
 import { CalendarDays, MapPin } from 'lucide-vue-next'
 import AppContainer from '@/components/ui/AppContainer.vue'
@@ -12,6 +12,7 @@ import { ROUTE_NAMES } from '@/router/route-constants'
 import { getCinemaDateKey, getCinemaDayRange, formatCinemaTime } from '@/utils/cinema-time'
 import { useHomeMovies } from '../api/home-queries'
 import { useCustomerSchedule, type CustomerScheduleSlot } from '../api/customer-schedule'
+import { ShowtimeScreeningVersionResponseContentFormat } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponseContentFormat'
 
 const route = useRoute()
 const props = defineProps<{ cinemaId?: string; embedded?: boolean }>()
@@ -29,21 +30,79 @@ const now = useNow({
   scheduler: (update) => useIntervalFn(update, 1_000),
 })
 const today = computed(() => getCinemaDateKey(now.value.toISOString()))
-const mode = ref(props.cinemaId || route.query.mode === 'cinema' ? 'cinema' : 'movie')
+const updatingFilters = ref(false)
+const fallbackMovieId = ref('')
+const mode = computed({
+  get: () => (props.cinemaId || route.query.mode === 'cinema' ? 'cinema' : 'movie'),
+  set: (mode: string) => {
+    if (mode === 'movie' || mode === 'cinema') void updateFilters({ mode })
+  },
+})
+const requestedCinemaId = computed(() =>
+  !props.embedded && typeof route.query.cinemaId === 'string'
+    ? route.query.cinemaId.toLowerCase()
+    : '',
+)
 const activeCinema = computed(() =>
   props.cinemaId
     ? cinemas.value.find((cinema) => cinema.id === props.cinemaId)
-    : selectedCinema.value,
+    : requestedCinemaId.value
+      ? cinemas.value.find((cinema) => cinema.id === requestedCinemaId.value)
+      : selectedCinema.value,
 )
-const movieId = ref(typeof route.query.movieId === 'string' ? route.query.movieId : '')
-const date = ref(
-  typeof route.query.date === 'string' && getCinemaDayRange(route.query.date)
-    ? route.query.date
-    : today.value,
-)
-const format = ref('')
+const movieId = computed({
+  get: () =>
+    typeof route.query.movieId === 'string' ? route.query.movieId : fallbackMovieId.value,
+  set: (movieId: string) => {
+    void updateFilters({ movieId })
+  },
+})
+const date = computed({
+  get: () => (typeof route.query.date === 'string' ? route.query.date : today.value),
+  set: (date: string) => {
+    void updateFilters({ date })
+  },
+})
+const format = computed({
+  get: () =>
+    props.embedded
+      ? ''
+      : (Object.values(ShowtimeScreeningVersionResponseContentFormat).find(
+          (format) => format === route.query.format,
+        ) ?? ''),
+  set: (format: string) => {
+    void updateFilters({ format: format || undefined })
+  },
+})
 const checkingId = ref('')
 const error = ref('')
+async function updateFilters(patch: LocationQueryRaw) {
+  if (checkingId.value || updatingFilters.value) return
+  const query: LocationQueryRaw = props.embedded
+    ? { ...route.query, ...patch }
+    : {
+        ...route.query,
+        mode: mode.value,
+        movieId:
+          typeof route.query.movieId === 'string' ? movieId.value : movieId.value || undefined,
+        cinemaId: activeCinema.value?.id,
+        date: date.value,
+        format: format.value || undefined,
+        ...patch,
+      }
+  const target = { path: route.path, query, hash: route.hash }
+  if (router.resolve(target).fullPath === route.fullPath) return
+  updatingFilters.value = true
+  error.value = ''
+  try {
+    const failure = await router.push(target)
+    if (failure) error.value = 'Chưa thể cập nhật bộ lọc lịch chiếu. Vui lòng thử lại.'
+  } catch {
+    error.value = 'Chưa thể cập nhật bộ lọc lịch chiếu. Vui lòng thử lại.'
+  } finally {
+    updatingFilters.value = false
+  }
+}
 const cityCinemas = computed(() =>
   cinemas.value.filter((cinema) => cinema.cityKey === selectedCity.value?.key),
 )
@@ -147,6 +206,7 @@ const scope = computed(() =>
     activeCinema.value?.id,
     movieId.value,
     date.value,
+    format.value,
   ].join('|'),
 )
 watch(scope, () => {
@@ -159,15 +219,40 @@ watch(
   movies,
   (items) => {
     if (!movieId.value && items.length)
-      movieId.value = (items.find((item) => item.status === 'NOW_SHOWING') ?? items[0])!.id
+      fallbackMovieId.value = (items.find((item) => item.status === 'NOW_SHOWING') ?? items[0])!.id
   },
   { immediate: true },
 )
 function changeCinema(event: Event) {
+  if (checkingId.value || updatingFilters.value || !locationReady.value) return
   const id = (event.target as HTMLSelectElement).value
   const cinema = cityCinemas.value.find((item) => item.id === id)
-  if (cinema) selectCinemaById(cinema.id, cinema.cityKey)
+  if (cinema && selectCinemaById(cinema.id, cinema.cityKey))
+    void updateFilters({ cinemaId: cinema.id })
 }
+watch(
+  [requestedCinemaId, () => locationQuery.isSuccess.value],
+  ([id, ready]) => {
+    if (!id || !ready) return
+    const cinema = cinemas.value.find((item) => item.id === id)
+    if (cinema) selectCinemaById(cinema.id, cinema.cityKey)
+  },
+  { immediate: true },
+)
+watch(
+  () => location.selectedCityKey,
+  (city, previous) => {
+    if (
+      !props.embedded &&
+      city &&
+      previous &&
+      city !== previous &&
+      requestedCinemaId.value &&
+      activeCinema.value?.cityKey !== city
+    )
+      void updateFilters({ cinemaId: undefined })
+  },
+)
 function caption(slot: CustomerScheduleSlot) {
   const version = slot.screeningVersion
   const technology: Record<string, string> = {
@@ -195,7 +280,7 @@ function caption(slot: CustomerScheduleSlot) {
   )
 }
 async function choose(slot: CustomerScheduleSlot) {
-  if (checkingId.value || loading.value || !locationReady.value) return
+  if (checkingId.value || updatingFilters.value || loading.value || !locationReady.value) return
   const chosenScope = scope.value
   const index = requests.value.findIndex((request) => request.cinemaId === slot.cinemaId)
   const query = results.value[index]
@@ -249,14 +334,20 @@ async function retry() {
       </header>
       <TabsRoot v-if="!embedded" v-model="mode"
         ><TabsList class="lumiere-schedule__tabs" aria-label="Cách xem lịch chiếu"
-          ><TabsTrigger value="movie" :disabled="!!checkingId">Theo phim</TabsTrigger
-          ><TabsTrigger value="cinema" :disabled="!!checkingId">Theo rạp</TabsTrigger></TabsList
+          ><TabsTrigger value="movie" :disabled="!!checkingId || updatingFilters"
+            >Theo phim</TabsTrigger
+          ><TabsTrigger value="cinema" :disabled="!!checkingId || updatingFilters"
+            >Theo rạp</TabsTrigger
+          ></TabsList
         >
         <TabsContent v-for="pane in ['movie', 'cinema']" :key="pane" :value="pane"
           ><div class="lumiere-schedule__filters">
             <label v-if="pane === 'movie'"
               ><span>Phim muốn xem</span
-              ><select v-model="movieId" :disabled="!!checkingId || catalog.isFetching.value">
+              ><select
+                v-model="movieId"
+                :disabled="!!checkingId || catalog.isFetching.value || updatingFilters"
+              >
                 <option value="">Chọn phim</option>
                 <option v-for="film in movies" :key="film.id" :value="film.id">
                   {{ film.title }}{{ film.status === 'UPCOMING' ? ' · Sắp chiếu' : '' }}
@@ -266,8 +357,8 @@ async function retry() {
             <label v-else
               ><span>Rạp của bạn</span
               ><select
-                :value="selectedCinema?.id || ''"
-                :disabled="!!checkingId || !locationReady || !selectedCity"
+                :value="activeCinema?.id || ''"
+                :disabled="!!checkingId || !locationReady || !selectedCity || updatingFilters"
                 @change="changeCinema"
               >
                 <option value="">Chọn rạp chiếu</option>
@@ -278,9 +369,12 @@ async function retry() {
             >
             <label
               ><span>Định dạng</span
-              ><select v-model="format" :disabled="!!checkingId">
+              ><select v-model="format" :disabled="!!checkingId || updatingFilters">
                 <option value="">Tất cả định dạng</option>
                 <option v-for="value in formats" :key="value" :value="value">{{ value }}</option>
+                <option v-if="format && !formats.some((value) => value === format)" :value="format">
+                  {{ format }} · Định dạng đang lọc
+                </option>
               </select></label
             >
             <label
@@ -290,11 +384,15 @@ async function retry() {
                 type="date"
                 :min="today"
                 :aria-invalid="!validDate"
-                :disabled="!!checkingId"
+                :disabled="!!checkingId || updatingFilters"
             /></label></div
         ></TabsContent>
       </TabsRoot>
-      <AppDateStrip v-model="date" :start-date="today" :disabled="!!checkingId" />
+      <AppDateStrip
+        v-model="date"
+        :start-date="today"
+        :disabled="!!checkingId || updatingFilters"
+      />
       <p v-if="!validDate" class="booking-error" role="alert">
         Chọn ngày hợp lệ từ hôm nay trở đi.
       </p>
@@ -338,7 +436,10 @@ async function retry() {
         <p class="booking-error" role="alert">
           Một số rạp chưa tải được lịch. Các suất đã tải vẫn được hiển thị.
         </p>
-        <AppButton variant="ghost" :disabled="loading || !!checkingId" @click="retry"
+        <AppButton
+          variant="ghost"
+          :disabled="loading || !!checkingId || updatingFilters"
+          @click="retry"
           >Tải lại lịch</AppButton
         >
       </div>
@@ -362,7 +463,7 @@ async function retry() {
                 v-for="slot in group.slots"
                 :key="slot.id"
                 type="button"
-                :disabled="loading || !!checkingId || !locationReady"
+                :disabled="loading || !!checkingId || !locationReady || updatingFilters"
                 @click="choose(slot)"
               >
                 <strong>{{ formatCinemaTime(slot.startsAt) }}</strong

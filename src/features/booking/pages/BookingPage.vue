@@ -5,6 +5,7 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppLink from '@/components/ui/AppLink.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
+import { getCinemaDateKey } from '@/utils/cinema-time'
 import { isBookingUuid, useBookingContextQuery } from '../api/booking-queries'
 import BookingSeatSelection from '../components/BookingSeatSelection.vue'
 import BookingProgress from '../components/BookingProgress.vue'
@@ -51,6 +52,10 @@ const changeShowtimeRoute = computed(() => ({
   name: ROUTE_NAMES.SHOWTIMES,
   query: {
     movieId: context.value?.showtime.movieId,
+    date: context.value?.showtime.startsAt
+      ? getCinemaDateKey(context.value.showtime.startsAt)
+      : undefined,
+    mode: 'movie',
   },
 }))
 

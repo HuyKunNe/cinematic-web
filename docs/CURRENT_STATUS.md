@@ -1,5 +1,25 @@
 # Current Status
 
+## USER schedule URL state — 2026-11-16
+
+Change Showtime from the seat map opens `/showtimes` with the original movie and
+cinema-local date, in movie mode. CustomerSchedule now reads its mode, movie,
+cinema, date and content-format controls from URL query state, so reload and
+Back/Forward restore the selected filters. Cinema lookup uses existing active
+catalogue data; header city changes release an incompatible pinned cinema.
+
+Embedded cinema schedules retain their fixed cinema, update only their existing
+page query and ignore hidden format filters. Initial movie fallback no longer
+pushes navigation automatically. Duplicate navigation is ignored, navigation
+failures remain visible, controls lock while updating/checking and format becomes
+part of the scope checked before booking. No API contract or business state change.
+
+Manual checks: future-dated booking → Change Showtime; select both schedule modes,
+movie/cinema/date/format; reload and Back/Forward; change header city; clear movie;
+embedded cinema date selection; repeated date selection and navigation failures.
+No tests/lint/typecheck/build or browser verification performed; no BE/generated/
+reference edits, database changes, commits or pushes.
+
 ## USER movie-detail schedule filters — 2026-11-16
 
 Movie detail now has the reference format selector alongside cinema/date, within
