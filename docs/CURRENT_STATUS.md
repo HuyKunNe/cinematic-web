@@ -1,5 +1,44 @@
 # Current Status
 
+## USER screenings in progress — 2026-11-16
+
+Current BE periods still use the stored showtime end, so labels now say Not Ended
+and Ended rather than Upcoming/Watched. Existing `upcoming`/`past` URLs and period
+requests remain compatible. Confirmed ticket cards show a separate time-phase
+badge (upcoming, ongoing, ended) when real timestamps permit; this is presentation
+from the shared page clock, not a payment/booking/check-in status or a server tab
+filter. End prefers the booking snapshot; start comes from existing showtime
+context. Missing or contradictory timestamps do not fabricate an ongoing phase.
+
+When an end boundary is reached in Not Ended, a deduplicated GET refetch updates
+server-filtered content and totals; cards are never moved or filtered locally.
+API errors retain the normal retry flow. Separate server-backed upcoming/ongoing
+tabs still require BE start-time filtering. Manual checks: before start, during
+screening, exact end, refresh and pagination, missing context, device clock offset,
+API error and status badges remaining distinct. No tests/lint/typecheck/build or
+browser verification performed; existing generated backfill changes were preserved.
+
+## USER upcoming/past ticket tabs — 2026-11-16
+
+Integrated generated `FindAllBookingsPeriod` and `BookingResponse.showtimeEndsAt`
+after reading BookingController and BookingServiceImpl.findHistory. The BE filters
+CONFIRMED bookings with a non-null stored showtime end before pagination: UPCOMING
+means end > server time; PAST means end <= server time. FE sends period/status as
+generated types and includes period in the owner-scoped query key. It does not
+classify tickets against the browser clock or filter a single page locally.
+
+Primary tabs now match Lumière: Upcoming (default), Past and Unfinished. All
+remains available to find older confirmed bookings without a stored end timestamp;
+legacy `tab=confirmed` links retain their unfiltered confirmed view. UI copy states
+that Past is a time classification, not a check-in/used-ticket claim. Tab changes
+still reset pagination, and reload/Back/Forward, empty/error/retry flows remain.
+
+Manual checks: `/account/bookings`, `?tab=past`, `?tab=unfinished`, `?tab=all`,
+legacy `?tab=confirmed`; network period/status, totals across pages, page reset,
+older null-end records via All, exact end boundary per BE and account ownership.
+No tests/lint/typecheck/build or browser verification performed. No generated,
+BE/MySQL/reference changes, commits or pushes.
+
 ## USER movie schedules across city cinemas — 2026-11-16
 
 Movie detail now offers All Cinemas in the selected city and groups matching

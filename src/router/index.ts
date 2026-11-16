@@ -399,11 +399,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: ROUTE_PATHS.NOT_FOUND,
     name: ROUTE_NAMES.NOT_FOUND,
-    component: loadPlaceholder,
-    props: {
-      title: 'Không tìm thấy trang',
-      description: 'Địa chỉ bạn mở không tồn tại.',
-    },
+    component: () => import('../features/home/pages/NotFoundPage.vue'),
     meta: { layout: 'customer', title: 'Không tìm thấy trang' },
   },
 ]

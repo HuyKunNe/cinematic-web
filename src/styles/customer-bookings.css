@@ -154,6 +154,15 @@
 .customer-bookings__badge[data-status='CONFIRMED'] {
   color: var(--color-success);
 }
+.customer-bookings__screening-phase[data-phase='ongoing'] {
+  color: var(--color-primary-hover);
+}
+.customer-bookings__screening-phase[data-phase='ended'] {
+  color: var(--color-text-secondary);
+}
+.customer-bookings__screening-phase[data-phase='upcoming'] {
+  color: var(--color-success);
+}
 .customer-bookings__badge:is([data-status='REJECTED'], [data-status='PAYMENT_FAILED']) {
   color: var(--color-error);
 }

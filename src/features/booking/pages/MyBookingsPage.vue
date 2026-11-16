@@ -63,8 +63,16 @@ const isResult = computed(() => route.name === ROUTE_NAMES.BOOKING_RESULT)
 const validId = computed(() => customerBookingId.safeParse(id.value).success)
 const listNavigationError = ref('')
 const listNavigating = ref(false)
-const activeTab = computed<CustomerBookingListTab>(() =>
-  route.query.tab === 'confirmed' || route.query.tab === 'unfinished' ? route.query.tab : 'all',
+const activeTab = computed<CustomerBookingListTab>(() => {
+  const value = route.query.tab
+  return typeof value === 'string' && Object.keys(customerBookingListTabs).includes(value)
+    ? (value as CustomerBookingListTab)
+    : 'upcoming'
+})
+const visibleTabs = computed(() =>
+  Object.entries(customerBookingListTabs)
+    .filter(([key]) => key !== 'confirmed' || activeTab.value === 'confirmed')
+    .map(([key, tab]) => ({ key, label: tab.label })),
 )
 const page = computed({
   get: () => {
@@ -79,6 +87,7 @@ const list = useCustomerBookingsQuery(
   page,
   () => !id.value,
   () => customerBookingListTabs[activeTab.value].statuses,
+  () => customerBookingListTabs[activeTab.value].period,
 )
 async function updateListLocation(query: LocationQueryRaw) {
   if (listNavigating.value) return
@@ -99,10 +108,11 @@ async function updateListLocation(query: LocationQueryRaw) {
 function changeTab(value: string | number) {
   if (
     value === activeTab.value ||
-    !(value === 'all' || value === 'confirmed' || value === 'unfinished')
+    typeof value !== 'string' ||
+    !Object.keys(customerBookingListTabs).includes(value)
   )
     return
-  void updateListLocation({ tab: value === 'all' ? undefined : value, page: undefined })
+  void updateListLocation({ tab: value === 'upcoming' ? undefined : value, page: undefined })
 }
 const detail = useCustomerBookingQuery(id)
 const booking = computed(() =>
@@ -153,6 +163,33 @@ const seatGroups = computed(() => {
   }))
 })
 const now = useNow({ scheduler: (update) => useIntervalFn(update, 1_000) })
+let lastBoundaryRefresh = ''
+watch(now, (current) => {
+  if (
+    activeTab.value !== 'upcoming' ||
+    id.value ||
+    !list.data.value ||
+    list.isFetching.value ||
+    list.isError.value
+  )
+    return
+  const ended = list.data.value.content.filter(
+    (item) =>
+      item.status === 'CONFIRMED' &&
+      item.showtimeEndsAt &&
+      Date.parse(item.showtimeEndsAt) <= current.getTime(),
+  )
+  if (!ended.length) return
+  const key = [
+    auth.subject,
+    page.value,
+    ...ended.map((item) => `${item.id}:${item.showtimeEndsAt}`),
+  ].join('|')
+  if (key === lastBoundaryRefresh) return
+  lastBoundaryRefresh = key
+  // Refresh server-filtered totals; never move/filter cards locally.
+  void list.refetch()
+})
 const canChooseNewShowtime = computed(
   () =>
     booking.value &&
@@ -479,9 +516,9 @@ async function cancel() {
           <TabsRoot :model-value="activeTab" @update:model-value="changeTab">
             <TabsList class="customer-bookings__tabs" aria-label="Nhóm giao dịch">
               <TabsTrigger
-                v-for="(tab, key) in customerBookingListTabs"
-                :key="key"
-                :value="key"
+                v-for="tab in visibleTabs"
+                :key="tab.key"
+                :value="tab.key"
                 :disabled="listNavigating"
                 >{{ tab.label }}</TabsTrigger
               >
@@ -552,6 +589,7 @@ async function cancel() {
                     v-for="item in list.data.value.content"
                     :key="item.id"
                     :booking="item"
+                    :now="now.getTime()"
                   />
                 </div>
                 <AppPagination
@@ -562,6 +600,14 @@ async function cancel() {
                   controls="customer-booking-orders"
                   @update:page="page = $event - 1"
                 />
+                <p v-if="activeTab === 'upcoming'" class="customer-bookings__list-note">
+                  Gồm các vé sắp chiếu hoặc đang chiếu, được phân loại theo giờ kết thúc từ hệ
+                  thống. Nhãn giờ chiếu trên từng vé không phải xác nhận check-in.
+                </p>
+                <p v-else-if="activeTab === 'past'" class="customer-bookings__list-note">
+                  Gồm các đơn đã xác nhận có suất chiếu đã kết thúc; chưa thể hiện trạng thái
+                  check-in hay sử dụng vé.
+                </p>
                 <p class="customer-bookings__list-note">
                   Trạng thái đơn được cập nhật từ hệ thống. Thông tin phim và rạp hiển thị theo danh
                   mục hiện tại; giá vé theo đơn đã lưu.

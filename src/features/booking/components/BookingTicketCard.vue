@@ -7,7 +7,7 @@ import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils
 import { customerBookingLabels, type CustomerBooking } from '../api/customer-bookings'
 import { useBookingContextQuery } from '../api/booking-queries'
 
-const props = defineProps<{ booking: CustomerBooking }>()
+const props = defineProps<{ booking: CustomerBooking; now: number }>()
 const query = useBookingContextQuery(() => props.booking.showtimeId, { poll: false })
 const context = computed(() => query.data.value)
 const imageFailed = ref(false)
@@ -17,6 +17,17 @@ const poster = computed(() =>
     : context.value.movie.posterUrl,
 )
 const startsAt = computed(() => context.value?.showtime.startsAt)
+const screeningPhase = computed(() => {
+  if (props.booking.status !== 'CONFIRMED') return null
+  const start = Date.parse(startsAt.value ?? '')
+  const end = Date.parse(props.booking.showtimeEndsAt ?? context.value?.showtime.endsAt ?? '')
+  if (!Number.isFinite(end)) return null
+  if (props.now >= end) return { state: 'ended', label: 'Đã kết thúc' }
+  if (!Number.isFinite(start) || start >= end) return null
+  return props.now >= start
+    ? { state: 'ongoing', label: 'Đang chiếu' }
+    : { state: 'upcoming', label: 'Sắp chiếu' }
+})
 const amount = computed(() =>
   props.booking.totalAmount === null || !props.booking.currency
     ? 'Chưa xác nhận giá'
@@ -68,6 +79,13 @@ const amount = computed(() =>
         >
       </div>
       <div class="customer-bookings__order-statuses">
+        <span
+          v-if="screeningPhase"
+          class="customer-bookings__badge customer-bookings__screening-phase"
+          :data-phase="screeningPhase.state"
+          title="Trạng thái theo giờ chiếu; không phải xác nhận check-in"
+          >{{ screeningPhase.label }}</span
+        >
         <span class="customer-bookings__badge" :data-status="booking.status">{{
           customerBookingLabels[booking.status]
         }}</span>

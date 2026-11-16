@@ -70,9 +70,9 @@ onBeforeUnmount(() => emit('open-change', false))
       <DialogContent class="movie-trailer-dialog">
         <p class="lumiere-eyebrow">TRẢI NGHIỆM ĐIỆN ẢNH</p>
         <DialogTitle class="movie-trailer-dialog__title">{{ selected.title }}</DialogTitle>
-        <DialogDescription class="movie-trailer-dialog__description"
-          >Xem trailer trước cuộc hẹn của bạn. 
-          <br></br>
+        <DialogDescription class="movie-trailer-dialog__description">
+          Xem trailer trước cuộc hẹn của bạn.
+          <br />
           Nếu video không phát, bạn có thể mở liên kết gốc.</DialogDescription
         >
         <DialogClose class="movie-trailer-dialog__close" aria-label="Đóng trailer"
@@ -113,7 +113,7 @@ onBeforeUnmount(() => emit('open-change', false))
           v-else-if="!selected.source || selected.source.kind === 'external'"
           class="movie-trailer-dialog__status"
         >
-          Nguồn trailer này chưa hỗ trợ phát trong trang. <br></br>
+          Nguồn trailer này chưa hỗ trợ phát trong trang. <br />
           Bạn có thể xem ở liên kết gốc bên dưới.
         </p>
         <div class="movie-trailer-dialog__actions">

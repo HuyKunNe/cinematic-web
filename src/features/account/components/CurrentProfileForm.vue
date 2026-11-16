@@ -3,6 +3,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { z } from 'zod'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppToast from '@/components/ui/AppToast.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import {
   profileErrorMessage,
@@ -17,7 +18,7 @@ const mutation = useUpdateCurrentProfile()
 const fields = reactive({ firstName: '', lastName: '', phoneNumber: '' })
 const errors = ref<Record<string, string>>({})
 const feedback = ref('')
-const failed = ref(false)
+const toastOpen = ref(false)
 const schema = z.object({
   firstName: z.string().trim().max(100, 'Tên tối đa 100 ký tự.'),
   lastName: z.string().trim().max(100, 'Họ tối đa 100 ký tự.'),
@@ -40,6 +41,7 @@ function fillProfile() {
 function reset() {
   fillProfile()
   feedback.value = ''
+  toastOpen.value = false
 }
 watch(
   () => props.profile,
@@ -68,6 +70,7 @@ async function submit() {
     return
   errors.value = {}
   feedback.value = ''
+  toastOpen.value = false
   const result = schema.safeParse(fields)
   if (!result.success) {
     for (const issue of result.error.issues) errors.value[String(issue.path[0])] ??= issue.message
@@ -83,10 +86,9 @@ async function submit() {
       phoneNumber: saved.phoneNumber,
     })
     errors.value = {}
-    failed.value = false
-    feedback.value = 'Đã lưu thông tin hồ sơ.'
+    feedback.value = ''
+    toastOpen.value = true
   } catch (cause) {
-    failed.value = true
     feedback.value = profileErrorMessage(cause)
   }
 }
@@ -161,8 +163,8 @@ async function submit() {
       </p>
       <p
         v-if="feedback"
-        :class="failed ? 'booking-error' : 'current-profile-form__success'"
-        :role="failed ? 'alert' : 'status'"
+        class="booking-error"
+        role="alert"
       >
         {{ feedback }}
       </p>
@@ -176,6 +178,7 @@ async function submit() {
       </div>
     </fieldset>
   </form>
+  <AppToast v-model:open="toastOpen" message="Đã lưu thông tin hồ sơ." variant="success" />
 </template>
 
 <style scoped>
@@ -229,10 +232,6 @@ async function submit() {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-}
-.current-profile-form__success {
-  color: var(--color-success);
-  font-size: var(--font-size-sm);
 }
 @variant lumiere-mobile {
   .current-profile-form__names {

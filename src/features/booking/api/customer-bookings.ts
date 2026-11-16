@@ -13,15 +13,31 @@ import { BookingResponseStatus } from '@/services/api/generated/booking-service/
 import { BookingResponsePaymentProvider } from '@/services/api/generated/booking-service/model/bookingResponsePaymentProvider'
 import { FindAllBookingsStatusItem } from '@/services/api/generated/booking-service/model/findAllBookingsStatusItem'
 import type { FindAllBookingsParams } from '@/services/api/generated/booking-service/model/findAllBookingsParams'
+import { FindAllBookingsPeriod } from '@/services/api/generated/booking-service/model/findAllBookingsPeriod'
 
 export const customerBookingListTabs = {
-  all: { label: 'Tất cả', statuses: [] as FindAllBookingsStatusItem[] },
-  confirmed: { label: 'Đã xác nhận', statuses: [FindAllBookingsStatusItem.CONFIRMED] },
+  upcoming: {
+    label: 'Chưa kết thúc',
+    statuses: [FindAllBookingsStatusItem.CONFIRMED],
+    period: FindAllBookingsPeriod.UPCOMING,
+  },
+  past: {
+    label: 'Đã kết thúc',
+    statuses: [FindAllBookingsStatusItem.CONFIRMED],
+    period: FindAllBookingsPeriod.PAST,
+  },
   unfinished: {
     label: 'Chưa hoàn tất',
     statuses: Object.values(FindAllBookingsStatusItem).filter(
       (status) => status !== FindAllBookingsStatusItem.CONFIRMED,
     ),
+    period: undefined,
+  },
+  all: { label: 'Tất cả', statuses: [] as FindAllBookingsStatusItem[], period: undefined },
+  confirmed: {
+    label: 'Đã xác nhận',
+    statuses: [FindAllBookingsStatusItem.CONFIRMED],
+    period: undefined,
   },
 }
 export type CustomerBookingListTab = keyof typeof customerBookingListTabs
@@ -55,6 +71,7 @@ const bookingSchema = z.object({
   createdAt: timestamp,
   updatedAt: timestamp,
   expiresAt: timestamp,
+  showtimeEndsAt: nullableTime,
   confirmedAt: nullableTime,
   cancelledAt: nullableTime,
   rejectionReason: z
@@ -177,22 +194,34 @@ export function useCustomerBookingsQuery(
   page: MaybeRefOrGetter<number>,
   enabled: MaybeRefOrGetter<boolean>,
   statuses: MaybeRefOrGetter<FindAllBookingsStatusItem[]> = [],
+  period: MaybeRefOrGetter<FindAllBookingsPeriod | undefined> = undefined,
 ) {
   const auth = useAuthStore()
   const statusKey = computed(() => [...new Set(toValue(statuses))].sort())
   return useQuery({
     queryKey: computed(
-      () => ['customer-bookings', auth.subject, 'list', toValue(page), statusKey.value] as const,
+      () =>
+        [
+          'customer-bookings',
+          auth.subject,
+          'list',
+          toValue(page),
+          statusKey.value,
+          toValue(period) ?? '',
+        ] as const,
     ),
     enabled: computed(() => auth.isAuthenticated && !!auth.subject && toValue(enabled)),
     queryFn: async ({ queryKey }) => {
       if (!auth.isAuthenticated || auth.subject !== queryKey[1]) throw new Error('Session changed')
       const requestedPage = z.number().int().nonnegative().parse(queryKey[3])
       const requestedStatuses = z.array(z.nativeEnum(FindAllBookingsStatusItem)).parse(queryKey[4])
+      const requestedPeriod =
+        queryKey[5] === '' ? undefined : z.nativeEnum(FindAllBookingsPeriod).parse(queryKey[5])
       const request = {
         page: requestedPage,
         size: 10,
         ...(requestedStatuses.length ? { status: requestedStatuses } : {}),
+        ...(requestedPeriod ? { period: requestedPeriod } : {}),
       } satisfies FindAllBookingsParams
       const response = z
         .object({
@@ -216,7 +245,9 @@ export function useCustomerBookingsQuery(
         response.content.some(
           (booking) =>
             booking.userId !== queryKey[1] ||
-            (requestedStatuses.length > 0 && !requestedStatuses.includes(booking.status)),
+            (requestedStatuses.length > 0 && !requestedStatuses.includes(booking.status)) ||
+            (requestedPeriod !== undefined &&
+              (booking.status !== 'CONFIRMED' || !booking.showtimeEndsAt)),
         )
       )
         throw new Error('Booking list mismatch')

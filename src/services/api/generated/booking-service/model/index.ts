@@ -6,8 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export * from './apiResponseBatch'
 export * from './apiResponseBookingResponse'
 export * from './apiResponsePageResponseBookingResponse'
+export * from './backfillShowtimeEndsParams'
+export * from './batch'
 export * from './bookingResponse'
 export * from './bookingResponsePaymentProvider'
 export * from './bookingResponseStatus'
@@ -24,4 +27,5 @@ export * from './listBookingsForAdminParams'
 export * from './listBookingsForAdminStatus'
 export * from './pageInfo'
 export * from './pageResponseBookingResponse'
+export * from './row'
 export * from './validationError'
