@@ -1,5 +1,27 @@
 # Current Status
 
+## USER trailer dialog — 2026-11-16
+
+Hero, shared movie cards (home/catalog/search) and movie detail now use one Reka
+trailer dialog following the reference modal title/player/close/action layout.
+Uses the existing MovieResponse.trailerUrl and poster, with direct MP4/WebM/Ogg
+video or YouTube embed URL according to the official player documentation. Other
+HTTP(S) sources retain an original-link fallback; no demo clip or captions are
+invented. Player resources mount only after the user opens the dialog and unmount
+on close/navigation. Hero auto-advance pauses while the dialog is open, and the
+clicked film is snapshotted to avoid switching videos during catalogue updates.
+
+Includes native-video loading/error feedback, keyboard close/focus through Reka,
+responsive scrolling dialog and original-source link if embedding is unavailable.
+YouTube load does not imply playback success; provider restrictions remain visible
+in the embedded player, with original link available. No autoplay or extra SDK.
+
+Manual checks: open from hero/card/detail, close via button/Escape/outside click,
+focus return, hero pause/resume, route change stops playback, valid/unavailable
+video, YouTube links and unsupported source fallback, desktop/mobile. No tests,
+lint/typecheck/build or browser/media runtime verification performed. No BE/API
+contract/generated/reference edits, database changes, commits or pushes.
+
 ## USER booking status tabs — 2026-11-16
 
 The regenerated customer booking list now supports repeated status parameters.

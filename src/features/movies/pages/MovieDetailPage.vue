@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MovieTrailerDialog from '@/components/movies/MovieTrailerDialog.vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Clapperboard, Clock, Play } from 'lucide-vue-next'
@@ -206,17 +207,20 @@ function retry() {
 
             <div class="movie-detail__actions">
               <a class="movie-detail__booking" href="#movie-showtimes"> Chọn suất chiếu </a>
-              <a
+              <MovieTrailerDialog
                 v-if="movie.trailerUrl"
-                class="movie-detail__trailer"
-                :href="movie.trailerUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Xem trailer, mở trong tab mới"
+                :title="movie.title"
+                :trailer-url="movie.trailerUrl"
+                :poster-url="movie.posterUrl"
+                ><button
+                  type="button"
+                  class="movie-detail__trailer"
+                  :aria-label="`Xem trailer ${movie.title}`"
+                >
+                  <Play aria-hidden="true" />
+                  Xem trailer
+                </button></MovieTrailerDialog
               >
-                <Play aria-hidden="true" />
-                Xem trailer
-              </a>
 
               <p v-else class="movie-detail__notice">Trailer chưa được cập nhật.</p>
             </div>

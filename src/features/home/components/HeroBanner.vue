@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MovieTrailerDialog from '@/components/movies/MovieTrailerDialog.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ChevronLeft, ChevronRight, Clapperboard, Play } from 'lucide-vue-next'
 import type { HomeMovie } from '../models/home-movie'
@@ -150,6 +151,7 @@ const AUTO_ADVANCE_DELAY_MS = 5_000
 
 const isMounted = ref(false)
 const isHovered = ref(false)
+const trailerOpen = ref(false)
 const hasFocusWithin = ref(false)
 const isPageVisible = ref(false)
 const prefersReducedMotion = ref(false)
@@ -163,6 +165,7 @@ const canAutoAdvance = computed(
     isPageVisible.value &&
     !prefersReducedMotion.value &&
     !isHovered.value &&
+    !trailerOpen.value &&
     !hasFocusWithin.value &&
     !props.loading &&
     !props.error &&
@@ -309,17 +312,22 @@ onBeforeUnmount(() => {
                 Đặt vé ngay
               </RouterLink>
 
-              <a
+              <MovieTrailerDialog
+                @open-change="trailerOpen = $event"
                 v-if="shown.trailerUrl"
-                class="home-button home-button--ghost"
-                :href="shown.trailerUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                :aria-label="`Xem trailer ${shown.title} (mở tab mới)`"
+                :title="shown.title"
+                :trailer-url="shown.trailerUrl"
+                :poster-url="shown.posterUrl"
+                :detail-to="{ name: ROUTE_NAMES.MOVIE_DETAIL, params: { movieId: shown.id } }"
+                ><button
+                  type="button"
+                  class="home-button home-button--ghost"
+                  :aria-label="`Xem trailer ${shown.title}`"
+                >
+                  <Play aria-hidden="true" />
+                  Xem trailer
+                </button></MovieTrailerDialog
               >
-                <Play aria-hidden="true" />
-                Xem trailer
-              </a>
 
               <button
                 v-else
