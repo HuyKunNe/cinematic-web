@@ -222,6 +222,7 @@
   overflow-wrap: anywhere;
 }
 .booking-confirmed-ticket p {
+  overflow-wrap: anywhere;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
@@ -398,6 +399,7 @@
   overflow-wrap: anywhere;
 }
 .booking-journey__summary-film p {
+  overflow-wrap: anywhere;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   margin: var(--space-2) 0 0;

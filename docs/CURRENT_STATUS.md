@@ -1,5 +1,18 @@
 # Current Status
 
+## USER booking screening metadata — 2026-11-17
+
+Booking summary, saved-showtime details and confirmed ticket now share a booking
+feature mapper for the generated screening-version DTO. It distinguishes 2D/3D
+from IMAX/4DX/ScreenX and labels audio, dubbing, subtitle language or explicit
+NO_SUBTITLES from returned data. Missing values are omitted without defaulting
+format or language. Long labels wrap within summary/ticket layouts. User ticket
+printing remains removed; Staff/POS and API contracts are unchanged.
+
+Manual checks pending: available 2D/3D/special projection, dubbed/subtitled/no-
+subtitle versions, missing metadata and mobile summary/ticket. No tests, lint,
+typecheck, build or browser verification were run.
+
 ## USER ticket viewing only — 2026-11-17
 
 User instruction supersedes the reference's print action: ticket printing belongs

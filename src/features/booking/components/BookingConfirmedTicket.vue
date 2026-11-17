@@ -4,11 +4,15 @@ import { TicketCheck } from 'lucide-vue-next'
 import AppButton from '@/components/ui/AppButton.vue'
 import type { CustomerBooking } from '../api/customer-bookings'
 import { useBookingContextQuery } from '../api/booking-queries'
+import { formatBookingScreeningVersion } from '../mappers/booking-screening.mapper'
 import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils/cinema-time'
 
 const props = defineProps<{ booking: CustomerBooking }>()
 const query = useBookingContextQuery(() => props.booking.showtimeId, { poll: false })
 const context = computed(() => query.data.value)
+const screeningLabel = computed(() =>
+  formatBookingScreeningVersion(context.value?.showtime.screeningVersion),
+)
 const imageFailed = ref(false)
 watch(
   () => props.booking.showtimeId,
@@ -62,11 +66,7 @@ const amount = computed(() =>
         </h2>
         <p v-if="context">
           {{ context.cinema.name }}<br />{{ context.room.name
-          }}<template v-if="context.showtime.screeningVersion?.contentFormat">
-            · {{ context.showtime.screeningVersion.contentFormat }}</template
-          ><template v-if="context.showtime.screeningVersion?.audioLanguage">
-            · {{ context.showtime.screeningVersion.audioLanguage }}</template
-          >
+          }}<template v-if="screeningLabel"> · {{ screeningLabel }}</template>
         </p>
         <div v-if="query.isError.value || (query.isSuccess.value && !context)">
           <p role="status">

@@ -5,10 +5,14 @@ import AppLink from '@/components/ui/AppLink.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import { useBookingContextQuery } from '../api/booking-queries'
+import { formatBookingScreeningVersion } from '../mappers/booking-screening.mapper'
 
 const props = defineProps<{ showtimeId: string; allowNewBooking: boolean; disabled: boolean }>()
 const query = useBookingContextQuery(() => props.showtimeId, { poll: false })
 const context = computed(() => query.data.value)
+const screeningLabel = computed(() =>
+  formatBookingScreeningVersion(context.value?.showtime.screeningVersion),
+)
 const imageFailed = ref(false)
 const image = computed(() =>
   imageFailed.value || !context.value?.movie.posterUrl
@@ -68,14 +72,9 @@ const chooseShowtime = computed(() => ({
             <dt>Suất chiếu</dt>
             <dd>{{ showtimeLabel }}</dd>
           </div>
-          <div v-if="context.showtime.screeningVersion?.contentFormat">
+          <div v-if="screeningLabel">
             <dt>Phiên bản</dt>
-            <dd>
-              {{ context.showtime.screeningVersion.contentFormat
-              }}<template v-if="context.showtime.screeningVersion.audioLanguage">
-                · {{ context.showtime.screeningVersion.audioLanguage }}</template
-              >
-            </dd>
+            <dd>{{ screeningLabel }}</dd>
           </div>
         </dl>
       </div>
