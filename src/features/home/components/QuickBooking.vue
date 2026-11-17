@@ -19,7 +19,7 @@ import {
   SelectValue,
   SelectViewport,
 } from 'reka-ui'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import type { HomeMovie } from '../models/home-movie'
 import { getCinemaDateKey, formatCinemaTime, getCinemaDayRange } from '@/utils/cinema-time'
@@ -44,6 +44,7 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+const route = useRoute()
 
 const { isOpen: locationDialogOpen, open: openLocation } = useCinemaLocationDialog()
 
@@ -152,6 +153,7 @@ function toAvailableShowtimes(showtimes: ShowtimeResponse[]) {
         {
           id: showtime.id,
           startsAt: showtime.startsAt,
+          endsAt: showtime.endsAt,
           roomId: showtime.roomId,
           startsAtMs,
           roomName: showtime.roomName,
@@ -694,12 +696,22 @@ async function continueBooking() {
   if (!canContinue.value) return
 
   const chosen = { ...selection }
+  const chosenSlot = times.value.find((showtime) => showtime.id === chosen.showtime)
+  if (!chosenSlot) return
+  const chosenPath = route.fullPath
   checking.value = true
   navigationError.value = ''
 
   try {
     const result = await bookableQuery.refetch()
-    if (disposed) return
+    if (disposed || route.fullPath !== chosenPath) return
+    if (
+      selection.cinema !== chosen.cinema ||
+      selection.movie !== chosen.movie ||
+      selection.date !== chosen.date
+    ) {
+      return
+    }
 
     updateClock()
 
@@ -708,19 +720,31 @@ async function continueBooking() {
       return
     }
 
-    const stillAvailable = times.value.some(
+    const current = times.value.find(
       (showtime) => showtime.id === chosen.showtime && localDate(showtime.startsAt) === chosen.date,
     )
 
-    if (
-      !stillAvailable ||
-      !canChooseDate.value ||
-      selection.cinema !== chosen.cinema ||
-      selection.movie !== chosen.movie ||
-      selection.date !== chosen.date
-    ) {
+    if (!current || !canChooseDate.value) {
       selection.showtime = ''
       navigationError.value = 'Lựa chọn không còn hợp lệ. Vui lòng chọn lại ngày hoặc suất.'
+      return
+    }
+
+    if (
+      current.roomId !== chosenSlot.roomId ||
+      current.startsAtMs !== chosenSlot.startsAtMs ||
+      current.endsAt !== chosenSlot.endsAt ||
+      current.screeningVersion?.contentFormat !== chosenSlot.screeningVersion?.contentFormat ||
+      current.screeningVersion?.projectionTechnology !==
+        chosenSlot.screeningVersion?.projectionTechnology ||
+      current.screeningVersion?.audioLanguage !== chosenSlot.screeningVersion?.audioLanguage ||
+      current.screeningVersion?.presentationType !==
+        chosenSlot.screeningVersion?.presentationType ||
+      current.screeningVersion?.subtitleLanguage !== chosenSlot.screeningVersion?.subtitleLanguage
+    ) {
+      selection.showtime = ''
+      navigationError.value =
+        'Thông tin suất chiếu vừa thay đổi. Vui lòng kiểm tra và chọn lại suất.'
       return
     }
 
@@ -729,11 +753,11 @@ async function continueBooking() {
       params: { showtimeId: chosen.showtime },
     })
 
-    if (!disposed && failure) {
+    if (!disposed && route.fullPath === chosenPath && failure) {
       navigationError.value = 'Chưa thể chuyển trang. Vui lòng nhấn Tiếp tục lại.'
     }
   } catch {
-    if (!disposed) {
+    if (!disposed && route.fullPath === chosenPath) {
       navigationError.value = 'Chưa thể tiếp tục. Vui lòng thử lại.'
     }
   } finally {

@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { ROUTE_NAMES } from '@/router/route-constants'
+import type { RouteLocationRaw } from 'vue-router'
 import { Check } from 'lucide-vue-next'
-defineProps<{ current: 'showtime' | 'seats' | 'checkout' | 'order' }>()
+defineProps<{
+  current: 'showtime' | 'seats' | 'checkout' | 'order'
+  seatsTo?: RouteLocationRaw
+  showtimeTo?: RouteLocationRaw
+  navigationLocked?: boolean
+}>()
 </script>
 <template>
   <ol class="lumiere-booking-progress" aria-label="Tiến trình đặt vé">
@@ -14,7 +20,9 @@ defineProps<{ current: 'showtime' | 'seats' | 'checkout' | 'order' }>()
         ><Check v-if="current !== 'showtime'" aria-hidden="true" /><template v-else
           >1</template
         ></span
-      ><RouterLink v-if="current !== 'showtime'" :to="{ name: ROUTE_NAMES.BOOKING_START }"
+      ><RouterLink
+        v-if="current !== 'showtime' && !navigationLocked"
+        :to="showtimeTo ?? { name: ROUTE_NAMES.BOOKING_START }"
         >Chọn suất</RouterLink
       ><strong v-else>Chọn suất</strong>
     </li>
@@ -28,7 +36,9 @@ defineProps<{ current: 'showtime' | 'seats' | 'checkout' | 'order' }>()
           v-else
           >2</template
         ></span
-      ><strong>Chọn ghế</strong>
+      ><RouterLink v-if="current === 'checkout' && seatsTo && !navigationLocked" :to="seatsTo"
+        >Chọn ghế</RouterLink
+      ><strong v-else>Chọn ghế</strong>
     </li>
     <li
       :aria-current="current === 'checkout' ? 'step' : undefined"

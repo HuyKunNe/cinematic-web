@@ -21,7 +21,7 @@ import BookingCheckoutRecap from './BookingCheckoutRecap.vue'
 import BookingProcessing from './BookingProcessing.vue'
 
 const props = defineProps<{ showtimeId: string }>()
-const emit = defineEmits<{ processing: [value: boolean] }>()
+const emit = defineEmits<{ processing: [value: boolean]; locked: [value: boolean] }>()
 const processing = ref(false)
 function updateProcessing(value: boolean) {
   processing.value = value
@@ -37,6 +37,10 @@ const seatsQuery = useBookingSeatsQuery(
 const quoteQuery = useBookingSeatQuote(() => props.showtimeId, selection.numbers)
 const now = useNow({ scheduler: (update) => useIntervalFn(update, 1_000) })
 const requestLocked = ref(false)
+function updateLocked(value: boolean) {
+  requestLocked.value = value
+  emit('locked', value)
+}
 const chosen = computed(() =>
   (seatsQuery.data.value?.seats ?? []).filter((seat) =>
     selection.numbers.value.includes(seat.seatNumber),
@@ -241,12 +245,19 @@ async function retry() {
           :total-amount="quote?.totalAmount"
           :selection-error="selectionError"
           :disabled="!ready || !quote || quoteQuery.isFetching.value"
-          @locked="requestLocked = $event"
+          @locked="updateLocked"
           @processing="updateProcessing"
         />
       </section>
     </div>
-    <BookingJourneySummary v-if="quote" id="booking-checkout-summary" :quote="quote" />
+    <BookingJourneySummary
+      id="booking-checkout-summary"
+      :showtime-id="showtimeId"
+      :quote="quote"
+      :loading="
+        contextQuery.isFetching.value || seatsQuery.isFetching.value || quoteQuery.isFetching.value
+      "
+    />
     <BookingCheckoutRecap v-if="quote" :quote="quote" />
   </div>
 </template>

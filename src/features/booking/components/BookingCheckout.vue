@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { z } from 'zod'
 import { CreateBookingRequestPaymentProvider } from '@/services/api/generated/booking-service/model/createBookingRequestPaymentProvider'
-import { CreditCard, Wallet } from 'lucide-vue-next'
+import { CreditCard, Ticket, Wallet } from 'lucide-vue-next'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppLink from '@/components/ui/AppLink.vue'
 import { useAuthStore } from '@/stores/auth.store'
@@ -74,6 +74,7 @@ const sending = ref(false)
 const resolved = ref(false)
 const resolvedBookingId = ref('')
 const error = ref('')
+const errorMessage = ref<HTMLParagraphElement | null>(null)
 const reviewing = ref(false)
 const checking = ref(false)
 const reviewed = ref<BookingReview | null>(null)
@@ -101,6 +102,11 @@ const agreed = ref(false)
 let active = true
 onBeforeUnmount(() => {
   active = false
+})
+watch(error, async (message) => {
+  if (!message || !props.page) return
+  await nextTick()
+  if (active && error.value === message) errorMessage.value?.focus({ preventScroll: true })
 })
 const fingerprint = (value: BookingReview | null | undefined) => JSON.stringify(value)
 const paymentLabel = computed(() =>
@@ -277,8 +283,15 @@ defineExpose({ continueBooking })
 </script>
 
 <template>
-  <div class="booking-checkout">
-    <p v-if="error" class="booking-error" role="alert">{{ error }}</p>
+  <component
+    :is="page ? 'form' : 'div'"
+    class="booking-checkout"
+    :aria-label="page ? 'Xác nhận và thanh toán đặt vé' : undefined"
+    @submit.prevent="continueBooking"
+  >
+    <p v-if="error" ref="errorMessage" class="booking-error" role="alert" tabindex="-1">
+      {{ error }}
+    </p>
     <p v-else-if="checkpoint" class="booking-notice" role="status">
       Có yêu cầu đặt vé cần xác nhận kết quả. Lựa chọn đã khóa để tránh tạo trùng đơn.
     </p>
@@ -326,6 +339,7 @@ defineExpose({ continueBooking })
     </template>
     <AppButton
       v-if="!resolved"
+      :type="page ? 'submit' : 'button'"
       :loading="sending || checking"
       :disabled="
         sending ||
@@ -333,8 +347,9 @@ defineExpose({ continueBooking })
         (!checkpoint && (disabled || (page && (!paymentProvider || !agreed))))
       "
       :aria-describedby="selectionError ? 'booking-selection-error' : undefined"
-      @click="continueBooking"
-      >{{ page ? (checkpoint ? 'Gửi lại cùng yêu cầu' : paymentLabel) : 'Tiếp tục' }}</AppButton
+      @click="!page && continueBooking()"
+      ><Ticket v-if="page && !checkpoint" aria-hidden="true" />
+      {{ page ? (checkpoint ? 'Gửi lại cùng yêu cầu' : paymentLabel) : 'Tiếp tục' }}</AppButton
     >
     <AppLink
       v-if="resolvedBookingId"
@@ -342,7 +357,7 @@ defineExpose({ continueBooking })
     >
       Theo dõi đơn vừa tạo
     </AppLink>
-  </div>
+  </component>
 </template>
 
 <style scoped>
@@ -351,7 +366,7 @@ defineExpose({ continueBooking })
   --booking-checkout-option-selected: #fff4ed;
   --booking-checkout-option-icon: 1.125rem;
   --booking-checkout-option-icon-color: #a08e6a;
-  --booking-checkout-consent-size: 0.6875rem;
+  --booking-checkout-consent-size: var(--font-size-xs);
   --booking-checkout-consent-line-height: 1.8;
 }
 .booking-checkout__providers {

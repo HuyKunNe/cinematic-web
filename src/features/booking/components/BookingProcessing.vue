@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+
 defineProps<{ bookingId?: string }>()
+const heading = ref<HTMLHeadingElement | null>(null)
+onMounted(() => heading.value?.focus({ preventScroll: true }))
 </script>
 <template>
   <section class="booking-processing" aria-labelledby="booking-processing-title">
     <span class="booking-processing__spinner" aria-hidden="true"></span>
-    <h1 id="booking-processing-title">Đang xử lý thanh toán</h1>
+    <h1 id="booking-processing-title" ref="heading" tabindex="-1">Đang xử lý thanh toán</h1>
     <p role="status">Vui lòng chờ. Chưa có vé được phát hành cho đơn này.</p>
     <p v-if="bookingId">
       Mã đơn: <strong>{{ bookingId }}</strong>

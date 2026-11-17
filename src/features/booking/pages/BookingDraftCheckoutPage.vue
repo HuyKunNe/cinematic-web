@@ -9,11 +9,13 @@ import BookingDraftCheckout from '../components/BookingDraftCheckout.vue'
 
 const route = useRoute()
 const processing = ref(false)
+const locked = ref(false)
 const showtimeId = computed(() =>
   isBookingUuid(route.query.showtimeId) ? route.query.showtimeId.toLowerCase() : '',
 )
 watch(showtimeId, () => {
   processing.value = false
+  locked.value = false
 })
 </script>
 <template>
@@ -22,12 +24,18 @@ watch(showtimeId, () => {
     :class="{ 'booking-journey--checkout': !processing, 'booking-journey--result': processing }"
   >
     <AppContainer>
-      <BookingProgress v-if="!processing" current="checkout" />
+      <BookingProgress
+        v-if="!processing"
+        current="checkout"
+        :navigation-locked="locked"
+        :seats-to="showtimeId ? { name: ROUTE_NAMES.BOOKING, params: { showtimeId } } : undefined"
+      />
       <BookingDraftCheckout
         v-if="showtimeId"
         :key="showtimeId"
         :showtime-id="showtimeId"
         @processing="processing = $event"
+        @locked="locked = $event"
       />
       <div v-else class="booking-panel">
         <p class="booking-error" role="alert">Chưa có suất chiếu hợp lệ để thanh toán.</p>

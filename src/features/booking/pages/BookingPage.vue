@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
       </nav>
 
       <h1 v-if="!context" class="booking-start__title booking-page__title">Chọn ghế</h1>
-      <BookingProgress current="seats" />
+      <BookingProgress current="seats" :showtime-to="changeShowtimeRoute" />
 
       <p v-if="!showtimeId" class="booking-error" role="alert">
         Mã suất chiếu trong đường dẫn không hợp lệ.

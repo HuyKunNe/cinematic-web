@@ -1,5 +1,65 @@
 # Luồng đặt vé USER
 
+## Rà soát UI booking → payment — 2026-11-17
+
+Đã đọc HTML shell, README, các hàm `bookingPage`, `seatPage`, `foodPage`,
+`checkoutPage`, `bookingSummary`, `mobileRecap`, `resultPage`, `ticket`, `orderPage`
+và CSS desktop/mobile/print trong reference Lumière. Thư mục SVG/video là tài
+nguyên minh họa; poster, sơ đồ, giá và trạng thái giao dịch vẫn lấy từ API thật.
+
+Các thay đổi bổ sung trong lượt này:
+
+- Tiến trình ở trang ghế giữ liên kết đổi suất theo phim/ngày đang xem. Checkout
+  trước khi tạo đơn có thể quay lại ghế từ tiến trình. Khi yêu cầu đã khóa hoặc
+  chưa rõ kết quả, không mở đường sửa lựa chọn qua các liên kết tiến trình.
+- Sidebar checkout có mặt trong lúc kiểm tra ghế/báo giá; dùng trạng thái chưa
+  xác nhận cho số ghế và tiền, không tạo số tiền hoặc đồng hồ giữ ghế giả. Tổng
+  tiền và số khách cập nhật từ quote thật. Đồng hồ chỉ có khi booking RESERVED.
+- Form phương thức thanh toán dùng submit chuẩn, nút toàn chiều ngang có icon,
+  chữ xác nhận dễ đọc hơn. Tiêu đề màn ghế/checkout dùng cùng token desktop,
+  tablet và mobile dựa trên kích thước reference.
+- Khi chuyển sang xử lý, tiêu đề nhận focus. Khi quay lại checkout vì lỗi, thông
+  báo lỗi nhận focus. Chủ sở hữu request vẫn được giữ mounted để không ngắt hoặc
+  gửi lặp thao tác đang chờ.
+
+Các kết nối giữ nguyên: context phim/rạp/phòng/suất, seat-map và trạng thái ghế,
+báo giá lại ở checkout, POST booking có `clientRequestId`, GET booking theo chủ
+sở hữu, GET checkout payment và chuyển đến `checkoutUri` hợp lệ. Giá khi chọn
+ghế tính từ snapshot đã tải; không gọi báo giá mỗi lần bấm ghế. Không thay đổi
+phân quyền, quy tắc chọn ghế, payment provider hoặc cách polling kết quả.
+
+Phần khác reference vẫn cần BE: danh mục và dòng hàng bắp nước; áp dụng/xóa mã
+ưu đãi và breakdown giảm giá; thông tin người nhận vé được lưu trong booking;
+đặt vé/tra cứu cho khách vãng lai; mã vé/QR và trạng thái soát vé. DTO tạo booking
+hiện chỉ có suất, ghế/nhóm vé, tổng kỳ vọng, provider và clientRequestId. Không
+hiển thị trường nhập có vẻ lưu được trong khi contract chưa nhận dữ liệu đó.
+Không đưa giới hạn 8 khách, giữ ghế 10 phút hay kết quả mô phỏng của reference
+vào nghiệp vụ sản phẩm.
+
+### Kiểm tra thủ công sau lượt này
+
+1. Mở `/showtimes` hoặc `/booking`, chọn suất thật; đăng nhập theo luồng OIDC
+   hiện có nếu được yêu cầu. Tại `/booking/:showtimeId`, kiểm tra sơ đồ, ghế đã
+   bán/đang giữ, giá theo loại ghế và tổng tiền cập nhật khi chọn/bỏ chọn.
+2. Bấm Tiếp tục: mở `/booking/checkout?showtimeId=...` trực tiếp. Chờ báo giá,
+   kiểm tra sidebar, ghế theo loại và tổng. Quay lại bước Chọn ghế khi chưa gửi
+   yêu cầu; bảo đảm lựa chọn đã lưu còn được phục hồi.
+3. Chọn provider và xác nhận thông tin. Bấm thanh toán bằng chuột hoặc bàn phím:
+   màn processing xuất hiện trong khi tạo đơn, sau đó mở
+   `/booking/processing/:bookingId` để chờ booking/payment thật.
+4. Dùng môi trường payment hiện có để thử thành công/thất bại/hết hạn/chưa xác
+   định. Không sửa URL để giả kết quả. Đơn chưa CONFIRMED không được cấp vé;
+   lỗi không tạo thêm request mới khi kết quả cũ còn chưa rõ.
+5. Mở `/booking/result/:bookingId`, rồi `/booking/ticket/:bookingId` khi đã xác
+   nhận; kiểm tra Xem vé, In vé, ghế và giá đã lưu. Không có QR giả.
+6. Lặp lại ở viewport mobile, kiểm tra thanh recap, safe area, tiêu đề, tổng
+   tiền, tab bàn phím và focus khi chuyển processing/lỗi. Thử tải chậm, mất mạng,
+   tải lại checkout và liên kết có mã không hợp lệ.
+
+Chưa xác minh runtime/browser trong lượt này. Không chạy test, lint, typecheck,
+build hoặc format toàn repo; không gửi giao dịch thanh toán, không sửa BE,
+generated client, MySQL hoặc reference, không commit/push.
+
 ## Đối chiếu toàn luồng với Lumière — 2026-11-16
 
 Nguồn: `design/reference/lumiere-cinema/index.html`, `assets/js/app.js`

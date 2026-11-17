@@ -10,11 +10,15 @@ import BookingSummaryIdentity from './BookingSummaryIdentity.vue'
 const props = defineProps<{
   booking?: CustomerBooking
   quote?: BookingSeatQuote
+  showtimeId?: string
+  loading?: boolean
   remaining?: string
   expired?: boolean
 }>()
 const source = computed(() => props.booking ?? props.quote)
-const query = useBookingContextQuery(() => source.value?.showtimeId ?? '', { poll: false })
+const query = useBookingContextQuery(() => source.value?.showtimeId ?? props.showtimeId ?? '', {
+  poll: false,
+})
 const context = computed(() => query.data.value)
 const amount = computed(() =>
   source.value?.totalAmount == null || !source.value.currency
@@ -27,7 +31,11 @@ const amount = computed(() =>
 </script>
 
 <template>
-  <aside class="booking-journey__summary booking-panel" aria-label="Tóm tắt đặt vé">
+  <aside
+    class="booking-journey__summary booking-panel"
+    aria-label="Tóm tắt đặt vé"
+    :aria-busy="loading || query.isPending.value"
+  >
     <BookingSummaryIdentity :context="context" :loading="query.isPending.value" />
     <div v-if="query.isError.value || (query.isSuccess.value && !context)" class="booking-note">
       <p>Chưa tải được thông tin suất.</p>
@@ -56,6 +64,9 @@ const amount = computed(() =>
         <dd>{{ amount }}</dd>
       </div>
     </dl>
+    <p v-if="quote" class="booking-journey__summary-note">
+      Tổng tiền theo báo giá hiện tại. Ghế chỉ được giữ khi hệ thống xác nhận yêu cầu đặt vé.
+    </p>
     <div v-if="booking?.status === 'RESERVED'" class="booking-journey__clock">
       <Clock3 aria-hidden="true" /><span
         >{{ expired ? 'Đã đến hạn giữ ghế. Đang chờ cập nhật.' : 'Giữ chỗ còn' }}

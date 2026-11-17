@@ -18,7 +18,7 @@
   --journey-checkout-bottom: 4.0625rem;
   --journey-result-top: 3.4375rem;
   --journey-result-bottom: 5.625rem;
-  --journey-checkout-title: 1.75rem;
+  --journey-checkout-title: 1.9375rem;
   --journey-summary-poster: 4.75rem;
   --journey-panel-padding: 1.4375rem;
   --journey-summary-padding: 1.4375rem;
@@ -502,6 +502,18 @@
 .booking-journey__payment .booking-payment__actions > .app-button--primary {
   width: 100%;
 }
+.booking-journey__payment > .booking-checkout {
+  margin-top: 0;
+}
+.booking-journey__payment > .booking-checkout > .app-button--primary {
+  width: 100%;
+  min-height: var(--control-height-lg);
+}
+.booking-journey__payment > .booking-checkout > .app-button svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  flex-shrink: 0;
+}
 @variant lumiere-tablet {
   .booking-journey__summary.booking-panel {
     padding: var(--space-5);
@@ -512,12 +524,20 @@
     --journey-ticket-poster: 5rem;
     --journey-ticket-code: 11.25rem;
   }
+  .booking-journey,
+  .booking-page {
+    --journey-checkout-title: 1.75rem;
+  }
   .booking-confirmed-ticket__content {
     padding: var(--space-6);
     gap: var(--space-5);
   }
 }
 @variant lumiere-mobile {
+  .booking-journey,
+  .booking-page {
+    --journey-checkout-title: 1.8125rem;
+  }
   .booking-journey {
     --journey-action-gap: 0.6875rem;
   }

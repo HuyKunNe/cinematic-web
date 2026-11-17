@@ -1,5 +1,35 @@
 # Current Status
 
+## USER booking/payment reference pass — 2026-11-17
+
+Reviewed the Lumière booking, checkout, processing, result, ticket and order
+templates, responsive CSS and local demo assets against current routes/contracts.
+Checkout now keeps its summary present while data/quote load, uses a semantic
+payment form with a full-width icon action and reference-sized heading tokens.
+Draft checkout can return to seats through progress before submission; progress
+navigation locks with uncertain/submitted requests. Seat-step change-showtime
+navigation preserves its existing movie/date destination. Processing/error focus
+is explicit without unmounting the request owner or changing payment behavior.
+
+Existing real API wiring and result/ticket layouts are retained. Food, vouchers,
+recipient snapshots, guest booking and QR/check-in remain contract gaps; no fake
+fields, endpoints, totals or results were added. Full route mapping and manual
+checks: `USER_BOOKING_FLOW.md`. No tests/lint/typecheck/build/browser verification
+or payment transactions were run. Existing working-tree changes are preserved.
+
+## USER quick-booking stale selection — 2026-11-17
+
+Quick Booking now compares the selected slot's room, start/end and screening
+metadata after its existing availability refetch. Changed details clear only the
+showtime selection and ask for review; unchanged slots continue to seat selection.
+Checks also stop after route/cinema/movie/date changes, preserving newer user
+choices. Existing loading, error, dropdown, keyboard and responsive UI remain.
+No new endpoint, generated-client edit or backend dependency was introduced.
+
+Manual checks pending: normal Continue, a modified/removed selected slot, failed
+request, changed cinema and leaving during a slow request. No tests/lint/typecheck/
+build or browser verification were run.
+
 ## USER movie-detail schedule selection — 2026-11-17
 
 Movie-detail schedules now also require reselection when the clicked slot's room,
