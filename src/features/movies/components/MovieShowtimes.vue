@@ -278,6 +278,7 @@ function retryRooms() {
               class="movie-showtimes__slot"
               type="button"
               :disabled="!canBook"
+              :aria-busy="checkingId === showtime.id"
               @click="selectShowtime(showtime.id)"
             >
               <strong>{{ formatCinemaTime(showtime.startsAt) }}</strong>
@@ -285,8 +286,12 @@ function retryRooms() {
             </button>
           </div>
         </article>
-        <p id="movie-showtimes-feedback" class="movie-detail__notice">
-          Chọn giờ chiếu phù hợp để tiếp tục đặt vé.
+        <p id="movie-showtimes-feedback" class="movie-detail__notice" role="status">
+          {{
+            checkingId
+              ? 'Đang kiểm tra suất chiếu và mở chọn ghế…'
+              : 'Chọn giờ chiếu phù hợp để tiếp tục đặt vé.'
+          }}
         </p>
       </template>
     </div>

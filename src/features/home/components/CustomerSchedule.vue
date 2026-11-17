@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { useRoute, useRouter, type LocationQueryRaw } from 'vue-router'
 import { TabsRoot, TabsList, TabsTrigger, TabsContent } from 'reka-ui'
@@ -9,7 +9,12 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppDateStrip from '@/components/ui/AppDateStrip.vue'
 import { useCinemaLocation } from '@/features/cinemas'
 import { ROUTE_NAMES } from '@/router/route-constants'
-import { getCinemaDateKey, getCinemaDayRange, formatCinemaTime } from '@/utils/cinema-time'
+import {
+  getCinemaDateKey,
+  getCinemaDayRange,
+  formatCinemaTime,
+  formatCinemaDateKey,
+} from '@/utils/cinema-time'
 import { useHomeMovies } from '../api/home-queries'
 import { useCustomerSchedule, type CustomerScheduleSlot } from '../api/customer-schedule'
 import { ShowtimeScreeningVersionResponseContentFormat } from '@/services/api/generated/inventory-service/model/showtimeScreeningVersionResponseContentFormat'
@@ -76,6 +81,10 @@ const format = computed({
 })
 const checkingId = ref('')
 const error = ref('')
+let disposed = false
+onBeforeUnmount(() => {
+  disposed = true
+})
 async function updateFilters(patch: LocationQueryRaw) {
   if (checkingId.value || updatingFilters.value) return
   const query: LocationQueryRaw = props.embedded
@@ -273,7 +282,9 @@ function caption(slot: CustomerScheduleSlot) {
 }
 async function choose(slot: CustomerScheduleSlot) {
   if (checkingId.value || updatingFilters.value || loading.value || !locationReady.value) return
+  if (!filtered.value.some((item) => item.id === slot.id)) return
   const chosenScope = scope.value
+  const chosenPath = route.fullPath
   const index = requests.value.findIndex((request) => request.cinemaId === slot.cinemaId)
   const query = results.value[index]
   if (!query) return
@@ -281,12 +292,34 @@ async function choose(slot: CustomerScheduleSlot) {
   error.value = ''
   try {
     const result = await query.refetch()
-    if (scope.value !== chosenScope) return
+    if (disposed || scope.value !== chosenScope || route.fullPath !== chosenPath) return
+    if (result.isError) {
+      error.value = 'Chưa thể kiểm tra lại suất chiếu. Vui lòng thử lại.'
+      return
+    }
+    const current = result.data?.find((item) => item.id === slot.id)
+    if (!current || Date.parse(current.startsAt) <= Date.now()) {
+      error.value = 'Suất này không còn mở bán. Vui lòng chọn suất khác.'
+      return
+    }
     if (
-      result.isError ||
-      !result.data?.some((item) => item.id === slot.id && Date.parse(item.startsAt) > Date.now())
+      current.movieId !== slot.movieId ||
+      current.roomId !== slot.roomId ||
+      Date.parse(current.startsAt) !== Date.parse(slot.startsAt) ||
+      Date.parse(current.endsAt) !== Date.parse(slot.endsAt) ||
+      current.screeningVersion?.contentFormat !== slot.screeningVersion?.contentFormat ||
+      current.screeningVersion?.projectionTechnology !==
+        slot.screeningVersion?.projectionTechnology ||
+      current.screeningVersion?.audioLanguage !== slot.screeningVersion?.audioLanguage ||
+      current.screeningVersion?.presentationType !== slot.screeningVersion?.presentationType ||
+      current.screeningVersion?.subtitleLanguage !== slot.screeningVersion?.subtitleLanguage
     ) {
-      error.value = 'Suất chiếu vừa thay đổi hoặc chưa thể kiểm tra. Vui lòng chọn lại.'
+      error.value =
+        'Thông tin suất chiếu vừa thay đổi. Lịch đã cập nhật, vui lòng kiểm tra và chọn lại.'
+      return
+    }
+    if (!locationReady.value) {
+      error.value = 'Địa điểm đang cập nhật. Vui lòng chọn lại suất chiếu.'
       return
     }
     const cinema = cinemas.value.find((item) => item.id === slot.cinemaId)
@@ -294,11 +327,17 @@ async function choose(slot: CustomerScheduleSlot) {
       error.value = 'Địa điểm đang cập nhật. Vui lòng thử lại.'
       return
     }
-    await router.push({ name: ROUTE_NAMES.BOOKING, params: { showtimeId: slot.id } })
+    const failure = await router.push({
+      name: ROUTE_NAMES.BOOKING,
+      params: { showtimeId: slot.id },
+    })
+    if (failure && !disposed && scope.value === chosenScope && route.fullPath === chosenPath)
+      error.value = 'Chưa thể mở đặt vé. Vui lòng chọn lại suất chiếu.'
   } catch {
-    error.value = 'Chưa thể mở đặt vé. Vui lòng thử lại.'
+    if (!disposed && scope.value === chosenScope && route.fullPath === chosenPath)
+      error.value = 'Chưa thể mở đặt vé. Vui lòng thử lại.'
   } finally {
-    checkingId.value = ''
+    if (!disposed) checkingId.value = ''
   }
 }
 async function retry() {
@@ -418,11 +457,11 @@ async function retry() {
         <p>Chọn phim trong bộ lọc để xem các suất mở bán.</p>
       </div>
       <p
-        v-if="loading || locationQuery.isFetching.value || catalog.isFetching.value"
+        v-if="checkingId || loading || locationQuery.isFetching.value || catalog.isFetching.value"
         class="booking-note"
         role="status"
       >
-        Đang cập nhật lịch chiếu…
+        {{ checkingId ? 'Đang kiểm tra suất chiếu và mở chọn ghế…' : 'Đang cập nhật lịch chiếu…' }}
       </p>
       <div v-if="failed" class="booking-panel">
         <p class="booking-error" role="alert">
@@ -441,7 +480,7 @@ async function retry() {
           <img
             v-if="group.poster"
             :src="group.poster"
-            alt="Poster phim"
+            :alt="`Poster ${group.title}`"
             loading="lazy"
             @error="($event.target as HTMLImageElement).src = '/customer/movie-placeholder.svg'"
           />
@@ -457,6 +496,7 @@ async function retry() {
                 type="button"
                 :disabled="loading || !!checkingId || !locationReady || updatingFilters"
                 :aria-busy="checkingId === slot.id"
+                :aria-label="`${group.title}, ${formatCinemaDateKey(date)}, ${formatCinemaTime(slot.startsAt)}, ${caption(slot)}`"
                 @click="choose(slot)"
               >
                 <strong>{{ formatCinemaTime(slot.startsAt) }}</strong

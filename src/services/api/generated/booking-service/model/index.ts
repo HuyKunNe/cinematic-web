@@ -8,6 +8,7 @@
 
 export * from './apiResponseBatch'
 export * from './apiResponseBookingResponse'
+export * from './apiResponseListTicketResponse'
 export * from './apiResponsePageResponseBookingResponse'
 export * from './backfillShowtimeEndsParams'
 export * from './batch'
@@ -28,4 +29,5 @@ export * from './listBookingsForAdminStatus'
 export * from './pageInfo'
 export * from './pageResponseBookingResponse'
 export * from './row'
+export * from './ticketResponse'
 export * from './validationError'

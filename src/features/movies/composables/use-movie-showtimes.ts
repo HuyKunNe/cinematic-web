@@ -297,6 +297,7 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
     }
 
     const chosenScope = scopeKey.value
+    const chosenPath = route.fullPath
 
     checkingId.value = showtimeId
     navigationError.value = ''
@@ -306,7 +307,7 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
       if (!chosen?.cinemaId) return
       const result = await refetchCinema(chosen.cinemaId)
 
-      if (disposed || chosenScope !== scopeKey.value) return
+      if (disposed || chosenScope !== scopeKey.value || route.fullPath !== chosenPath) return
 
       updateClock()
 
@@ -320,14 +321,30 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
         return
       }
 
-      const stillBookable = filterShowtimes(result.data ?? []).some(
+      const current = filterShowtimes(result.data ?? []).find(
         (item) =>
           item.id === showtimeId &&
           (!selectedFormat.value || item.screeningVersion?.contentFormat === selectedFormat.value),
       )
 
-      if (!stillBookable) {
+      if (!current) {
         navigationError.value = 'Suất này không còn mở bán. Vui lòng chọn suất khác.'
+        return
+      }
+
+      if (
+        current.roomId !== chosen.roomId ||
+        Date.parse(current.startsAt) !== Date.parse(chosen.startsAt) ||
+        current.endsAt !== chosen.endsAt ||
+        current.screeningVersion?.contentFormat !== chosen.screeningVersion?.contentFormat ||
+        current.screeningVersion?.projectionTechnology !==
+          chosen.screeningVersion?.projectionTechnology ||
+        current.screeningVersion?.audioLanguage !== chosen.screeningVersion?.audioLanguage ||
+        current.screeningVersion?.presentationType !== chosen.screeningVersion?.presentationType ||
+        current.screeningVersion?.subtitleLanguage !== chosen.screeningVersion?.subtitleLanguage
+      ) {
+        navigationError.value =
+          'Thông tin suất chiếu vừa thay đổi. Lịch đã cập nhật, vui lòng kiểm tra và chọn lại.'
         return
       }
 
@@ -337,12 +354,15 @@ export function useMovieShowtimes(movieId: MaybeRefOrGetter<string>) {
         return
       }
 
-      await router.push({
+      const failure = await router.push({
         name: ROUTE_NAMES.BOOKING,
         params: { showtimeId },
       })
+      if (failure && !disposed && chosenScope === scopeKey.value && route.fullPath === chosenPath) {
+        navigationError.value = 'Chưa thể mở đặt vé. Vui lòng chọn lại suất chiếu.'
+      }
     } catch {
-      if (!disposed && chosenScope === scopeKey.value) {
+      if (!disposed && chosenScope === scopeKey.value && route.fullPath === chosenPath) {
         navigationError.value = 'Chưa thể tiếp tục đặt vé. Vui lòng thử lại.'
       }
     } finally {

@@ -1,5 +1,45 @@
 # Current Status
 
+## USER movie-detail schedule selection — 2026-11-17
+
+Movie-detail schedules now also require reselection when the clicked slot's room,
+time or screening metadata changes during the existing availability refetch.
+Changed routes/scopes and component disposal prevent late booking navigation;
+router navigation failures have explicit feedback. The existing feedback line
+announces checking/opening seat selection, with `aria-busy` on the clicked slot.
+No API client, backend contract or responsive layout changes were needed.
+
+Manual review pending: unchanged/modified/removed slots, failed requests, leaving
+the movie page during a slow check and keyboard use. No tests/lint/typecheck/build
+or browser verification were run. Preexisting generated-client changes are kept.
+
+## USER stale schedule selection guard — 2026-11-17
+
+The shared customer schedule compares the clicked slot with the existing
+bookable-showtimes refetch before entering booking. Changed movie, room, start/end
+or screening metadata now asks the user to review the updated list and select
+again. Missing/started slots and request failures have separate feedback. A
+pending check cannot navigate after component disposal, route changes or changed
+schedule scope. No extra endpoint, DTO or booking operation was introduced.
+
+Manual checks pending: change a displayed slot while its page remains open, then
+select it; simulate a failed request; leave the page during a slow check; verify
+an unchanged slot still reaches seat selection. Visual slot content and responsive
+styles are unchanged. No tests/lint/typecheck/build/browser checks were run.
+
+## USER schedule selection feedback — 2026-11-17
+
+Selecting a schedule slot now shows a shared live status while the existing API
+availability check and booking navigation run. Buttons retain only time/format
+visually; accessible names include the group, cinema-local date, time and format.
+Poster alternatives use the movie title. Router navigation failures receive an
+inline error instead of silently returning to the schedule. Existing click guards,
+API queries and responsive styles are retained.
+
+Manual checks pending: click a slot on a slow connection, keyboard/screen-reader
+selection, failed availability request and blocked navigation, in standalone and
+embedded schedules. No tests, lint, typecheck, build or browser checks were run.
+
 ## USER schedule slot layout — 2026-11-17
 
 Schedule slots show only real start time and content/projection format. Compact
