@@ -301,6 +301,7 @@
 }
 
 .movie-showtimes {
+  --schedule-scroll-offset: calc(var(--header-height) + var(--space-4));
   min-width: 0;
   padding-block: var(--space-8);
   border-top: var(--border-width-thin) solid var(--color-border);
@@ -311,6 +312,12 @@
     --schedule-panel-padding: var(--space-4);
     --schedule-control-width: 100%;
     --schedule-date-width: 100%;
+  }
+}
+
+@variant lumiere-mobile {
+  .movie-showtimes {
+    --schedule-scroll-offset: calc(var(--header-height-mobile) + var(--space-4));
   }
 }
 

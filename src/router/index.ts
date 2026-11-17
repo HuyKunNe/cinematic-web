@@ -409,7 +409,22 @@ captureInitialEmailVerificationToken()
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  scrollBehavior() {
+  scrollBehavior(to, from, savedPosition) {
+    if (to.meta.layout === 'customer') {
+      if (savedPosition) return savedPosition
+      if (to.path === from.path) {
+        // Filters are URL-backed; changing a query must not jump to the hero.
+        if (to.hash !== from.hash && /^#[A-Za-z][\w-]*$/.test(to.hash)) {
+          const target = document.getElementById(to.hash.slice(1))
+          if (target?.getClientRects().length) {
+            target.scrollIntoView({ block: 'start', behavior: 'auto' })
+            if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1')
+            target.focus({ preventScroll: true })
+          }
+        }
+        return false
+      }
+    }
     return { top: 0 }
   },
 })

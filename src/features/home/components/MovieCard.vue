@@ -11,6 +11,10 @@ const detailLocation = computed(() => ({
   name: ROUTE_NAMES.MOVIE_DETAIL,
   params: { movieId: props.movie.id },
 }))
+const actionLocation = computed(() => ({
+  ...detailLocation.value,
+  hash: props.movie.status === 'NOW_SHOWING' ? '#movie-showtimes' : '',
+}))
 const metadata = computed(() =>
   [
     props.movie.genres.join(' · ') || 'Thể loại chưa cập nhật',
@@ -34,7 +38,7 @@ const caption = computed(() => {
     :poster-url="movie.posterUrl"
     :trailer-url="movie.trailerUrl"
     :detail-to="detailLocation"
-    :action-to="detailLocation"
+    :action-to="actionLocation"
     :metadata="metadata"
     :caption="caption"
     :age-label="ageRating.label"

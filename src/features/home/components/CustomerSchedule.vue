@@ -255,25 +255,17 @@ watch(
 )
 function caption(slot: CustomerScheduleSlot) {
   const version = slot.screeningVersion
-  const technology: Record<string, string> = {
-    STANDARD: 'Tiêu chuẩn',
+  const technologies: Record<string, string> = {
+    IMAX: 'IMAX',
     FOUR_DX: '4DX',
     SCREEN_X: 'ScreenX',
-    IMAX: 'IMAX',
   }
   return (
     [
       version?.contentFormat,
-      version?.projectionTechnology
-        ? (technology[version.projectionTechnology] ?? version.projectionTechnology)
+      version?.projectionTechnology && version.projectionTechnology !== 'STANDARD'
+        ? (technologies[version.projectionTechnology] ?? version.projectionTechnology)
         : '',
-      version?.audioLanguage,
-      version?.presentationType === 'SUBTITLED'
-        ? 'Phụ đề'
-        : version?.presentationType === 'DUBBED'
-          ? 'Lồng tiếng'
-          : '',
-      slot.roomName,
     ]
       .filter(Boolean)
       .join(' · ') || 'Phiên bản đang cập nhật'
@@ -464,11 +456,11 @@ async function retry() {
                 :key="slot.id"
                 type="button"
                 :disabled="loading || !!checkingId || !locationReady || updatingFilters"
+                :aria-busy="checkingId === slot.id"
                 @click="choose(slot)"
               >
                 <strong>{{ formatCinemaTime(slot.startsAt) }}</strong
-                ><span>{{ caption(slot) }}</span
-                ><small>{{ checkingId === slot.id ? 'Đang kiểm tra…' : 'Đang mở bán' }}</small>
+                ><span>{{ caption(slot) }}</span>
               </button>
             </div>
           </div>

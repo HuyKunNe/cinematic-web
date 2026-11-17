@@ -1,5 +1,68 @@
 # Current Status
 
+## USER schedule slot layout — 2026-11-17
+
+Schedule slots show only real start time and content/projection format. Compact
+equal-width buttons reuse Lumière tokens with hover, keyboard focus and checking
+states. On mobile, poster/title share the first row and times use the full card
+width below them; groups without posters keep a single-column header. Long titles
+and addresses wrap rather than forcing horizontal overflow. APIs and booking
+selection behavior are unchanged.
+
+Manual review pending: `/showtimes` in movie/cinema modes and embedded cinema
+schedule at narrow/mobile widths, long titles, keyboard focus and selecting a slot.
+No tests, lint, typecheck, build or browser verification were run for this change.
+
+## USER movie-card booking entry — 2026-11-17
+
+Home and catalogue/search movie cards now send the Now Showing "Đặt vé" action
+to the movie detail page's existing `#movie-showtimes` section. Poster/title links
+still open the movie overview; Upcoming cards retain their detail action. This
+matches the reference card's distinct booking entry without adding a new booking
+step or changing availability/API rules. Existing customer layout anchor handling
+waits for initial page data and focuses the schedule below the sticky header.
+
+Manual checks: use a Now Showing card from Home, Movies and Search; confirm the
+schedule is reached after loading; compare poster/title and Upcoming links; try
+keyboard navigation, mobile and Back. No tests/lint/typecheck/build were run and
+runtime/browser verification remains pending. No backend changes are required.
+
+## USER movie catalogue URL filters — 2026-11-17
+
+The Movies page now reads search (`q`), genre, sort, status and pagination (`page`)
+from the route query. Search replaces the current history entry; status, genre,
+sort and page changes create history entries for Back/Forward. Filter changes
+reset pagination in the same navigation. Pending navigation queries are merged
+so rapid input does not overwrite another filter, and updates stop after leaving
+the Movies route. A failed navigation shows an accessible inline error.
+
+Requested pages are clamped against the loaded results without rewriting the URL
+while data is pending. Unknown genre selections remain visible and removable.
+Existing API queries, catalogue cards, responsive layout and loading/error/empty
+states are retained. No backend contract or generated client changes are needed.
+
+Manual checks: open `/movies?q=phim&sort=title-asc&page=2`, change filters, reload,
+use Back/Forward, clear search, change cinema, and test a nonexistent genre/page.
+No tests, lint, typecheck or build were run; browser verification remains pending.
+
+## USER filter and anchor scrolling — 2026-11-17
+
+Customer route scrolling now preserves the current position on same-path query
+updates, so URL-backed date/format/cinema/ticket-tab/search changes do not jump to
+the page hero. Existing visible in-page hash targets scroll/focus natively with
+their CSS scroll margins; Back/Forward uses router saved positions. New paths keep
+the normal top-of-page behavior and initial-data hash focus remains in the customer
+layout. Admin/auth scroll behavior is unchanged.
+
+Movie-showtime anchor margin now follows the desktop/mobile customer header height
+instead of a fixed offset. Manual checks: scroll to movie schedule → change date/
+format/cinema; ticket tabs and search pagination; Choose Showtime anchor; history
+Back/Forward including long async pages, keyboard and mobile sticky header.
+
+Browser access was attempted but the browser access host was unavailable, so no
+visual/runtime validation is claimed. No tests/lint/typecheck/build, API mutations,
+BE/generated/reference edits, database changes, commits or pushes.
+
 ## USER registration and verification form feedback — 2026-11-16
 
 Email verification now uses a reusable password input with an accessible reveal

@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {
+  useRoute,
+  useRouter,
+  isNavigationFailure,
+  NavigationFailureType,
+  type LocationQueryRaw,
+} from 'vue-router'
+import { ROUTE_NAMES } from '@/router/route-constants'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppEmptyState from '@/components/ui/AppEmptyState.vue'
@@ -19,28 +26,70 @@ const { data, isPending, isError, isFetching, refetch, scopeKey, catalogueLocati
 
 const route = useRoute()
 const router = useRouter()
+const navigationError = ref('')
+let filterRevision = 0
+let plannedQuery: LocationQueryRaw | null = null
+
+async function updateFilters(patch: LocationQueryRaw, replace = false) {
+  if (route.name !== ROUTE_NAMES.MOVIES) return
+
+  const query = { ...(plannedQuery ?? route.query), ...patch }
+  const target = { path: route.path, query, hash: route.hash }
+  if (router.resolve(target).fullPath === route.fullPath && !plannedQuery) return
+  const revision = ++filterRevision
+  plannedQuery = query
+  try {
+    const failure = await (replace ? router.replace(target) : router.push(target))
+    if (revision !== filterRevision) return
+    if (
+      failure &&
+      !isNavigationFailure(
+        failure,
+        NavigationFailureType.cancelled | NavigationFailureType.duplicated,
+      )
+    )
+      navigationError.value = 'Chưa thể cập nhật bộ lọc phim. Vui lòng thử lại.'
+    else navigationError.value = ''
+  } catch {
+    if (revision === filterRevision) {
+      navigationError.value = 'Chưa thể cập nhật bộ lọc phim. Vui lòng thử lại.'
+    }
+  } finally {
+    if (revision === filterRevision) plannedQuery = null
+  }
+}
 
 const selectedStatus = computed<CatalogMovieStatus>({
   get: () => (route.query.status === 'UPCOMING' ? 'UPCOMING' : 'NOW_SHOWING'),
   set: (status) => {
     if (status === selectedStatus.value) return
 
-    void router.push({
-      path: route.path,
-      query: {
-        ...route.query,
-        status,
-      },
-      hash: route.hash,
-    })
+    void updateFilters({ status, genre: undefined, page: undefined })
   },
 })
 
 const searchInput = ref<HTMLInputElement | null>(null)
-const searchText = ref('')
-const selectedGenre = ref('')
-const selectedSort = ref<MovieSort>('release-desc')
-const page = ref(1)
+const searchText = computed({
+  get: () => (typeof route.query.q === 'string' ? route.query.q : ''),
+  set: (q: string) => {
+    void updateFilters({ q: q || undefined, page: undefined }, true)
+  },
+})
+const selectedGenre = computed({
+  get: () => (typeof route.query.genre === 'string' ? route.query.genre : ''),
+  set: (genre: string) => {
+    void updateFilters({ genre: genre || undefined, page: undefined })
+  },
+})
+const selectedSort = computed<MovieSort>({
+  get: () =>
+    route.query.sort === 'release-asc' || route.query.sort === 'title-asc'
+      ? route.query.sort
+      : 'release-desc',
+  set: (sort) => {
+    void updateFilters({ sort: sort === 'release-desc' ? undefined : sort, page: undefined })
+  },
+})
 
 const collator = new Intl.Collator('vi', {
   sensitivity: 'base',
@@ -128,12 +177,19 @@ const filteredMovies = computed(() => {
 })
 
 const pageCount = computed(() => Math.max(1, Math.ceil(filteredMovies.value.length / PAGE_SIZE)))
+const page = computed({
+  get: () => {
+    const raw = route.query.page
+    const requested = typeof raw === 'string' && /^[1-9]\d*$/.test(raw) ? Number(raw) : 1
+    return Number.isSafeInteger(requested) ? Math.min(requested, pageCount.value) : 1
+  },
+  set: (page: number) => {
+    void updateFilters({ page: page > 1 ? String(page) : undefined })
+  },
+})
 const visibleMovies = computed(() =>
   filteredMovies.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE),
 )
-watch(pageCount, (count) => {
-  page.value = Math.min(page.value, count)
-})
 
 const statusDescription = computed(() =>
   selectedStatus.value === 'NOW_SHOWING' ? 'đang chiếu' : 'sắp chiếu',
@@ -155,19 +211,8 @@ const emptyDescription = computed(() => {
   return 'Danh sách phim sẽ được cập nhật trong thời gian tới.'
 })
 
-watch([selectedStatus, selectedGenre, selectedSort, searchTerm, scopeKey], () => {
-  page.value = 1
-})
-
-watch([scopeKey, selectedStatus], () => {
-  selectedGenre.value = ''
-})
-
-// Xóa bộ lọc nếu thể loại không còn trong danh mục mới.
-watch(genreOptions, (genres) => {
-  if (selectedGenre.value && !genres.some((genre) => genre.id === selectedGenre.value)) {
-    selectedGenre.value = ''
-  }
+watch(scopeKey, () => {
+  void updateFilters({ genre: undefined, page: undefined }, true)
 })
 
 function clearSearch() {
@@ -228,6 +273,10 @@ function retry() {
           </p>
         </form>
 
+        <p v-if="navigationError" class="movies-refresh-error" role="alert">
+          {{ navigationError }}
+        </p>
+
         <div class="movies-toolbar">
           <div class="movies-status-group" role="group" aria-label="Trạng thái phim">
             <button
@@ -254,6 +303,12 @@ function retry() {
                 <option value="">Tất cả thể loại</option>
                 <option v-for="genre in genreOptions" :key="genre.id" :value="genre.id">
                   {{ genre.name }}
+                </option>
+                <option
+                  v-if="selectedGenre && !genreOptions.some((genre) => genre.id === selectedGenre)"
+                  :value="selectedGenre"
+                >
+                  Thể loại đang lọc chưa có trong danh mục
                 </option>
               </select>
             </label>

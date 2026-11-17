@@ -12,7 +12,7 @@ const props = defineProps<{
   loading: boolean
   error: boolean
 }>()
-const PAGE_SIZE = 8
+const PAGE_SIZE = 4
 const activeTab = ref('NOW_SHOWING')
 const page = ref(1)
 const movies = computed(() => (activeTab.value === 'UPCOMING' ? props.upcoming : props.nowShowing))
