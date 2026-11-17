@@ -1,5 +1,43 @@
 # Current Status
 
+## USER ticket viewing only — 2026-11-17
+
+User instruction supersedes the reference's print action: ticket printing belongs
+to Staff/POS. Removed the User Print button, window.print handler, print-readiness
+events/state/messages and dedicated printable ticket CSS. Ticket viewing, missing
+data/retry states and mobile layout remain. Staff/POS and APIs were not changed.
+This supersedes the older print-readiness section below.
+
+Manual check pending: confirmed result and ticket pages offer viewing/navigation
+without a Print action. No tests/lint/typecheck/build/browser checks were run.
+
+## USER confirmed-ticket print readiness — 2026-11-17
+
+Confirmed ticket cards expose whether their existing context query and saved
+seat/price data are ready for printing. The result/ticket page disables its Print
+action until that state is ready, resets it when changing bookings and retains
+the booking-status/owner guards. Ticket dates now distinguish loading from missing
+context, and an inline notice explains why printing is unavailable. Mobile ticket
+headers wrap instead of squeezing the brand and confirmation label.
+
+Manual checks pending: confirmed result/ticket on slow or failed context requests,
+retry then Print, changing booking IDs, mobile header and browser print preview.
+No new API calls/contracts or QR data were introduced. No tests/lint/typecheck/
+build or browser verification were run. Previous working-tree changes are kept.
+
+## USER existing-order mobile checkout recap — 2026-11-17
+
+The saved-booking checkout now reuses the same mobile recap as draft checkout.
+Seat numbers, currency and total come from the saved booking; absent pending data
+is labelled as awaiting confirmation. The summary anchor is explicit, and both
+recap controls move keyboard focus as well as scrolling to it. Existing reduced
+motion and sticky-header offsets are retained. Checkout bottom spacing includes
+the device safe area. No payment action, endpoint or result handling changed.
+
+Manual checks pending: both checkout URL variants on mobile, long movie/cinema/
+seat labels, pending and reserved orders, keyboard summary navigation and safe
+area. No test, lint, typecheck, build or browser verification was run.
+
 ## USER booking/payment reference pass — 2026-11-17
 
 Reviewed the Lumière booking, checkout, processing, result, ticket and order

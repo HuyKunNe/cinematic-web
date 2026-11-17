@@ -2,13 +2,25 @@
 import { computed } from 'vue'
 import BookingMobileRecap from './BookingMobileRecap.vue'
 import type { BookingSeatQuote } from '../api/booking-seat-quote'
+import type { CustomerBooking } from '../api/customer-bookings'
 import { useBookingContextQuery } from '../api/booking-queries'
-import { formatBookingMoney } from '../mappers/booking-seat.mapper'
 import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils/cinema-time'
 
-const props = defineProps<{ quote: BookingSeatQuote }>()
-const query = useBookingContextQuery(() => props.quote.showtimeId, { poll: false })
+const props = defineProps<{
+  quote?: BookingSeatQuote
+  booking?: CustomerBooking
+}>()
+const source = computed(() => props.booking ?? props.quote)
+const query = useBookingContextQuery(() => source.value?.showtimeId ?? '', { poll: false })
 const context = computed(() => query.data.value)
+const total = computed(() => {
+  const value = source.value
+  return value?.totalAmount == null || !value.currency
+    ? 'Đang xác nhận'
+    : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: value.currency }).format(
+        value.totalAmount,
+      )
+})
 const location = computed(() => {
   if (!context.value) return ''
   const { cinema, showtime } = context.value
@@ -26,8 +38,9 @@ const location = computed(() => {
     class="booking-checkout-recap"
     :title="context?.movie.title || 'Thông tin đặt vé'"
     :location="location"
-    :seat-numbers="quote.seats.map((seat) => seat.seatNumber)"
-    :total="formatBookingMoney(quote.totalMinor)"
+    :seat-numbers="source?.seats?.map((seat) => seat.seatNumber) ?? []"
+    :total="total"
+    :empty-seat-label="booking ? 'Đang xác nhận' : 'Chưa chọn'"
     summary-id="booking-checkout-summary"
   />
 </template>

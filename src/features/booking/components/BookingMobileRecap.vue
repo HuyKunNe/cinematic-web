@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
-defineProps<{
-  title: string
-  location?: string
-  seatNumbers: string[]
-  total: string
-  summaryId: string
-}>()
+withDefaults(
+  defineProps<{
+    title: string
+    location?: string
+    seatNumbers: string[]
+    total: string
+    summaryId: string
+    emptySeatLabel?: string
+  }>(),
+  { emptySeatLabel: 'Chưa chọn' },
+)
 function showSummary(id: string) {
-  document.getElementById(id)?.scrollIntoView({
+  const summary = document.getElementById(id)
+  if (!summary) return
+  if (!summary.hasAttribute('tabindex')) summary.setAttribute('tabindex', '-1')
+  summary.focus({ preventScroll: true })
+  summary.scrollIntoView({
     block: 'start',
     behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
   })
@@ -17,16 +25,27 @@ function showSummary(id: string) {
 <template>
   <div class="booking-mobile-recap" aria-label="Tóm tắt đặt vé">
     <div>
-      <strong>{{ title }}</strong>
-      <span v-if="location">{{ location }}</span>
-      <span>Ghế: {{ seatNumbers.join(', ') || 'Chưa chọn' }}</span>
-      <button class="booking-mobile-recap__link" type="button" @click="showSummary(summaryId)">
+      <strong :title="title">{{ title }}</strong>
+      <span v-if="location" :title="location">{{ location }}</span>
+      <span :title="seatNumbers.join(', ')"
+        >Ghế: {{ seatNumbers.join(', ') || emptySeatLabel }}</span
+      >
+      <button
+        class="booking-mobile-recap__link"
+        type="button"
+        :aria-controls="summaryId"
+        @click="showSummary(summaryId)"
+      >
         Xem tóm tắt
       </button>
     </div>
     <div>
       <strong>{{ total }}</strong>
-      <slot><AppButton size="sm" @click="showSummary(summaryId)">Xem tổng tiền</AppButton></slot>
+      <slot
+        ><AppButton size="sm" :aria-controls="summaryId" @click="showSummary(summaryId)"
+          >Xem tổng tiền</AppButton
+        ></slot
+      >
     </div>
   </div>
 </template>

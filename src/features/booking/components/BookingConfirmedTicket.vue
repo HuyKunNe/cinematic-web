@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { TicketCheck } from 'lucide-vue-next'
 import AppButton from '@/components/ui/AppButton.vue'
 import type { CustomerBooking } from '../api/customer-bookings'
@@ -10,6 +10,13 @@ const props = defineProps<{ booking: CustomerBooking }>()
 const query = useBookingContextQuery(() => props.booking.showtimeId, { poll: false })
 const context = computed(() => query.data.value)
 const imageFailed = ref(false)
+watch(
+  () => props.booking.showtimeId,
+  () => {
+    imageFailed.value = false
+  },
+)
+const missingTime = computed(() => (query.isPending.value ? 'Đang tải…' : 'Chưa có thông tin'))
 const image = computed(() =>
   imageFailed.value || !context.value?.movie.posterUrl
     ? '/customer/movie-placeholder.svg'
@@ -62,7 +69,9 @@ const amount = computed(() =>
           >
         </p>
         <div v-if="query.isError.value || (query.isSuccess.value && !context)">
-          <p>Chưa tải được thông tin suất chiếu. Ghế và giá đã lưu vẫn được giữ nguyên.</p>
+          <p role="status">
+            Chưa tải được thông tin suất chiếu. Ghế và giá đã lưu vẫn được giữ nguyên.
+          </p>
           <AppButton
             size="sm"
             variant="ghost"
@@ -78,14 +87,18 @@ const amount = computed(() =>
               {{
                 context?.showtime.startsAt
                   ? formatCinemaDateKey(getCinemaDateKey(context.showtime.startsAt))
-                  : '—'
+                  : missingTime
               }}
             </dd>
           </div>
           <div>
             <dt>Giờ chiếu · UTC+7</dt>
             <dd>
-              {{ context?.showtime.startsAt ? formatCinemaTime(context.showtime.startsAt) : '—' }}
+              {{
+                context?.showtime.startsAt
+                  ? formatCinemaTime(context.showtime.startsAt)
+                  : missingTime
+              }}
             </dd>
           </div>
           <div>

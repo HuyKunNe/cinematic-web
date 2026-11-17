@@ -1,5 +1,13 @@
 # Luồng đặt vé USER
 
+## Quy tắc hiện hành: User không in vé — 2026-11-17
+
+User chỉ xem thông tin vé/đơn đã xác nhận. In vé thuộc Staff hoặc máy POS.
+Đã bỏ nút In vé, lời gọi `window.print()`, trạng thái chờ dữ liệu để in và CSS
+in vé riêng khỏi luồng User. Không sửa luồng Staff/POS hoặc API trong thay đổi này.
+Quy tắc này thay thế mọi mô tả in vé User ở các ghi chú triển khai cũ bên dưới,
+và ưu tiên hơn nút in trong reference minh họa Lumière.
+
 ## Rà soát UI booking → payment — 2026-11-17
 
 Đã đọc HTML shell, README, các hàm `bookingPage`, `seatPage`, `foodPage`,
@@ -51,7 +59,7 @@ vào nghiệp vụ sản phẩm.
    định. Không sửa URL để giả kết quả. Đơn chưa CONFIRMED không được cấp vé;
    lỗi không tạo thêm request mới khi kết quả cũ còn chưa rõ.
 5. Mở `/booking/result/:bookingId`, rồi `/booking/ticket/:bookingId` khi đã xác
-   nhận; kiểm tra Xem vé, In vé, ghế và giá đã lưu. Không có QR giả.
+   nhận; kiểm tra Xem vé, ghế và giá đã lưu. User không có nút in; không có QR giả.
 6. Lặp lại ở viewport mobile, kiểm tra thanh recap, safe area, tiêu đề, tổng
    tiền, tab bàn phím và focus khi chuyển processing/lỗi. Thử tải chậm, mất mạng,
    tải lại checkout và liên kết có mã không hợp lệ.
@@ -75,7 +83,7 @@ tục lấy từ API; không mang poster, QR hoặc dữ liệu giao dịch minh
 | Checkout đơn đã tạo     | `/booking/checkout/:bookingId`     | Đọc đơn theo chủ sở hữu; mở phiên thanh toán hiện có khi được xác nhận                    |
 | Processing trong result | `/booking/processing/:bookingId`   | Chờ trạng thái booking/payment thật; URI hợp lệ mới chuyển cổng                           |
 | `#/result/{code}`       | `/booking/result/:bookingId`       | Thành công, thất bại, hết hạn hoặc chưa xác định theo API; không suy thành công từ URL    |
-| `#/ticket/{code}`       | `/booking/ticket/:bookingId`       | Chỉ booking CONFIRMED được xem/in thông tin vé                                            |
+| `#/ticket/{code}`       | `/booking/ticket/:bookingId`       | Chỉ booking CONFIRMED được xem thông tin vé; in vé thuộc Staff/POS                         |
 
 Lượt này hợp nhất thông tin phim/rạp/suất của sidebar bằng BookingSummaryIdentity;
 dùng cùng chiều rộng, khoảng cách, poster và padding với checkout. Thanh tiến

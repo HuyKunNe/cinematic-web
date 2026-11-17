@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Check, Clock3, CircleAlert, Ticket, Printer, ArrowRight } from 'lucide-vue-next'
+import { Check, Clock3, CircleAlert, Ticket, ArrowRight } from 'lucide-vue-next'
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import BookingProgress from '../components/BookingProgress.vue'
+import BookingCheckoutRecap from '../components/BookingCheckoutRecap.vue'
 import BookingShowtimeSummary from '../components/BookingShowtimeSummary.vue'
 import BookingConfirmedTicket from '../components/BookingConfirmedTicket.vue'
 import BookingPayment from '../components/BookingPayment.vue'
@@ -114,10 +115,6 @@ function money(value: number | null, currency: string | null) {
     ? 'Đang xác nhận'
     : new Intl.NumberFormat('vi-VN', { style: 'currency', currency }).format(value)
 }
-function printTicket() {
-  if (booking.value?.status === 'CONFIRMED' && query.isSuccess.value && !query.isError.value)
-    window.print()
-}
 // Booking status is authoritative; URL query flags never confirm a payment or issue a ticket.
 async function showResult() {
   if (redirecting || navigationError.value) return
@@ -166,7 +163,6 @@ watch(
   <div
     class="booking-journey customer-bookings"
     :class="{
-      'booking-journey--printable': booking?.status === 'CONFIRMED',
       'booking-journey--checkout': checkout,
       'booking-journey--ticket': ticket,
       'booking-journey--result': !checkout && !ticket,
@@ -238,11 +234,13 @@ watch(
               </section>
             </div>
             <BookingJourneySummary
+              id="booking-checkout-summary"
               :key="booking.id"
               :booking="booking"
               :remaining="remaining"
               :expired="Date.parse(booking.expiresAt) <= now.getTime()"
             />
+            <BookingCheckoutRecap :booking="booking" />
           </div>
         </template>
         <template v-else>
@@ -338,13 +336,6 @@ watch(
               :to="{ name: ROUTE_NAMES.BOOKING, params: { showtimeId: booking.showtimeId } }"
               >Chọn lại ghế <ArrowRight aria-hidden="true"
             /></RouterLink>
-            <AppButton
-              v-if="booking.status === 'CONFIRMED'"
-              variant="secondary"
-              :disabled="query.isFetching.value || query.isError.value"
-              @click="printTicket"
-              ><Printer aria-hidden="true" /> In vé</AppButton
-            >
             <RouterLink
               v-if="ticket"
               class="booking-journey__outline-link"
