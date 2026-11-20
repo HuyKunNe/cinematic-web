@@ -15,6 +15,7 @@ const ticketSchema = z.object({
   capacity: z.number().int().positive(),
   status: z.string().min(1),
 })
+const ISSUANCE_REFRESH_INTERVAL_MS = 3_000
 
 export function useCustomerTicketsQuery(booking: MaybeRefOrGetter<CustomerBooking>) {
   const auth = useAuthStore()
@@ -31,8 +32,15 @@ export function useCustomerTicketsQuery(booking: MaybeRefOrGetter<CustomerBookin
     ),
     queryFn: async ({ queryKey }) => {
       const owner = queryKey[1]
+      const snapshot = toValue(booking)
       if (!auth.isAuthenticated || !owner || auth.subject !== owner)
         throw new Error('Session changed')
+      if (
+        snapshot.id !== queryKey[3] ||
+        snapshot.userId !== owner ||
+        snapshot.status !== 'CONFIRMED'
+      )
+        throw new Error('Booking changed')
       const response = await getBookingTickets(queryKey[3])
       if (!auth.isAuthenticated || auth.subject !== owner) throw new Error('Session changed')
       const tickets = z
@@ -41,14 +49,46 @@ export function useCustomerTicketsQuery(booking: MaybeRefOrGetter<CustomerBookin
       if (
         tickets.some((ticket) => ticket.bookingId !== queryKey[3]) ||
         new Set(tickets.map((ticket) => ticket.id)).size !== tickets.length ||
-        new Set(tickets.map((ticket) => ticket.bookingSeatId)).size !== tickets.length
+        new Set(tickets.map((ticket) => ticket.bookingSeatId)).size !== tickets.length ||
+        new Set(tickets.map((ticket) => ticket.seatNumber)).size !== tickets.length ||
+        (snapshot.seatCount != null && tickets.length > snapshot.seatCount)
       )
         throw new Error('Ticket booking mismatch')
+      if (snapshot.seats) {
+        const seatsById = new Map(snapshot.seats.map((seat) => [seat.id, seat]))
+        if (
+          tickets.some((ticket) => {
+            const seat = seatsById.get(ticket.bookingSeatId)
+            return (
+              !seat ||
+              seat.seatNumber !== ticket.seatNumber ||
+              (seat.capacity != null && seat.capacity !== ticket.capacity)
+            )
+          })
+        )
+          throw new Error('Ticket seat mismatch')
+      }
       return tickets
     },
     staleTime: 0,
     gcTime: 0,
     retry: false,
     refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
+    refetchInterval: (query) => {
+      const snapshot = toValue(booking)
+      const expected = snapshot.seatCount ?? snapshot.seats?.length
+      const returned = query.state.data
+      return auth.isAuthenticated &&
+        snapshot.userId === auth.subject &&
+        snapshot.status === 'CONFIRMED' &&
+        !query.state.error &&
+        expected != null &&
+        expected > 0 &&
+        returned !== undefined &&
+        returned.length < expected
+        ? ISSUANCE_REFRESH_INTERVAL_MS
+        : false
+    },
   })
 }

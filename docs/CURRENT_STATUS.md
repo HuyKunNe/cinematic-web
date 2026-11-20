@@ -1,5 +1,63 @@
 # Current Status
 
+## USER order route recovery states — 2026-11-20
+
+Invalid booking links and owner-unavailable (403/404) responses now show a titled
+empty state with real links to booking history and showtimes. Other request errors
+retain retry and add a history exit. Cached booking content is hidden after an
+authorization/not-found response; transient errors retain existing disabled-data
+behavior. Checkout/result/ticket loading without a booking has a page heading,
+while processing keeps its own heading. Recovery controls wrap using existing
+tokens. No API, business rule, Staff/POS or generated-client changes were made.
+
+This change was inspected in source only. The prior browser session was stopped
+by Computer Use URL-confidence enforcement; no runtime verification is claimed
+for these recovery states. No tests/lint/typecheck/build were run.
+
+## USER booking dates observed in browser — 2026-11-20
+
+Opened the actual customer ticket route ending C087B6 in Edge after the user
+completed login manually. Observed three issued seat units/four guests, the short
+booking reference and absence of a User print action. The date was rendered as
+"11-17, Thứ 3" by the browser's locale formatter. Added a booking-only calendar
+mapper with explicit Vietnamese weekday and DD/MM/YYYY, preserving cinema-local
+date keys without device-timezone conversion. Applied it to seat/checkout recaps,
+review labels, ticket/history cards and saved-showtime summaries; Admin/Staff and
+the shared calendar formatter are unchanged.
+
+After HMR, observed "Thứ 3, 17/11/2026" on the actual ticket and saved-showtime
+details in desktop and 430×932 device emulation. This does not validate other
+checkout/result states, partial issuance, error handling or a payment transaction.
+No tests/lint/typecheck/build, BE/DB writes or generated-client edits were run.
+
+## USER awaiting issued tickets auto-refresh — 2026-11-20
+
+Confirmed tickets now refetch the existing tickets GET every three seconds only
+while a known saved seat count is not yet fulfilled. Polling stops on completion,
+request/validation errors or disabled/changed ownership and does not run in the
+background. The UI announces pending issuance; background reads keep the existing
+ticket/card content and do not spin the manual refresh button. Manual refresh
+awaits an in-flight request rather than cancelling/duplicating it. Unknown seat
+counts retain explicit manual refresh instead of guessing readiness.
+
+No booking QR contract, print action or new endpoint was added. Manual checks
+pending: empty → partial → complete ticket responses, error/retry and hidden tab.
+No tests/lint/typecheck/build/browser checks were run. Existing generated User
+Service changes in the working tree were preserved.
+
+## USER partial ticket issuance — 2026-11-20
+
+Booking-level QR contract is still absent from the generated client/backend
+controllers. The existing ticket GET now checks seat IDs, numbers and capacity
+against the confirmed booking snapshot and rejects duplicate/unexpected tickets.
+The customer card distinguishes partial issuance from a fully returned set using
+the saved seat count (units, not number of guests); failed refreshes do not show
+a competing success count. No new endpoint, QR payload or Staff/POS action was
+added. User print remains absent and short references remain six characters.
+
+Manual checks pending: zero/partial/full issuance, couple-seat capacity, mismatched
+ticket data and failed refresh. No tests/lint/typecheck/build/browser checks were run.
+
 ## USER short booking references and BE pickup proposal — 2026-11-20
 
 Visible booking references in processing, result, ticket and customer history

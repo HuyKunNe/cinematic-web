@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { computed, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppLink from '@/components/ui/AppLink.vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
+import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import BookingCheckout from './BookingCheckout.vue'
 import BookingSeatMatrix from './BookingSeatMatrix.vue'
 import BookingSummaryIdentity from './BookingSummaryIdentity.vue'
@@ -95,7 +96,7 @@ const totalLabel = computed(() =>
 
 const showDate = computed(() => {
   const date = props.context.showtime.startsAt
-  return date ? formatCinemaDateKey(getCinemaDateKey(date)) : ''
+  return date ? formatBookingDate(getCinemaDateKey(date)) : ''
 })
 const showTime = computed(() =>
   props.context.showtime.startsAt ? formatCinemaTime(props.context.showtime.startsAt) : '',

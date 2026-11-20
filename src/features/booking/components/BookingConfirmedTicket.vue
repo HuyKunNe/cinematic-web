@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { computed, ref, watch } from 'vue'
 import { TicketCheck } from 'lucide-vue-next'
 import AppButton from '@/components/ui/AppButton.vue'
@@ -7,11 +8,31 @@ import { useBookingContextQuery } from '../api/booking-queries'
 import { formatBookingScreeningVersion } from '../mappers/booking-screening.mapper'
 import { useCustomerTicketsQuery } from '../api/customer-tickets'
 import { formatBookingReference } from '../mappers/booking-reference.mapper'
-import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils/cinema-time'
+import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 
 const props = defineProps<{ booking: CustomerBooking }>()
 const ticketsQuery = useCustomerTicketsQuery(() => props.booking)
 const tickets = computed(() => ticketsQuery.data.value ?? [])
+const refreshingTickets = ref(false)
+async function refreshTickets() {
+  if (refreshingTickets.value) return
+  refreshingTickets.value = true
+  try {
+    await ticketsQuery.refetch({ cancelRefetch: false })
+  } finally {
+    refreshingTickets.value = false
+  }
+}
+const awaitingIssuance = computed(() => {
+  const expected = props.booking.seatCount ?? props.booking.seats?.length
+  return expected != null && expected > 0 && tickets.value.length < expected
+})
+const issuanceMessage = computed(() => {
+  const expected = props.booking.seatCount ?? props.booking.seats?.length
+  if (expected != null && tickets.value.length < expected)
+    return `Đang phát hành vé: ${tickets.value.length}/${expected} đơn vị ghế. Trang sẽ tự cập nhật.`
+  return `${tickets.value.length} vé đã phát hành cho đơn đặt vé này.`
+})
 const query = useBookingContextQuery(() => props.booking.showtimeId, { poll: false })
 const context = computed(() => query.data.value)
 const screeningLabel = computed(() =>
@@ -90,7 +111,7 @@ const amount = computed(() =>
             <dd>
               {{
                 context?.showtime.startsAt
-                  ? formatCinemaDateKey(getCinemaDateKey(context.showtime.startsAt))
+                  ? formatBookingDate(getCinemaDateKey(context.showtime.startsAt))
                   : missingTime
               }}
             </dd>
@@ -127,17 +148,16 @@ const amount = computed(() =>
           Chưa thể cập nhật mã vé. Thông tin đặt vé vẫn được giữ nguyên.
         </p>
         <p v-else-if="!tickets.length" role="status">
-          Đơn đã xác nhận. Mã vé chưa được phát hành, vui lòng kiểm tra lại.
+          {{
+            awaitingIssuance
+              ? 'Đơn đã xác nhận. Đang chờ phát hành vé, trang sẽ tự cập nhật.'
+              : 'Đơn đã xác nhận. Mã vé chưa được phát hành, vui lòng kiểm tra lại.'
+          }}
         </p>
-        <p v-if="tickets.length" role="status">
-          {{ tickets.length }} vé đã phát hành cho đơn đặt vé này.
+        <p v-if="tickets.length && !ticketsQuery.isError.value" role="status">
+          {{ issuanceMessage }}
         </p>
-        <AppButton
-          size="sm"
-          variant="ghost"
-          :loading="ticketsQuery.isFetching.value"
-          @click="ticketsQuery.refetch()"
-        >
+        <AppButton size="sm" variant="ghost" :loading="refreshingTickets" @click="refreshTickets">
           {{ ticketsQuery.isError.value ? 'Thử lại mã vé' : 'Cập nhật mã vé' }}
         </AppButton>
         <p>In vé được thực hiện bởi nhân viên hoặc máy POS tại rạp.</p>

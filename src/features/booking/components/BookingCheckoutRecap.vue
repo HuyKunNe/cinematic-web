@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { computed } from 'vue'
 import BookingMobileRecap from './BookingMobileRecap.vue'
 import type { BookingSeatQuote } from '../api/booking-seat-quote'
 import type { CustomerBooking } from '../api/customer-bookings'
 import { useBookingContextQuery } from '../api/booking-queries'
-import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils/cinema-time'
+import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 
 const props = defineProps<{
   quote?: BookingSeatQuote
@@ -27,7 +28,7 @@ const location = computed(() => {
   return [
     cinema.name,
     showtime.startsAt ? formatCinemaTime(showtime.startsAt) : '',
-    showtime.startsAt ? formatCinemaDateKey(getCinemaDateKey(showtime.startsAt)) : '',
+    showtime.startsAt ? formatBookingDate(getCinemaDateKey(showtime.startsAt)) : '',
   ]
     .filter(Boolean)
     .join(' · ')

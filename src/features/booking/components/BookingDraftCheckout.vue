@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
@@ -13,7 +14,7 @@ import {
 import { useBookingSelection } from '../composables/use-booking-selection'
 import { seatSelectionError } from '../utils/seat-selection-rules'
 import type { BookingReview } from '../models/booking-review.model'
-import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils/cinema-time'
+import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import BookingCheckout from './BookingCheckout.vue'
 import BookingSavedSeats from './BookingSavedSeats.vue'
 import BookingJourneySummary from './BookingJourneySummary.vue'
@@ -88,7 +89,7 @@ const review = computed<BookingReview | undefined>(() => {
     movieTitle: context.value.movie.title || 'Phim chưa có tên',
     cinemaName: context.value.cinema.name || '',
     roomName: context.value.room.name || '',
-    showtimeLabel: `${formatCinemaTime(context.value.showtime.startsAt)} · ${formatCinemaDateKey(getCinemaDateKey(context.value.showtime.startsAt))}`,
+    showtimeLabel: `${formatCinemaTime(context.value.showtime.startsAt)} · ${formatBookingDate(getCinemaDateKey(context.value.showtime.startsAt))}`,
     totalMinor: quote.value.totalMinor,
     seats: quote.value.seats
       .map((seat) => ({

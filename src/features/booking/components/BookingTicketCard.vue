@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
-import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils/cinema-time'
+import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import { customerBookingLabels, type CustomerBooking } from '../api/customer-bookings'
 import { useBookingContextQuery } from '../api/booking-queries'
 
@@ -58,7 +59,7 @@ const amount = computed(() =>
         {{ context.cinema.name }}<br />
         <template v-if="startsAt"
           ><strong>{{ formatCinemaTime(startsAt) }}</strong> ·
-          {{ formatCinemaDateKey(getCinemaDateKey(startsAt)) }} ·
+          {{ formatBookingDate(getCinemaDateKey(startsAt)) }} ·
         </template>
         Ghế {{ booking.seats?.map((seat) => seat.seatNumber).join(', ') || 'đang xử lý' }}
       </p>

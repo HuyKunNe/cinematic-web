@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppEmptyState from '@/components/ui/AppEmptyState.vue'
 import BookingProgress from '../components/BookingProgress.vue'
 import BookingCheckoutRecap from '../components/BookingCheckoutRecap.vue'
 import BookingShowtimeSummary from '../components/BookingShowtimeSummary.vue'
@@ -39,6 +40,13 @@ const booking = computed(() =>
 const checkout = computed(() => route.name === ROUTE_NAMES.BOOKING_CHECKOUT)
 const processing = computed(() => route.name === ROUTE_NAMES.BOOKING_PROCESSING)
 const ticket = computed(() => route.name === ROUTE_NAMES.BOOKING_TICKET)
+const unavailable = computed(() => {
+  const status = (query.error.value as { status?: number } | null)?.status
+  return query.isError.value && (status === 403 || status === 404)
+})
+const openingTitle = computed(() =>
+  ticket.value ? 'Thông tin vé' : checkout.value ? 'Thanh toán' : 'Kết quả đặt vé',
+)
 const paymentStatus = ref<PaymentCheckoutResponseStatus>()
 const paymentHasResult = computed(
   () =>
@@ -171,16 +179,50 @@ watch(
   >
     <AppContainer>
       <BookingProgress v-if="checkout" :current="checkout ? 'checkout' : 'order'" />
-      <p v-if="!valid" class="booking-error" role="alert">Mã đơn đặt vé không hợp lệ.</p>
+      <header
+        v-if="(!booking || unavailable) && !(valid && processing && query.isPending.value)"
+        class="booking-journey__ticket-heading"
+      >
+        <p class="lumiere-eyebrow">CUỘC HẸN CỦA BẠN</p>
+        <h1>{{ openingTitle }}</h1>
+      </header>
+      <AppEmptyState
+        v-if="!valid || unavailable"
+        title="Không tìm thấy đơn đặt vé"
+        :description="
+          !valid
+            ? 'Đường dẫn đặt vé không hợp lệ. Bạn có thể mở lại đơn từ Vé & giao dịch.'
+            : 'Không tìm thấy đơn đặt vé thuộc tài khoản của bạn. Hãy kiểm tra lại trong Vé & giao dịch.'
+        "
+      >
+        <template #action>
+          <div class="booking-journey__recovery-actions">
+            <RouterLink
+              class="booking-journey__primary-link"
+              :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }"
+            >
+              Vé &amp; giao dịch
+            </RouterLink>
+            <RouterLink class="booking-journey__outline-link" :to="{ name: ROUTE_NAMES.SHOWTIMES }">
+              Xem lịch chiếu
+            </RouterLink>
+          </div>
+        </template>
+      </AppEmptyState>
       <BookingProcessing v-else-if="processing && query.isPending.value" />
       <p v-else-if="query.isPending.value" class="booking-note" role="status">
         Đang tải đơn đặt vé…
       </p>
       <div v-else-if="query.isError.value" class="booking-panel">
         <p class="booking-error" role="alert">{{ customerBookingError(query.error.value) }}</p>
-        <AppButton :loading="query.isFetching.value" @click="query.refetch()">Thử lại</AppButton>
+        <div class="booking-journey__recovery-actions">
+          <AppButton :loading="query.isFetching.value" @click="query.refetch()">Thử lại</AppButton>
+          <RouterLink class="customer-bookings__link" :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }">
+            Về Vé &amp; giao dịch
+          </RouterLink>
+        </div>
       </div>
-      <template v-if="valid && booking">
+      <template v-if="valid && booking && !unavailable">
         <div v-if="navigationError" class="booking-error" role="alert">
           <p>{{ navigationError }}</p>
           <RouterLink

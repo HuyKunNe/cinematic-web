@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { computed, ref, watch } from 'vue'
 import { Ticket } from 'lucide-vue-next'
 import type { BookingContext } from '../api/booking-queries'
 import { formatBookingScreeningVersion } from '../mappers/booking-screening.mapper'
-import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils/cinema-time'
+import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 
 const props = defineProps<{ context?: BookingContext | null; loading?: boolean }>()
 const screeningLabel = computed(() =>
@@ -44,7 +45,7 @@ const poster = computed(() =>
     <p>{{ context.room.name }}</p>
     <p v-if="context.showtime.startsAt">
       <strong>{{ formatCinemaTime(context.showtime.startsAt) }}</strong> ·
-      {{ formatCinemaDateKey(getCinemaDateKey(context.showtime.startsAt)) }}
+      {{ formatBookingDate(getCinemaDateKey(context.showtime.startsAt)) }}
     </p>
   </div>
 </template>

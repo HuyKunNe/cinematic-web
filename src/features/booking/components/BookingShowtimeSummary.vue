@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { computed, ref } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppLink from '@/components/ui/AppLink.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
-import { formatCinemaDateKey, formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
+import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import { useBookingContextQuery } from '../api/booking-queries'
 import { formatBookingScreeningVersion } from '../mappers/booking-screening.mapper'
 
@@ -22,7 +23,7 @@ const image = computed(() =>
 const showtimeLabel = computed(() => {
   const startsAt = context.value?.showtime.startsAt
   return startsAt
-    ? `${formatCinemaTime(startsAt)} · ${formatCinemaDateKey(getCinemaDateKey(startsAt))}`
+    ? `${formatCinemaTime(startsAt)} · ${formatBookingDate(getCinemaDateKey(startsAt))}`
     : ''
 })
 const chooseShowtime = computed(() => ({

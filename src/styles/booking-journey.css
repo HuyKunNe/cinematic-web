@@ -120,6 +120,13 @@
   align-items: center;
   margin: var(--space-7) 0 0;
 }
+.booking-journey__recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--journey-action-gap);
+}
 .booking-journey__actions svg {
   width: var(--icon-size-sm);
   height: var(--icon-size-sm);
