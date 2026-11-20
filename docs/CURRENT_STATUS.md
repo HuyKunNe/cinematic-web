@@ -1,5 +1,190 @@
 # Current Status
 
+## USER booking-list background error recovery — 2026-11-20
+
+Transient background refresh failures retain the already-loaded booking cards
+with a clear stale-data warning. The existing Refresh action becomes Retry; no
+extra button is added. Initial-load failures and 401/403/404 still replace the
+list with the error/retry panel, so cached content is not rendered after lost
+access. Successful refresh clears the warning through existing query state.
+
+No API, business-state, polling or responsive CSS changes. Source/diff review
+only; manual network-error/recovery and access-loss checks pending. No tests,
+lint, typecheck, build, browser checks, BE/database writes, commits or pushes.
+
+## USER active booking-list updates — 2026-11-20
+
+The account booking list now reuses its existing filtered GET every three seconds
+while the visible page contains PENDING or RESERVED bookings. It stops polling
+when those orders leave active states or the request fails; background interval
+polling is disabled. This brings pending/payment progress into the list without
+requiring the customer to open each order or repeatedly press Refresh. Existing
+showtime-end boundary refresh, manual error recovery, server pagination and
+filters remain unchanged. No local status/total mutation or new endpoint.
+
+Source/diff review only; manual checks pending for active-to-final transitions,
+filtered page membership changes, request errors and hidden tabs. No CSS changes,
+tests, lint, typecheck, build, browser checks, BE/database writes, commits or pushes.
+
+## USER account-list empty-state consistency — 2026-11-20
+
+The list heading and View All action now reuse the All Orders wording. Empty
+states explain each existing tab separately, including the pending/cancelled/
+expired/unsuccessful scope of Other Transactions, without implying attendance
+from elapsed showtime. Empty later pages ask customers to return to page one
+instead of claiming the entire group has no orders. Existing navigation, API
+filters and responsive styles are unchanged; no new buttons or endpoints.
+Source/diff review only. Manual empty-tab/later-page checks pending; no tests,
+lint, typecheck, build, browser checks, BE/database writes, commits or pushes.
+
+## USER other-transactions tab label — 2026-11-20
+
+Renamed Unconfirmed to Other Transactions because this filter also includes
+cancelled, expired, rejected and failed bookings, alongside pending reservations.
+Only the label changed; API filters and responsive styles remain unchanged.
+Source review only; no browser checks, tests, lint, typecheck, build, BE/database
+writes, commits or pushes were run.
+
+## USER booking-list tab wording — 2026-11-20
+
+Renamed the four normal account-booking tabs to All Orders, Upcoming & Now
+Showing, Screening Ended and Unconfirmed. Labels describe the existing filters:
+UPCOMING includes confirmed screenings not yet ended, PAST includes ended
+confirmed screenings, and Unconfirmed includes all non-CONFIRMED booking states.
+The legacy confirmed deep-link tab is unchanged. No filter/query, routing,
+responsive CSS or API changes; existing wrapping/scroll behavior is reused.
+Source review only, browser checks pending. No tests, lint, typecheck, build,
+BE/database writes, commits or pushes were run.
+
+## USER one status badge per booking card — 2026-11-20
+
+Account booking list cards show a single badge. Confirmed bookings with known
+screening timing show Upcoming/Now Showing/Ended instead of also repeating
+Confirmed beside it. Other bookings, or confirmed bookings without enough timing
+data, retain the API booking-status label. This is display precedence only;
+booking status, ticket access, filters and check-in semantics are unchanged.
+Existing responsive badge styles are reused. Source review only; browser checks
+pending. No tests, lint, typecheck, build, BE/database writes or commits/pushes.
+
+## USER booking action cleanup — 2026-11-20
+
+Removed routine Check Payment actions in checkout/result/processing (compact
+account details already used conditional recovery), the payment panel's duplicate
+View Order Result link and the pending-result Check Booking Status button.
+Booking/payment polling and automatic result routing remain responsible for normal
+progress. Manual payment checks remain for request/handoff errors, invalid provider
+links, reconciliation, recorded-payment/booking conflicts and reached deadlines.
+
+Retained seat/list refresh because these views do not have equivalent automatic
+updates, plus required selection, consent/payment, cancellation confirmation,
+pagination, navigation and error-retry actions. Existing conditional ticket retries
+remain. No API, business mutations, responsive styling or other roles changed.
+Source/diff review only; manual checkout/pending/error/reconciliation checks remain
+pending. No tests, lint, typecheck, build, browser checks, BE/database writes,
+commits or pushes were run.
+
+## USER remove routine ticket refresh action — 2026-11-20
+
+The confirmed ticket shared by result/ticket views no longer shows Update Ticket
+Codes after successful loading or while issuance is automatically polled. This
+action only performed a GET, never regenerated codes. Retry Loading Tickets is
+retained for request errors and successful empty responses without a known
+expected seat count (where issuance polling cannot run). Loading/error wording
+now refers to ticket information rather than changing ticket codes.
+
+Existing ticket GET, issuance polling, six-character booking reference and
+Staff/POS printing policy are unchanged. No API/CSS changes. Source/diff review
+only; browser/manual state checks pending. No tests, lint, typecheck, build,
+BE/database writes, commits or pushes were run.
+
+## USER payment error feedback consistency — 2026-11-20
+
+If the latest payment request fails, the shared payment panel now hides its
+cached payment label and normal preparation/provider/result guidance. A single
+existing error alert explains that the result could not be checked; the manual
+check action says Retry in checkout, result, processing and compact account views.
+Successful refresh restores the API-backed label and guidance automatically.
+
+Cached query data, handoff guards, polling and API contracts are unchanged. No
+CSS or responsive layout changes. Source/diff review only; network-error recovery
+with and without cached data still needs manual verification. No tests, lint,
+typecheck, build, browser checks, BE/database writes, commits or pushes were run.
+
+## USER payment consent follows checkout state — 2026-11-20
+
+The shared booking payment panel no longer asks for pre-payment consent when
+the API reports SUCCEEDED, FAILED, EXPIRED or RECONCILIATION_REQUIRED while
+the booking still reports RESERVED. Request errors also hide that consent;
+existing result/retry guidance remains available. Consent remains available
+during preparation and provider handoff within the API hold deadline.
+
+Only consent visibility changed; provider handoff guards, polling, saved consent,
+API contracts and responsive styles are unchanged. Compared with the local
+reference checkout and current generated/BE payment enums. Source review only;
+manual state-transition checks remain pending. No tests, lint, typecheck, build,
+browser checks, BE/database writes, commits or pushes were run.
+
+## USER reserved-detail copy at deadline — 2026-11-20
+
+The account-detail heading/help text now distinguishes a still-active reserved
+hold from its API-provided deadline passing while BE still reports RESERVED.
+After that deadline it asks the customer to check the result rather than also
+encouraging payment; active countdown/payment help is omitted during payment
+review. Booking status is never changed locally. The existing cancellation time
+guard is reused through a shared computed flag without changing eligibility.
+
+Saved-seat groups with missing/mixed unit metadata use "đơn vị" instead of
+guessing "ghế"; explicit PAIR/SEAT still display cặp/ghế. No new API, business
+mutation, CSS or role changes. Manual checks pending: deadline transition,
+payment review during a hold and legacy unit metadata. No tests/lint/typecheck/
+build/browser checks, BE/database writes, commits or pushes were run.
+
+## USER account detail unavailable state — 2026-11-20
+
+Invalid account-booking links and 403/404 responses now use the shared empty-state
+component with the existing Back to List route. Protected cached booking content
+is no longer exposed by the detail model after those responses; any open cancel
+confirmation is closed and payment display state cleared. Transient network
+errors keep the existing loaded-data/retry behavior. No request, permission rule,
+cancel mutation, responsive token or other role was changed.
+
+Manual checks pending: invalid UUID, missing/unauthorized booking, a 403/404 after
+cached success, open cancellation confirmation when access changes and a network
+error/retry. Source review only; no tests/lint/typecheck/build/browser verification,
+BE/database writes or commits/pushes were performed.
+
+## USER transaction-detail restart consistency — 2026-11-20
+
+Account booking details now receive payment status/check readiness from the
+existing compact payment component. Their Choose Another Showtime link uses the
+same feature helper as the result page: cancelled/expired orders wait for a fresh
+payment check, pending/reconciliation/recorded-payment outcomes do not offer a new
+booking, and rejected reservations retain their retry path. The account status
+heading/description explains reconciliation or payment-success/booking conflicts.
+Payment display state resets when changing booking or account.
+
+Extracted only the existing result-page UI predicates; no new API, mutation,
+backend business rule, role scope or responsive style was introduced. Confirmed
+orders still show View Ticket/Back to List without extra routine checks. Source
+review only; pending/error/provider cases have not been runtime verified. No tests,
+lint, typecheck, build, BE/DB writes, commits or pushes were run.
+
+## USER transaction-detail mobile verification — 2026-11-20
+
+Reopened the actual B66F05 account-booking detail in Edge. After explicitly
+reinitializing device emulation, observed the current layout at 430×932 and
+375×667 without the earlier horizontal clipping. Header/back link wrap on the
+smaller viewport; confirmed status retains one View Ticket action. Saved couple
+seat I4, two guests, 150,000 VND total and six-character references fit within
+the cards. Opened Transaction Times and observed created/hold/confirmed values.
+Routine payment-check/result/update actions remain absent for this confirmed order.
+
+No further application-code edits were needed for this verification. This closes
+the narrow-layout uncertainty recorded in the earlier account-detail section for
+this booking and these viewports; reserved/error/other-provider states remain
+unverified. Only this status document changed in the turn. No tests/lint/typecheck/
+build, payment/cancel/print actions, BE/database writes or commits/pushes were run.
+
 ## USER transaction-detail actions — 2026-11-20
 
 Removed the always-visible Update Status action and duplicate footer navigation

@@ -26,12 +26,15 @@ import {
 } from 'reka-ui'
 import AppContainer from '@/components/ui/AppContainer.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppEmptyState from '@/components/ui/AppEmptyState.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import { Ticket } from 'lucide-vue-next'
 import BookingTicketCard from '../components/BookingTicketCard.vue'
 import CustomerAccountNav from '@/components/navigation/CustomerAccountNav.vue'
 import BookingShowtimeSummary from '../components/BookingShowtimeSummary.vue'
 import BookingPayment from '../components/BookingPayment.vue'
+import type { PaymentCheckoutResponseStatus } from '@/services/api/generated/payment-service/model/paymentCheckoutResponseStatus'
+import { canRestartBooking, needsBookingPaymentReview } from '../utils/booking-result-actions'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROUTE_NAMES } from '@/router/route-constants'
 import { CINEMA_TIME_ZONE } from '@/utils/cinema-time'
@@ -74,6 +77,31 @@ const visibleTabs = computed(() =>
     .filter(([key]) => key !== 'confirmed' || activeTab.value === 'confirmed')
     .map(([key, tab]) => ({ key, label: tab.label })),
 )
+const emptyListCopy = computed(() => {
+  const messages: Record<CustomerBookingListTab, { title: string; description: string }> = {
+    all: {
+      title: 'Bạn chưa có đơn đặt vé',
+      description: 'Chọn một bộ phim để bắt đầu cuộc hẹn mới.',
+    },
+    confirmed: {
+      title: 'Chưa có đơn được xác nhận',
+      description: 'Bạn có thể xem các đơn đang chờ xử lý trong Giao dịch khác.',
+    },
+    upcoming: {
+      title: 'Chưa có suất sắp hoặc đang chiếu',
+      description: 'Vé của các suất chưa kết thúc sẽ xuất hiện tại đây khi đơn được xác nhận.',
+    },
+    past: {
+      title: 'Chưa có suất đã kết thúc',
+      description: 'Đơn đã xác nhận sẽ xuất hiện tại đây sau khi suất chiếu kết thúc.',
+    },
+    unfinished: {
+      title: 'Không có giao dịch khác',
+      description: 'Các đơn đang chờ, đã hủy, hết hạn hoặc không thành công sẽ xuất hiện tại đây.',
+    },
+  }
+  return messages[activeTab.value]
+})
 const page = computed({
   get: () => {
     const value = typeof route.query.page === 'string' ? Number(route.query.page) : 1
@@ -89,6 +117,10 @@ const list = useCustomerBookingsQuery(
   () => customerBookingListTabs[activeTab.value].statuses,
   () => customerBookingListTabs[activeTab.value].period,
 )
+const listUnavailable = computed(() => {
+  const status = (list.error.value as { status?: number } | null)?.status
+  return list.isError.value && (status === 401 || status === 403 || status === 404)
+})
 async function updateListLocation(query: LocationQueryRaw) {
   if (listNavigating.value) return
   listNavigating.value = true
@@ -115,8 +147,12 @@ function changeTab(value: string | number) {
   void updateListLocation({ tab: value === 'upcoming' ? undefined : value, page: undefined })
 }
 const detail = useCustomerBookingQuery(id)
+const detailUnavailable = computed(() => {
+  const status = (detail.error.value as { status?: number } | null)?.status
+  return detail.isError.value && (status === 403 || status === 404)
+})
 const booking = computed(() =>
-  auth.isAuthenticated && detail.data.value?.userId === auth.subject
+  auth.isAuthenticated && !detailUnavailable.value && detail.data.value?.userId === auth.subject
     ? detail.data.value
     : undefined,
 )
@@ -153,7 +189,11 @@ const seatGroups = computed(() => {
     label: seatTypeLabels[type] ?? (type || 'Loại ghế chưa xác định'),
     numbers: seats.map((seat) => seat.seatNumber).join(', '),
     count: seats.length,
-    unit: seats.every((seat) => seat.unit === 'PAIR') ? 'cặp' : 'ghế',
+    unit: seats.every((seat) => seat.unit === 'PAIR')
+      ? 'cặp'
+      : seats.every((seat) => seat.unit === 'SEAT')
+        ? 'ghế'
+        : 'đơn vị',
     ticketGroups: [
       ...new Set(seats.map((seat) => seat.ticketGroupName?.trim()).filter(Boolean)),
     ].join(', '),
@@ -190,10 +230,15 @@ watch(now, (current) => {
   // Refresh server-filtered totals; never move/filter cards locally.
   void list.refetch()
 })
+const paymentStatus = ref<PaymentCheckoutResponseStatus>()
+const paymentChecked = ref(false)
+const paymentNeedsReview = computed(() =>
+  needsBookingPaymentReview(booking.value?.status, paymentStatus.value),
+)
 const canChooseNewShowtime = computed(
   () =>
     booking.value &&
-    ['REJECTED', 'CANCELLED', 'EXPIRED'].includes(booking.value.status) &&
+    canRestartBooking(booking.value.status, paymentStatus.value, paymentChecked.value) &&
     detail.isSuccess.value &&
     !detail.isFetching.value &&
     !detail.isError.value,
@@ -202,13 +247,13 @@ const confirming = ref(false)
 const cancelling = ref(false)
 const feedback = ref('')
 const feedbackIsError = ref(false)
-const canCancel = computed(
+const holdActive = computed(
   () =>
     booking.value?.status === 'RESERVED' &&
-    Date.parse(booking.value.expiresAt) > now.value.getTime() &&
-    !detail.isFetching.value &&
-    !detail.isError.value &&
-    !cancelling.value,
+    Date.parse(booking.value.expiresAt) > now.value.getTime(),
+)
+const canCancel = computed(
+  () => holdActive.value && !detail.isFetching.value && !detail.isError.value && !cancelling.value,
 )
 const remaining = computed(() => {
   if (!booking.value) return ''
@@ -228,11 +273,17 @@ const statusTitles: Record<CustomerBooking['status'], string> = {
   EXPIRED: 'Đã hết thời gian giữ ghế',
 }
 const statusDescription = computed(() => {
+  if (paymentNeedsReview.value)
+    return paymentStatus.value === 'SUCCEEDED'
+      ? 'Thanh toán đã được ghi nhận nhưng đơn chưa được xác nhận. Kiểm tra kết quả hoặc liên hệ rạp trước khi đặt lại.'
+      : 'Kết quả thanh toán chưa xác định. Vui lòng kiểm tra kết quả trước khi tạo đơn mới.'
   switch (booking.value?.status) {
     case 'PENDING':
       return 'Hệ thống đang kiểm tra và giữ ghế. Trang tự cập nhật kết quả; chưa phải vé đã xác nhận.'
     case 'RESERVED':
-      return 'Ghế đã được giữ. Đơn chưa được xác nhận thanh toán.'
+      return holdActive.value
+        ? 'Ghế đã được giữ. Đơn chưa được xác nhận thanh toán.'
+        : 'Đã đến hạn giữ ghế. Hệ thống đang cập nhật kết quả đơn; hãy kiểm tra thanh toán trước khi đặt lại.'
     case 'CONFIRMED':
       return 'Đơn đặt vé đã được xác nhận.'
     case 'REJECTED':
@@ -261,12 +312,24 @@ function money(value: number | null, currency: string | null) {
     : new Intl.NumberFormat('vi-VN', { style: 'currency', currency }).format(value)
 }
 watch(id, () => {
+  paymentStatus.value = undefined
+  paymentChecked.value = false
   confirming.value = false
   feedback.value = ''
+})
+watch(detailUnavailable, (unavailable) => {
+  if (unavailable) {
+    confirming.value = false
+    feedback.value = ''
+    paymentStatus.value = undefined
+    paymentChecked.value = false
+  }
 })
 watch(
   () => auth.subject,
   () => {
+    paymentStatus.value = undefined
+    paymentChecked.value = false
     confirming.value = false
     feedback.value = ''
   },
@@ -336,7 +399,15 @@ async function cancel() {
         Vui lòng đăng nhập để xem đơn đặt vé.
       </p>
       <template v-else-if="id">
-        <p v-if="!validId" class="booking-error" role="alert">Mã đơn đặt vé không hợp lệ.</p>
+        <AppEmptyState
+          v-if="!validId || detailUnavailable"
+          title="Không tìm thấy đơn đặt vé"
+          :description="
+            !validId
+              ? 'Đường dẫn giao dịch không hợp lệ. Chọn Về danh sách để mở lại đơn đặt vé.'
+              : 'Không tìm thấy đơn đặt vé thuộc tài khoản của bạn. Vui lòng kiểm tra lại trong danh sách giao dịch.'
+          "
+        />
         <p v-else-if="detail.isPending.value" class="booking-note" role="status">
           Đang tải đơn đặt vé…
         </p>
@@ -376,19 +447,23 @@ async function cancel() {
               <span class="customer-bookings__badge" :data-status="booking.status">{{
                 customerBookingLabels[booking.status]
               }}</span>
-              <h2 id="customer-booking-status">{{ statusTitles[booking.status] }}</h2>
-              <p class="booking-note" role="status" aria-live="polite">{{ statusDescription }}</p>
-              <p v-if="booking.status === 'RESERVED'" class="booking-note">
+              <h2 id="customer-booking-status">
                 {{
-                  Date.parse(booking.expiresAt) > now.getTime()
-                    ? `Thời gian giữ ghế còn ${remaining}`
-                    : 'Đã đến hạn giữ ghế. Đang chờ trạng thái từ hệ thống.'
+                  paymentNeedsReview
+                    ? 'Cần kiểm tra kết quả thanh toán'
+                    : booking.status === 'RESERVED' && !holdActive
+                      ? 'Đang chờ cập nhật trạng thái'
+                      : statusTitles[booking.status]
                 }}
+              </h2>
+              <p class="booking-note" role="status" aria-live="polite">{{ statusDescription }}</p>
+              <p v-if="holdActive && !paymentNeedsReview" class="booking-note">
+                Thời gian giữ ghế còn {{ remaining }}
               </p>
               <p v-if="booking.rejectionReason" class="booking-error">
                 {{ booking.rejectionReason }}
               </p>
-              <p v-if="booking.status === 'RESERVED'" class="booking-note">
+              <p v-if="holdActive && !paymentNeedsReview" class="booking-note">
                 Kiểm tra thông tin bên dưới và tiếp tục thanh toán trong thời gian giữ ghế. Kết quả
                 chỉ được xác nhận khi hệ thống cập nhật trạng thái đơn.
               </p>
@@ -505,6 +580,8 @@ async function cancel() {
                 :booking="booking"
                 :disabled="cancelling || detail.isFetching.value || detail.isError.value"
                 @refresh="detail.refetch()"
+                @payment-status="paymentStatus = $event"
+                @payment-checked="paymentChecked = $event"
               />
             </section>
           </div>
@@ -530,7 +607,10 @@ async function cancel() {
               <p v-if="list.isPending.value" class="booking-note" role="status">
                 Đang tải đơn của bạn…
               </p>
-              <div v-else-if="list.isError.value" class="booking-panel">
+              <div
+                v-else-if="list.isError.value && (!list.data.value || listUnavailable)"
+                class="booking-panel"
+              >
                 <p class="booking-error" role="alert">
                   {{ customerBookingError(list.error.value) }}
                 </p>
@@ -539,13 +619,13 @@ async function cancel() {
                 >
               </div>
               <template v-else-if="list.data.value">
+                <p v-if="list.isError.value" class="booking-error" role="alert">
+                  Chưa cập nhật được danh sách. Thông tin bên dưới là lần tải gần nhất và có thể
+                  chưa phản ánh trạng thái mới. Vui lòng thử lại.
+                </p>
                 <div class="customer-bookings__list-toolbar">
                   <h2 class="customer-bookings__list-label">
-                    {{
-                      activeTab === 'all'
-                        ? 'Tất cả giao dịch'
-                        : customerBookingListTabs[activeTab].label
-                    }}
+                    {{ customerBookingListTabs[activeTab].label }}
                     <span>{{ list.data.value.page.totalElements }}</span>
                   </h2>
                   <AppButton
@@ -553,17 +633,17 @@ async function cancel() {
                     size="sm"
                     :loading="list.isFetching.value"
                     @click="list.refetch()"
-                    >Làm mới</AppButton
+                    >{{ list.isError.value ? 'Thử lại' : 'Làm mới' }}</AppButton
                   >
                 </div>
                 <div v-if="!list.data.value.content.length" class="customer-bookings__empty">
                   <Ticket aria-hidden="true" />
-                  <h2>Chưa có đơn trong mục này</h2>
+                  <h2>{{ page ? 'Trang này không có đơn' : emptyListCopy.title }}</h2>
                   <p>
                     {{
-                      activeTab === 'all'
-                        ? 'Chọn một bộ phim để bắt đầu cuộc hẹn mới.'
-                        : 'Thử xem tất cả giao dịch hoặc chọn một cuộc hẹn mới.'
+                      page
+                        ? 'Quay về trang đầu để xem các đơn trong nhóm này.'
+                        : emptyListCopy.description
                     }}
                   </p>
                   <AppButton
@@ -571,7 +651,7 @@ async function cancel() {
                     variant="ghost"
                     :disabled="listNavigating"
                     @click="changeTab('all')"
-                    >Xem tất cả giao dịch</AppButton
+                    >Xem tất cả đơn</AppButton
                   >
                   <RouterLink
                     class="customer-bookings__order-link"

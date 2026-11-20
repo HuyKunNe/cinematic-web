@@ -16,24 +16,24 @@ import type { FindAllBookingsParams } from '@/services/api/generated/booking-ser
 import { FindAllBookingsPeriod } from '@/services/api/generated/booking-service/model/findAllBookingsPeriod'
 
 export const customerBookingListTabs = {
-  all: { label: 'Tất cả', statuses: [] as FindAllBookingsStatusItem[], period: undefined },
+  all: { label: 'Tất cả đơn', statuses: [] as FindAllBookingsStatusItem[], period: undefined },
   confirmed: {
     label: 'Đã xác nhận',
     statuses: [FindAllBookingsStatusItem.CONFIRMED],
     period: undefined,
   },
   upcoming: {
-    label: 'Chưa kết thúc',
+    label: 'Sắp & đang chiếu',
     statuses: [FindAllBookingsStatusItem.CONFIRMED],
     period: FindAllBookingsPeriod.UPCOMING,
   },
   past: {
-    label: 'Đã kết thúc',
+    label: 'Suất đã kết thúc',
     statuses: [FindAllBookingsStatusItem.CONFIRMED],
     period: FindAllBookingsPeriod.PAST,
   },
   unfinished: {
-    label: 'Chưa hoàn tất',
+    label: 'Giao dịch khác',
     statuses: Object.values(FindAllBookingsStatusItem).filter(
       (status) => status !== FindAllBookingsStatusItem.CONFIRMED,
     ),
@@ -255,5 +255,11 @@ export function useCustomerBookingsQuery(
     },
     retry: false,
     staleTime: 0,
+    refetchIntervalInBackground: false,
+    refetchInterval: (query) =>
+      !query.state.error &&
+      query.state.data?.content.some((booking) => ['PENDING', 'RESERVED'].includes(booking.status))
+        ? 3_000
+        : false,
   })
 }

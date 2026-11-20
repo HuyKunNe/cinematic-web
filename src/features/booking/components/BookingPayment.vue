@@ -71,6 +71,16 @@ const holdDeadlineReached = computed(() => {
     .filter(Number.isFinite)
   return deadlines.length > 0 && Math.min(...deadlines) <= now.value.getTime()
 })
+const showPaymentConsent = computed(
+  () =>
+    props.booking.status === 'RESERVED' &&
+    !holdDeadlineReached.value &&
+    !props.resultOnly &&
+    !query.isError.value &&
+    (!payment.value ||
+      ['RECEIVED', 'PROCESSING', 'PENDING_PROVIDER'].includes(payment.value.status)) &&
+    (!props.processing || processingNeedsAction.value),
+)
 watch(
   () =>
     [
@@ -152,9 +162,9 @@ const message = computed(() => {
 })
 const showManualCheck = computed(
   () =>
-    !props.compact ||
     query.isError.value ||
     !!handoffError.value ||
+    (payment.value?.status === 'PENDING_PROVIDER' && !validLink.value) ||
     payment.value?.status === 'RECONCILIATION_REQUIRED' ||
     (payment.value?.status === 'SUCCEEDED' && props.booking.status !== 'CONFIRMED') ||
     holdDeadlineReached.value,
@@ -213,25 +223,25 @@ watch(
     >
       Đang tải phiên thanh toán…
     </p>
-    <p v-if="payment && !processing" class="booking-payment__status" role="status">
+    <p
+      v-if="payment && !processing && !query.isError.value"
+      class="booking-payment__status"
+      role="status"
+    >
       {{ customerPaymentLabels[payment.status] }}
     </p>
-    <p v-if="!processing || processingNeedsAction" class="booking-note" role="status">
+    <p
+      v-if="!query.isError.value && (!processing || processingNeedsAction)"
+      class="booking-note"
+      role="status"
+    >
       {{ message }}
     </p>
     <p v-if="handoffError" class="booking-error" role="alert">{{ handoffError }}</p>
     <p v-if="query.isError.value" class="booking-error" role="alert">
       Chưa thể kiểm tra thanh toán. Vui lòng thử lại; không tạo thêm một đơn để thanh toán lại.
     </p>
-    <label
-      v-if="
-        booking.status === 'RESERVED' &&
-        !holdDeadlineReached &&
-        !resultOnly &&
-        (!processing || processingNeedsAction)
-      "
-      class="booking-payment__consent"
-    >
+    <label v-if="showPaymentConsent" class="booking-payment__consent">
       <input v-model="agreed" type="checkbox" :disabled="disabled" />
       <span
         >Tôi đã kiểm tra phim, suất chiếu, ghế, điều kiện độ tuổi và tổng tiền trước khi thanh
@@ -258,14 +268,8 @@ watch(
         :loading="query.isFetching.value"
         @click="refresh"
         >{{
-          compact ? (query.isError.value ? 'Thử lại' : 'Kiểm tra kết quả') : 'Kiểm tra thanh toán'
+          query.isError.value ? 'Thử lại' : compact ? 'Kiểm tra kết quả' : 'Kiểm tra thanh toán'
         }}</AppButton
-      >
-      <RouterLink
-        v-if="!compact && route.name !== ROUTE_NAMES.BOOKING_RESULT"
-        :to="{ name: ROUTE_NAMES.BOOKING_RESULT, params: { bookingId: booking.id } }"
-        class="customer-bookings__link"
-        >Xem kết quả đơn</RouterLink
       >
       <RouterLink
         v-if="

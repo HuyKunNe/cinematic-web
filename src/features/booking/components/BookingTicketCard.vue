@@ -87,7 +87,7 @@ const amount = computed(() =>
           title="Trạng thái theo giờ chiếu; không phải xác nhận check-in"
           >{{ screeningPhase.label }}</span
         >
-        <span class="customer-bookings__badge" :data-status="booking.status">{{
+        <span v-else class="customer-bookings__badge" :data-status="booking.status">{{
           customerBookingLabels[booking.status]
         }}</span>
       </div>

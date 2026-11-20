@@ -143,9 +143,9 @@ const amount = computed(() =>
       <div class="booking-confirmed-ticket__code">
         <TicketCheck aria-hidden="true" /><small>MÃ ĐƠN ĐẶT VÉ</small
         ><strong>{{ formatBookingReference(booking.id) }}</strong>
-        <p v-if="ticketsQuery.isPending.value" role="status">Đang tải mã vé…</p>
+        <p v-if="ticketsQuery.isPending.value" role="status">Đang tải thông tin vé…</p>
         <p v-else-if="ticketsQuery.isError.value" role="alert">
-          Chưa thể cập nhật mã vé. Thông tin đặt vé vẫn được giữ nguyên.
+          Chưa tải được thông tin vé. Thông tin đặt vé vẫn được giữ nguyên.
         </p>
         <p v-else-if="!tickets.length" role="status">
           {{
@@ -157,8 +157,17 @@ const amount = computed(() =>
         <p v-if="tickets.length && !ticketsQuery.isError.value" role="status">
           {{ issuanceMessage }}
         </p>
-        <AppButton size="sm" variant="ghost" :loading="refreshingTickets" @click="refreshTickets">
-          {{ ticketsQuery.isError.value ? 'Thử lại mã vé' : 'Cập nhật mã vé' }}
+        <AppButton
+          v-if="
+            ticketsQuery.isError.value ||
+            (ticketsQuery.isSuccess.value && !tickets.length && !awaitingIssuance)
+          "
+          size="sm"
+          variant="ghost"
+          :loading="refreshingTickets"
+          @click="refreshTickets"
+        >
+          Thử tải lại vé
         </AppButton>
         <p>In vé được thực hiện bởi nhân viên hoặc máy POS tại rạp.</p>
       </div>

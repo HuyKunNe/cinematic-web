@@ -17,6 +17,7 @@ import BookingProcessing from '../components/BookingProcessing.vue'
 import BookingJourneySummary from '../components/BookingJourneySummary.vue'
 import BookingSavedSeats from '../components/BookingSavedSeats.vue'
 import { formatBookingReference } from '../mappers/booking-reference.mapper'
+import { canRestartBooking, needsBookingPaymentReview } from '../utils/booking-result-actions'
 import type { PaymentCheckoutResponseStatus } from '@/services/api/generated/payment-service/model/paymentCheckoutResponseStatus'
 import {
   customerBookingId,
@@ -49,21 +50,12 @@ const openingTitle = computed(() =>
 )
 const paymentStatus = ref<PaymentCheckoutResponseStatus>()
 const paymentChecked = ref(false)
-const paymentNeedsReview = computed(
-  () =>
-    booking.value?.status !== 'CONFIRMED' &&
-    (paymentStatus.value === 'RECONCILIATION_REQUIRED' || paymentStatus.value === 'SUCCEEDED'),
+const paymentNeedsReview = computed(() =>
+  needsBookingPaymentReview(booking.value?.status, paymentStatus.value),
 )
 const canChooseAgain = computed(() => {
-  const status = booking.value?.status
   return (
-    !!status &&
-    ['REJECTED', 'CANCELLED', 'EXPIRED'].includes(status) &&
-    !paymentNeedsReview.value &&
-    (status === 'REJECTED' ||
-      (paymentChecked.value &&
-        (paymentStatus.value === undefined ||
-          ['FAILED', 'EXPIRED'].includes(paymentStatus.value)))) &&
+    canRestartBooking(booking.value?.status, paymentStatus.value, paymentChecked.value) &&
     query.isSuccess.value &&
     !query.isFetching.value &&
     !query.isError.value
@@ -354,13 +346,7 @@ watch(
               @payment-status="paymentStatus = $event"
               @payment-checked="paymentChecked = $event"
               @refresh="query.refetch()"
-            /><AppButton
-              v-if="booking.status === 'PENDING'"
-              variant="secondary"
-              :loading="query.isFetching.value"
-              @click="query.refetch()"
-              >Kiểm tra trạng thái đơn</AppButton
-            >
+            />
           </section>
           <div
             v-if="ticket && booking.status === 'CONFIRMED'"
