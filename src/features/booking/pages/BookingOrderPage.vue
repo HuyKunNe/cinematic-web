@@ -15,6 +15,7 @@ import BookingPayment from '../components/BookingPayment.vue'
 import BookingProcessing from '../components/BookingProcessing.vue'
 import BookingJourneySummary from '../components/BookingJourneySummary.vue'
 import BookingSavedSeats from '../components/BookingSavedSeats.vue'
+import { formatBookingReference } from '../mappers/booking-reference.mapper'
 import type { PaymentCheckoutResponseStatus } from '@/services/api/generated/payment-service/model/paymentCheckoutResponseStatus'
 import {
   customerBookingId,
@@ -247,7 +248,7 @@ watch(
           <header v-if="ticket" class="booking-journey__ticket-heading">
             <p class="lumiere-eyebrow">VÉ ĐIỆN TỬ</p>
             <h1>Cuộc hẹn đã sẵn sàng</h1>
-            <p>Thông tin đơn đặt vé đã được xác nhận · {{ booking.id }}</p>
+            <p>Thông tin đơn đặt vé đã được xác nhận · {{ formatBookingReference(booking.id) }}</p>
           </header>
           <header v-if="!ticket" class="booking-journey__result">
             <span
@@ -269,7 +270,7 @@ watch(
             :booking="booking"
           />
           <section v-else class="booking-journey__result-status">
-            <p class="booking-note">Mã đơn: {{ booking.id }}</p>
+            <p class="booking-note">Mã đơn: {{ formatBookingReference(booking.id) }}</p>
             <p v-if="booking.rejectionReason" class="booking-error">
               {{ booking.rejectionReason }}
             </p>

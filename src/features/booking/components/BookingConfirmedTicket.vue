@@ -5,9 +5,13 @@ import AppButton from '@/components/ui/AppButton.vue'
 import type { CustomerBooking } from '../api/customer-bookings'
 import { useBookingContextQuery } from '../api/booking-queries'
 import { formatBookingScreeningVersion } from '../mappers/booking-screening.mapper'
+import { useCustomerTicketsQuery } from '../api/customer-tickets'
+import { formatBookingReference } from '../mappers/booking-reference.mapper'
 import { formatCinemaTime, formatCinemaDateKey, getCinemaDateKey } from '@/utils/cinema-time'
 
 const props = defineProps<{ booking: CustomerBooking }>()
+const ticketsQuery = useCustomerTicketsQuery(() => props.booking)
+const tickets = computed(() => ticketsQuery.data.value ?? [])
 const query = useBookingContextQuery(() => props.booking.showtimeId, { poll: false })
 const context = computed(() => query.data.value)
 const screeningLabel = computed(() =>
@@ -117,8 +121,26 @@ const amount = computed(() =>
       </div>
       <div class="booking-confirmed-ticket__code">
         <TicketCheck aria-hidden="true" /><small>MÃ ĐƠN ĐẶT VÉ</small
-        ><strong>{{ booking.id }}</strong>
-        <p>Chưa có mã QR từ hệ thống. Đây là thông tin đơn đã được xác nhận.</p>
+        ><strong>{{ formatBookingReference(booking.id) }}</strong>
+        <p v-if="ticketsQuery.isPending.value" role="status">Đang tải mã vé…</p>
+        <p v-else-if="ticketsQuery.isError.value" role="alert">
+          Chưa thể cập nhật mã vé. Thông tin đặt vé vẫn được giữ nguyên.
+        </p>
+        <p v-else-if="!tickets.length" role="status">
+          Đơn đã xác nhận. Mã vé chưa được phát hành, vui lòng kiểm tra lại.
+        </p>
+        <p v-if="tickets.length" role="status">
+          {{ tickets.length }} vé đã phát hành cho đơn đặt vé này.
+        </p>
+        <AppButton
+          size="sm"
+          variant="ghost"
+          :loading="ticketsQuery.isFetching.value"
+          @click="ticketsQuery.refetch()"
+        >
+          {{ ticketsQuery.isError.value ? 'Thử lại mã vé' : 'Cập nhật mã vé' }}
+        </AppButton>
+        <p>In vé được thực hiện bởi nhân viên hoặc máy POS tại rạp.</p>
       </div>
     </div>
     <footer class="booking-confirmed-ticket__bottom">

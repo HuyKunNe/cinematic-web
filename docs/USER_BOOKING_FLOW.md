@@ -1,5 +1,94 @@
 # Luồng đặt vé USER
 
+## Đề xuất BE: QR nhận cả booking và mã hiển thị 6 ký tự — 2026-11-20
+
+Đây là **đề xuất contract mới**, chưa phải endpoint/DTO đã tồn tại. FE chưa gọi
+các endpoint đề xuất dưới đây; cần BE chốt, cập nhật OpenAPI rồi generate client.
+
+### Mã hiển thị
+
+- User hiển thị 6 ký tự cuối UUID, viết hoa. Ví dụ booking
+  `01a1e792-5926-798f-a377-5ce963c087b6` hiển thị `C087B6`.
+- Giữ nguyên UUID đầy đủ trong database, API, route, query key và tham chiếu vé.
+  Suffix chỉ để nhận diện trên giao diện; không dùng làm quyền truy cập hoặc
+  thay thế bookingId. Có thể trùng suffix giữa các booking.
+- Nếu Staff/POS tìm theo suffix, trả danh sách kết quả trong phạm vi được phép
+  và yêu cầu đối chiếu rạp/suất/khách; không chọn booking đầu tiên khi trùng.
+
+### QR cấp booking
+
+- Một booking có một QR nhận vé chung, tách khỏi QR riêng của từng vé đang có.
+  Token ngẫu nhiên đủ mạnh do BE cấp và gắn với UUID đầy đủ; không encode suffix
+  6 ký tự thành credential. Có thể dùng prefix có phiên bản, ví dụ
+  `cinema-booking:v1:<opaque-token>` sau khi BE chốt định dạng.
+- API User chỉ trả QR cho chủ booking đã CONFIRMED. Nếu hệ thống chưa phát hành
+  đủ vé, trả trạng thái chờ rõ ràng; không báo đã sẵn sàng nhận/in vé.
+- QR dùng để tra cứu bộ vé; không tự đánh dấu vé USED, không làm phát sinh
+  thanh toán, không cấp quyền in cho User. Không ghi token vào log/analytics.
+- BE quyết định thời hạn, thu hồi/cấp lại QR và xử lý QR cũ; FE dùng dữ liệu
+  phản hồi, không tự đặt thời hạn.
+
+### Các API đề xuất để BE xem xét
+
+| Thao tác                      | Endpoint đề xuất                                               | Kết quả cần có                                                                                                   |
+| ----------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Chủ booking lấy mã nhận vé    | `GET /api/v1/bookings/{bookingId}/pickup-pass`                 | bookingId đầy đủ, displayCode, trạng thái sẵn sàng/chờ, qrPayload khi sẵn sàng; thời hạn nếu có                  |
+| Staff/POS quét và tra cứu     | `POST /api/v1/booking-pickups/lookup` với qrPayload trong body | bookingId, displayCode, thông tin rạp/phòng/suất và **toàn bộ vé**, ghế, số khách, trạng thái; quyền/khả năng in |
+| Staff/POS tạo tác vụ in cả bộ | `POST /api/v1/bookings/{bookingId}/print-jobs`                 | printJobId, danh sách vé đầy đủ, dữ liệu mẫu in hoặc tài nguyên in, trạng thái job                               |
+
+Endpoint và tên trường có thể thay đổi theo kiến trúc BE. Dùng quyền Staff/POS
+hiện có được BE xác nhận; kiểm tra phạm vi rạp, không chỉ tin role từ FE. API
+lookup không thay thế kiểm tra quyền khi tạo print job.
+
+Print job cần idempotency để quét/bấm lặp không sinh tác vụ trùng; lưu actor,
+thiết bị/POS, thời điểm và kết quả. Khi chưa phát hành đủ vé, không tự in một
+phần booking. Việc in lại, lỗi máy in, vé đã USED và đơn bị hủy/hết hạn cần BE
+chốt hành vi riêng; in vé không đồng nghĩa check-in. Thao tác vật lý do Staff/POS
+thực hiện; API tạo job không được trả rằng máy đã in thành công nếu chưa có xác nhận.
+
+### Phân chia triển khai
+
+1. BE chốt contract, phân quyền, idempotency và cập nhật OpenAPI/generated client.
+2. User FE hiển thị một QR nhận booking và mã 6 ký tự; không có nút in.
+3. Staff/POS quét → xem cả bộ vé → thực hiện in theo print job. Phần Staff/POS
+   không được sửa trong task User hiện tại.
+
+## Một QR cho cả booking — cần BE/Staff/POS bổ sung
+
+Yêu cầu hiện hành: trang User chỉ có một QR nhận vé của cả booking; nhân viên
+hoặc POS quét mã đó và in toàn bộ vé. User không có chức năng in.
+
+Đã đối chiếu contract hiện tại: `TicketResponse.qrPayload` là QR từng vé;
+`BookingTicketLookupController` chỉ nhận `cinema-ticket:v1:<token>` và trả một
+ticket cùng bookingId. GET danh sách vé đang xác thực theo chủ booking, không
+thể mặc định dùng nó như API đọc toàn bộ vé cho Staff/POS.
+
+Cần BE cung cấp QR cấp booking và contract tra cứu được phân quyền cho Staff/POS,
+trả toàn bộ vé thuộc booking để in; xác định hành vi khi vé đã sử dụng hoặc đơn
+chưa phát hành đủ vé. Đồng bộ generated client trước khi nối FE. Không encode
+UUID booking thành QR tùy ý, ghép các QR, hoặc dùng QR của vé đầu tiên làm QR
+của booking vì chưa có contract bảo đảm thao tác in cả bộ.
+
+FE hiện đã bỏ danh sách mã riêng khỏi khối mã trên thẻ vé, giữ một mã đặt vé
+và thông tin chờ mã nhận vé chung. Chưa có QR booking quét được; không hiển thị
+QR giả. Phần renderer QR sẽ được triển khai sau khi chốt payload và thư viện
+phù hợp (dự án hiện chưa có thư viện tạo QR, thêm dependency cần được duyệt).
+
+## Cập nhật contract vé — 2026-11-20
+
+Generated client hiện có `getBookingTickets(bookingId)` cho
+`GET /api/v1/bookings/{bookingId}/tickets`. Đã đối chiếu controller/service BE:
+API chỉ trả vé thuộc booking của người đang đăng nhập. Trang kết quả và vé của
+đơn CONFIRMED dùng API này để hiển thị mã vé, ghế, sức chứa và trạng thái
+ISSUED/USED. Không suy trạng thái sử dụng từ giờ chiếu hay trạng thái thanh toán.
+
+Có trạng thái chờ tải, chưa phát hành, lỗi/thử lại và cập nhật. Không gọi recovery,
+check-in hoặc in vé từ User. Không cache/lưu QR payload vào query hiển thị.
+API QR payload đã có; phần renderer QR thật còn chưa triển khai, không dùng QR giả.
+BE trả thêm `checkedInAt` nhưng generated DTO hiện chưa có trường này; cần đồng bộ
+OpenAPI/generate trước khi hiển thị thời điểm soát vé. Các ghi chú API vé chưa có
+ở lịch sử bên dưới không còn áp dụng cho endpoint này.
+
 ## Quy tắc hiện hành: User không in vé — 2026-11-17
 
 User chỉ xem thông tin vé/đơn đã xác nhận. In vé thuộc Staff hoặc máy POS.
@@ -83,7 +172,7 @@ tục lấy từ API; không mang poster, QR hoặc dữ liệu giao dịch minh
 | Checkout đơn đã tạo     | `/booking/checkout/:bookingId`     | Đọc đơn theo chủ sở hữu; mở phiên thanh toán hiện có khi được xác nhận                    |
 | Processing trong result | `/booking/processing/:bookingId`   | Chờ trạng thái booking/payment thật; URI hợp lệ mới chuyển cổng                           |
 | `#/result/{code}`       | `/booking/result/:bookingId`       | Thành công, thất bại, hết hạn hoặc chưa xác định theo API; không suy thành công từ URL    |
-| `#/ticket/{code}`       | `/booking/ticket/:bookingId`       | Chỉ booking CONFIRMED được xem thông tin vé; in vé thuộc Staff/POS                         |
+| `#/ticket/{code}`       | `/booking/ticket/:bookingId`       | Chỉ booking CONFIRMED được xem thông tin vé; in vé thuộc Staff/POS                        |
 
 Lượt này hợp nhất thông tin phim/rạp/suất của sidebar bằng BookingSummaryIdentity;
 dùng cùng chiều rộng, khoảng cách, poster và padding với checkout. Thanh tiến

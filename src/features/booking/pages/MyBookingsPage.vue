@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatBookingReference } from '../mappers/booking-reference.mapper'
 import { computed, ref, watch } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -451,7 +452,7 @@ async function cancel() {
               <dl class="customer-bookings__facts">
                 <div>
                   <dt>Mã đơn</dt>
-                  <dd>{{ booking.id }}</dd>
+                  <dd>{{ formatBookingReference(booking.id) }}</dd>
                 </div>
                 <div>
                   <dt>Mã suất chiếu</dt>

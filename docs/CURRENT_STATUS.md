@@ -1,5 +1,44 @@
 # Current Status
 
+## USER short booking references and BE pickup proposal — 2026-11-20
+
+Visible booking references in processing, result, ticket and customer history
+details now use the uppercase last six UUID characters (example C087B6). Full
+IDs remain unchanged in routes, requests, state and query keys. A feature mapper
+centralizes formatting; the suffix is not a unique identifier or credential.
+USER_BOOKING_FLOW.md includes a proposed booking pickup QR, authorized Staff/POS
+lookup of all tickets and idempotent print-job contract, explicitly not implemented
+API endpoints. User printing remains absent. No tests/lint/typecheck/build/browser
+checks, backend/database writes or generated-client edits were performed.
+
+## USER one booking pickup QR requested — 2026-11-20
+
+User requests one booking-level QR scanned by Staff/POS to print all tickets.
+Removed the per-ticket ID list from the customer ticket code panel, retaining
+one booking reference and actual issued-ticket count. Current QR/lookup contract
+is per ticket, not a booking-wide print handoff; no arbitrary booking UUID QR or
+first-ticket substitution was introduced. Booking QR rendering is not complete.
+Required BE/Staff/POS contract and dependency constraint are recorded at the top
+of USER_BOOKING_FLOW.md. No tests/build/browser checks or BE/DB changes were made.
+
+## USER issued tickets API — 2026-11-20
+
+The current generated client now provides getBookingTickets. Compared it with
+BookingTicketController/BookingTicketService and connected the existing confirmed
+ticket card to this owner-scoped GET API. The view lists real ticket IDs, seats,
+capacities and ISSUED/USED labels, with loading, empty/issuance-pending, retry and
+refresh states. Ticket QR credentials are not stored in query results or rendered
+as text. User printing remains absent; Staff/POS were not changed.
+
+QR payload is now available from BE, superseding the old missing-API note. A real
+QR renderer is still pending; no fake QR or new dependency was introduced. BE
+also returns checkedInAt, which is absent from the current generated TicketResponse;
+this view does not read that field or modify generated files.
+
+Manual checks pending: owned confirmed result/ticket with no tickets, issued or
+used tickets, failed request/retry, mobile and changing account. No tests/lint/
+typecheck/build/browser checks or payment/database operations were run.
+
 ## USER booking screening metadata — 2026-11-17
 
 Booking summary, saved-showtime details and confirmed ticket now share a booking

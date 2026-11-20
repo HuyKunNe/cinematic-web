@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { formatBookingReference } from '../mappers/booking-reference.mapper'
 
 defineProps<{ bookingId?: string }>()
 const heading = ref<HTMLHeadingElement | null>(null)
@@ -11,7 +12,7 @@ onMounted(() => heading.value?.focus({ preventScroll: true }))
     <h1 id="booking-processing-title" ref="heading" tabindex="-1">Đang xử lý thanh toán</h1>
     <p role="status">Vui lòng chờ. Chưa có vé được phát hành cho đơn này.</p>
     <p v-if="bookingId">
-      Mã đơn: <strong>{{ bookingId }}</strong>
+      Mã đơn: <strong>{{ formatBookingReference(bookingId) }}</strong>
     </p>
     <slot />
   </section>
