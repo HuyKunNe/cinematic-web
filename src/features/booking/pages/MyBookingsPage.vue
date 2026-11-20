@@ -30,7 +30,6 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import { Ticket } from 'lucide-vue-next'
 import BookingTicketCard from '../components/BookingTicketCard.vue'
 import CustomerAccountNav from '@/components/navigation/CustomerAccountNav.vue'
-import BookingProgress from '../components/BookingProgress.vue'
 import BookingShowtimeSummary from '../components/BookingShowtimeSummary.vue'
 import BookingPayment from '../components/BookingPayment.vue'
 import { useAuthStore } from '@/stores/auth.store'
@@ -303,7 +302,10 @@ async function cancel() {
 </script>
 
 <template>
-  <div class="booking-start-page customer-bookings" :class="{ 'customer-bookings--list': !id }">
+  <div
+    class="booking-start-page customer-bookings"
+    :class="{ 'customer-bookings--list': !id, 'customer-bookings--detail': !!id }"
+  >
     <AppContainer>
       <header class="customer-bookings__heading">
         <div>
@@ -330,7 +332,6 @@ async function cancel() {
           >Đặt vé mới</RouterLink
         >
       </header>
-      <BookingProgress v-if="id" :current="isCheckout ? 'checkout' : 'order'" />
       <p v-if="!auth.isAuthenticated" class="booking-error" role="alert">
         Vui lòng đăng nhập để xem đơn đặt vé.
       </p>
@@ -371,32 +372,38 @@ async function cancel() {
                 </template>
               </svg>
             </span>
-            <span class="customer-bookings__badge" :data-status="booking.status">{{
-              customerBookingLabels[booking.status]
-            }}</span>
-            <h2 id="customer-booking-status">{{ statusTitles[booking.status] }}</h2>
-            <p class="booking-note" role="status" aria-live="polite">{{ statusDescription }}</p>
-            <p v-if="booking.status === 'RESERVED'" class="booking-note">
-              {{
-                Date.parse(booking.expiresAt) > now.getTime()
-                  ? `Thời gian giữ ghế còn ${remaining}`
-                  : 'Đã đến hạn giữ ghế. Đang chờ trạng thái từ hệ thống.'
-              }}
-            </p>
-            <p v-if="booking.rejectionReason" class="booking-error">
-              {{ booking.rejectionReason }}
-            </p>
-            <p v-if="booking.status === 'RESERVED'" class="booking-note">
-              Kiểm tra thông tin bên dưới và tiếp tục thanh toán trong thời gian giữ ghế. Kết quả
-              chỉ được xác nhận khi hệ thống cập nhật trạng thái đơn.
-            </p>
-            <div class="customer-bookings__actions">
+            <div class="customer-bookings__status-copy">
+              <span class="customer-bookings__badge" :data-status="booking.status">{{
+                customerBookingLabels[booking.status]
+              }}</span>
+              <h2 id="customer-booking-status">{{ statusTitles[booking.status] }}</h2>
+              <p class="booking-note" role="status" aria-live="polite">{{ statusDescription }}</p>
+              <p v-if="booking.status === 'RESERVED'" class="booking-note">
+                {{
+                  Date.parse(booking.expiresAt) > now.getTime()
+                    ? `Thời gian giữ ghế còn ${remaining}`
+                    : 'Đã đến hạn giữ ghế. Đang chờ trạng thái từ hệ thống.'
+                }}
+              </p>
+              <p v-if="booking.rejectionReason" class="booking-error">
+                {{ booking.rejectionReason }}
+              </p>
+              <p v-if="booking.status === 'RESERVED'" class="booking-note">
+                Kiểm tra thông tin bên dưới và tiếp tục thanh toán trong thời gian giữ ghế. Kết quả
+                chỉ được xác nhận khi hệ thống cập nhật trạng thái đơn.
+              </p>
+            </div>
+            <div
+              v-if="booking.status === 'CONFIRMED' || booking.status === 'RESERVED'"
+              class="customer-bookings__actions"
+            >
+              <RouterLink
+                v-if="booking.status === 'CONFIRMED'"
+                class="customer-bookings__detail-ticket-link"
+                :to="{ name: ROUTE_NAMES.BOOKING_TICKET, params: { bookingId: booking.id } }"
+                >Xem vé <Ticket aria-hidden="true"
+              /></RouterLink>
               <AppButton
-                variant="secondary"
-                :disabled="cancelling || detail.isFetching.value"
-                @click="detail.refetch()"
-                >Cập nhật trạng thái</AppButton
-              ><AppButton
                 v-if="booking.status === 'RESERVED'"
                 variant="ghost"
                 :disabled="!canCancel"
@@ -456,7 +463,7 @@ async function cancel() {
                 </div>
                 <div>
                   <dt>Mã suất chiếu</dt>
-                  <dd>{{ booking.showtimeId }}</dd>
+                  <dd>{{ formatBookingReference(booking.showtimeId) }}</dd>
                 </div>
                 <div>
                   <dt>Tổng tiền</dt>
@@ -470,44 +477,36 @@ async function cancel() {
                     {{ booking.seatCount ?? '—' }} đơn vị ghế · {{ booking.capacity ?? '—' }} chỗ
                   </dd>
                 </div>
-                <div>
-                  <dt>Ngày tạo</dt>
-                  <dd>{{ date(booking.createdAt) }}</dd>
-                </div>
-                <div>
-                  <dt>Hạn giữ ghế</dt>
-                  <dd>{{ date(booking.expiresAt) }}</dd>
-                </div>
-                <div v-if="booking.confirmedAt">
-                  <dt>Xác nhận lúc</dt>
-                  <dd>{{ date(booking.confirmedAt) }}</dd>
-                </div>
-                <div v-if="booking.cancelledAt">
-                  <dt>Hủy lúc</dt>
-                  <dd>{{ date(booking.cancelledAt) }}</dd>
-                </div>
               </dl>
+              <details class="customer-bookings__timeline">
+                <summary>Thời gian giao dịch</summary>
+                <dl class="customer-bookings__facts">
+                  <div>
+                    <dt>Ngày tạo</dt>
+                    <dd>{{ date(booking.createdAt) }}</dd>
+                  </div>
+                  <div>
+                    <dt>Hạn giữ ghế</dt>
+                    <dd>{{ date(booking.expiresAt) }}</dd>
+                  </div>
+                  <div v-if="booking.confirmedAt">
+                    <dt>Xác nhận lúc</dt>
+                    <dd>{{ date(booking.confirmedAt) }}</dd>
+                  </div>
+                  <div v-if="booking.cancelledAt">
+                    <dt>Hủy lúc</dt>
+                    <dd>{{ date(booking.cancelledAt) }}</dd>
+                  </div>
+                </dl>
+              </details>
               <BookingPayment
                 :key="booking.id"
+                compact
                 :booking="booking"
                 :disabled="cancelling || detail.isFetching.value || detail.isError.value"
                 @refresh="detail.refetch()"
               />
             </section>
-          </div>
-          <div class="customer-bookings__result-actions">
-            <RouterLink
-              v-if="booking.status === 'CONFIRMED'"
-              class="customer-bookings__link"
-              :to="{ name: ROUTE_NAMES.BOOKING_TICKET, params: { bookingId: booking.id } }"
-              >Xem vé →</RouterLink
-            >
-            <RouterLink class="customer-bookings__link" :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS }"
-              >Vé &amp; giao dịch</RouterLink
-            >
-            <RouterLink class="customer-bookings__link" :to="{ name: ROUTE_NAMES.HOME }"
-              >Về trang chủ →</RouterLink
-            >
           </div>
         </template>
       </template>

@@ -33,6 +33,90 @@
 .customer-bookings__browser {
   min-width: 0;
 }
+.customer-bookings--detail {
+  --customer-detail-title-size: 1.9375rem;
+  --customer-detail-status-icon: 2.75rem;
+  min-width: 0;
+}
+.customer-bookings--detail > .app-container > * {
+  min-width: 0;
+}
+.customer-bookings--detail > .app-container {
+  grid-template-columns: minmax(0, 1fr);
+}
+.customer-bookings--detail .customer-bookings__grid {
+  min-width: 0;
+}
+.customer-bookings--detail .customer-bookings__heading h1 {
+  margin: var(--space-2) 0 0;
+  font-size: var(--customer-detail-title-size);
+}
+.customer-bookings--detail .customer-bookings__status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--customer-booking-card-radius);
+  background: var(--color-surface);
+  text-align: left;
+}
+.customer-bookings--detail .customer-bookings__result-icon {
+  width: var(--customer-detail-status-icon);
+  height: var(--customer-detail-status-icon);
+  flex-shrink: 0;
+  margin: 0;
+}
+.customer-bookings__status-copy {
+  flex: 1;
+  min-width: 0;
+}
+.customer-bookings--detail .customer-bookings__status h2 {
+  margin: var(--space-2) 0;
+  font-size: var(--font-size-xl);
+}
+.customer-bookings--detail .customer-bookings__status p {
+  max-width: none;
+  margin: var(--space-2) 0 0;
+}
+.customer-bookings--detail .customer-bookings__status > .customer-bookings__actions {
+  align-self: center;
+  margin: 0;
+}
+.customer-bookings__detail-ticket-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-md);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--lumiere-button-radius);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+.customer-bookings__detail-ticket-link:hover {
+  background: var(--color-primary-hover);
+}
+.customer-bookings__detail-ticket-link svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+.customer-bookings__timeline {
+  margin-top: var(--space-4);
+}
+.customer-bookings__timeline summary {
+  padding-block: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+.customer-bookings__timeline summary:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
 .customer-bookings .customer-bookings__grid > .booking-panel {
   border-radius: var(--customer-booking-card-radius);
 }
@@ -494,6 +578,20 @@
   border-bottom: 0;
 }
 @variant lumiere-mobile {
+  .customer-bookings--detail {
+    --customer-detail-title-size: 1.6875rem;
+  }
+  .customer-bookings--detail .customer-bookings__status {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+  .customer-bookings--detail .customer-bookings__status-copy {
+    flex-basis: calc(100% - var(--customer-detail-status-icon) - var(--space-3));
+  }
+  .customer-bookings--detail .customer-bookings__status > .customer-bookings__actions {
+    width: 100%;
+  }
   .customer-bookings--list {
     --customer-tickets-title-size: 1.1875rem;
   }

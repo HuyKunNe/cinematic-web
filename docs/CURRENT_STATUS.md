@@ -1,5 +1,69 @@
 # Current Status
 
+## USER transaction-detail actions — 2026-11-20
+
+Removed the always-visible Update Status action and duplicate footer navigation
+from account booking details. Confirmed orders keep View Ticket and Back to List.
+The shared payment component has an opt-in compact display for this page only:
+it omits result/checkout navigation and routine payment-check buttons, keeping a
+single Check Result/Retry action for reconciliation, recorded-payment conflicts,
+deadline recovery or request/handoff errors. That action still refreshes both
+payment and booking. Reserved orders retain consent, valid provider handoff and
+the cancel-reservation action; existing polling remains active.
+
+Checkout/result pages do not enable compact mode. No API/business-state changes,
+new dependencies or Staff/POS/User-print changes were introduced. Source review
+only; no tests/lint/typecheck/build were run.
+
+## USER account booking detail UI — 2026-11-20
+
+Opened the requested `/account/bookings?bookingId=...b66f05` in Edge and observed
+a confirmed transaction with an oversized result hero/progress above the actual
+details and a full showtime UUID. Replaced the history-detail hero with a compact
+status card, promoted the real View Ticket link, removed booking-step progress
+from this page, shortened the displayed showtime reference to six characters and
+grouped all audit timestamps in an expandable transaction timeline. Seat groups,
+saved prices, payment, refresh and cancellation controls remain intact.
+
+Detail-only CSS keeps the list layout unchanged, constrains grid children and
+wraps the status/action area on mobile. Desktop changes were observed after HMR
+on the actual booking: summary/details are visible much earlier. Mobile emulation
+showed horizontal clipping; narrow-width rules were added but a clean final
+mobile verification is still required. Other booking states/timeline interaction
+were not runtime verified. No tests/lint/typecheck/build, payment/cancel actions,
+BE/DB writes or generated-client edits were performed.
+
+## USER processing deadline feedback — 2026-11-20
+
+When a reserved booking/payment reaches its API-provided deadline, the processing
+view now exposes its existing status/check-payment controls instead of showing
+only a spinner. Checkout also hides consent/provider handoff controls after that
+deadline; the existing canPay guard remains unchanged. The notice uses a live
+status region. No booking/payment state is locally marked expired, no hold is
+invented or extended, and backend results remain authoritative.
+
+Manual checks pending: RESERVED reaching the earlier booking/payment deadline,
+processing without a payment response yet, explicit failed/expired/succeeded
+responses and checking again. No tests/lint/typecheck/build/browser checks were
+run; no BE/DB/generated changes or User print actions were added.
+
+## USER payment-result retry consistency — 2026-11-20
+
+Result headings/descriptions prioritize reconciliation or recorded payment when
+the booking is not confirmed, including cancelled/expired booking conflicts.
+Choose Seats Again is withheld in those states. For cancelled/expired orders it
+also waits for a fresh successful payment check and does not appear while the
+provider is still processing, while a request fails or while refetching. A rejected
+reservation keeps its existing retry path because no payment lookup is enabled
+for it. Confirmed bookings remain the authority for ticket access.
+
+BookingPayment exposes whether its existing GET check completed; no new endpoint
+or mutation was introduced. Manual checks pending: expired/cancelled orders with
+failed/expired/missing payment, pending provider, SUCCEEDED/reconciliation, failed
+GET/retry and confirmed result. No tests/lint/typecheck/build/browser checks or
+payment/database operations were run. Responsive layouts and User no-print policy
+are unchanged.
+
 ## USER order route recovery states — 2026-11-20
 
 Invalid booking links and owner-unavailable (403/404) responses now show a titled

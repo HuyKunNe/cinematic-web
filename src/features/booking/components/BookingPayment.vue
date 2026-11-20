@@ -20,10 +20,12 @@ const props = defineProps<{
   disabled: boolean
   resultOnly?: boolean
   processing?: boolean
+  compact?: boolean
 }>()
 const emit = defineEmits<{
   refresh: []
   paymentStatus: [status: PaymentCheckoutResponseStatus | undefined]
+  paymentChecked: [value: boolean]
 }>()
 const auth = useAuthStore()
 const flow = useBookingFlowStore()
@@ -62,6 +64,13 @@ const payment = computed(() =>
   props.booking.userId === auth.subject ? query.data.value : undefined,
 )
 const validLink = computed(() => checkoutLink(payment.value?.checkoutUri))
+const holdDeadlineReached = computed(() => {
+  if (props.booking.status !== 'RESERVED') return false
+  const deadlines = [props.booking.expiresAt, payment.value?.holdExpiresAt]
+    .map((value) => Date.parse(value ?? ''))
+    .filter(Number.isFinite)
+  return deadlines.length > 0 && Math.min(...deadlines) <= now.value.getTime()
+})
 watch(
   () =>
     [
@@ -72,6 +81,14 @@ watch(
       query.isError.value,
     ] as const,
   () => {
+    emit(
+      'paymentChecked',
+      query.isFetchedAfterMount.value &&
+        query.isSuccess.value &&
+        !query.isFetching.value &&
+        !query.isError.value &&
+        props.booking.userId === auth.subject,
+    )
     if (query.isError.value || !payment.value) emit('paymentStatus', undefined)
     else if (query.isFetchedAfterMount.value && query.isSuccess.value && !query.isFetching.value) {
       if (
@@ -103,6 +120,7 @@ const processingNeedsAction = computed(
   () =>
     !!props.processing &&
     (query.isError.value ||
+      holdDeadlineReached.value ||
       !!handoffError.value ||
       (payment.value?.status === 'PENDING_PROVIDER' &&
         (!hasPaymentIntent.value || !validLink.value))),
@@ -124,12 +142,7 @@ const message = computed(() => {
     return 'Thanh toán chưa thành công. Kiểm tra trạng thái đơn trước khi đặt lại.'
   if (payment.value?.status === 'EXPIRED')
     return 'Đã hết thời gian thanh toán. Kiểm tra trạng thái đơn để biết kết quả giải phóng ghế.'
-  if (
-    Math.min(
-      Date.parse(props.booking.expiresAt),
-      payment.value ? Date.parse(payment.value.holdExpiresAt) : Infinity,
-    ) <= now.value.getTime()
-  )
+  if (holdDeadlineReached.value)
     return 'Đã đến hạn giữ ghế hoặc phiên thanh toán. Vui lòng kiểm tra kết quả đơn trước khi tiếp tục.'
   if (payment.value?.status === 'PENDING_PROVIDER' && !validLink.value)
     return 'Cổng thanh toán chưa cung cấp liên kết hợp lệ. Vui lòng kiểm tra lại sau.'
@@ -137,6 +150,15 @@ const message = computed(() => {
     return 'Tiếp tục tại cổng thanh toán. Sau khi hoàn tất, quay lại trang này và kiểm tra kết quả.'
   return 'Hệ thống đang chuẩn bị phiên thanh toán. Trang sẽ tự cập nhật khi có kết quả.'
 })
+const showManualCheck = computed(
+  () =>
+    !props.compact ||
+    query.isError.value ||
+    !!handoffError.value ||
+    payment.value?.status === 'RECONCILIATION_REQUIRED' ||
+    (payment.value?.status === 'SUCCEEDED' && props.booking.status !== 'CONFIRMED') ||
+    holdDeadlineReached.value,
+)
 async function refresh() {
   await query.refetch()
   emit('refresh')
@@ -194,13 +216,20 @@ watch(
     <p v-if="payment && !processing" class="booking-payment__status" role="status">
       {{ customerPaymentLabels[payment.status] }}
     </p>
-    <p v-if="!processing || processingNeedsAction" class="booking-note">{{ message }}</p>
+    <p v-if="!processing || processingNeedsAction" class="booking-note" role="status">
+      {{ message }}
+    </p>
     <p v-if="handoffError" class="booking-error" role="alert">{{ handoffError }}</p>
     <p v-if="query.isError.value" class="booking-error" role="alert">
       Chưa thể kiểm tra thanh toán. Vui lòng thử lại; không tạo thêm một đơn để thanh toán lại.
     </p>
     <label
-      v-if="booking.status === 'RESERVED' && !resultOnly && (!processing || processingNeedsAction)"
+      v-if="
+        booking.status === 'RESERVED' &&
+        !holdDeadlineReached &&
+        !resultOnly &&
+        (!processing || processingNeedsAction)
+      "
       class="booking-payment__consent"
     >
       <input v-model="agreed" type="checkbox" :disabled="disabled" />
@@ -213,6 +242,7 @@ watch(
       <AppButton
         v-if="
           !resultOnly &&
+          !holdDeadlineReached &&
           validLink &&
           payment?.status === 'PENDING_PROVIDER' &&
           booking.status === 'RESERVED'
@@ -222,15 +252,17 @@ watch(
         >Tiếp tục thanh toán →</AppButton
       >
       <AppButton
-        v-if="booking.status !== 'PENDING' && booking.status !== 'REJECTED'"
+        v-if="showManualCheck && booking.status !== 'PENDING' && booking.status !== 'REJECTED'"
         :variant="resultOnly ? 'primary' : 'secondary'"
         :disabled="disabled"
         :loading="query.isFetching.value"
         @click="refresh"
-        >Kiểm tra thanh toán</AppButton
+        >{{
+          compact ? (query.isError.value ? 'Thử lại' : 'Kiểm tra kết quả') : 'Kiểm tra thanh toán'
+        }}</AppButton
       >
       <RouterLink
-        v-if="route.name !== ROUTE_NAMES.BOOKING_RESULT"
+        v-if="!compact && route.name !== ROUTE_NAMES.BOOKING_RESULT"
         :to="{ name: ROUTE_NAMES.BOOKING_RESULT, params: { bookingId: booking.id } }"
         class="customer-bookings__link"
         >Xem kết quả đơn</RouterLink
@@ -238,6 +270,7 @@ watch(
       <RouterLink
         v-if="
           !resultOnly &&
+          !compact &&
           booking.status === 'RESERVED' &&
           route.name !== ROUTE_NAMES.BOOKING_CHECKOUT
         "

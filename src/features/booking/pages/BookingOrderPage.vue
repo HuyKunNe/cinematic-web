@@ -48,6 +48,27 @@ const openingTitle = computed(() =>
   ticket.value ? 'Thông tin vé' : checkout.value ? 'Thanh toán' : 'Kết quả đặt vé',
 )
 const paymentStatus = ref<PaymentCheckoutResponseStatus>()
+const paymentChecked = ref(false)
+const paymentNeedsReview = computed(
+  () =>
+    booking.value?.status !== 'CONFIRMED' &&
+    (paymentStatus.value === 'RECONCILIATION_REQUIRED' || paymentStatus.value === 'SUCCEEDED'),
+)
+const canChooseAgain = computed(() => {
+  const status = booking.value?.status
+  return (
+    !!status &&
+    ['REJECTED', 'CANCELLED', 'EXPIRED'].includes(status) &&
+    !paymentNeedsReview.value &&
+    (status === 'REJECTED' ||
+      (paymentChecked.value &&
+        (paymentStatus.value === undefined ||
+          ['FAILED', 'EXPIRED'].includes(paymentStatus.value)))) &&
+    query.isSuccess.value &&
+    !query.isFetching.value &&
+    !query.isError.value
+  )
+})
 const paymentHasResult = computed(
   () =>
     paymentStatus.value !== undefined &&
@@ -56,6 +77,7 @@ const paymentHasResult = computed(
 const navigationError = ref('')
 let redirecting = false
 watch(id, () => {
+  paymentChecked.value = false
   paymentStatus.value = undefined
   navigationError.value = ''
 })
@@ -70,13 +92,13 @@ const titles: Record<CustomerBooking['status'], string> = {
 }
 const resultTitle = computed(() => {
   if (booking.value?.status === 'CONFIRMED') return titles.CONFIRMED
-  if (booking.value && ['REJECTED', 'CANCELLED', 'EXPIRED'].includes(booking.value.status))
-    return titles[booking.value.status]
   if (paymentStatus.value === 'RECONCILIATION_REQUIRED') return 'Chưa xác định kết quả thanh toán'
-  if (paymentStatus.value === 'SUCCEEDED')
+  if (paymentNeedsReview.value)
     return booking.value && ['PENDING', 'RESERVED'].includes(booking.value.status)
       ? 'Thanh toán thành công, đang xác nhận vé'
       : 'Thanh toán đã được ghi nhận, cần kiểm tra đơn'
+  if (booking.value && ['REJECTED', 'CANCELLED', 'EXPIRED'].includes(booking.value.status))
+    return titles[booking.value.status]
   if (paymentStatus.value === 'FAILED') return 'Thanh toán chưa thành công'
   if (paymentStatus.value === 'EXPIRED') return 'Đã hết thời gian thanh toán'
   return booking.value ? titles[booking.value.status] : ''
@@ -84,6 +106,12 @@ const resultTitle = computed(() => {
 const description = computed(() => {
   if (booking.value?.status !== 'CONFIRMED' && paymentStatus.value === 'RECONCILIATION_REQUIRED')
     return 'Chưa có xác nhận kết quả cuối cùng. Kiểm tra trạng thái đơn trước khi thực hiện thanh toán khác.'
+  if (
+    paymentNeedsReview.value &&
+    booking.value &&
+    !['PENDING', 'RESERVED'].includes(booking.value.status)
+  )
+    return 'Thanh toán đã được ghi nhận nhưng đơn chưa được xác nhận. Vui lòng kiểm tra trạng thái hoặc liên hệ rạp trước khi đặt lại.'
   if (
     booking.value &&
     ['PENDING', 'RESERVED'].includes(booking.value.status) &&
@@ -239,6 +267,7 @@ watch(
               :booking="booking"
               :disabled="query.isFetching.value || query.isError.value"
               @payment-status="paymentStatus = $event"
+              @payment-checked="paymentChecked = $event"
               @refresh="query.refetch()"
           /></BookingProcessing>
         </template>
@@ -272,6 +301,7 @@ watch(
                   :result-only="!checkout"
                   :disabled="query.isFetching.value || query.isError.value"
                   @payment-status="paymentStatus = $event"
+                  @payment-checked="paymentChecked = $event"
                   @refresh="query.refetch()"
                 />
               </section>
@@ -322,6 +352,7 @@ watch(
               :result-only="!checkout"
               :disabled="query.isFetching.value || query.isError.value"
               @payment-status="paymentStatus = $event"
+              @payment-checked="paymentChecked = $event"
               @refresh="query.refetch()"
             /><AppButton
               v-if="booking.status === 'PENDING'"
@@ -370,11 +401,7 @@ watch(
               >Xem vé <Ticket aria-hidden="true"
             /></RouterLink>
             <RouterLink
-              v-if="
-                ['REJECTED', 'CANCELLED', 'EXPIRED'].includes(booking.status) &&
-                !query.isError.value &&
-                !query.isFetching.value
-              "
+              v-if="canChooseAgain"
               class="booking-journey__primary-link"
               :to="{ name: ROUTE_NAMES.BOOKING, params: { showtimeId: booking.showtimeId } }"
               >Chọn lại ghế <ArrowRight aria-hidden="true"
