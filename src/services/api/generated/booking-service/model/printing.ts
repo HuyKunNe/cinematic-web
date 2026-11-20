@@ -7,9 +7,9 @@
  */
 
 export interface Printing {
-  canPrint?: boolean
-  printBlockReason?: string
-  simulationEnabled?: boolean
-  canSimulatePrint?: boolean
-  simulationBlockReason?: string
+  canPrint: boolean
+  printBlockReason: string
+  simulationEnabled: boolean
+  canSimulatePrint: boolean
+  simulationBlockReason: string | null
 }

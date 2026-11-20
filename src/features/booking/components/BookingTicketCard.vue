@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { formatBookingDate } from '../mappers/booking-date.mapper'
+import { formatBookingReference } from '../mappers/booking-reference.mapper'
 import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
@@ -49,6 +50,7 @@ const amount = computed(() =>
       @error="imageFailed = true"
     />
     <div class="customer-bookings__order-main">
+      <span class="customer-bookings__id">Đơn {{ formatBookingReference(booking.id) }}</span>
       <h2>
         {{
           context?.movie.title ||
@@ -96,6 +98,7 @@ const amount = computed(() =>
       <strong>{{ amount }}</strong>
       <RouterLink
         class="customer-bookings__order-link"
+        :aria-label="`${booking.status === 'CONFIRMED' ? 'Xem vé' : 'Chi tiết đơn'} ${formatBookingReference(booking.id)}${context?.movie.title ? ` · ${context.movie.title}` : ''}`"
         :data-confirmed="booking.status === 'CONFIRMED'"
         :to="
           booking.status === 'CONFIRMED'

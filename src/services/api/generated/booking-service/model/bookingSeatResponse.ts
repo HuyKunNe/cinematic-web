@@ -13,9 +13,9 @@ export interface BookingSeatResponse {
   seatNumber?: string
   seatType?: string
   price?: number
-  requestedTicketGroupId?: string
-  ticketGroupId?: string
-  ticketGroupName?: string
-  capacity?: number
-  unit?: string
+  requestedTicketGroupId: string | null
+  ticketGroupId: string | null
+  ticketGroupName: string | null
+  capacity: number | null
+  unit: string | null
 }

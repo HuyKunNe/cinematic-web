@@ -1,5 +1,45 @@
 # Luồng đặt vé USER
 
+## FE đã hiển thị một QR nhận cả booking — 2026-11-20
+
+Đã thêm `qrcode` cùng kiểu TypeScript sau khi người dùng đồng ý tiếp tục đề xuất
+dependency. API owner pickup-pass là nguồn payload, trạng thái và thời hạn.
+Trang kết quả/vé render một QR thật ngay trong browser khi phản hồi mới có
+`READY`, đủ vé và chưa tới `expiresAt`; không dùng QR riêng của vé hoặc suffix.
+Ảnh dùng kích thước reference qua token CSS, có khoảng trắng chuẩn để quét.
+
+Khi tới hạn, FE ẩn QR và kiểm tra lại API; không tự sửa trạng thái đơn/thời hạn.
+Lỗi, chờ phát hành, hết hạn, vé đã sử dụng và không khả dụng không hiện QR.
+Payload thô không trả vào model query; ảnh data URL cũng là thông tin nhạy cảm,
+chỉ giữ trong query bộ nhớ theo chủ đơn, thu hồi cache khi không còn dùng.
+Không lưu storage, log/analytics hoặc gửi qua dịch vụ tạo QR bên ngoài.
+
+User chỉ xuất trình QR để Staff/POS tra cứu cả bộ vé; không có nút in. Contract
+Staff/POS hiện chưa hỗ trợ in vật lý; phần đó cần thiết bị/luồng Staff riêng.
+Chưa kiểm tra runtime hoặc quét thật; không chạy test/build/typecheck.
+Mục này thay thế ghi chú chờ duyệt renderer bên dưới.
+
+## Contract nhận vé chung đã có — 2026-11-20
+
+Đối chiếu checkout hiện tại: generated client đã có `getBookingPickupPass` gọi
+`GET /api/v1/bookings/{bookingId}/pickup-pass`; BE xác thực chủ đơn và trả
+`bookingId`, `displayCode`, `bookingStatus`, `status`, `expectedTickets`,
+`issuedTickets`, `expiresAt`, `qrPayload`. Trạng thái gồm `NOT_CONFIRMED`,
+`WAITING_FOR_TICKETS`, `READY`, `EXPIRED`, `TICKETS_USED`, `UNAVAILABLE`.
+Payload chỉ được BE cấp ở trạng thái READY; không suy ra từ thời gian chiếu.
+
+FE kết quả/vé đã dùng metadata endpoint này và tự theo dõi khi chờ phát hành.
+Chưa render QR: đang chờ người dùng duyệt thêm dependency `qrcode` theo AGENTS.
+Không giữ QR credential trong query metadata hoặc đưa vào log/analytics.
+Không tạo QR từ UUID/suffix hoặc QR từng vé. User vẫn không có nút in.
+
+Endpoint Staff/POS thực tế là `POST /api/v1/bookings/pickups/lookup`; contract
+hiện báo `canPrint=false`, lý do `PHYSICAL_PRINTING_NOT_SUPPORTED`,
+và có khả năng mô phỏng in tùy cấu hình. Không được xem đó là máy đã in thật.
+Không triển khai Staff/POS trong task User. Generated `TicketResponse` hiện đã
+có `checkedInAt`. Các ghi chú “chưa có API”/thiếu field bên dưới là lịch sử,
+được thay thế bởi đối chiếu hiện tại trong mục này.
+
 ## Đề xuất BE: QR nhận cả booking và mã hiển thị 6 ký tự — 2026-11-20
 
 Đây là **đề xuất contract mới**, chưa phải endpoint/DTO đã tồn tại. FE chưa gọi

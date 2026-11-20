@@ -9,12 +9,12 @@ import type { BookingPickupPassResponseBookingStatus } from './bookingPickupPass
 import type { BookingPickupPassResponseStatus } from './bookingPickupPassResponseStatus'
 
 export interface BookingPickupPassResponse {
-  bookingId?: string
-  displayCode?: string
-  bookingStatus?: BookingPickupPassResponseBookingStatus
-  status?: BookingPickupPassResponseStatus
-  expectedTickets?: number
-  issuedTickets?: number
-  expiresAt?: string
-  qrPayload?: string
+  bookingId: string
+  displayCode: string
+  bookingStatus: BookingPickupPassResponseBookingStatus
+  status: BookingPickupPassResponseStatus
+  expectedTickets: number
+  issuedTickets: number
+  expiresAt: string | null
+  qrPayload: string | null
 }

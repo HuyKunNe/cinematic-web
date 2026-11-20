@@ -121,6 +121,16 @@ const listUnavailable = computed(() => {
   const status = (list.error.value as { status?: number } | null)?.status
   return list.isError.value && (status === 401 || status === 403 || status === 404)
 })
+const refreshingList = ref(false)
+async function refreshList() {
+  if (refreshingList.value || listNavigating.value) return
+  refreshingList.value = true
+  try {
+    await list.refetch({ cancelRefetch: false })
+  } finally {
+    refreshingList.value = false
+  }
+}
 async function updateListLocation(query: LocationQueryRaw) {
   if (listNavigating.value) return
   listNavigating.value = true
@@ -614,9 +624,7 @@ async function cancel() {
                 <p class="booking-error" role="alert">
                   {{ customerBookingError(list.error.value) }}
                 </p>
-                <AppButton :loading="list.isFetching.value" @click="list.refetch()"
-                  >Thử lại</AppButton
-                >
+                <AppButton :loading="refreshingList" @click="refreshList">Thử lại</AppButton>
               </div>
               <template v-else-if="list.data.value">
                 <p v-if="list.isError.value" class="booking-error" role="alert">
@@ -629,11 +637,13 @@ async function cancel() {
                     <span>{{ list.data.value.page.totalElements }}</span>
                   </h2>
                   <AppButton
+                    v-if="list.isError.value"
                     variant="ghost"
                     size="sm"
-                    :loading="list.isFetching.value"
-                    @click="list.refetch()"
-                    >{{ list.isError.value ? 'Thử lại' : 'Làm mới' }}</AppButton
+                    :loading="refreshingList"
+                    :disabled="listNavigating"
+                    @click="refreshList"
+                    >Thử lại</AppButton
                   >
                 </div>
                 <div v-if="!list.data.value.content.length" class="customer-bookings__empty">
@@ -646,18 +656,6 @@ async function cancel() {
                         : emptyListCopy.description
                     }}
                   </p>
-                  <AppButton
-                    v-if="activeTab !== 'all'"
-                    variant="ghost"
-                    :disabled="listNavigating"
-                    @click="changeTab('all')"
-                    >Xem tất cả đơn</AppButton
-                  >
-                  <RouterLink
-                    class="customer-bookings__order-link"
-                    :to="{ name: ROUTE_NAMES.BOOKING_START }"
-                    >Xem lịch chiếu →</RouterLink
-                  >
                   <AppButton v-if="page" variant="ghost" @click="page = 0">Về trang đầu</AppButton>
                 </div>
                 <div
@@ -673,6 +671,7 @@ async function cancel() {
                   />
                 </div>
                 <AppPagination
+                  v-if="list.data.value.page.totalPages > 1"
                   :page="page + 1"
                   :total="list.data.value.page.totalElements"
                   :page-size="list.data.value.page.size"

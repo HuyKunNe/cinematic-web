@@ -11,15 +11,15 @@ import type { Showtime } from './showtime'
 import type { Ticket } from './ticket'
 
 export interface BookingPickupLookupResponse {
-  bookingId?: string
-  displayCode?: string
-  bookingStatus?: BookingPickupLookupResponseBookingStatus
-  expiresAt?: string
-  showtime?: Showtime
-  expectedTickets?: number
-  issuedTickets?: number
-  ticketsReady?: boolean
-  totalGuests?: number
-  tickets?: Ticket[]
-  printing?: Printing
+  bookingId: string
+  displayCode: string
+  bookingStatus: BookingPickupLookupResponseBookingStatus
+  expiresAt: string
+  showtime: Showtime
+  expectedTickets: number
+  issuedTickets: number
+  ticketsReady: boolean
+  totalGuests: number | null
+  tickets: Ticket[]
+  printing: Printing
 }

@@ -1,18 +1,47 @@
 <script setup lang="ts">
 import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { computed, ref, watch } from 'vue'
+import { useIntervalFn, useNow } from '@vueuse/core'
 import { TicketCheck } from 'lucide-vue-next'
 import AppButton from '@/components/ui/AppButton.vue'
+import { useAuthStore } from '@/stores/auth.store'
 import type { CustomerBooking } from '../api/customer-bookings'
 import { useBookingContextQuery } from '../api/booking-queries'
 import { formatBookingScreeningVersion } from '../mappers/booking-screening.mapper'
-import { useCustomerTicketsQuery } from '../api/customer-tickets'
+import { useCustomerPickupQuery } from '../api/customer-pickup'
 import { formatBookingReference } from '../mappers/booking-reference.mapper'
 import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 
 const props = defineProps<{ booking: CustomerBooking }>()
-const ticketsQuery = useCustomerTicketsQuery(() => props.booking)
-const tickets = computed(() => ticketsQuery.data.value ?? [])
+const auth = useAuthStore()
+const ticketsQuery = useCustomerPickupQuery(() => props.booking)
+const pickup = computed(() =>
+  auth.isAuthenticated &&
+  props.booking.userId === auth.subject &&
+  ticketsQuery.data.value?.bookingId === props.booking.id
+    ? ticketsQuery.data.value
+    : undefined,
+)
+const now = useNow({ scheduler: (update) => useIntervalFn(update, 1_000) })
+const pickupDeadlineReached = computed(() => {
+  const pass = pickup.value
+  return (
+    pass?.status === 'READY' &&
+    !!pass.expiresAt &&
+    Date.parse(pass.expiresAt) <= now.value.getTime()
+  )
+})
+const pickupQrImage = computed(() =>
+  ticketsQuery.isFetchedAfterMount.value &&
+  !ticketsQuery.isError.value &&
+  pickup.value?.status === 'READY' &&
+  !pickupDeadlineReached.value
+    ? pickup.value.qrImage
+    : undefined,
+)
+watch(pickupDeadlineReached, (reached) => {
+  if (reached) void ticketsQuery.refetch({ cancelRefetch: false })
+})
 const refreshingTickets = ref(false)
 async function refreshTickets() {
   if (refreshingTickets.value) return
@@ -23,15 +52,27 @@ async function refreshTickets() {
     refreshingTickets.value = false
   }
 }
-const awaitingIssuance = computed(() => {
-  const expected = props.booking.seatCount ?? props.booking.seats?.length
-  return expected != null && expected > 0 && tickets.value.length < expected
-})
 const issuanceMessage = computed(() => {
-  const expected = props.booking.seatCount ?? props.booking.seats?.length
-  if (expected != null && tickets.value.length < expected)
-    return `Đang phát hành vé: ${tickets.value.length}/${expected} đơn vị ghế. Trang sẽ tự cập nhật.`
-  return `${tickets.value.length} vé đã phát hành cho đơn đặt vé này.`
+  const pass = pickup.value
+  if (!pass) return ''
+  switch (pass.status) {
+    case 'WAITING_FOR_TICKETS':
+      return `Đang phát hành vé: ${pass.issuedTickets}/${pass.expectedTickets} đơn vị ghế. Trang sẽ tự cập nhật.`
+    case 'READY':
+      return pickupDeadlineReached.value
+        ? ticketsQuery.isFetching.value
+          ? 'Mã nhận vé đã đến hạn hiệu lực. Đang kiểm tra trạng thái với hệ thống.'
+          : 'Mã nhận vé đã đến hạn hiệu lực. Vui lòng kiểm tra lại trạng thái với hệ thống.'
+        : 'Xuất trình QR này tại quầy hoặc POS để nhận toàn bộ vé của đơn.'
+    case 'EXPIRED':
+      return 'Mã nhận vé chung đã hết hiệu lực.'
+    case 'TICKETS_USED':
+      return 'Đơn có vé đã sử dụng, không còn mã nhận vé chung khả dụng.'
+    case 'NOT_CONFIRMED':
+      return 'Hệ thống chưa xác nhận đơn để cấp mã nhận vé chung.'
+    case 'UNAVAILABLE':
+      return 'Hiện chưa thể cấp mã nhận vé chung. Vui lòng liên hệ rạp để được hỗ trợ.'
+  }
 })
 const query = useBookingContextQuery(() => props.booking.showtimeId, { poll: false })
 const context = computed(() => query.data.value)
@@ -141,35 +182,33 @@ const amount = computed(() =>
         </dl>
       </div>
       <div class="booking-confirmed-ticket__code">
-        <TicketCheck aria-hidden="true" /><small>MÃ ĐƠN ĐẶT VÉ</small
+        <img
+          v-if="pickupQrImage"
+          :src="pickupQrImage"
+          class="booking-confirmed-ticket__qr"
+          alt="QR nhận toàn bộ vé của đơn đặt vé"
+        />
+        <TicketCheck v-else aria-hidden="true" /><small>MÃ ĐƠN ĐẶT VÉ</small
         ><strong>{{ formatBookingReference(booking.id) }}</strong>
         <p v-if="ticketsQuery.isPending.value" role="status">Đang tải thông tin vé…</p>
         <p v-else-if="ticketsQuery.isError.value" role="alert">
           Chưa tải được thông tin vé. Thông tin đặt vé vẫn được giữ nguyên.
         </p>
-        <p v-else-if="!tickets.length" role="status">
-          {{
-            awaitingIssuance
-              ? 'Đơn đã xác nhận. Đang chờ phát hành vé, trang sẽ tự cập nhật.'
-              : 'Đơn đã xác nhận. Mã vé chưa được phát hành, vui lòng kiểm tra lại.'
-          }}
-        </p>
-        <p v-if="tickets.length && !ticketsQuery.isError.value" role="status">
+        <p v-else-if="pickup" role="status">
           {{ issuanceMessage }}
         </p>
         <AppButton
           v-if="
             ticketsQuery.isError.value ||
-            (ticketsQuery.isSuccess.value && !tickets.length && !awaitingIssuance)
+            (pickupDeadlineReached && (!ticketsQuery.isFetching.value || refreshingTickets))
           "
           size="sm"
           variant="ghost"
           :loading="refreshingTickets"
           @click="refreshTickets"
         >
-          Thử tải lại vé
+          {{ ticketsQuery.isError.value ? 'Thử tải lại vé' : 'Kiểm tra mã nhận vé' }}
         </AppButton>
-        <p>In vé được thực hiện bởi nhân viên hoặc máy POS tại rạp.</p>
       </div>
     </div>
     <footer class="booking-confirmed-ticket__bottom">

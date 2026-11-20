@@ -7,10 +7,10 @@
  */
 
 export interface Ticket {
-  ticketId?: string
-  bookingSeatId?: string
-  seatNumber?: string
-  capacity?: number
-  status?: string
-  checkedInAt?: string
+  ticketId: string
+  bookingSeatId: string
+  seatNumber: string
+  capacity: number
+  status: string
+  checkedInAt: string | null
 }

@@ -16,5 +16,5 @@ export interface LookupResponse {
   ticketStatus?: string
   bookingStatus?: LookupResponseBookingStatus
   showtimeEndsAt?: string
-  checkedInAt?: string
+  checkedInAt: string | null
 }

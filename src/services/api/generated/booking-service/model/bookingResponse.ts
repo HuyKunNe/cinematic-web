@@ -26,7 +26,7 @@ export interface BookingResponse {
   version?: number
   createdAt?: string
   updatedAt?: string
-  showtimeEndsAt?: string
-  capacity?: number
-  seatCount?: number
+  showtimeEndsAt: string | null
+  capacity: number | null
+  seatCount: number | null
 }

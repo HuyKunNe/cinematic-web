@@ -6,6 +6,7 @@
   --journey-layout-gap: 2.1875rem;
   --journey-ticket-poster: 6.875rem;
   --journey-ticket-code: 13.125rem;
+  --journey-ticket-qr-size: 8.75rem;
   --journey-ticket-radius: 0.75rem;
   --journey-result-size: 2.625rem;
   --journey-result-icon: 3.875rem;
@@ -264,6 +265,12 @@
   width: var(--space-10);
   height: var(--space-10);
   color: var(--color-success);
+}
+.booking-confirmed-ticket__qr {
+  width: var(--journey-ticket-qr-size);
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1;
 }
 .booking-confirmed-ticket__code > small {
   font-size: var(--lumiere-caption-size);

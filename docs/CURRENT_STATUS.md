@@ -1,5 +1,104 @@
 # Current Status
 
+## USER pickup QR identity and deadline feedback — 2026-11-20
+
+The confirmed-ticket view now explicitly scopes pickup data/QR to the active
+authenticated owner and current booking ID, including deadline observation.
+If a READY response still has a reached expiry, the QR remains hidden; the copy
+distinguishes an actual in-flight status check from a completed check, with an
+exception-only Check Pickup Code action after the latter. Normal READY states
+still have no routine refresh button. BE status/expiry are not changed locally.
+
+No API, dependency, CSS or responsive layout changes. Source/diff review only;
+manual account/booking changes and reached-deadline checks remain pending. No
+tests, lint, typecheck, build, browser/API requests, BE/database writes, commits
+or pushes were run.
+
+## USER one real pickup QR per booking — 2026-11-20
+
+After the user's approval to continue with qrcode, installed qrcode 1.5.4 and
+@types/qrcode 1.5.6 with lifecycle scripts/audit/funding requests disabled. The
+initial install failed TLS validation; retry using the system CA store succeeded
+without disabling certificate checks. package.json/package-lock.json updated.
+
+The owner pickup query now validates BE payload/expiry and renders the QR locally
+with qrcode's browser renderer. Raw payload is discarded from the returned model;
+the resulting credential-bearing data URL stays only in the owner-scoped in-memory
+query, gcTime 0, without local/session storage, logging or external QR services.
+The shared result/ticket card shows one QR only after a fresh successful READY
+response while its BE expiry is in the future. Errors/non-ready states hide it.
+At the supplied expiry the image is hidden and the existing GET refreshes once;
+FE does not change BE status or extend expiry. Existing waiting/error/used states
+and error-only retry remain. User still has no print action.
+
+QR styling reuses the reference's 140px size through a named journey token and
+fits the existing desktop/mobile code panel, with standard white quiet zone.
+Compared installed library source/types and reviewed source/diff only. No tests,
+lint, typecheck, build, runtime/browser/API requests, BE/database writes, commits
+or pushes were run. Manual validation pending: READY scan against Staff/POS,
+expiry while open, WAITING-to-READY, error recovery and account changes. Actual
+physical printing remains outside the User FE and is not supplied by this API.
+
+
+## USER booking pickup metadata integration — 2026-11-20
+
+Current checkout now contains generated getBookingPickupPass and BE owner/lookup
+contracts. Compared the controller, response enums and transaction service.
+Added customer-pickup query and switched confirmed result/ticket metadata to the
+owner pickup-pass GET, removing the extra per-ticket list request from this view.
+It displays BE WAITING_FOR_TICKETS, READY, EXPIRED, TICKETS_USED, NOT_CONFIRMED and
+UNAVAILABLE without inferring check-in/expiry locally. Only issuance waiting polls.
+Owner-scoped keys, identity/display-code validation, no retries, zero cache lifetime
+and generic validation errors apply. QR credentials are stripped from query data.
+
+This is metadata integration only: actual QR rendering is pending explicit user
+approval to add qrcode (AGENTS dependency rule). No QR renderer/dependency has been
+added; the one-QR requirement is not complete. No User print/check-in/Staff/POS
+action was added. Existing styles and error-only retry are retained.
+
+Source/diff review only; API/runtime states remain manually unverified. No tests,
+lint, typecheck, build, browser/API requests, BE/database writes, commits or pushes.
+
+
+## USER booking-card reference identification — 2026-11-20
+
+Restored the local reference's small order identifier above each movie title,
+using only the last six uppercase characters of the booking ID. Existing ID
+styles are reused, without another status badge or new action. Ticket/detail
+links now include the short reference and available movie title in their
+accessible names to distinguish repeated actions in assistive navigation.
+Full IDs remain in API/navigation. No API or responsive CSS changes.
+
+Source/diff review only; browser verification remains unavailable after the
+reported connection timeouts. Manual checks pending for repeated same-movie
+orders and narrow widths. No tests, lint, typecheck, build, BE/database writes,
+commits or pushes were run.
+
+## USER remove remaining duplicate list actions — 2026-11-20
+
+With active-order polling now present, account-booking lists no longer show a
+routine Refresh button. Retry remains available after initial/background errors.
+Empty states omit View All Orders and Showtimes actions that duplicate the tabs
+and page-header New Booking link. Return to First Page remains for empty later
+pages, and multi-page pagination is retained. No new controls, API, filters,
+business-state or responsive CSS changes. Existing query focus refresh remains.
+
+Source/diff review only; manual empty-list, tab navigation and error recovery
+checks pending. No tests, lint, typecheck, build, browser checks, BE/database
+writes, commits or pushes were run.
+
+## USER quieter list refresh controls — 2026-11-20
+
+Account-list Refresh/Retry buttons now show a spinner only for a manual refresh,
+not each automatic polling request. Manual refresh shares an existing in-flight
+request rather than cancelling/restarting it and prevents repeated manual clicks.
+Pagination is hidden for zero/one-page results; the existing Return to First Page
+recovery remains available for empty later pages. Multi-page navigation remains.
+
+No API/filter, polling frequency, responsive CSS or role changes. Source/diff
+review only; manual polling/refresh and single/multi-page checks pending. No
+tests, lint, typecheck, build, browser checks, BE/database writes, commits or pushes.
+
 ## USER booking-list background error recovery — 2026-11-20
 
 Transient background refresh failures retain the already-loaded booking cards
