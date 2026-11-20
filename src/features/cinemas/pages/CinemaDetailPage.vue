@@ -112,7 +112,6 @@ const emailUrl = computed(() =>
         <div class="customer-cinema-detail__info">
           <section class="booking-panel">
             <h2>Đến rạp thật dễ</h2>
-            <p>{{ cinema.directions || 'Hướng dẫn đến rạp đang được cập nhật.' }}</p>
             <dl class="customer-cinema-detail__contacts">
               <div v-if="cinema.openingHours">
                 <dt><Clock3 aria-hidden="true" /> Mở cửa</dt>

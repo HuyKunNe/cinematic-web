@@ -6,10 +6,17 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export * from './assignStaffCinemaRequest'
 export * from './changeCurrentUserPasswordRequest'
 export * from './confirmEmailVerificationRequest'
+export * from './createStaffAccountRequest'
 export * from './currentUserProfileResponse'
 export * from './currentUserProfileResponseStatus'
+export * from './listStaffAccountsParams'
+export * from './pageInfo'
+export * from './pageResponseStaffAccountResponse'
 export * from './registerUserRequest'
 export * from './registrationAcceptedResponse'
+export * from './staffAccountResponse'
+export * from './staffAccountResponseStatus'
 export * from './updateCurrentUserProfileRequest'

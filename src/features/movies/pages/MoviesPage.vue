@@ -267,10 +267,6 @@ function retry() {
               Xóa
             </button>
           </div>
-
-          <p id="movies-search-help" class="movies-search__help">
-            Kết quả áp dụng cho trạng thái phim, thể loại và rạp đang chọn.
-          </p>
         </form>
 
         <p v-if="navigationError" class="movies-refresh-error" role="alert">

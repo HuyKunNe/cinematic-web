@@ -14,4 +14,5 @@ export interface TicketResponse {
   capacity?: number
   status?: string
   qrPayload?: string
+  checkedInAt?: string
 }

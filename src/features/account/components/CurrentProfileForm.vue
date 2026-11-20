@@ -108,10 +108,6 @@ async function submit() {
         aria-describedby="profile-email-help"
       />
     </label>
-    <p id="profile-email-help" class="booking-note">
-      {{ profile.emailVerifiedAt ? 'Email đã được xác minh.' : 'Email chưa được xác minh.' }} Email
-      đăng nhập không thay đổi tại đây.
-    </p>
     <fieldset
       :disabled="disabled || mutation.isPending.value"
       :aria-busy="mutation.isPending.value"

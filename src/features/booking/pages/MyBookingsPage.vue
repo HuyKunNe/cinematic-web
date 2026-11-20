@@ -601,18 +601,6 @@ async function cancel() {
                   controls="customer-booking-orders"
                   @update:page="page = $event - 1"
                 />
-                <p v-if="activeTab === 'upcoming'" class="customer-bookings__list-note">
-                  Gồm các vé sắp chiếu hoặc đang chiếu, được phân loại theo giờ kết thúc từ hệ
-                  thống. Nhãn giờ chiếu trên từng vé không phải xác nhận check-in.
-                </p>
-                <p v-else-if="activeTab === 'past'" class="customer-bookings__list-note">
-                  Gồm các đơn đã xác nhận có suất chiếu đã kết thúc; chưa thể hiện trạng thái
-                  check-in hay sử dụng vé.
-                </p>
-                <p class="customer-bookings__list-note">
-                  Trạng thái đơn được cập nhật từ hệ thống. Thông tin phim và rạp hiển thị theo danh
-                  mục hiện tại; giá vé theo đơn đã lưu.
-                </p>
               </template>
             </TabsContent>
           </TabsRoot>

@@ -16,6 +16,12 @@ import type { FindAllBookingsParams } from '@/services/api/generated/booking-ser
 import { FindAllBookingsPeriod } from '@/services/api/generated/booking-service/model/findAllBookingsPeriod'
 
 export const customerBookingListTabs = {
+  all: { label: 'Tất cả', statuses: [] as FindAllBookingsStatusItem[], period: undefined },
+  confirmed: {
+    label: 'Đã xác nhận',
+    statuses: [FindAllBookingsStatusItem.CONFIRMED],
+    period: undefined,
+  },
   upcoming: {
     label: 'Chưa kết thúc',
     statuses: [FindAllBookingsStatusItem.CONFIRMED],
@@ -31,12 +37,6 @@ export const customerBookingListTabs = {
     statuses: Object.values(FindAllBookingsStatusItem).filter(
       (status) => status !== FindAllBookingsStatusItem.CONFIRMED,
     ),
-    period: undefined,
-  },
-  all: { label: 'Tất cả', statuses: [] as FindAllBookingsStatusItem[], period: undefined },
-  confirmed: {
-    label: 'Đã xác nhận',
-    statuses: [FindAllBookingsStatusItem.CONFIRMED],
     period: undefined,
   },
 }
