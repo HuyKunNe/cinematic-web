@@ -282,19 +282,14 @@ watch(query.data, (catalog) => {
           </DialogClose>
         </div>
 
-        <DialogDescription class="location-dialog__description">
-          Chọn thành phố trước, sau đó chọn rạp. Phim và lịch chiếu sẽ được cập nhật theo rạp bạn
-          chọn.
-        </DialogDescription>
-
         <p v-if="query.isPending.value" class="location-dialog__message" role="status">
-          Đang tải danh sách thành phố và rạp…
+          Đang tải danh sách…
         </p>
 
         <AppErrorState
           v-else-if="query.isError.value && !query.data.value"
           title="Không thể tải danh sách rạp"
-          description="Vui lòng thử lại để chọn địa điểm."
+          description="Vui lòng thử lại"
           show-retry
           :retrying="query.isFetching.value"
           @retry="query.refetch()"
@@ -308,7 +303,7 @@ watch(query.data, (catalog) => {
           <AppErrorState
             v-if="query.isError.value"
             title="Không thể cập nhật danh sách rạp"
-            description="Vui lòng thử lại trước khi áp dụng lựa chọn."
+            description="Vui lòng thử lại."
             show-retry
             :retrying="query.isFetching.value"
             @retry="query.refetch()"
@@ -382,7 +377,7 @@ watch(query.data, (catalog) => {
                 aria-label="Rạp"
               >
                 <span class="location-dialog__cinema-value">
-                  <SelectValue :placeholder="draftCityKey ? 'Chọn rạp' : 'Chọn thành phố trước'" />
+                  <SelectValue :placeholder="draftCityKey ? 'Chọn rạp' : 'Chọn thành phố'" />
                 </span>
                 <ChevronDown aria-hidden="true" />
               </SelectTrigger>

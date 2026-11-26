@@ -163,7 +163,7 @@ async function recheckRejectedRequest() {
     <div class="booking-journey__main">
       <header class="booking-journey__heading">
         <p class="lumiere-eyebrow">BƯỚC 03</p>
-        <h1>Kiểm tra để an tâm tận hưởng</h1>
+        <h1>Kiểm tra</h1>
         <p>Kiểm tra suất chiếu, ghế và chọn phương thức thanh toán trước khi xác nhận.</p>
       </header>
       <section class="booking-panel booking-journey__checkout-items">
@@ -185,7 +185,7 @@ async function recheckRejectedRequest() {
           class="booking-error"
           role="alert"
         >
-          Thông tin suất chiếu chưa đầy đủ hoặc không khớp. Vui lòng chọn lại suất chiếu.
+          Thông tin suất chiếu không khớp. Vui lòng chọn lại suất chiếu.
         </p>
         <p v-if="selectionError" id="booking-selection-error" class="booking-error" role="alert">
           {{ selectionError }}
@@ -210,7 +210,7 @@ async function recheckRejectedRequest() {
           "
           class="booking-note"
         >
-          Suất chiếu chưa sẵn sàng để tiếp tục đặt vé.
+          Suất chiếu chưa sẵn sàng.
         </p>
         <RouterLink
           v-if="!requestLocked"
@@ -235,15 +235,11 @@ async function recheckRejectedRequest() {
             quoteQuery.isFetching.value
           "
           @click="retry"
-          >{{
-            contextQuery.isError.value || !context?.movie
-              ? 'Thử lại thông tin suất'
-              : 'Thử lại báo giá'
-          }}</AppButton
+          >{{ 'Thử lại' }}</AppButton
         >
       </section>
       <div v-if="quote?.seats.some((seat) => seat.eligibilityDescription)" class="booking-notice">
-        <strong>Điều kiện vé theo đối tượng</strong>
+        <strong>Điều kiện</strong>
         <p
           v-for="condition in [
             ...new Set(quote.seats.map((seat) => seat.eligibilityDescription).filter(Boolean)),

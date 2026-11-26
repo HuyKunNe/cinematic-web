@@ -56,7 +56,7 @@ const amount = computed(() =>
       <h2>
         {{
           context?.movie?.title ||
-          (query.isPending.value ? 'Đang tải thông tin phim…' : 'Đơn đặt vé')
+          (query.isPending.value ? 'Đang tải thông tin' : 'Đơn đặt vé')
         }}
       </h2>
       <p v-if="context" class="booking-note">
@@ -88,7 +88,7 @@ const amount = computed(() =>
           v-if="screeningPhase"
           class="customer-bookings__badge customer-bookings__screening-phase"
           :data-phase="screeningPhase.state"
-          title="Trạng thái theo giờ chiếu; không phải xác nhận check-in"
+          title="Trạng thái theo giờ chiếu"
           >{{ screeningPhase.label }}</span
         >
         <span v-else class="customer-bookings__badge" :data-status="booking.status">{{

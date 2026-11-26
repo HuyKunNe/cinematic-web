@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import {
-  DialogRoot,
-  DialogPortal,
-  DialogOverlay,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-} from 'reka-ui'
 import AppButton from '@/components/ui/AppButton.vue'
+import { CreateBookingRequestPaymentProvider } from '@/services/api/generated/booking-service/model/createBookingRequestPaymentProvider'
+import {
+  DialogClose,
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from 'reka-ui'
 import { formatBookingMoney } from '../mappers/booking-seat.mapper'
 import type { BookingReview } from '../models/booking-review.model'
-import { CreateBookingRequestPaymentProvider } from '@/services/api/generated/booking-service/model/createBookingRequestPaymentProvider'
 
 defineProps<{
   open: boolean
@@ -44,13 +43,12 @@ const emit = defineEmits<{
               <div>
                 <strong>Ghế {{ seat.seatNumber }}</strong>
                 <span>{{ seat.typeLabel }} · {{ seat.ticketGroupName }}</span>
-                <span>{{ seat.capacity }} khách / {{ seat.unit === 'PAIR' ? 'cặp' : 'ghế' }}</span>
               </div>
               <strong>{{ formatBookingMoney(seat.priceMinor) }}</strong>
             </li>
           </ul>
           <div class="booking-review__total">
-            <span>Tổng tiền theo báo giá</span>
+            <span>Tổng tiền</span>
             <strong>{{ formatBookingMoney(review.totalMinor) }}</strong>
           </div>
         </template>
@@ -71,14 +69,14 @@ const emit = defineEmits<{
             />
             <span
               >{{ provider === 'MOMO' ? 'Ví MoMo' : 'VNPAY'
-              }}<small>Tiếp tục tại cổng thanh toán sau khi giữ ghế</small></span
+              }}<small>Tiếp tục tại cổng thanh toán</small></span
             >
           </label>
         </fieldset>
-        <p v-if="disabled" class="booking-note" role="status">Đang kiểm tra lại ghế và báo giá…</p>
+        <p v-if="disabled" class="booking-note" role="status">Đang kiểm tra lại…</p>
         <div class="booking-review__actions">
           <DialogClose as-child>
-            <AppButton variant="secondary">Quay lại chọn ghế</AppButton>
+            <AppButton variant="secondary">Thay đổi ghế</AppButton>
           </DialogClose>
           <AppButton :disabled="disabled || !review || !paymentProvider" @click="emit('confirm')"
             >Xác nhận đặt vé</AppButton

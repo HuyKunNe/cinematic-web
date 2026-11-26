@@ -21,7 +21,7 @@ async function signIn() {
 <template>
   <div class="registration-auth__sign-in">
     <AppButton variant="secondary" :loading="pending" @click="signIn">Đăng nhập</AppButton>
-    <p>Đăng nhập bằng email hoặc chọn Google trên trang đăng nhập nếu được hỗ trợ.</p>
+    <p>Đăng nhập bằng google.</p>
     <p v-if="error" class="registration-auth__error" role="alert">{{ error }}</p>
   </div>
 </template>

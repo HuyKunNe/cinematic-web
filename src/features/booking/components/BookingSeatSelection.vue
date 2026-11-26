@@ -55,17 +55,16 @@ const seatMapUnavailable = computed(() => {
 const seatLoadError = computed(() => {
   const error = query.error.value
   if (error?.code === 'INVENTORY_SHOWTIME_LAYOUT_REQUIRED') {
-    return 'Suất chiếu chưa được gắn sơ đồ ghế. Vui lòng chọn suất khác hoặc liên hệ rạp.'
+    return 'Suất chiếu chưa khả dụng. Vui lòng chọn suất khác hoặc liên hệ rạp.'
   }
   if (error?.status === 409) {
-    return 'Sơ đồ ghế của suất chiếu chưa sẵn sàng. Vui lòng thử lại hoặc chọn suất khác.'
+    return 'Suất chiếu chưa sẵn sàng. Vui lòng thử lại hoặc chọn suất khác.'
   }
-  if (error?.status === 404) return 'Không tìm thấy suất chiếu hoặc sơ đồ ghế.'
+  if (error?.status === 404) return 'Không tìm thấy suất chiếu.'
   if (error?.status === 401 || error?.status === 403) {
-    return 'Bạn chưa có quyền tải ghế. Vui lòng đăng nhập lại và thử lại.'
+    return 'Vui lòng đăng nhập lại và thử lại.'
   }
-  if (seats.value.length)
-    return 'Chưa cập nhật được sơ đồ ghế. Dữ liệu bên dưới là lần tải gần nhất; tạm dừng chọn ghế cho đến khi tải lại thành công.'
+  if (seats.value.length) return 'Tạm dừng chọn ghế cho đến khi tải lại thành công.'
   return 'Không thể tải danh sách ghế hợp lệ. Vui lòng thử lại.'
 })
 
@@ -153,7 +152,7 @@ function toggleSeat(seat: BookingSeat) {
     selection.value = selection.value.filter((item) => item.id !== seat.id)
   } else {
     if (chosenSeats.value.length >= MAX_QUOTED_SEATS) {
-      selectionNotice.value = `Mỗi lần chỉ báo giá tối đa ${MAX_QUOTED_SEATS} đơn vị ghế.`
+      selectionNotice.value = `Mỗi đơn chỉ được tối đa ${MAX_QUOTED_SEATS} ghế.`
       return
     }
     selection.value = [...selection.value, { id: seat.id, priceMinor: seat.priceMinor }]
@@ -174,8 +173,7 @@ watch(
         )
         .map((seat) => ({ id: seat.id, priceMinor: seat.priceMinor! }))
       if (selection.value.length < savedNumbers.length)
-        selectionNotice.value =
-          'Một số ghế đã lưu không còn trống hoặc chưa có giá và không được khôi phục. Vui lòng kiểm tra lại lựa chọn.'
+        selectionNotice.value = 'Một số ghế không khả dụng. Vui lòng kiểm tra lại lựa chọn.'
       return
     }
 
@@ -187,8 +185,7 @@ watch(
     )
 
     if (remaining.length !== selection.value.length) {
-      selectionNotice.value =
-        'Một số ghế đã đổi giá hoặc không còn trống và được bỏ khỏi lựa chọn. Vui lòng chọn lại.'
+      selectionNotice.value = 'Một số ghế không khả dụng được bỏ khỏi lựa chọn. Vui lòng chọn lại.'
       selection.value = remaining
     }
   },
@@ -261,9 +258,6 @@ watch(
           @select="toggleSeat"
         />
         <template v-else>
-          <p class="booking-note">
-            Sơ đồ cũ hiển thị theo hàng, không thể hiện vị trí thực trong phòng.
-          </p>
           <div v-for="row in rows" :key="row.label" class="booking-seat-row">
             <h3>Hàng {{ row.label }}</h3>
 
@@ -295,10 +289,6 @@ watch(
           </div>
         </template>
       </template>
-
-      <p v-else-if="query.isSuccess.value" class="booking-note" role="status">
-        Chưa có danh sách ghế để chọn cho suất chiếu này.
-      </p>
 
       <AppLink :to="changeShowtimeTo" variant="muted">← Đổi suất chiếu</AppLink>
     </section>
@@ -350,9 +340,6 @@ watch(
         @locked="checkoutLocked = $event"
         @rejected="query.refetch()"
       />
-      <p class="lumiere-seat-booking__summary-note">
-        Ghế chỉ được giữ sau khi yêu cầu đặt vé được xác nhận.
-      </p>
     </aside>
     <BookingMobileRecap
       :title="context.movie?.title || 'Thông tin đặt vé'"

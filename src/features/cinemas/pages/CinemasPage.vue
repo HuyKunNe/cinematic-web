@@ -47,7 +47,7 @@ const emptyTitle = computed(() =>
 
 const emptyDescription = computed(() =>
   hasFilters.value
-    ? 'Thử tên rạp, địa chỉ khác hoặc chọn tất cả tỉnh, thành phố.'
+    ? 'Thử tên rạp, địa chỉ khác.'
     : 'Thông tin rạp sẽ được cập nhật trong thời gian tới.',
 )
 
@@ -66,7 +66,7 @@ function chooseCinema(cinema: CinemaLocation) {
   selectionError.value = ''
 
   if (!selectCinemaById(cinema.id, cinema.cityKey)) {
-    selectionError.value = 'Chưa thể chọn rạp. Vui lòng làm mới danh sách rồi thử lại.'
+    selectionError.value = 'Chưa thể chọn rạp. Vui lòng thử lại.'
   }
 }
 
@@ -88,9 +88,6 @@ function retry() {
 
         <p class="customer-cinemas__eyebrow">Trải nghiệm điện ảnh</p>
         <h1>Một không gian, ngàn câu chuyện</h1>
-        <p class="customer-cinemas__description">
-          Tìm rạp phù hợp và chọn địa điểm cho buổi xem phim của bạn.
-        </p>
       </header>
 
       <section
@@ -155,8 +152,7 @@ function retry() {
         <template v-else-if="hasData">
           <div v-if="query.isError.value" class="customer-cinemas__refresh-error" role="alert">
             <p>
-              Chưa thể cập nhật danh sách. Đang hiển thị dữ liệu đã tải; vui lòng thử lại trước khi
-              chọn rạp.
+              Chưa thể cập nhật danh sách.
             </p>
             <AppButton variant="ghost" size="sm" :loading="query.isFetching.value" @click="retry">
               Thử lại

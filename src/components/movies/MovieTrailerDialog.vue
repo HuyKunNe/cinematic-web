@@ -107,14 +107,13 @@ onBeforeUnmount(() => emit('open-change', false))
         ></iframe>
         <p v-if="loading" class="movie-trailer-dialog__status" role="status">Đang tải trailer…</p>
         <p v-if="failed" class="movie-trailer-dialog__error" role="alert">
-          Chưa phát được trailer. Vui lòng mở liên kết gốc để xem video.
+          Vui lòng mở liên kết gốc để xem video.
         </p>
         <p
           v-else-if="!selected.source || selected.source.kind === 'external'"
           class="movie-trailer-dialog__status"
         >
-          Nguồn trailer này chưa hỗ trợ phát trong trang. <br />
-          Bạn có thể xem ở liên kết gốc bên dưới.
+          Xem ở liên kết gốc bên dưới.
         </p>
         <div class="movie-trailer-dialog__actions">
           <DialogClose v-if="selected.detailTo" as-child

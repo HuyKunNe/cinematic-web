@@ -243,12 +243,7 @@ function statusLabel(active?: boolean) {
         Thêm cụm rạp
       </AppButton>
     </header>
-
-    <p v-if="!canManage" class="admin-cinemas__error" role="alert">
-      Tài khoản không có quyền quản lý cụm rạp.
-    </p>
-
-    <template v-else>
+    <template v-if="canManage">
       <section class="admin-cinemas__filters" aria-label="Tìm và lọc rạp">
         <label class="admin-cinemas__field admin-cinemas__search">
           <span>Tìm cụm rạp</span>
@@ -292,7 +287,7 @@ function statusLabel(active?: boolean) {
       <div
         v-if="activeFilters.length"
         class="admin-cinemas__active-filters"
-        aria-label="Bộ lọc cụm rạp đang áp dụng"
+        aria-label="Bộ lọc đang áp dụng"
       >
         <span role="status"
           >{{ filtered.length }} / {{ catalog.data.value?.length ?? 0 }} cụm rạp</span
@@ -317,7 +312,7 @@ function statusLabel(active?: boolean) {
         <header class="admin-cinemas__list-heading">
           <div>
             <h2 id="admin-cinema-list-title">Danh sách cụm rạp</h2>
-            <p>Thông tin địa điểm và số lượng phòng chiếu theo dữ liệu hiện có.</p>
+            <p>Thông tin theo dữ liệu hiện có.</p>
           </div>
           <span v-if="catalog.data.value" class="admin-cinemas__muted">
             {{ filtered.length }} cụm rạp
@@ -327,9 +322,6 @@ function statusLabel(active?: boolean) {
         <div v-if="catalog.isError.value" class="admin-cinemas__feedback">
           <p class="admin-cinemas__error" role="alert">
             {{ adminCinemaErrorMessage(catalog.error.value) }}
-          </p>
-          <p v-if="catalog.data.value" class="admin-cinemas__muted">
-            Đang hiển thị dữ liệu từ lần tải trước.
           </p>
           <AppButton
             variant="secondary"
@@ -351,7 +343,7 @@ function statusLabel(active?: boolean) {
             :loading="roomSummary.isFetching.value"
             @click="roomSummary.refresh()"
           >
-            Thử lại số liệu phòng
+            Thử lại
           </AppButton>
         </div>
 
@@ -449,12 +441,12 @@ function statusLabel(active?: boolean) {
               : catalog.isError.value && !catalog.data.value
                 ? 'Chưa tải được danh sách cụm rạp.'
                 : search || city || activeFilter !== 'all'
-                  ? 'Không có cụm rạp phù hợp với bộ lọc.'
+                  ? 'Không có cụm rạp phù hợp.'
                   : 'Chưa có cụm rạp.'
           }}
           <div v-if="activeFilters.length && catalog.isSuccess.value && !catalog.isFetching.value">
             <AppButton variant="ghost" size="sm" @click="resetFilters"
-              >Xóa bộ lọc để xem tất cả cụm rạp</AppButton
+              >Xóa bộ lọc</AppButton
             >
           </div>
         </div>

@@ -407,9 +407,6 @@ function submit(event: Event) {
               Thử lại
             </AppButton>
           </template>
-          <p v-else-if="detail.isSuccess.value" class="admin-cinemas__error" role="alert">
-            Không nhận được thông tin rạp hợp lệ.
-          </p>
         </div>
 
         <form
@@ -440,7 +437,7 @@ function submit(event: Event) {
                 :error="visibleErrors.city"
                 :maxlength="100"
                 content-class="admin-reference-autocomplete admin-cinema-city-dropdown"
-                helper-text="Chọn thành phố đã có hoặc nhập mới. Tên mới được lưu cùng rạp."
+                helper-text="Chọn thành phố đã có hoặc nhập mới."
                 required
                 @blur="onCityBlur"
               />
@@ -497,20 +494,9 @@ function submit(event: Event) {
                 <option :value="true">Đang hoạt động</option>
                 <option :value="false">Tạm ngưng</option>
               </select>
-
-              <p id="admin-cinema-active-help" class="admin-cinemas__muted">
-                {{
-                  active
-                    ? 'Rạp đang hoạt động. Điều kiện đặt vé vẫn phụ thuộc phòng và suất chiếu.'
-                    : 'Rạp tạm ngưng sẽ không nhận giữ ghế mới. Trạng thái các phòng không tự thay đổi.'
-                }}
-              </p>
             </div>
           </fieldset>
           <div v-if="cityCatalog.isError.value" class="admin-movies__feedback">
-            <p class="admin-cinemas__muted">
-              Chưa tải được gợi ý thành phố. Bạn vẫn có thể nhập tên trực tiếp.
-            </p>
             <AppButton
               variant="secondary"
               size="sm"
@@ -521,14 +507,6 @@ function submit(event: Event) {
               Tải lại gợi ý
             </AppButton>
           </div>
-          <p class="admin-cinemas__muted">
-            {{
-              cinemaId
-                ? 'Lưu thay đổi sẽ cập nhật thông tin và trạng thái bạn chọn.'
-                : 'Rạp mới được tạo ở trạng thái đang hoạt động.'
-            }}
-          </p>
-
           <p
             v-if="requestError"
             id="admin-cinema-request-error"

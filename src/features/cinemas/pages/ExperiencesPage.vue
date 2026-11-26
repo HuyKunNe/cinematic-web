@@ -73,7 +73,6 @@ const experiences = computed(() =>
       <header class="customer-experiences__heading">
         <p class="lumiere-eyebrow">ĐẮM CHÌM VÀO TỪNG KHOẢNH KHẮC</p>
         <h1>Trải nghiệm Lumière</h1>
-        <p>Loại phòng khác với định dạng 2D/3D và hạng ghế. Mỗi suất ghi rõ các lựa chọn hỗ trợ.</p>
       </header>
       <AppLoadingState
         v-if="query.isPending.value || (results.loading.value && !experiences.length)"
@@ -89,7 +88,6 @@ const experiences = computed(() =>
       />
       <template v-else>
         <div v-if="results.failed.value" class="customer-experiences__feedback" role="alert">
-          <p>Một số rạp chưa tải được thông tin phòng. Các trải nghiệm đã tải vẫn được hiển thị.</p>
           <AppButton variant="secondary" :loading="results.loading.value" @click="results.refresh()"
             >Tải lại thông tin phòng</AppButton
           >
@@ -124,7 +122,7 @@ const experiences = computed(() =>
         <AppEmptyState
           v-else-if="!results.failed.value"
           title="Trải nghiệm đang được cập nhật"
-          description="Chưa có thông tin loại phòng đang hoạt động. Bạn có thể quay lại hệ thống rạp để xem thêm."
+          description="Chưa có thông tin loại phòng đang hoạt động."
         />
         <RouterLink class="customer-experiences__back" :to="{ name: ROUTE_NAMES.CINEMAS }"
           >Khám phá hệ thống rạp →</RouterLink

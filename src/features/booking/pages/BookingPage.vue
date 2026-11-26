@@ -91,7 +91,7 @@ onBeforeUnmount(() => {
       <BookingProgress current="seats" :showtime-to="changeShowtimeRoute" />
 
       <p v-if="!showtimeId" class="booking-error" role="alert">
-        Mã suất chiếu trong đường dẫn không hợp lệ.
+        Suất chiếu không hợp lệ.
       </p>
 
       <p v-else-if="query.isPending.value && !context" class="booking-note" role="status">
@@ -102,7 +102,7 @@ onBeforeUnmount(() => {
         <p class="booking-error" role="alert">
           {{
             query.error.value?.status === 404
-              ? 'Không tìm thấy thông tin đặt vé cho suất chiếu này.'
+              ? 'Không tìm thấy thông tin đặt vé.'
               : 'Không thể tải thông tin suất chiếu. Vui lòng thử lại.'
           }}
         </p>
@@ -112,7 +112,7 @@ onBeforeUnmount(() => {
       <template v-else-if="context">
         <div v-if="query.isError.value" class="booking-panel">
           <p class="booking-error" role="alert">
-            Không thể cập nhật thông tin suất chiếu. Tạm dừng chọn ghế.
+            Không thể cập nhật thông tin suất chiếu.
           </p>
           <AppButton variant="ghost" :loading="query.isFetching.value" @click="query.refetch()">
             Thử lại
@@ -120,10 +120,10 @@ onBeforeUnmount(() => {
         </div>
 
         <p v-if="!context.movie" class="booking-notice" role="status">
-          Chưa có thông tin phim để tiếp tục đặt vé. Vui lòng chọn suất chiếu khác.
+          Chưa có thông tin phim đặt vé. Vui lòng chọn suất chiếu khác.
         </p>
         <p v-else-if="!bookable" class="booking-notice" role="status">
-          Suất chiếu này hiện không nhận đặt vé. Vui lòng chọn suất chiếu khác.
+          Suất chiếu này hiện không khả dụng. Vui lòng chọn suất chiếu khác.
         </p>
 
         <BookingSeatSelection
@@ -138,7 +138,7 @@ onBeforeUnmount(() => {
       </template>
 
       <p v-else class="booking-error" role="alert">
-        Thông tin suất chiếu chưa đầy đủ hoặc không khớp. Vui lòng chọn lại suất chiếu.
+        Vui lòng chọn lại suất chiếu.
       </p>
     </AppContainer>
   </div>

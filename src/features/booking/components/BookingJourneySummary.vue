@@ -71,12 +71,9 @@ const amount = computed(() => {
         <dd>{{ amount }}</dd>
       </div>
     </dl>
-    <p v-if="quote" class="booking-journey__summary-note">
-      Tổng tiền theo báo giá hiện tại. Ghế chỉ được giữ khi hệ thống xác nhận yêu cầu đặt vé.
-    </p>
     <div v-if="booking?.status === 'RESERVED'" class="booking-journey__clock">
       <Clock3 aria-hidden="true" /><span
-        >{{ expired ? 'Đã đến hạn giữ ghế. Đang chờ cập nhật.' : 'Giữ chỗ còn' }}
+        >{{ expired ? 'Đã hết hạn giữ ghế. Đang chờ cập nhật.' : 'Thời hạn giữ ghế còn ' }}
         <strong v-if="!expired">{{ remaining }}</strong></span
       >
     </div>

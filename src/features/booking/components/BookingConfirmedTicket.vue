@@ -62,17 +62,17 @@ const issuanceMessage = computed(() => {
     case 'READY':
       return pickupDeadlineReached.value
         ? ticketsQuery.isFetching.value
-          ? 'Mã nhận vé đã đến hạn hiệu lực. Đang kiểm tra trạng thái với hệ thống.'
+          ? 'Mã nhận vé đã đến hạn hiệu lực.'
           : 'Mã nhận vé đã đến hạn hiệu lực. Vui lòng kiểm tra lại trạng thái với hệ thống.'
         : 'Xuất trình QR này tại quầy hoặc POS để nhận toàn bộ vé của đơn.'
     case 'EXPIRED':
-      return 'Mã nhận vé chung đã hết hiệu lực.'
+      return 'Mã nhận vé đã hết hiệu lực.'
     case 'TICKETS_USED':
-      return 'Đơn có vé đã sử dụng, không còn mã nhận vé chung khả dụng.'
+      return 'Mã vé đã sử dụng.'
     case 'NOT_CONFIRMED':
-      return 'Hệ thống chưa xác nhận đơn để cấp mã nhận vé chung.'
+      return 'Hệ thống chưa xác nhận đơn.'
     case 'UNAVAILABLE':
-      return 'Hiện chưa thể cấp mã nhận vé chung. Vui lòng liên hệ rạp để được hỗ trợ.'
+      return 'Hiện chưa thể cấp mã nhận vé. Vui lòng liên hệ rạp để được hỗ trợ.'
   }
 })
 const query = useBookingContextQuery(() => props.booking.showtimeId, { poll: false })
@@ -134,8 +134,8 @@ const amount = computed(() =>
           <p role="status">
             {{
               context && !context.movie
-                ? 'Thông tin phim chưa khả dụng. Ghế và giá vé đã lưu vẫn được giữ nguyên.'
-                : 'Chưa tải được thông tin suất chiếu. Ghế và giá đã lưu vẫn được giữ nguyên.'
+                ? 'Thông tin phim chưa khả dụng. Ghế và giá vé vẫn được giữ nguyên.'
+                : 'Chưa tải được thông tin suất chiếu. Ghế và giá vé vẫn được giữ nguyên.'
             }}
           </p>
           <AppButton
@@ -188,13 +188,13 @@ const amount = computed(() =>
           v-if="pickupQrImage"
           :src="pickupQrImage"
           class="booking-confirmed-ticket__qr"
-          alt="QR nhận toàn bộ vé của đơn đặt vé"
+          alt="QR nhận hóa đơn đặt vé"
         />
         <TicketCheck v-else aria-hidden="true" /><small>MÃ ĐƠN ĐẶT VÉ</small
         ><strong>{{ formatBookingReference(booking.id) }}</strong>
         <p v-if="ticketsQuery.isPending.value" role="status">Đang tải thông tin vé…</p>
         <p v-else-if="ticketsQuery.isError.value" role="alert">
-          Chưa tải được thông tin vé. Thông tin đặt vé vẫn được giữ nguyên.
+          Chưa tải được thông tin vé.
         </p>
         <p v-else-if="pickup" role="status">
           {{ issuanceMessage }}

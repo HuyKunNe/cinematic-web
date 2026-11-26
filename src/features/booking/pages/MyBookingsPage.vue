@@ -286,25 +286,25 @@ const statusTitles: Record<CustomerBooking['status'], string> = {
 const statusDescription = computed(() => {
   if (paymentNeedsReview.value)
     return paymentStatus.value === 'SUCCEEDED'
-      ? 'Thanh toán đã được ghi nhận nhưng đơn chưa được xác nhận. Kiểm tra kết quả hoặc liên hệ rạp trước khi đặt lại.'
-      : 'Kết quả thanh toán chưa xác định. Vui lòng kiểm tra kết quả trước khi tạo đơn mới.'
+      ? 'Đơn chưa được xác nhận. Kiểm tra kết quả hoặc liên hệ rạp trước khi đặt lại.'
+      : 'Kết quả thanh toán chưa xác định. Vui lòng kiểm tra kết quả.'
   switch (booking.value?.status) {
     case 'PENDING':
-      return 'Hệ thống đang kiểm tra và giữ ghế. Trang tự cập nhật kết quả; chưa phải vé đã xác nhận.'
+      return 'Hệ thống đang kiểm tra. Trang tự cập nhật kết quả.'
     case 'RESERVED':
       return holdActive.value
-        ? 'Ghế đã được giữ. Đơn chưa được xác nhận thanh toán.'
-        : 'Đã đến hạn giữ ghế. Hệ thống đang cập nhật kết quả đơn; hãy kiểm tra thanh toán trước khi đặt lại.'
+        ? 'Đơn chưa được xác nhận thanh toán.'
+        : 'Đơn đã đến hạn. Hãy kiểm tra thanh toán trước khi đặt lại.'
     case 'CONFIRMED':
       return 'Đơn đặt vé đã được xác nhận.'
     case 'REJECTED':
-      return 'Yêu cầu đặt vé không được chấp nhận. Bạn có thể chọn lại suất hoặc ghế.'
+      return 'Yêu cầu đặt vé không được chấp nhận. Vui lòng đặt lại.'
     case 'PAYMENT_FAILED':
-      return 'Thanh toán không thành công. Kiểm tra trạng thái mới nhất trước khi đặt lại.'
+      return 'Thanh toán không thành công.'
     case 'CANCELLED':
       return 'Đơn đã được hủy.'
     case 'EXPIRED':
-      return 'Đơn đã hết thời gian giữ ghế.'
+      return 'Đơn đã hết hạn.'
     default:
       return ''
   }
@@ -387,9 +387,9 @@ async function cancel() {
               isCheckout
                 ? 'Kiểm tra để an tâm tận hưởng'
                 : isResult
-                  ? 'Kết quả đặt vé'
+                  ? 'Kết quả'
                   : id
-                    ? 'Chi tiết đơn đặt vé'
+                    ? 'Chi tiết đơn'
                     : 'Những cuộc hẹn đã lưu'
             }}
           </h1>
@@ -413,8 +413,8 @@ async function cancel() {
           title="Không tìm thấy đơn đặt vé"
           :description="
             !validId
-              ? 'Đường dẫn giao dịch không hợp lệ. Chọn Về danh sách để mở lại đơn đặt vé.'
-              : 'Không tìm thấy đơn đặt vé thuộc tài khoản của bạn. Vui lòng kiểm tra lại trong danh sách giao dịch.'
+              ? 'Đường dẫn giao dịch không hợp lệ.'
+              : 'Không tìm thấy đơn đặt vé. Vui lòng kiểm tra lại trong danh sách giao dịch.'
           "
         />
         <p v-else-if="detail.isPending.value" class="booking-note" role="status">
@@ -467,14 +467,14 @@ async function cancel() {
               </h2>
               <p class="booking-note" role="status" aria-live="polite">{{ statusDescription }}</p>
               <p v-if="holdActive && !paymentNeedsReview" class="booking-note">
-                Thời gian giữ ghế còn {{ remaining }}
+                Thời gian thanh toán còn {{ remaining }}
               </p>
               <p v-if="booking.rejectionReason" class="booking-error">
                 {{ booking.rejectionReason }}
               </p>
               <p v-if="holdActive && !paymentNeedsReview" class="booking-note">
-                Kiểm tra thông tin bên dưới và tiếp tục thanh toán trong thời gian giữ ghế. Kết quả
-                chỉ được xác nhận khi hệ thống cập nhật trạng thái đơn.
+                Kiểm tra thông tin bên dưới và tiếp tục thanh toán. Kết quả chỉ được xác nhận khi hệ
+                thống cập nhật trạng thái đơn.
               </p>
             </div>
             <div
@@ -485,14 +485,15 @@ async function cancel() {
                 v-if="booking.status === 'CONFIRMED'"
                 class="customer-bookings__detail-ticket-link"
                 :to="{ name: ROUTE_NAMES.BOOKING_TICKET, params: { bookingId: booking.id } }"
-                >Xem vé <Ticket aria-hidden="true"
-              /></RouterLink>
+                >Xem vé
+                <Ticket aria-hidden="true" />
+              </RouterLink>
               <AppButton
                 v-if="booking.status === 'RESERVED'"
                 variant="ghost"
                 :disabled="!canCancel"
                 @click="confirming = true"
-                >Hủy đơn giữ ghế</AppButton
+                >Hủy đơn</AppButton
               >
             </div>
           </section>
@@ -507,14 +508,10 @@ async function cancel() {
                 class="customer-bookings__seat-section"
                 aria-labelledby="customer-booking-seats"
               >
-                <h3 id="customer-booking-seats">Ghế và giá đã lưu</h3>
+                <h3 id="customer-booking-seats">Chi tiết:</h3>
                 <p v-if="awaitingSeatSnapshot" class="booking-note" role="status">
-                  Ghế yêu cầu: {{ booking.seats?.map((seat) => seat.seatNumber).join(', ') }}. Đang
-                  chờ hệ thống xác nhận loại ghế và giá đã lưu. Trang sẽ tự cập nhật.
-                </p>
-                <p v-if="incompleteSeatSnapshot" class="booking-error" role="alert">
-                  Dữ liệu đơn từ hệ thống chưa đầy đủ loại ghế hoặc giá đã lưu. Vui lòng cập nhật
-                  trạng thái; giá báo trước khi đặt không thay thế giá của đơn.
+                  Ghế: {{ booking.seats?.map((seat) => seat.seatNumber).join(', ') }}. Đang chờ hệ
+                  thống xác nhận.
                 </p>
                 <ul
                   v-if="booking.seats?.length && !awaitingSeatSnapshot"
@@ -531,9 +528,7 @@ async function cancel() {
                 </ul>
                 <p v-else-if="!awaitingSeatSnapshot" class="booking-note">
                   {{
-                    booking.status === 'PENDING'
-                      ? 'Ghế đang được hệ thống xử lý.'
-                      : 'Chưa có thông tin ghế.'
+                    booking.status === 'PENDING' ? 'Hệ thống đang xử lý.' : 'Chưa có thông tin ghế.'
                   }}
                 </p>
               </section>
@@ -627,8 +622,7 @@ async function cancel() {
               </div>
               <template v-else-if="list.data.value">
                 <p v-if="list.isError.value" class="booking-error" role="alert">
-                  Chưa cập nhật được danh sách. Thông tin bên dưới là lần tải gần nhất và có thể
-                  chưa phản ánh trạng thái mới. Vui lòng thử lại.
+                  Chưa cập nhật được danh sách. Vui lòng thử lại.
                 </p>
                 <div class="customer-bookings__list-toolbar">
                   <h2 class="customer-bookings__list-label">
@@ -688,11 +682,7 @@ async function cancel() {
           ><AlertDialogOverlay class="customer-bookings__overlay" /><AlertDialogContent
             class="customer-bookings__confirm"
             @escape-key-down="cancelling && $event.preventDefault()"
-            ><AlertDialogTitle>Hủy đơn giữ ghế?</AlertDialogTitle
-            ><AlertDialogDescription
-              >Ghế sẽ được giải phóng sau khi hệ thống xử lý. Chỉ hủy đơn đang giữ ghế và còn
-              hạn.</AlertDialogDescription
-            >
+            ><AlertDialogTitle>Hủy đơn?</AlertDialogTitle>
             <div class="customer-bookings__actions">
               <AlertDialogCancel as-child
                 ><AppButton variant="secondary" :disabled="cancelling"

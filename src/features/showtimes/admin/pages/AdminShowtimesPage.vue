@@ -35,14 +35,14 @@ function actionHint(item: AdminShowtime): string {
   switch (item.status) {
     case 'SCHEDULED':
       if (Date.parse(item.startsAt) <= now.value.getTime())
-        return 'Đã qua giờ bắt đầu. Tải lại để kiểm tra trạng thái hiện tại.'
+        return 'Suất chiếu đã bắt đầu. Tải lại để kiểm tra trạng thái hiện tại.'
       if (!item.screeningVersion)
         return 'Thiếu phiên bản chiếu. Kiểm tra thông tin trước khi mở bán.'
       return 'Kiểm tra bảng giá và điều kiện trước khi xác nhận mở bán.'
     case 'OPEN_FOR_BOOKING':
       return 'Suất đã mở bán.'
     case 'CLOSED':
-      return 'Suất đã đóng bán.'
+      return 'Suất đã đóng.'
     case 'CANCELLED':
       return 'Suất đã hủy.'
     case 'COMPLETED':

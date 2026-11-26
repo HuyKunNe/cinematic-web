@@ -99,9 +99,7 @@ function reload(): void {
       <div>
         <p class="admin-reference__eyebrow">Đơn đặt vé</p>
         <h1 id="admin-booking-detail-title" tabindex="-1">Chi tiết đơn đặt vé</h1>
-        <p class="admin-reference__description">
-          Thông tin đơn và giá vé đã lưu. Thời gian hiển thị theo giờ Việt Nam.
-        </p>
+        <p class="admin-reference__description">Thông tin đơn.</p>
       </div>
 
       <div class="admin-booking-detail__actions">
@@ -123,7 +121,7 @@ function reload(): void {
     </p>
 
     <p v-else-if="!validId" class="admin-reference__note admin-booking-detail__error" role="alert">
-      Mã đơn không hợp lệ. Mã đơn phải là UUID phiên bản 7.
+      Mã đơn không hợp lệ.
     </p>
 
     <p
@@ -197,14 +195,13 @@ function reload(): void {
       </div>
 
       <p v-if="booking.rejectionReason" class="admin-reference__note">
-        Lý do từ chối: {{ booking.rejectionReason }}
+        Lý do: {{ booking.rejectionReason }}
       </p>
 
       <section class="admin-reference__panel" aria-labelledby="admin-booking-seats-title">
         <header class="admin-reference__list-heading">
           <div>
             <h2 id="admin-booking-seats-title">Ghế trong đơn</h2>
-            <p>Giá ghế đôi tính cho cả cặp.</p>
           </div>
         </header>
 

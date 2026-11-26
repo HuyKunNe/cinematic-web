@@ -267,9 +267,7 @@ watch(
       {{ message }}
     </p>
     <p v-if="handoffError" class="booking-error" role="alert">{{ handoffError }}</p>
-    <p v-if="query.isError.value" class="booking-error" role="alert">
-      Chưa thể kiểm tra thanh toán. Vui lòng thử lại; không tạo thêm một đơn để thanh toán lại.
-    </p>
+    <p v-if="query.isError.value" class="booking-error" role="alert">Vui lòng thử lại.</p>
     <label v-if="showPaymentConsent" class="booking-payment__consent">
       <input v-model="agreed" type="checkbox" :disabled="disabled" />
       <span

@@ -386,7 +386,6 @@ const preview = [
       >
         <header>
           <h2 id="showtime-form-title">Thông tin suất chiếu</h2>
-          <p class="admin-reference__description">Các trường bắt buộc được đánh dấu *</p>
         </header>
 
         <fieldset

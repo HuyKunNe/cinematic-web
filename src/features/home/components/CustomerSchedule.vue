@@ -294,7 +294,7 @@ async function choose(slot: CustomerScheduleSlot) {
     const result = await query.refetch()
     if (disposed || scope.value !== chosenScope || route.fullPath !== chosenPath) return
     if (result.isError) {
-      error.value = 'Chưa thể kiểm tra lại suất chiếu. Vui lòng thử lại.'
+      error.value = 'Chưa thể kiểm tra suất chiếu. Vui lòng thử lại.'
       return
     }
     const current = result.data?.find((item) => item.id === slot.id)
@@ -315,7 +315,7 @@ async function choose(slot: CustomerScheduleSlot) {
       current.screeningVersion?.subtitleLanguage !== slot.screeningVersion?.subtitleLanguage
     ) {
       error.value =
-        'Thông tin suất chiếu vừa thay đổi. Lịch đã cập nhật, vui lòng kiểm tra và chọn lại.'
+        'Thông tin suất chiếu vừa thay đổi. Vui lòng kiểm tra và chọn lại.'
       return
     }
     if (!locationReady.value) {
@@ -425,11 +425,11 @@ async function retry() {
         :disabled="!!checkingId || updatingFilters"
       />
       <p v-if="!validDate" class="booking-error" role="alert">
-        Chọn ngày hợp lệ từ hôm nay trở đi.
+        Chọn ngày hợp lệ.
       </p>
       <div v-if="locationQuery.isError.value" class="booking-panel">
         <p class="booking-error">Không thể tải thành phố và rạp.</p>
-        <AppButton variant="ghost" @click="locationQuery.refetch()">Tải lại địa điểm</AppButton>
+        <AppButton variant="ghost" @click="locationQuery.refetch()">Tải lại</AppButton>
       </div>
       <div v-if="catalog.isError.value" class="booking-panel">
         <p class="booking-error">Chưa thể cập nhật tên phim.</p>
@@ -443,7 +443,7 @@ async function retry() {
       <div v-else-if="!cinemaId && !selectedCity" class="lumiere-empty">
         <MapPin aria-hidden="true" />
         <h2>Cuộc hẹn ở thành phố nào?</h2>
-        <p>Chọn thành phố ở đầu trang để xem rạp và lịch chiếu phù hợp.</p>
+        <p>Chọn thành phố để xem rạp và lịch chiếu phù hợp.</p>
       </div>
       <div v-else-if="mode === 'cinema' && !activeCinema" class="lumiere-empty">
         <h2>Chọn rạp của bạn</h2>
@@ -454,7 +454,7 @@ async function retry() {
         class="lumiere-empty"
       >
         <h2>{{ movies.length ? 'Chọn phim muốn xem' : 'Phim sẽ được cập nhật' }}</h2>
-        <p>Chọn phim trong bộ lọc để xem các suất mở bán.</p>
+        <p>Chọn phim để xem các suất mở bán.</p>
       </div>
       <p
         v-if="checkingId || loading || locationQuery.isFetching.value || catalog.isFetching.value"
@@ -464,9 +464,6 @@ async function retry() {
         {{ checkingId ? 'Đang kiểm tra suất chiếu và mở chọn ghế…' : 'Đang cập nhật lịch chiếu…' }}
       </p>
       <div v-if="failed" class="booking-panel">
-        <p class="booking-error" role="alert">
-          Một số rạp chưa tải được lịch. Các suất đã tải vẫn được hiển thị.
-        </p>
         <AppButton
           variant="ghost"
           :disabled="loading || !!checkingId || updatingFilters"
@@ -512,8 +509,8 @@ async function retry() {
         <p>
           {{
             embedded
-              ? 'Thử chọn ngày khác để tìm cuộc hẹn tại rạp này.'
-              : 'Thử đổi ngày, rạp, phim hoặc định dạng để tìm cuộc hẹn khác.'
+              ? 'Thử chọn ngày khác.'
+              : 'Thử đổi ngày, rạp, phim hoặc định dạng để tìm suất chiếu khác.'
           }}
         </p>
         <AppButton v-if="format" variant="ghost" @click="format = ''"
@@ -521,7 +518,7 @@ async function retry() {
         >
       </div>
       <p v-if="groups.length" class="booking-note">
-        Chọn giờ để tiếp tục. Ghế và giá vé được kiểm tra ở bước chọn ghế.
+        Chọn giờ để tiếp tục.
       </p>
     </component>
   </div>

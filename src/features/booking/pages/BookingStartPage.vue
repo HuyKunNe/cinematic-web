@@ -85,11 +85,11 @@ async function updateSelectedMovie(movieId: string) {
     })
 
     if (version === movieChangeVersion && failure) {
-      navigationError.value = 'Chưa thể lưu phim vào đường dẫn. Vui lòng chọn phim lại.'
+      navigationError.value = 'Vui lòng chọn lại.'
     }
   } catch {
     if (version === movieChangeVersion) {
-      navigationError.value = 'Chưa thể lưu phim vào đường dẫn. Vui lòng chọn phim lại.'
+      navigationError.value = 'Vui lòng chọn lại.'
     }
   }
 }
@@ -109,7 +109,7 @@ async function updateSelectedMovie(movieId: string) {
 
         <p class="lumiere-eyebrow">DÀNH THỜI GIAN CHO ĐIỀU BẠN THÍCH</p>
         <h1 class="booking-start__title">
-          {{ route.name === ROUTE_NAMES.SHOWTIMES ? 'Hôm nay, xem gì?' : 'Chọn một cuộc hẹn' }}
+          {{ route.name === ROUTE_NAMES.SHOWTIMES ? 'Hôm nay xem gì?' : 'Chọn một cuộc hẹn' }}
         </h1>
 
         <p class="booking-start__description">
@@ -133,15 +133,15 @@ async function updateSelectedMovie(movieId: string) {
       </div>
 
       <p v-if="invalidMovieId" class="booking-start__error" role="alert">
-        Thông tin phim trong đường dẫn không hợp lệ. Vui lòng chọn phim.
+        Thông tin không hợp lệ. Vui lòng chọn phim.
       </p>
 
       <p v-else-if="movieUnavailable" class="booking-start__error" role="alert">
-        Phim trong đường dẫn không còn nằm trong danh mục đặt vé. Vui lòng chọn phim khác.
+        Phim không khả dụng. Vui lòng chọn phim khác.
       </p>
 
       <p v-if="error" class="booking-start__error" role="alert">
-        {{ errorMessage }} Vui lòng nhấn Thử lại trong bộ chọn bên dưới.
+        {{ errorMessage }} Vui lòng thử lại.
       </p>
 
       <p v-if="navigationError" class="booking-start__error" role="alert">

@@ -100,7 +100,7 @@ function refresh(): void {
       <div>
         <p class="admin-reference__eyebrow">Giao dịch</p>
         <h1 id="admin-bookings-title" tabindex="-1">Đơn đặt vé</h1>
-        <p class="admin-reference__description">Tra cứu đơn đặt vé theo trạng thái.</p>
+        <p class="admin-reference__description">Tra cứu đơn theo trạng thái.</p>
       </div>
     </header>
 

@@ -110,22 +110,22 @@ const description = computed(() => {
     ['PENDING', 'RESERVED'].includes(booking.value.status) &&
     paymentStatus.value === 'SUCCEEDED'
   )
-    return 'Hệ thống đã ghi nhận thanh toán và đang xác nhận đơn. Thông tin vé chỉ mở khi booking được xác nhận.'
+    return 'Hệ thống đã ghi nhận thanh toán và đang xác nhận đơn.'
   switch (booking.value?.status) {
     case 'CONFIRMED':
-      return 'Đơn đặt vé đã được xác nhận. Bạn có thể xem lại thông tin vé bên dưới.'
+      return 'Đơn đã được xác nhận. Bạn có thể xem lại thông tin vé bên dưới.'
     case 'RESERVED':
-      return 'Chưa có xác nhận hoàn tất đơn. Kiểm tra thanh toán trước khi thực hiện thêm giao dịch.'
+      return 'Đơn chưa hoàn tất. Kiểm tra thanh toán trước khi thực hiện thêm giao dịch.'
     case 'PENDING':
-      return 'Yêu cầu đã được tiếp nhận. Trang tự cập nhật khi hệ thống xác nhận ghế và giá.'
+      return 'Yêu cầu đã được tiếp nhận. Trang tự cập nhật khi hệ thống xác nhận.'
     case 'REJECTED':
-      return 'Yêu cầu giữ ghế không thành công. Bạn có thể chọn lại suất chiếu.'
+      return 'Đơn đặt vé không thành công. Vui lòng đặt lại.'
     case 'PAYMENT_FAILED':
-      return 'Chưa có vé được xác nhận. Kiểm tra kết quả thanh toán và đơn trước khi đặt lại.'
+      return 'Thanh toán không thành công. Vui lòng kiểm tra lại.'
     case 'CANCELLED':
       return 'Đơn đã được hủy. Bạn có thể bắt đầu một cuộc hẹn mới.'
     case 'EXPIRED':
-      return 'Đơn đã hết hạn giữ ghế. Bạn có thể chọn lại suất và ghế.'
+      return 'Đơn đã hết hạn. Bắt đầu một cuộc hẹn mới.'
     default:
       return ''
   }
@@ -213,8 +213,8 @@ watch(
         title="Không tìm thấy đơn đặt vé"
         :description="
           !valid
-            ? 'Đường dẫn đặt vé không hợp lệ. Bạn có thể mở lại đơn từ Vé & giao dịch.'
-            : 'Không tìm thấy đơn đặt vé thuộc tài khoản của bạn. Hãy kiểm tra lại trong Vé & giao dịch.'
+            ? 'Đường dẫn đặt vé không hợp lệ.'
+            : 'Không tìm thấy đơn thuộc tài khoản của bạn. Hãy kiểm tra lại trong Vé & giao dịch.'
         "
       >
         <template #action>
@@ -282,12 +282,12 @@ watch(
                 <h2 id="checkout-items-title">Thông tin đặt vé</h2>
                 <BookingSavedSeats :booking="booking" />
                 <p v-if="booking.status === 'PENDING'" class="booking-note" role="status">
-                  Đang xác nhận ghế và giá đã lưu. Chưa thể thanh toán.
+                  Đang xác nhận.
                 </p>
                 <RouterLink
                   class="customer-bookings__link"
                   :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: booking.id } }"
-                  >Kiểm tra hoặc hủy đơn giữ ghế →</RouterLink
+                  >Kiểm tra →</RouterLink
                 >
               </section>
               <section id="checkout-payment" class="booking-panel booking-journey__payment">
@@ -316,7 +316,7 @@ watch(
           <header v-if="ticket" class="booking-journey__ticket-heading">
             <p class="lumiere-eyebrow">VÉ ĐIỆN TỬ</p>
             <h1>Cuộc hẹn đã sẵn sàng</h1>
-            <p>Thông tin đơn đặt vé đã được xác nhận · {{ formatBookingReference(booking.id) }}</p>
+            <p>Thông tin đơn đã được xác nhận · {{ formatBookingReference(booking.id) }}</p>
           </header>
           <header v-if="!ticket" class="booking-journey__result">
             <span

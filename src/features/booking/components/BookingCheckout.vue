@@ -174,7 +174,7 @@ function invalidateReview() {
   if (!reviewing.value) return
   reviewing.value = false
   reviewed.value = null
-  error.value = 'Ghế hoặc báo giá đã thay đổi. Vui lòng kiểm tra lại đơn trước khi xác nhận.'
+  error.value = 'Ghế đã thay đổi. Vui lòng kiểm tra lại đơn trước khi xác nhận.'
 }
 watch(
   () => props.selectionError,
@@ -261,12 +261,12 @@ async function submit() {
     })
     if (failure) {
       flow.consumePayment(owner, booking.id)
-      error.value = 'Đơn đã được tiếp nhận. Mở chi tiết đơn để theo dõi kết quả giữ ghế.'
+      error.value = 'Đơn đã được tiếp nhận. Mở chi tiết để theo dõi kết quả.'
     }
   } catch (cause) {
     if (resolved.value) {
       flow.consumePayment(owner, resolvedBookingId.value)
-      error.value = 'Đơn đã tạo. Mở Vé của tôi để xem kết quả.'
+      error.value = 'Đơn đã được tạo.'
     } else {
       const status = (cause as { status?: number })?.status
       // Only definite validation rejections release the request. Unknown outcomes keep the same key.
@@ -275,7 +275,7 @@ async function submit() {
         emit('rejected')
       }
       error.value = checkpoint.value
-        ? 'Chưa xác nhận được kết quả. Gửi lại cùng yêu cầu hoặc kiểm tra Vé của tôi; không đặt lại bằng yêu cầu mới.'
+        ? 'Chưa xác nhận được kết quả. Gửi lại cùng yêu cầu hoặc kiểm tra Vé của tôi.'
         : customerBookingError(cause)
     }
   } finally {
@@ -289,18 +289,15 @@ defineExpose({ continueBooking })
   <component
     :is="page ? 'form' : 'div'"
     class="booking-checkout"
-    :aria-label="page ? 'Xác nhận và thanh toán đặt vé' : undefined"
+    :aria-label="page ? 'Xác nhận và thanh toán' : undefined"
     @submit.prevent="continueBooking"
   >
     <p v-if="error" ref="errorMessage" class="booking-error" role="alert" tabindex="-1">
       {{ error }}
     </p>
-    <p v-else-if="checkpoint" class="booking-notice" role="status">
-      Có yêu cầu đặt vé cần xác nhận kết quả. Lựa chọn đã khóa để tránh tạo trùng đơn.
-    </p>
     <template v-if="page && checkpoint">
       <p class="booking-note">
-        Ghế trong yêu cầu đã gửi:
+        Chi tiết:
         {{
           (checkpoint.seats?.map((seat) => seat.seatNumber) ?? checkpoint.seatNumbers ?? []).join(
             ', ',
@@ -353,7 +350,7 @@ defineExpose({ continueBooking })
       :aria-describedby="selectionError ? 'booking-selection-error' : undefined"
       @click="!page && continueBooking()"
       ><Ticket v-if="page && !checkpoint" aria-hidden="true" />
-      {{ page ? (checkpoint ? 'Gửi lại cùng yêu cầu' : paymentLabel) : 'Tiếp tục' }}</AppButton
+      {{ page ? (checkpoint ? 'Gửi lại' : paymentLabel) : 'Tiếp tục' }}</AppButton
     >
     <AppLink
       v-if="resolvedBookingId && hasOwnerSession"

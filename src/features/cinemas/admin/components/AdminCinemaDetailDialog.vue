@@ -177,9 +177,6 @@ function amenitiesError(error: unknown) {
               <p class="admin-cinemas__error" role="alert">
                 {{ cinemaError(cinema.error.value) }}
               </p>
-              <p v-if="cinema.data.value" class="admin-cinemas__muted">
-                Đang hiển thị thông tin từ lần tải trước.
-              </p>
               <AppButton
                 variant="secondary"
                 :loading="cinema.isFetching.value"
@@ -294,9 +291,6 @@ function amenitiesError(error: unknown) {
                   <p class="admin-cinemas__error" role="alert">
                     {{ adminRoomErrorMessage(rooms.error.value, 'Không thể tải danh sách phòng.') }}
                   </p>
-                  <p v-if="rooms.data.value" class="admin-cinemas__muted">
-                    Đang hiển thị danh sách phòng từ lần tải trước.
-                  </p>
                   <AppButton
                     variant="secondary"
                     :loading="rooms.isFetching.value"
@@ -382,9 +376,6 @@ function amenitiesError(error: unknown) {
                   <div v-if="amenities.isError.value" class="admin-cinema-amenities__feedback">
                     <p class="admin-cinemas__error" role="alert">
                       {{ amenitiesError(amenities.error.value) }}
-                    </p>
-                    <p v-if="amenities.data.value" class="admin-cinemas__muted">
-                      Đang hiển thị tiện ích từ lần tải trước.
                     </p>
                   </div>
 

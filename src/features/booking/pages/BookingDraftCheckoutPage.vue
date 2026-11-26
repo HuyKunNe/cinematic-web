@@ -38,7 +38,7 @@ watch(showtimeId, () => {
         @locked="locked = $event"
       />
       <div v-else class="booking-panel">
-        <p class="booking-error" role="alert">Chưa có suất chiếu hợp lệ để thanh toán.</p>
+        <p class="booking-error" role="alert">Suất chiếu không hợp lệ.</p>
         <RouterLink :to="{ name: ROUTE_NAMES.BOOKING_START }" class="customer-bookings__link"
           >Chọn suất chiếu →</RouterLink
         >

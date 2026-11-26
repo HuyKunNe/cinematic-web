@@ -48,8 +48,8 @@ const chooseShowtime = computed(() => ({
       <p class="booking-note" role="status">
         {{
           context && !context.movie
-            ? 'Chưa có thông tin phim. Thông tin suất, ghế và giá vé đã lưu vẫn được giữ nguyên.'
-            : 'Chưa thể tải thông tin phim/rạp. Thông tin đơn và giá vé đã lưu vẫn được giữ nguyên.'
+            ? 'Chưa có thông tin phim.'
+            : 'Chưa thể tải thông tin phim/rạp.'
         }}
       </p>
       <AppButton
