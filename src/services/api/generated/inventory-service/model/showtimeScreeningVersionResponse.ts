@@ -10,11 +10,11 @@ import type { ShowtimeScreeningVersionResponsePresentationType } from './showtim
 import type { ShowtimeScreeningVersionResponseProjectionTechnology } from './showtimeScreeningVersionResponseProjectionTechnology'
 
 export interface ShowtimeScreeningVersionResponse {
-  id?: string
-  version?: number
-  contentFormat?: ShowtimeScreeningVersionResponseContentFormat
-  projectionTechnology?: ShowtimeScreeningVersionResponseProjectionTechnology
-  audioLanguage?: string
-  presentationType?: ShowtimeScreeningVersionResponsePresentationType
-  subtitleLanguage?: string
+  id: string
+  version: number
+  contentFormat: ShowtimeScreeningVersionResponseContentFormat
+  projectionTechnology: ShowtimeScreeningVersionResponseProjectionTechnology
+  audioLanguage: string
+  presentationType: ShowtimeScreeningVersionResponsePresentationType
+  subtitleLanguage: string | null
 }

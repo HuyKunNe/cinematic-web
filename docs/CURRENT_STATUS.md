@@ -1,5 +1,95 @@
 # Current Status
 
+## USER restored seat-selection feedback and owner scope — 2026-11-26
+
+Seat selection now explains partial restoration when saved seats are absent,
+unavailable or unpriced in the current snapshot, rather than silently dropping
+them. Existing restoration/filtering rules are unchanged. The current selection,
+its bill and interaction readiness are explicitly scoped to the authenticated
+owner captured at mount, matching the selection storage/checkout owner checks.
+Switching or losing that session hides old selected seats/totals and blocks clicks
+without clearing another owner's stored request or selection.
+
+No new API, price/availability calculation, dependency or responsive CSS changes.
+Updated FE_BOOKING_REVIEW.md. Source/diff review only; manual partial-restore,
+session-switch, polling price/status change and network recovery checks pending.
+No tests, lint, typecheck, build, browser/API requests, BE/database writes,
+commits or pushes.
+
+## USER seat-map background error continuity — 2026-11-26
+
+BookingSeatSelection retains its validated cached seat map read-only during
+transient background errors, alongside a stale-data warning, instead of hiding
+the map while retaining its selected-seat bill. Existing readiness guards keep
+selection/checkout disabled until a successful refresh. Permission/not-found/
+layout conflicts (401/403/404/409 or layout-required code) still hide the map.
+No local selection, availability, price or server-state mutation is introduced.
+
+Removed routine Refresh: the existing seat query already polls every 15 seconds.
+Retry appears only on error and shares any in-flight GET. No new API or CSS;
+existing responsive matrix/bill layout is retained. Updated FE_BOOKING_REVIEW.md.
+Source/diff review only; manual cached-map error/recovery, access/layout failures
+and selected-seat price/status changes pending. No tests, lint, typecheck, build,
+browser/API requests, BE/database writes, commits or pushes.
+
+## USER checkout rejection revalidation — 2026-11-26
+
+Connected BookingCheckout's existing rejected event to BookingDraftCheckout. The
+parent now clears its checked quote, waits for the child request lock to release
+and refreshes context/seats, then requotes only if the selection remains valid.
+The API rejection remains visible; invalid/occupied seats retain the existing
+return-to-selection guidance. Context/seat refresh shares existing in-flight GETs.
+No automatic resubmission or new request ID is introduced by this handler.
+
+The existing definite-rejection classification is unchanged. Unknown network/5xx
+outcomes do not enter this path and retain the same stored idempotent request.
+No API, dependency or responsive CSS changes. Updated FE_BOOKING_REVIEW.md.
+Source/diff review only; manual rejection/changed-seat/price/network retry checks
+pending. No tests, lint, typecheck, build, browser/API requests, BE/database writes,
+commits or pushes.
+
+## USER restored checkout ownership — 2026-11-26
+
+BookingCheckout now gates its stored checkpoint, continue/retry entry point,
+submit-button availability and resolved-order link on the authenticated owner
+captured when that checkout mounted. This matches the existing owner-scoped seat
+selection and submit API guards, avoiding old-owner request display/actions if a
+session changes before the component unmounts. No storage deletion, request/provider
+rewrite, new idempotency key, API or responsive CSS changes.
+
+Updated FE_BOOKING_REVIEW.md. Source/diff review only; manual pending-request
+restore, same-owner retry and changed/expired-session checks pending. No tests,
+lint, typecheck, build, browser/API requests, BE/database writes, commits or pushes.
+
+## USER processing error presentation — 2026-11-26
+
+If a loaded processing order fails to refresh or automatic result navigation
+fails, BookingOrderPage now hides the waiting hero/spinner and supplies the page
+heading alongside its existing error/recovery UI. Previously error and indefinite
+processing messages appeared together. The payment observer remains mounted via
+v-show, preserving status polling and recovery rather than resetting the flow.
+Successful recovery restores the normal view through existing reactive state.
+
+No new controls, endpoint, payment/booking mutation, CSS or responsive changes.
+Updated FE_BOOKING_REVIEW.md. Source/diff review only; manual loaded-processing
+network-error/recovery and navigation-failure checks pending. No tests, lint,
+typecheck, build, browser/API requests, BE/database writes or commits/pushes.
+
+## USER checkout reload and project review — 2026-11-26
+
+Reloaded repository instructions/docs and compared current routes, booking/payment/
+pickup code and payment controller contract. Working tree was clean on entry.
+See FE_BOOKING_REVIEW.md for source-backed route mapping, documentation conflicts
+and pending manual verification; this does not certify unrelated Admin/Staff work.
+
+Payment manual refresh now shares in-flight GETs, prevents duplicate clicks and
+only emits booking refresh while mounted for the original owner/booking. Manual
+spinner state is separate from polling, with provider handoff blocked during that
+check. No endpoint, business-state, dependency or responsive CSS change.
+
+Source/diff review only. No tests, lint, typecheck, build, format, browser/API
+runtime checks, BE/generated/reference edits, database access, commits or pushes.
+
 ## USER pickup QR identity and deadline feedback — 2026-11-20
 
 The confirmed-ticket view now explicitly scopes pickup data/QR to the active

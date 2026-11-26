@@ -200,7 +200,10 @@ watch(
     <AppContainer>
       <BookingProgress v-if="checkout" :current="checkout ? 'checkout' : 'order'" />
       <header
-        v-if="(!booking || unavailable) && !(valid && processing && query.isPending.value)"
+        v-if="
+          (!booking || unavailable || (processing && (query.isError.value || navigationError))) &&
+          !(valid && processing && query.isPending.value)
+        "
         class="booking-journey__ticket-heading"
       >
         <p class="lumiere-eyebrow">CUỘC HẸN CỦA BẠN</p>
@@ -252,7 +255,9 @@ watch(
           >
         </div>
         <template v-if="processing">
-          <BookingProcessing :booking-id="booking.id"
+          <BookingProcessing
+            v-show="!query.isError.value && !navigationError"
+            :booking-id="booking.id"
             ><BookingPayment
               :key="booking.id"
               processing

@@ -22,9 +22,9 @@ export interface ShowtimeResponse {
   createdAt?: string
   updatedAt?: string
   roomLayoutId?: string
-  screeningVersion?: ShowtimeScreeningVersionResponse
-  scheduling?: ShowtimeSchedulingResponse
+  screeningVersion: ShowtimeScreeningVersionResponse | null
+  scheduling: ShowtimeSchedulingResponse | null
   version?: number
-  pricingPolicyId?: string
-  pricingPolicyVersionId?: string
+  pricingPolicyId: string | null
+  pricingPolicyVersionId: string | null
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatBookingDate } from '../mappers/booking-date.mapper'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
@@ -142,10 +142,16 @@ watch(
   { immediate: true },
 )
 async function retry() {
-  await contextQuery.refetch()
+  await contextQuery.refetch({ cancelRefetch: false })
   if (!contextQuery.isSuccess.value || !context.value?.room.id) return
-  await seatsQuery.refetch()
+  await seatsQuery.refetch({ cancelRefetch: false })
   if (ready.value) await refreshQuote().catch(() => {})
+}
+async function recheckRejectedRequest() {
+  checked.value = false
+  // The child releases its request lock when its submit handler finishes.
+  await nextTick()
+  if (!requestLocked.value) await retry()
 }
 </script>
 
@@ -248,6 +254,7 @@ async function retry() {
           :disabled="!ready || !quote || quoteQuery.isFetching.value"
           @locked="updateLocked"
           @processing="updateProcessing"
+          @rejected="recheckRejectedRequest"
         />
       </section>
     </div>

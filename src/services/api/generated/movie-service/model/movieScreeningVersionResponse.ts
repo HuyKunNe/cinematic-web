@@ -10,13 +10,14 @@ import type { MovieScreeningVersionResponsePresentationType } from './movieScree
 import type { MovieScreeningVersionResponseProjectionTechnology } from './movieScreeningVersionResponseProjectionTechnology'
 
 export interface MovieScreeningVersionResponse {
-  id?: string
-  movieId?: string
-  contentFormat?: MovieScreeningVersionResponseContentFormat
-  projectionTechnology?: MovieScreeningVersionResponseProjectionTechnology
-  audioLanguage?: string
-  presentationType?: MovieScreeningVersionResponsePresentationType
-  subtitleLanguage?: string
-  active?: boolean
-  version?: number
+  id: string
+  movieId: string
+  contentFormat: MovieScreeningVersionResponseContentFormat
+  projectionTechnology: MovieScreeningVersionResponseProjectionTechnology
+  audioLanguage: string
+  presentationType: MovieScreeningVersionResponsePresentationType
+  /** @nullable */
+  subtitleLanguage: string | null
+  active: boolean
+  version: number
 }

@@ -31,6 +31,7 @@ const props = defineProps<{
 const emit = defineEmits<{ locked: [value: boolean]; rejected: []; processing: [value: boolean] }>()
 const auth = useAuthStore()
 const owner = auth.subject ?? ''
+const hasOwnerSession = computed(() => !!owner && auth.isAuthenticated && auth.subject === owner)
 const router = useRouter()
 const queries = useQueryClient()
 const selection = useBookingSelection(props.showtimeId)
@@ -64,6 +65,7 @@ const requestSchema = z.union([
 ])
 const stored = useSessionStorage(storageKey, '')
 const checkpoint = computed(() => {
+  if (!hasOwnerSession.value) return null
   try {
     return requestSchema.parse(JSON.parse(stored.value))
   } catch {
@@ -115,6 +117,7 @@ const paymentLabel = computed(() =>
     : 'Xác nhận và thanh toán',
 )
 async function continueBooking() {
+  if (!active || !hasOwnerSession.value) return
   if (!props.page) {
     if (checking.value || sending.value || resolved.value || (!checkpoint.value && props.disabled))
       return
@@ -342,6 +345,7 @@ defineExpose({ continueBooking })
       :type="page ? 'submit' : 'button'"
       :loading="sending || checking"
       :disabled="
+        !hasOwnerSession ||
         sending ||
         checking ||
         (!checkpoint && (disabled || (page && (!paymentProvider || !agreed))))
@@ -352,7 +356,7 @@ defineExpose({ continueBooking })
       {{ page ? (checkpoint ? 'Gửi lại cùng yêu cầu' : paymentLabel) : 'Tiếp tục' }}</AppButton
     >
     <AppLink
-      v-if="resolvedBookingId"
+      v-if="resolvedBookingId && hasOwnerSession"
       :to="{ name: ROUTE_NAMES.ACCOUNT_BOOKINGS, query: { bookingId: resolvedBookingId } }"
     >
       Theo dõi đơn vừa tạo

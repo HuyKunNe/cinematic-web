@@ -3,6 +3,7 @@ import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { computed, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppLink from '@/components/ui/AppLink.vue'
+import { useAuthStore } from '@/stores/auth.store'
 import type { RouteLocationRaw } from 'vue-router'
 import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 import BookingCheckout from './BookingCheckout.vue'
@@ -30,6 +31,11 @@ const query = useBookingSeatsQuery(
 )
 
 const selectionState = useBookingSelection(props.showtimeId)
+const auth = useAuthStore()
+const selectionOwner = auth.subject
+const hasOwnerSession = computed(
+  () => !!selectionOwner && auth.isAuthenticated && auth.subject === selectionOwner,
+)
 let restoredSelection = false
 const selection = ref<SelectedBookingSeat[]>([])
 const selectionNotice = ref('')
@@ -37,6 +43,14 @@ const checkoutLocked = ref(false)
 const checkout = ref<InstanceType<typeof BookingCheckout> | null>(null)
 
 const seats = computed(() => query.data.value?.seats ?? [])
+const seatMapUnavailable = computed(() => {
+  const error = query.error.value
+  return (
+    query.isError.value &&
+    (error?.code === 'INVENTORY_SHOWTIME_LAYOUT_REQUIRED' ||
+      [401, 403, 404, 409].includes(error?.status ?? 0))
+  )
+})
 
 const seatLoadError = computed(() => {
   const error = query.error.value
@@ -50,7 +64,9 @@ const seatLoadError = computed(() => {
   if (error?.status === 401 || error?.status === 403) {
     return 'Bạn chưa có quyền tải ghế. Vui lòng đăng nhập lại và thử lại.'
   }
-  return 'Không thể tải danh sách ghế hợp lệ. Vui lòng bấm Làm mới để thử lại.'
+  if (seats.value.length)
+    return 'Chưa cập nhật được sơ đồ ghế. Dữ liệu bên dưới là lần tải gần nhất; tạm dừng chọn ghế cho đến khi tải lại thành công.'
+  return 'Không thể tải danh sách ghế hợp lệ. Vui lòng thử lại.'
 })
 
 const rows = computed(() => {
@@ -68,6 +84,7 @@ const rows = computed(() => {
 const ready = computed(
   () =>
     !props.disabled &&
+    hasOwnerSession.value &&
     !checkoutLocked.value &&
     query.isSuccess.value &&
     !query.isFetching.value &&
@@ -75,13 +92,15 @@ const ready = computed(
 )
 
 const chosenSeats = computed(() =>
-  seats.value.filter(
-    (seat) =>
-      seat.selectable &&
-      selection.value.some(
-        (selected) => selected.id === seat.id && selected.priceMinor === seat.priceMinor,
+  !hasOwnerSession.value
+    ? []
+    : seats.value.filter(
+        (seat) =>
+          seat.selectable &&
+          selection.value.some(
+            (selected) => selected.id === seat.id && selected.priceMinor === seat.priceMinor,
+          ),
       ),
-  ),
 )
 const selectionError = computed(() => seatSelectionError(seats.value, chosenSeats.value))
 
@@ -147,14 +166,16 @@ watch(
     if (!updatedSeats || checkoutLocked.value) return
     if (!restoredSelection) {
       restoredSelection = true
+      const savedNumbers = selectionState.numbers.value
       selection.value = updatedSeats.seats
         .filter(
           (seat) =>
-            seat.selectable &&
-            seat.priceMinor !== null &&
-            selectionState.numbers.value.includes(seat.seatNumber),
+            seat.selectable && seat.priceMinor !== null && savedNumbers.includes(seat.seatNumber),
         )
         .map((seat) => ({ id: seat.id, priceMinor: seat.priceMinor! }))
+      if (selection.value.length < savedNumbers.length)
+        selectionNotice.value =
+          'Một số ghế đã lưu không còn trống hoặc chưa có giá và không được khôi phục. Vui lòng kiểm tra lại lựa chọn.'
       return
     }
 
@@ -203,13 +224,14 @@ watch(
           ></span
         >
         <AppButton
+          v-if="query.isError.value"
           variant="ghost"
           size="sm"
           :loading="query.isFetching.value"
           :disabled="checkoutLocked"
-          @click="query.refetch()"
+          @click="query.refetch({ cancelRefetch: false })"
         >
-          Làm mới
+          Thử lại
         </AppButton>
       </div>
 
@@ -221,11 +243,11 @@ watch(
         {{ seatLoadError }}
       </p>
 
-      <p v-else-if="query.isPending.value && !query.data.value" class="booking-note" role="status">
+      <p v-if="query.isPending.value && !query.data.value" class="booking-note" role="status">
         Đang tải ghế…
       </p>
 
-      <template v-else-if="seats.length">
+      <template v-else-if="seats.length && !seatMapUnavailable">
         <p v-if="query.isSuccess.value && !hasAvailableSeats" class="booking-notice" role="status">
           Hiện không có ghế trống để chọn cho suất này.
         </p>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { CreditCard, Wallet } from 'lucide-vue-next'
 import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router'
@@ -32,6 +32,11 @@ const flow = useBookingFlowStore()
 const route = useRoute()
 const agreed = ref(false)
 const handoffError = ref('')
+const refreshingPayment = ref(false)
+let active = true
+onBeforeUnmount(() => {
+  active = false
+})
 const hasPaymentIntent = computed(
   () =>
     auth.isAuthenticated &&
@@ -117,6 +122,7 @@ const canPay = computed(
     agreed.value &&
     auth.isAuthenticated &&
     !props.disabled &&
+    !refreshingPayment.value &&
     !query.isError.value &&
     query.isFetchedAfterMount.value &&
     !query.isFetching.value &&
@@ -170,8 +176,31 @@ const showManualCheck = computed(
     holdDeadlineReached.value,
 )
 async function refresh() {
-  await query.refetch()
-  emit('refresh')
+  const owner = auth.subject
+  const bookingId = props.booking.id
+  if (
+    !active ||
+    refreshingPayment.value ||
+    props.disabled ||
+    !auth.isAuthenticated ||
+    !owner ||
+    props.booking.userId !== owner
+  )
+    return
+  refreshingPayment.value = true
+  try {
+    await query.refetch({ cancelRefetch: false })
+    if (
+      active &&
+      auth.isAuthenticated &&
+      auth.subject === owner &&
+      props.booking.userId === owner &&
+      props.booking.id === bookingId
+    )
+      emit('refresh')
+  } finally {
+    refreshingPayment.value = false
+  }
 }
 function pay() {
   if (canPay.value && validLink.value) {
@@ -265,7 +294,7 @@ watch(
         v-if="showManualCheck && booking.status !== 'PENDING' && booking.status !== 'REJECTED'"
         :variant="resultOnly ? 'primary' : 'secondary'"
         :disabled="disabled"
-        :loading="query.isFetching.value"
+        :loading="refreshingPayment"
         @click="refresh"
         >{{
           query.isError.value ? 'Thử lại' : compact ? 'Kiểm tra kết quả' : 'Kiểm tra thanh toán'

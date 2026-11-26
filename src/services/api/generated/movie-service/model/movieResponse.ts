@@ -23,7 +23,9 @@ export interface MovieResponse {
   version?: number
   createdAt?: string
   updatedAt?: string
-  backdropUrl?: string
-  ageRating?: MovieResponseAgeRating
+  /** @nullable */
+  backdropUrl: string | null
+  /** @nullable */
+  ageRating: MovieResponseAgeRating
   screeningVersions?: MovieScreeningVersionResponse[]
 }
