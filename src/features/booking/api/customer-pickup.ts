@@ -22,12 +22,12 @@ const passSchema = z.object({
     .string()
     .refine((value) => Number.isFinite(Date.parse(value)))
     .nullish()
-    .transform((value) => value ?? undefined),
+    .transform((value) => value ?? null),
   qrPayload: z
     .string()
     .regex(/^cinema-booking:v1:[A-Za-z0-9_-]{43}$/)
     .nullish()
-    .transform((value) => value ?? undefined),
+    .transform((value) => value ?? null),
 })
 
 export function useCustomerPickupQuery(booking: MaybeRefOrGetter<CustomerBooking>) {

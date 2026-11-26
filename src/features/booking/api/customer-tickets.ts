@@ -14,6 +14,11 @@ const ticketSchema = z.object({
   seatNumber: z.string().min(1),
   capacity: z.number().int().positive(),
   status: z.string().min(1),
+  checkedInAt: z
+    .string()
+    .refine((value) => Number.isFinite(Date.parse(value)))
+    .nullish()
+    .transform((value) => value ?? null),
 })
 const ISSUANCE_REFRESH_INTERVAL_MS = 3_000
 

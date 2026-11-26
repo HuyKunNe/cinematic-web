@@ -83,14 +83,16 @@ const cellReferenceSchema = scopeSchema.extend({
   seatType: z.nativeEnum(SeatTypeOptionSeatType),
 })
 
+const nullableCellAmountSchema = z
+  .number()
+  .finite()
+  .nonnegative()
+  .nullish()
+  .transform((value) => value ?? null)
+
 export const pricingCellSchema = cellReferenceSchema.extend({
   state: z.nativeEnum(OptionsCellStatesItem),
-  amount: z
-    .number()
-    .finite()
-    .nonnegative()
-    .nullish()
-    .transform((value) => value ?? undefined),
+  amount: nullableCellAmountSchema.transform((value) => value ?? undefined),
   unit: z.nativeEnum(SeatTypeOptionUnit),
 })
 
@@ -157,6 +159,10 @@ export const pricingMatrixSchema = z.object({
       .min(1),
     cellStates: z.array(z.nativeEnum(OptionsCellStatesItem)).min(1),
   }),
+})
+
+const pricingMatrixResponseSchema = pricingMatrixSchema.extend({
+  cells: z.array(pricingCellSchema.extend({ amount: nullableCellAmountSchema })),
 })
 
 const validationSchema = z.object({
@@ -334,7 +340,11 @@ function requirePolicyContext(policy: PricingPolicy, context: PricingContext): v
 }
 
 function parseMatrix(response: unknown, context: PricingContext): PricingMatrix {
-  const matrix = pricingMatrixSchema.parse(response) satisfies FareMatrixResponse
+  const transport = pricingMatrixResponseSchema.parse(response) satisfies FareMatrixResponse
+  const matrix: PricingMatrix = {
+    ...transport,
+    cells: transport.cells.map((cell) => ({ ...cell, amount: cell.amount ?? undefined })),
+  }
 
   if (matrix.policyId !== context.policyId || matrix.policyVersionId !== context.versionId) {
     throw new Error('Ma trận phản hồi không thuộc phiên bản đang mở.')
