@@ -8,14 +8,14 @@
 import type { RoomCapacitySource } from './roomCapacitySource'
 
 export interface RoomCapacity {
-  roomId?: string
-  roomName?: string
-  roomActive?: boolean
-  layoutId?: string
-  layoutVersion?: number
-  source?: RoomCapacitySource
-  seatUnitCount?: number
-  capacity?: number
-  activeSeatUnitCount?: number
-  activeSeatCapacity?: number
+  roomId: string
+  roomName: string
+  roomActive: boolean
+  layoutId: string | null
+  layoutVersion: number | null
+  source: RoomCapacitySource
+  seatUnitCount: number | null
+  capacity: number | null
+  activeSeatUnitCount: number | null
+  activeSeatCapacity: number | null
 }

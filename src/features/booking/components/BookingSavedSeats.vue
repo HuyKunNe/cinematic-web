@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { CustomerBooking } from '../api/customer-bookings'
 import type { BookingSeatQuote } from '../api/booking-seat-quote'
+import { formatSavedBookingMoney } from '../mappers/booking-money.mapper'
 const props = defineProps<{ booking?: CustomerBooking; quote?: BookingSeatQuote }>()
 const source = computed(() => props.booking ?? props.quote)
 const types: Record<string, string> = {
@@ -11,6 +12,7 @@ const types: Record<string, string> = {
   ACCESSIBLE: 'Hỗ trợ tiếp cận',
 }
 function money(value: number | null, currency: string | null) {
+  if (props.booking) return formatSavedBookingMoney(value, currency, props.booking.status)
   return value === null || !currency
     ? 'Đang xác nhận'
     : new Intl.NumberFormat('vi-VN', { style: 'currency', currency }).format(value)

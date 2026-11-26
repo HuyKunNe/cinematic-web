@@ -12,12 +12,12 @@ import type { CellResponseState } from './cellResponseState'
 import type { CellResponseUnit } from './cellResponseUnit'
 
 export interface CellResponse {
-  experienceType?: CellResponseExperienceType
-  contentFormat?: CellResponseContentFormat
-  timeBandId?: string
-  ticketGroupId?: string
-  seatType?: CellResponseSeatType
-  state?: CellResponseState
-  amount?: number
-  unit?: CellResponseUnit
+  experienceType: CellResponseExperienceType
+  contentFormat: CellResponseContentFormat
+  timeBandId: string
+  ticketGroupId: string
+  seatType: CellResponseSeatType
+  state: CellResponseState
+  amount: number | null
+  unit: CellResponseUnit
 }

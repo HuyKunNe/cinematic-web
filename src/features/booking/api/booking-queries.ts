@@ -17,7 +17,7 @@ export interface BookingContext {
   showtime: ShowtimeResponse
   room: RoomResponse
   cinema: CinemaResponse
-  movie: MovieResponse
+  movie: MovieResponse | null
 }
 
 export function isBookingUuid(value: unknown): value is string {
@@ -48,13 +48,18 @@ async function readBookingContext(showtimeId: string): Promise<BookingContext | 
   }
 
   const [movie, room, cinema] = await Promise.all([
-    findMovieById(movieId),
+    findMovieById(movieId).catch((cause: unknown) => {
+      // Missing catalog metadata must not hide a saved order's valid showtime.
+      // All other failures retain the normal error/retry behavior.
+      if ((cause as ApiError | null)?.status === 404) return null
+      throw cause
+    }),
     getRoomById(roomId),
     getCinemaById(cinemaId),
   ])
 
   if (
-    movie.id !== movieId ||
+    (movie !== null && movie.id !== movieId) ||
     room.id !== roomId ||
     room.cinemaId !== cinemaId ||
     cinema.id !== cinemaId

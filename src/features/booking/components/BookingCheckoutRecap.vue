@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { formatBookingDate } from '../mappers/booking-date.mapper'
+import { formatSavedBookingMoney } from '../mappers/booking-money.mapper'
 import { computed } from 'vue'
 import BookingMobileRecap from './BookingMobileRecap.vue'
 import type { BookingSeatQuote } from '../api/booking-seat-quote'
@@ -15,6 +16,12 @@ const source = computed(() => props.booking ?? props.quote)
 const query = useBookingContextQuery(() => source.value?.showtimeId ?? '', { poll: false })
 const context = computed(() => query.data.value)
 const total = computed(() => {
+  if (props.booking)
+    return formatSavedBookingMoney(
+      props.booking.totalAmount,
+      props.booking.currency,
+      props.booking.status,
+    )
   const value = source.value
   return value?.totalAmount == null || !value.currency
     ? 'Đang xác nhận'
@@ -37,7 +44,7 @@ const location = computed(() => {
 <template>
   <BookingMobileRecap
     class="booking-checkout-recap"
-    :title="context?.movie.title || 'Thông tin đặt vé'"
+    :title="context?.movie?.title || 'Thông tin đặt vé'"
     :location="location"
     :seat-numbers="source?.seats?.map((seat) => seat.seatNumber) ?? []"
     :total="total"

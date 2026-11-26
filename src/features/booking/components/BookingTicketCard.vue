@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { formatBookingDate } from '../mappers/booking-date.mapper'
 import { formatBookingReference } from '../mappers/booking-reference.mapper'
-import { computed, ref } from 'vue'
+import { formatSavedBookingMoney } from '../mappers/booking-money.mapper'
+import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
@@ -13,8 +14,14 @@ const props = defineProps<{ booking: CustomerBooking; now: number }>()
 const query = useBookingContextQuery(() => props.booking.showtimeId, { poll: false })
 const context = computed(() => query.data.value)
 const imageFailed = ref(false)
+watch(
+  () => context.value?.movie?.posterUrl,
+  () => {
+    imageFailed.value = false
+  },
+)
 const poster = computed(() =>
-  imageFailed.value || !context.value?.movie.posterUrl
+  imageFailed.value || !context.value?.movie?.posterUrl
     ? '/customer/movie-placeholder.svg'
     : context.value.movie.posterUrl,
 )
@@ -31,12 +38,7 @@ const screeningPhase = computed(() => {
     : { state: 'upcoming', label: 'Sắp chiếu' }
 })
 const amount = computed(() =>
-  props.booking.totalAmount === null || !props.booking.currency
-    ? 'Chưa xác nhận giá'
-    : new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: props.booking.currency,
-      }).format(props.booking.totalAmount),
+  formatSavedBookingMoney(props.booking.totalAmount, props.booking.currency, props.booking.status),
 )
 </script>
 
@@ -53,7 +55,7 @@ const amount = computed(() =>
       <span class="customer-bookings__id">Đơn {{ formatBookingReference(booking.id) }}</span>
       <h2>
         {{
-          context?.movie.title ||
+          context?.movie?.title ||
           (query.isPending.value ? 'Đang tải thông tin phim…' : 'Đơn đặt vé')
         }}
       </h2>
@@ -98,7 +100,7 @@ const amount = computed(() =>
       <strong>{{ amount }}</strong>
       <RouterLink
         class="customer-bookings__order-link"
-        :aria-label="`${booking.status === 'CONFIRMED' ? 'Xem vé' : 'Chi tiết đơn'} ${formatBookingReference(booking.id)}${context?.movie.title ? ` · ${context.movie.title}` : ''}`"
+        :aria-label="`${booking.status === 'CONFIRMED' ? 'Xem vé' : 'Chi tiết đơn'} ${formatBookingReference(booking.id)}${context?.movie?.title ? ` · ${context.movie.title}` : ''}`"
         :data-confirmed="booking.status === 'CONFIRMED'"
         :to="
           booking.status === 'CONFIRMED'

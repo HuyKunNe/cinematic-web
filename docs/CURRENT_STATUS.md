@@ -1,5 +1,38 @@
 # Current Status
 
+## USER saved-ticket metadata degradation — 2026-11-26
+
+Compared generated/BE BookingResponse and movie lookup contract: saved bookings
+still lack historical movie/cinema/room/start metadata snapshots. The shared
+booking context previously discarded valid showtime/location details whenever
+movie lookup failed. It now handles only movie HTTP 404 as missing metadata
+(movie=null), preserving validated showtime/room/cinema fields; all other errors,
+access failures and identity checks retain normal failure behavior.
+
+Updated User booking consumers for nullable movie metadata, real placeholder
+assets and an unavailable-movie explanation on confirmed tickets. New selection
+and draft checkout remain blocked without movie metadata, as they were on lookup
+failure; saved seats/prices and pickup QR stay sourced from their respective APIs.
+Poster failure flags now reset when the API poster URL changes. No new API/DTO,
+mock, status inference, dependency, CSS or responsive layout change.
+
+FE_BOOKING_REVIEW.md records the remaining BE snapshot requirement. Source/diff
+review only; manual movie-404 versus 403/500, missing inventory metadata, booking
+guards and desktop/mobile review pending. No tests, lint, typecheck, build,
+browser/API requests, BE/generated/reference edits, database access or commits/pushes.
+
+## USER seat-rule source review — 2026-11-26
+
+Compared current orphan/adjacency validation with the agreed single-unit
+exception, multi-row selections, indivisible couple units and physical aisle
+boundaries. No justified algorithm change was found in this source pass.
+Added precise manual scenarios to FE_BOOKING_REVIEW.md, including four-seat
+segments, G6/F8, unavailable/unpriced snapshots and missing positions.
+
+Documentation only; no application/API/CSS change. This is not a test pass or
+runtime certification. No tests, lint, typecheck, build, browser/API requests,
+BE/generated/reference edits, database access, commits or pushes.
+
 ## USER restored seat-selection feedback and owner scope — 2026-11-26
 
 Seat selection now explains partial restoration when saved seats are absent,

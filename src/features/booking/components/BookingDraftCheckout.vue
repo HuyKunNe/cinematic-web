@@ -67,6 +67,7 @@ const ready = computed(
     seatsQuery.isSuccess.value &&
     !seatsQuery.isFetching.value &&
     !seatsQuery.isError.value &&
+    !!context.value?.movie &&
     context.value?.showtime.status === 'OPEN_FOR_BOOKING' &&
     context.value.room.active === true &&
     context.value.cinema.active === true &&
@@ -84,7 +85,7 @@ const quote = computed(() =>
     : undefined,
 )
 const review = computed<BookingReview | undefined>(() => {
-  if (!quote.value || !context.value?.showtime.startsAt) return undefined
+  if (!quote.value || !context.value?.movie || !context.value.showtime.startsAt) return undefined
   return {
     movieTitle: context.value.movie.title || 'Phim chưa có tên',
     cinemaName: context.value.cinema.name || '',
@@ -179,7 +180,11 @@ async function recheckRejectedRequest() {
           Đang kiểm tra ghế và báo giá…
         </p>
         <BookingSavedSeats v-if="quote" :quote="quote" />
-        <p v-if="contextQuery.isSuccess.value && !context" class="booking-error" role="alert">
+        <p
+          v-if="contextQuery.isSuccess.value && (!context || !context.movie)"
+          class="booking-error"
+          role="alert"
+        >
           Thông tin suất chiếu chưa đầy đủ hoặc không khớp. Vui lòng chọn lại suất chiếu.
         </p>
         <p v-if="selectionError" id="booking-selection-error" class="booking-error" role="alert">
@@ -197,6 +202,7 @@ async function recheckRejectedRequest() {
           v-if="
             !requestLocked &&
             context &&
+            context.movie &&
             !ready &&
             !contextQuery.isFetching.value &&
             !seatsQuery.isFetching.value &&
@@ -217,6 +223,7 @@ async function recheckRejectedRequest() {
             !requestLocked &&
             (error ||
               contextQuery.isError.value ||
+              (contextQuery.isSuccess.value && (!context || !context.movie)) ||
               seatsQuery.isError.value ||
               (ready && !quote && !quoteQuery.isFetching.value))
           "
@@ -228,7 +235,11 @@ async function recheckRejectedRequest() {
             quoteQuery.isFetching.value
           "
           @click="retry"
-          >Thử lại báo giá</AppButton
+          >{{
+            contextQuery.isError.value || !context?.movie
+              ? 'Thử lại thông tin suất'
+              : 'Thử lại báo giá'
+          }}</AppButton
         >
       </section>
       <div v-if="quote?.seats.some((seat) => seat.eligibilityDescription)" class="booking-notice">

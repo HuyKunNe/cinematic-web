@@ -10,15 +10,15 @@ import type { ShowtimeSeatMapMatrixResponse } from './showtimeSeatMapMatrixRespo
 import type { ShowtimeSeatMapSeatResponse } from './showtimeSeatMapSeatResponse'
 
 export interface ShowtimeSeatMapResponse {
-  showtimeId?: string
-  cinemaId?: string
-  roomId?: string
-  layoutId?: string
-  layoutVersion?: number
-  serverTime?: string
-  canvasWidth?: number
-  canvasHeight?: number
-  elements?: ShowtimeSeatMapElementResponse[]
-  seats?: ShowtimeSeatMapSeatResponse[]
-  matrix?: ShowtimeSeatMapMatrixResponse
+  showtimeId: string
+  cinemaId: string
+  roomId: string
+  layoutId: string
+  layoutVersion: number
+  serverTime: string
+  canvasWidth: number | null
+  canvasHeight: number | null
+  elements: ShowtimeSeatMapElementResponse[]
+  seats: ShowtimeSeatMapSeatResponse[]
+  matrix: ShowtimeSeatMapMatrixResponse | null
 }

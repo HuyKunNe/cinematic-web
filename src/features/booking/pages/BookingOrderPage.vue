@@ -17,6 +17,7 @@ import BookingProcessing from '../components/BookingProcessing.vue'
 import BookingJourneySummary from '../components/BookingJourneySummary.vue'
 import BookingSavedSeats from '../components/BookingSavedSeats.vue'
 import { formatBookingReference } from '../mappers/booking-reference.mapper'
+import { formatSavedBookingMoney } from '../mappers/booking-money.mapper'
 import { canRestartBooking, needsBookingPaymentReview } from '../utils/booking-result-actions'
 import type { PaymentCheckoutResponseStatus } from '@/services/api/generated/payment-service/model/paymentCheckoutResponseStatus'
 import {
@@ -140,9 +141,7 @@ const remaining = computed(() => {
     : '—'
 })
 function money(value: number | null, currency: string | null) {
-  return value === null || !currency
-    ? 'Đang xác nhận'
-    : new Intl.NumberFormat('vi-VN', { style: 'currency', currency }).format(value)
+  return formatSavedBookingMoney(value, currency, booking.value?.status)
 }
 // Booking status is authoritative; URL query flags never confirm a payment or issue a ticket.
 async function showResult() {

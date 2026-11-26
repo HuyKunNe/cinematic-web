@@ -71,6 +71,26 @@ trong component chưa kịp tháo. Luồng cập nhật ghế/giá từ API khô
 
 ## Tài liệu còn khác code/yêu cầu hiện hành
 
+### Phụ thuộc metadata vé cũ vào danh mục hiện tại
+
+BookingResponse hiện chỉ tham chiếu showtimeId, chưa chứa snapshot tên phim,
+poster, tên rạp/phòng và giờ bắt đầu tại lúc mua. Đã đối chiếu DTO BE/generated.
+Không suy ra phim bị xóa chỉ vì ngừng bán: lookup phim theo ID là API riêng.
+
+FE đã xử lý riêng HTTP 404 từ lookup phim: giữ context suất/rạp/phòng hợp lệ,
+biểu diễn phim bị thiếu bằng null và placeholder UI, không dựng MovieResponse.
+Các lỗi khác, quyền truy cập, ID không khớp và lỗi suất/rạp/phòng vẫn đi qua
+nhánh lỗi cũ. Đặt vé mới/checkout không đủ thông tin phim vẫn bị chặn như trước.
+Vé cũ giữ ghế/giá đã lưu và QR theo owner pickup-pass, không thay đổi trạng thái
+đơn hoặc giả định metadata đã được lưu từ thời điểm mua.
+
+BE còn cần bổ sung snapshot metadata vào contract booking/ticket nếu muốn lịch
+sử không phụ thuộc danh mục, không đổi tên theo lần sửa phim/rạp và vẫn đầy đủ
+khi suất/rạp/phòng bị gỡ. Đây là yêu cầu contract, chưa có DTO/endpoint mới do FE
+tự tạo. Chưa kiểm tra runtime ca phim 404; chỉ đối chiếu source.
+
+### Khác biệt tài liệu chung
+
 - README còn mô tả workflow chỉ đọc; AGENTS hiện cho phép sửa FE để người dùng review.
 - DESIGN_SYSTEM còn ưu tiên Figma; task và AGENTS ưu tiên HTML/CSS Lumière cho User.
 - Kiến trúc thư mục trong tài liệu có phần đề xuất; router thực tế vẫn tập trung tại
@@ -81,6 +101,33 @@ trong component chưa kịp tháo. Luồng cập nhật ghế/giá từ API khô
 Không sửa hàng loạt tài liệu gốc hoặc mở rộng phạm vi để xử lý các khác biệt này.
 
 ## Cần kiểm tra thủ công tiếp
+
+### Chọn ghế: đối chiếu source và các ca cần thử
+
+Đã đọc `seat-selection-rules.ts`, mapper vị trí, snapshot query và matrix.
+Chưa chạy test hoặc thử các tình huống này trên browser. Không đổi thuật toán.
+
+Trong một đoạn **bốn ghế đơn trống liền nhau**, giới hạn bởi đầu hàng, lối đi
+hoặc ghế không khả dụng:
+
+| Lựa chọn | Kết quả theo code hiện tại |
+| --- | --- |
+| Chỉ một ghế cho cả đơn | Cho phép theo ngoại lệ đã thống nhất |
+| Ghế 1–2 hoặc 3–4 | Cho phép, không tạo ghế đơn trống |
+| Ghế 2–3 | Chặn vì để lại ghế đơn trống ở hai đầu |
+| Ghế 1 và 3 | Chặn vì không liền nhau |
+| Một ghế đơn mỗi hàng, tổng từ hai ghế | Chặn, gồm trường hợp G6 và F8 |
+| Hai ghế liền nhau mỗi hàng ở nhiều hàng | Cho phép nếu mỗi hàng không tạo ghế đơn trống |
+| Ghế hai bên lối đi trong cùng hàng | Chặn vì không liền vị trí vật lý |
+| Một đơn vị ghế đôi | Không tách cặp; sức chứa do snapshot cung cấp |
+| Nhiều ghế nhưng thiếu vị trí vật lý | Chặn thay vì đoán vị trí từ tên ghế |
+
+Sau khi chọn, cho snapshot cập nhật ghế đã đổi giá/không còn trống: ghế đó phải
+rời lựa chọn, bảng tiền chỉ tính ghế còn hợp lệ và có thông báo. Lỗi mạng không
+được giả thành ghế đã bán. Tải lại thành công phải kiểm tra theo vị trí/span của
+snapshot mới. FE validation không thay việc BE kiểm tra khi giữ ghế/tạo booking.
+
+### Các bước end-to-end còn chờ
 
 1. Chọn ghế thường/đôi, báo giá, thay đổi availability/giá trước lúc thanh toán.
 2. Mất mạng khi tạo đơn: gửi lại cùng clientRequestId; kiểm tra không có đơn trùng.

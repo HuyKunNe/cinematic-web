@@ -8,13 +8,13 @@
 import type { RoomCapacity } from './roomCapacity'
 
 export interface CinemaRoomCapacitiesResponse {
-  cinemaId?: string
-  totalRoomCount?: number
-  activeRoomCount?: number
-  inactiveRoomCount?: number
-  unconfiguredRoomCount?: number
-  capacityComplete?: boolean
-  knownCapacity?: number
-  capacity?: number
-  rooms?: RoomCapacity[]
+  cinemaId: string
+  totalRoomCount: number
+  activeRoomCount: number
+  inactiveRoomCount: number
+  unconfiguredRoomCount: number
+  capacityComplete: boolean
+  knownCapacity: number
+  capacity: number | null
+  rooms: RoomCapacity[]
 }

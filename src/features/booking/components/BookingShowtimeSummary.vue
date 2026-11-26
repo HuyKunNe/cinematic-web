@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatBookingDate } from '../mappers/booking-date.mapper'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppLink from '@/components/ui/AppLink.vue'
 import { ROUTE_NAMES } from '@/router/route-constants'
@@ -15,8 +15,14 @@ const screeningLabel = computed(() =>
   formatBookingScreeningVersion(context.value?.showtime.screeningVersion),
 )
 const imageFailed = ref(false)
+watch(
+  () => context.value?.movie?.posterUrl,
+  () => {
+    imageFailed.value = false
+  },
+)
 const image = computed(() =>
-  imageFailed.value || !context.value?.movie.posterUrl
+  imageFailed.value || !context.value?.movie?.posterUrl
     ? '/customer/movie-placeholder.svg'
     : context.value.movie.posterUrl,
 )
@@ -28,7 +34,7 @@ const showtimeLabel = computed(() => {
 })
 const chooseShowtime = computed(() => ({
   name: ROUTE_NAMES.BOOKING_START,
-  query: { movieId: context.value?.movie.id },
+  query: { movieId: context.value?.showtime.movieId },
 }))
 </script>
 
@@ -38,24 +44,30 @@ const chooseShowtime = computed(() => ({
     <p v-if="query.isPending.value" class="booking-note" role="status">
       Đang tải thông tin phim và suất chiếu…
     </p>
-    <div v-if="query.isError.value || (query.isSuccess.value && !context)">
+    <div v-if="query.isError.value || (query.isSuccess.value && (!context || !context.movie))">
       <p class="booking-note" role="status">
-        Chưa thể tải thông tin phim/rạp. Thông tin đơn và giá vé đã lưu vẫn được giữ nguyên.
+        {{
+          context && !context.movie
+            ? 'Chưa có thông tin phim. Thông tin suất, ghế và giá vé đã lưu vẫn được giữ nguyên.'
+            : 'Chưa thể tải thông tin phim/rạp. Thông tin đơn và giá vé đã lưu vẫn được giữ nguyên.'
+        }}
       </p>
       <AppButton
         variant="ghost"
         size="sm"
         :loading="query.isFetching.value"
         :disabled="disabled"
-        @click="query.refetch()"
-        >Tải lại thông tin suất</AppButton
+        @click="query.refetch({ cancelRefetch: false })"
+        >{{
+          context && !context.movie ? 'Thử lại thông tin phim' : 'Tải lại thông tin suất'
+        }}</AppButton
       >
     </div>
     <div v-if="context" class="booking-order-showtime__body">
-      <img :src="image" :alt="context.movie.title || 'Poster phim'" @error="imageFailed = true" />
+      <img :src="image" :alt="context.movie?.title || 'Poster phim'" @error="imageFailed = true" />
       <div>
-        <h3>{{ context.movie.title }}</h3>
-        <p v-if="context.movie.durationMinutes" class="booking-note">
+        <h3>{{ context.movie?.title || 'Thông tin phim chưa khả dụng' }}</h3>
+        <p v-if="context.movie?.durationMinutes" class="booking-note">
           {{ context.movie.durationMinutes }} phút<template v-if="context.movie.ageRating">
             · {{ context.movie.ageRating }}</template
           >

@@ -5,7 +5,7 @@
  * API documentation for Cinema Booking System
  * OpenAPI spec version: 1.0.0
  */
-import type { SeatQuote } from './seatQuote'
+import type { GroupedSeatQuote } from './groupedSeatQuote'
 
 export interface ShowtimeGroupedSeatQuoteResponse {
   showtimeId?: string
@@ -16,5 +16,5 @@ export interface ShowtimeGroupedSeatQuoteResponse {
   seatCount?: number
   capacity?: number
   totalAmount?: number
-  seats?: SeatQuote[]
+  seats?: GroupedSeatQuote[]
 }

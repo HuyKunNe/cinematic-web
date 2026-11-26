@@ -29,6 +29,7 @@ const bookable = computed(() => {
   const startsAt = Date.parse(data.showtime.startsAt ?? '')
 
   return (
+    !!data.movie &&
     data.showtime.status === 'OPEN_FOR_BOOKING' &&
     Number.isFinite(startsAt) &&
     startsAt > now.value &&
@@ -118,7 +119,10 @@ onBeforeUnmount(() => {
           </AppButton>
         </div>
 
-        <p v-if="!bookable" class="booking-notice" role="status">
+        <p v-if="!context.movie" class="booking-notice" role="status">
+          Chưa có thông tin phim để tiếp tục đặt vé. Vui lòng chọn suất chiếu khác.
+        </p>
+        <p v-else-if="!bookable" class="booking-notice" role="status">
           Suất chiếu này hiện không nhận đặt vé. Vui lòng chọn suất chiếu khác.
         </p>
 

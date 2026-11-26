@@ -6,6 +6,7 @@ import type { CustomerBooking } from '../api/customer-bookings'
 import type { BookingSeatQuote } from '../api/booking-seat-quote'
 import { useBookingContextQuery } from '../api/booking-queries'
 import BookingSummaryIdentity from './BookingSummaryIdentity.vue'
+import { formatSavedBookingMoney } from '../mappers/booking-money.mapper'
 
 const props = defineProps<{
   booking?: CustomerBooking
@@ -20,14 +21,20 @@ const query = useBookingContextQuery(() => source.value?.showtimeId ?? props.sho
   poll: false,
 })
 const context = computed(() => query.data.value)
-const amount = computed(() =>
-  source.value?.totalAmount == null || !source.value.currency
+const amount = computed(() => {
+  if (props.booking)
+    return formatSavedBookingMoney(
+      props.booking.totalAmount,
+      props.booking.currency,
+      props.booking.status,
+    )
+  return source.value?.totalAmount == null || !source.value.currency
     ? 'Đang xác nhận'
     : new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: source.value.currency,
-      }).format(source.value.totalAmount),
-)
+      }).format(source.value.totalAmount)
+})
 </script>
 
 <template>

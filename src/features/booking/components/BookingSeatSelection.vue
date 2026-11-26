@@ -355,7 +355,7 @@ watch(
       </p>
     </aside>
     <BookingMobileRecap
-      :title="context.movie.title || 'Thông tin đặt vé'"
+      :title="context.movie?.title || 'Thông tin đặt vé'"
       :location="[context.cinema.name, showTime, showDate].filter(Boolean).join(' · ')"
       :seat-numbers="chosenSeats.map((seat) => seat.seatNumber)"
       :total="totalLabel"

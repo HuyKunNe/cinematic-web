@@ -9,8 +9,8 @@ import type { CellReference } from './cellReference'
 import type { ScopeResponse } from './scopeResponse'
 
 export interface Issue {
-  code?: string
-  message?: string
-  scope?: ScopeResponse
-  cell?: CellReference
+  code: string
+  message: string
+  scope: ScopeResponse | null
+  cell: CellReference | null
 }

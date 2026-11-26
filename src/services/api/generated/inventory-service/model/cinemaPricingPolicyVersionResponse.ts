@@ -9,17 +9,17 @@ import type { CinemaPricingPolicyVersionResponseDayGroup } from './cinemaPricing
 import type { CinemaPricingPolicyVersionResponseStatus } from './cinemaPricingPolicyVersionResponseStatus'
 
 export interface CinemaPricingPolicyVersionResponse {
-  id?: string
-  policyId?: string
-  cinemaIds?: string[]
-  revision?: number
-  name?: string
-  description?: string
-  dayGroup?: CinemaPricingPolicyVersionResponseDayGroup
-  status?: CinemaPricingPolicyVersionResponseStatus
-  version?: number
-  createdAt?: string
-  updatedAt?: string
-  publishedAt?: string
-  publishedBy?: string
+  id: string
+  policyId: string
+  cinemaIds: string[]
+  revision: number
+  name: string
+  description: string | null
+  dayGroup: CinemaPricingPolicyVersionResponseDayGroup
+  status: CinemaPricingPolicyVersionResponseStatus
+  version: number
+  createdAt: string
+  updatedAt: string
+  publishedAt: string | null
+  publishedBy: string | null
 }

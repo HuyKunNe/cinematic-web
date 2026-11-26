@@ -10,6 +10,7 @@ import { useBookingContextQuery } from '../api/booking-queries'
 import { formatBookingScreeningVersion } from '../mappers/booking-screening.mapper'
 import { useCustomerPickupQuery } from '../api/customer-pickup'
 import { formatBookingReference } from '../mappers/booking-reference.mapper'
+import { formatSavedBookingMoney } from '../mappers/booking-money.mapper'
 import { formatCinemaTime, getCinemaDateKey } from '@/utils/cinema-time'
 
 const props = defineProps<{ booking: CustomerBooking }>()
@@ -81,24 +82,19 @@ const screeningLabel = computed(() =>
 )
 const imageFailed = ref(false)
 watch(
-  () => props.booking.showtimeId,
+  () => context.value?.movie?.posterUrl,
   () => {
     imageFailed.value = false
   },
 )
 const missingTime = computed(() => (query.isPending.value ? 'Đang tải…' : 'Chưa có thông tin'))
 const image = computed(() =>
-  imageFailed.value || !context.value?.movie.posterUrl
+  imageFailed.value || !context.value?.movie?.posterUrl
     ? '/customer/movie-placeholder.svg'
     : context.value.movie.posterUrl,
 )
 const amount = computed(() =>
-  props.booking.totalAmount === null || !props.booking.currency
-    ? 'Chưa có giá xác nhận'
-    : new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: props.booking.currency,
-      }).format(props.booking.totalAmount),
+  formatSavedBookingMoney(props.booking.totalAmount, props.booking.currency, props.booking.status),
 )
 </script>
 
@@ -120,13 +116,13 @@ const amount = computed(() =>
         @error="imageFailed = true"
       />
       <div class="booking-confirmed-ticket__movie">
-        <span v-if="context?.movie.ageRating" class="booking-journey__age">{{
+        <span v-if="context?.movie?.ageRating" class="booking-journey__age">{{
           context.movie.ageRating
         }}</span>
         <span class="customer-bookings__badge" data-status="CONFIRMED">Đã xác nhận</span>
         <h2>
           {{
-            context?.movie.title ||
+            context?.movie?.title ||
             (query.isPending.value ? 'Đang tải thông tin phim…' : 'Thông tin đặt vé')
           }}
         </h2>
@@ -134,16 +130,22 @@ const amount = computed(() =>
           {{ context.cinema.name }}<br />{{ context.room.name
           }}<template v-if="screeningLabel"> · {{ screeningLabel }}</template>
         </p>
-        <div v-if="query.isError.value || (query.isSuccess.value && !context)">
+        <div v-if="query.isError.value || (query.isSuccess.value && (!context || !context.movie))">
           <p role="status">
-            Chưa tải được thông tin suất chiếu. Ghế và giá đã lưu vẫn được giữ nguyên.
+            {{
+              context && !context.movie
+                ? 'Thông tin phim chưa khả dụng. Ghế và giá vé đã lưu vẫn được giữ nguyên.'
+                : 'Chưa tải được thông tin suất chiếu. Ghế và giá đã lưu vẫn được giữ nguyên.'
+            }}
           </p>
           <AppButton
             size="sm"
             variant="ghost"
             :loading="query.isFetching.value"
-            @click="query.refetch()"
-            >Tải lại thông tin suất</AppButton
+            @click="query.refetch({ cancelRefetch: false })"
+            >{{
+              context && !context.movie ? 'Thử lại thông tin phim' : 'Tải lại thông tin suất'
+            }}</AppButton
           >
         </div>
         <dl class="booking-confirmed-ticket__facts">

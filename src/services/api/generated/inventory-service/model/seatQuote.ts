@@ -6,16 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { SeatQuoteSeatType } from './seatQuoteSeatType'
-import type { SeatQuoteUnit } from './seatQuoteUnit'
 
 export interface SeatQuote {
   showSeatId?: string
   seatNumber?: string
   seatType?: SeatQuoteSeatType
   capacity?: number
-  ticketGroupId?: string
-  ticketGroupName?: string
-  eligibilityDescription?: string
-  unit?: SeatQuoteUnit
   price?: number
 }

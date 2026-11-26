@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { formatBookingReference } from '../mappers/booking-reference.mapper'
+import { formatSavedBookingMoney } from '../mappers/booking-money.mapper'
 import { computed, ref, watch } from 'vue'
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -317,9 +318,7 @@ function date(value: string | null) {
   return value ? dateFormat.format(new Date(value)) : '—'
 }
 function money(value: number | null, currency: string | null) {
-  return value === null || currency === null
-    ? 'Đang xác nhận'
-    : new Intl.NumberFormat('vi-VN', { style: 'currency', currency }).format(value)
+  return formatSavedBookingMoney(value, currency, booking.value?.status)
 }
 watch(id, () => {
   paymentStatus.value = undefined

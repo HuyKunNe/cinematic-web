@@ -9,13 +9,13 @@ import type { RoomResponseContentFormatsItem } from './roomResponseContentFormat
 import type { RoomResponseRoomType } from './roomResponseRoomType'
 
 export interface RoomResponse {
-  id?: string
-  cinemaId?: string
-  name?: string
-  roomType?: RoomResponseRoomType
-  active?: boolean
-  createdAt?: string
-  updatedAt?: string
-  version?: number
-  contentFormats?: RoomResponseContentFormatsItem[]
+  id: string
+  cinemaId: string
+  name: string
+  roomType: RoomResponseRoomType
+  active: boolean
+  createdAt: string
+  updatedAt: string
+  version: number | null
+  contentFormats: RoomResponseContentFormatsItem[]
 }
